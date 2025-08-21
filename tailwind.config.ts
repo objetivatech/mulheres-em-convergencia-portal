@@ -32,6 +32,10 @@ export default {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
+				tertiary: {
+					DEFAULT: 'hsl(var(--tertiary))',
+					foreground: 'hsl(var(--tertiary-foreground))'
+				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
@@ -61,7 +65,23 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Mulheres em Convergência brand colors
+				brand: {
+					primary: 'hsl(var(--brand-primary))',
+					secondary: 'hsl(var(--brand-secondary))',
+					tertiary: 'hsl(var(--brand-tertiary))',
+					gray: {
+						dark: 'hsl(var(--brand-gray-dark))',
+						medium: 'hsl(var(--brand-gray-medium))',
+						light: 'hsl(var(--brand-gray-light))'
+					}
 				}
+			},
+			fontFamily: {
+				'sans': ['Montserrat', 'system-ui', 'sans-serif'],
+				'nexa': ['Nexa Light', 'system-ui', 'sans-serif'],
+				'androgyne': ['Androgyne Medium', 'system-ui', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
