@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Instagram, Linkedin, Facebook } from 'lucide-react';
+import { Menu, X, Instagram, Linkedin, Facebook, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 // Pinterest icon component (since it's not in lucide-react)
 const PinterestIcon = ({ size = 20 }: { size?: number }) => (
@@ -12,6 +13,7 @@ const PinterestIcon = ({ size = 20 }: { size?: number }) => (
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut, isAdmin, canEditBlog } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -51,7 +53,7 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Social Links & Mobile Menu Button */}
+          {/* Social Links & User Menu */}
           <div className="flex items-center space-x-4">
             {/* Social Links - Hidden on mobile */}
             <div className="hidden md:flex items-center space-x-3">
@@ -69,6 +71,42 @@ const Header = () => {
                   </a>
                 );
               })}
+            </div>
+            
+            {/* Divider */}
+            <div className="h-6 w-px bg-border hidden md:block" />
+            
+            {/* User Menu */}
+            <div className="hidden md:flex items-center space-x-3">
+              {user ? (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </span>
+                  {(isAdmin || canEditBlog) && (
+                    <Link to="/admin">
+                      <Button variant="outline" size="sm">
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={signOut}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -98,6 +136,45 @@ const Header = () => {
                 </Link>
               ))}
             </nav>
+            
+            {/* Mobile User Menu */}
+            <div className="mt-4 pt-4 border-t border-border">
+              {user ? (
+                <div className="flex flex-col space-y-3">
+                  <span className="text-sm text-muted-foreground px-2">
+                    Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    {(isAdmin || canEditBlog) && (
+                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="outline" size="sm">
+                          Admin
+                        </Button>
+                      </Link>
+                    )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        signOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sair
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="mx-2">
+                    <User className="h-4 w-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
+            </div>
             
             {/* Mobile Social Links */}
             <div className="flex items-center space-x-4 mt-4 pt-4 border-t border-border">
