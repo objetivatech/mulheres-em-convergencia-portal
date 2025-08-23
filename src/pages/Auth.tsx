@@ -19,7 +19,7 @@ const Auth = () => {
   const signUpCaptchaRef = useRef<HCaptcha>(null);
   
   // hCaptcha site key - deve ser configurado com a chave real do projeto
-  const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Chave de teste - substituir pela real
+  const HCAPTCHA_SITE_KEY = "1be60d62-1f8e-427a-bc8e-6b6ef08a521e"; // Chave de teste - substituir pela real
 
   // Redirect if already authenticated
   if (user && !loading) {
