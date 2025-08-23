@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X, Instagram, Linkedin, Facebook, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import LogoComponent from './LogoComponent';
 
 // Pinterest icon component (since it's not in lucide-react)
 const PinterestIcon = ({ size = 20 }: { size?: number }) => (
@@ -35,9 +36,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <div className="w-48 h-12 bg-tertiary rounded-lg flex items-center justify-center">
-              <span className="text-primary font-bold text-lg">MEC</span>
-            </div>
+            <LogoComponent size="md" />
           </Link>
 
           {/* Desktop Navigation */}
