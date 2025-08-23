@@ -18,9 +18,8 @@ const Auth = () => {
   const signInCaptchaRef = useRef<HCaptcha>(null);
   const signUpCaptchaRef = useRef<HCaptcha>(null);
   
-  // ⚠️ IMPORTANTE: Configure sua Site Key real do hCaptcha
-  // Obtenha em: https://dashboard.hcaptcha.com/sites
-  const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Esta é a chave de desenvolvimento - DEVE SER SUBSTITUÍDA
+  // hCaptcha site key - deve ser configurado com a chave real do projeto
+  const HCAPTCHA_SITE_KEY = "1be60d62-1f8e-427a-bc8e-6b6ef08a521e"; // Chave de teste - substituir pela real
 
   // Redirect if already authenticated
   if (user && !loading) {
@@ -91,17 +90,6 @@ const Auth = () => {
             <p className="text-muted-foreground">
               Entre na sua conta ou crie uma nova
             </p>
-            
-            {/* Aviso sobre configuração do hCaptcha */}
-            {HCAPTCHA_SITE_KEY === "10000000-ffff-ffff-ffff-000000000001" && (
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ <strong>Configuração necessária:</strong> Configure sua Site Key do hCaptcha real.
-                  <br />
-                  Consulte <code>/docs/hcaptcha-setup.md</code> para instruções.
-                </p>
-              </div>
-            )}
           </div>
 
           <Tabs defaultValue="signin" className="w-full">
