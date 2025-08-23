@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,12 @@ const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string>('');
+  const signInCaptchaRef = useRef<HCaptcha>(null);
+  const signUpCaptchaRef = useRef<HCaptcha>(null);
+  
+  // hCaptcha site key - deve ser configurado com a chave real do projeto
+  const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001"; // Chave de teste - substituir pela real
 
   // Redirect if already authenticated
   if (user && !loading) {
@@ -21,18 +28,32 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    await signIn(email, password);
+    await signIn(email, password, captchaToken);
+    
+    // Reset captcha após tentativa
+    setCaptchaToken('');
+    signInCaptchaRef.current?.resetCaptcha();
     setIsSubmitting(false);
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
     const formData = new FormData(e.currentTarget);
@@ -40,7 +61,11 @@ const Auth = () => {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
 
-    await signUp(email, password, fullName);
+    await signUp(email, password, fullName, captchaToken);
+    
+    // Reset captcha após tentativa
+    setCaptchaToken('');
+    signUpCaptchaRef.current?.resetCaptcha();
     setIsSubmitting(false);
   };
 
@@ -120,10 +145,20 @@ const Auth = () => {
                       </div>
                     </div>
 
+                    <div className="space-y-4">
+                      <HCaptcha
+                        ref={signInCaptchaRef}
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken('')}
+                        onError={() => setCaptchaToken('')}
+                      />
+                    </div>
+
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !captchaToken}
                     >
                       {isSubmitting ? 'Entrando...' : 'Entrar'}
                     </Button>
@@ -195,10 +230,20 @@ const Auth = () => {
                       </div>
                     </div>
 
+                    <div className="space-y-4">
+                      <HCaptcha
+                        ref={signUpCaptchaRef}
+                        sitekey={HCAPTCHA_SITE_KEY}
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken('')}
+                        onError={() => setCaptchaToken('')}
+                      />
+                    </div>
+
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !captchaToken}
                     >
                       {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                     </Button>

@@ -7,8 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   canEditBlog: boolean;
@@ -70,11 +70,14 @@ export const useAuthProvider = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: captchaToken ? {
+          captchaToken,
+        } : undefined,
       });
       
       if (error) {
@@ -96,7 +99,7 @@ export const useAuthProvider = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string, captchaToken?: string) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -108,6 +111,7 @@ export const useAuthProvider = () => {
           data: {
             full_name: fullName,
           },
+          captchaToken,
         },
       });
 
