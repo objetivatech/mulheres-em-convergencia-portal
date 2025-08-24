@@ -1,3 +1,4 @@
+
 # Configuração de Assets e Imagens
 
 ## Logos do Projeto
@@ -9,9 +10,9 @@ As seguintes imagens foram fornecidas para o projeto:
 2. **Logo Circular** - Apenas o símbolo circular  
 3. **Logo Vertical** - Logo com texto embaixo
 
-### Localização Recomendada
+### Localização
 
-As imagens devem ser colocadas em:
+As imagens estão no repositório em:
 ```
 src/assets/
 ├── logo-horizontal.png
@@ -19,40 +20,44 @@ src/assets/
 └── logo-vertical.png
 ```
 
+Também preparamos um bucket público no Supabase Storage para servir as mesmas imagens via CDN:
+- Bucket: `branding`
+- Paths esperados:
+  - `logo-horizontal.png`
+  - `logo-circular.png`
+  - `logo-vertical.png`
+
 ### Implementação Atual
 
-Foi criado o componente `LogoComponent` em `src/components/layout/LogoComponent.tsx` que:
-- Atualmente usa um logo temporário em CSS/HTML
-- Está preparado para receber as imagens reais
-- Suporta diferentes variantes e tamanhos
+- O componente `LogoComponent` agora:
+  - Tenta carregar a imagem do Supabase Storage (`branding/<arquivo>.png`)
+  - Se a imagem não existir no Storage, faz fallback automático para o arquivo local em `src/assets`
+  - Suporta variantes: `horizontal`, `circular`, `vertical`
+  - Tamanhos: `sm`, `md`, `lg`
 
-### Como Atualizar
+- Header e Footer usam o `LogoComponent`.
+- O favicon é definido via Helmet e usa o `logo-circular.png`.
 
-1. **Adicionar as imagens** ao diretório `src/assets/`
-2. **Importar as imagens** no componente LogoComponent:
-   ```typescript
-   import logoHorizontal from '@/assets/logo-horizontal.png';
-   import logoCircular from '@/assets/logo-circular.png';
-   import logoVertical from '@/assets/logo-vertical.png';
-   ```
-3. **Substituir o conteúdo temporário** por elementos `<img>`
+### Como publicar no Supabase Storage
 
-### Upload para Supabase Storage
+1. Acesse o painel do Supabase: Storage > branding
+2. Faça upload dos arquivos:
+   - `logo-horizontal.png`
+   - `logo-circular.png`
+   - `logo-vertical.png`
+3. Confirme que o bucket `branding` é público (já criado por migração).
+4. Após o upload, o portal passará a usar automaticamente as versões do Storage.
 
-Para usar as imagens via Supabase Storage:
-1. Criar bucket público para assets
-2. Fazer upload das imagens
-3. Usar URLs do Supabase no componente
+### Teste
+
+- Remova/renomeie temporariamente os arquivos do Storage para ver o fallback local funcionar.
+- Recarregue a página e verifique o logo no Header, Footer e o favicon.
 
 ## Status Atual
 
-✅ Componente LogoComponent criado  
-✅ Header atualizado para usar o componente  
-⏳ Imagens precisam ser adicionadas manualmente  
-⏳ URLs das imagens precisam ser configuradas  
+✅ LogoComponent atualizado  
+✅ Header e Footer usam os logos  
+✅ Favicon configurado via Helmet  
+✅ Bucket `branding` criado no Supabase  
+⏳ Fazer upload dos arquivos no Storage (opcional)  
 
-## Próximos Passos
-
-1. Adicionar as 3 imagens de logo ao projeto
-2. Atualizar o componente LogoComponent para usar as imagens reais
-3. Testar em diferentes tamanhos e dispositivos

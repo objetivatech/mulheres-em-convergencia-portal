@@ -1,5 +1,6 @@
+
 import { useState, useRef } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import Layout from '@/components/layout/Layout';
@@ -18,8 +19,11 @@ const Auth = () => {
   const signInCaptchaRef = useRef<HCaptcha>(null);
   const signUpCaptchaRef = useRef<HCaptcha>(null);
   
-  // hCaptcha site key - deve ser configurado com a chave real do projeto
-  const HCAPTCHA_SITE_KEY = "1be60d62-1f8e-427a-bc8e-6b6ef08a521e"; // Chave de teste - substituir pela real
+  // hCaptcha site key
+  // Em localhost usamos a chave de teste do hCaptcha automaticamente.
+  const HCAPTCHA_SITE_KEY = window.location.hostname === 'localhost'
+    ? '10000000-ffff-ffff-ffff-000000000001'
+    : '1be60d62-1f8e-427a-bc8e-6b6ef08a521e';
 
   // Redirect if already authenticated
   if (user && !loading) {
@@ -143,6 +147,12 @@ const Auth = () => {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="text-right">
+                      <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                        Esqueceu a senha?
+                      </Link>
                     </div>
 
                     <div className="space-y-4">

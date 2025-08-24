@@ -1,5 +1,7 @@
+
 import { Link } from 'react-router-dom';
 import { Instagram, Linkedin, Facebook, Heart } from 'lucide-react';
+import LogoComponent from './LogoComponent';
 
 // Pinterest icon component (since it's not in lucide-react)
 const PinterestIcon = ({ size = 20 }: { size?: number }) => (
@@ -31,14 +33,12 @@ const Footer = () => {
           {/* Logo e Descrição */}
           <div className="space-y-4">
             <Link to="/" className="inline-block">
-              <div className="w-48 h-12 bg-tertiary rounded-lg flex items-center justify-center">
-                <span className="text-primary font-bold text-lg">MEC</span>
-              </div>
+              <LogoComponent variant="horizontal" size="md" />
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Espaço criado para educar, conectar e impulsionar mulheres por meio do empreendedorismo 
-              e do fortalecimento de redes de apoio, gerando impacto social, autonomia financeira e 
-              transformação de comunidades.
+              Espaço criado para educar, conectar e impulsionar mulheres 
+              por meio do empreendedorismo e do fortalecimento de redes de apoio,
+              gerando impacto social, autonomia financeira e transformação de comunidades.
             </p>
           </div>
 

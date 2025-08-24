@@ -1,7 +1,9 @@
-import React from 'react';
-import logoHorizontal from '@/assets/logo-horizontal.png';
-import logoCircular from '@/assets/logo-circular.png';
-import logoVertical from '@/assets/logo-vertical.png';
+
+import React, { useMemo, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import logoHorizontalLocal from '@/assets/logo-horizontal.png';
+import logoCircularLocal from '@/assets/logo-circular.png';
+import logoVerticalLocal from '@/assets/logo-vertical.png';
 
 interface LogoComponentProps {
   variant?: 'horizontal' | 'circular' | 'vertical';
@@ -9,37 +11,68 @@ interface LogoComponentProps {
   className?: string;
 }
 
-const LogoComponent: React.FC<LogoComponentProps> = ({ 
-  variant = 'horizontal', 
+const sizeClasses = {
+  sm: 'h-8',
+  md: 'h-12',
+  lg: 'h-16',
+};
+
+const getStoragePublicUrl = (path: string) => {
+  const { data } = supabase.storage.from('branding').getPublicUrl(path);
+  return data.publicUrl;
+};
+
+const LogoComponent: React.FC<LogoComponentProps> = ({
+  variant = 'horizontal',
   size = 'md',
-  className = '' 
+  className = ''
 }) => {
-  const sizeClasses = {
-    sm: 'h-8',
-    md: 'h-12',
-    lg: 'h-16'
+  const [useFallback, setUseFallback] = useState<{ [k in 'horizontal' | 'circular' | 'vertical']?: boolean }>({});
+
+  const { src, alt } = useMemo(() => {
+    const mapping = {
+      horizontal: {
+        storage: getStoragePublicUrl('logo-horizontal.png'),
+        local: logoHorizontalLocal,
+        alt: 'Mulheres em Convergência - Logo horizontal',
+      },
+      circular: {
+        storage: getStoragePublicUrl('logo-circular.png'),
+        local: logoCircularLocal,
+        alt: 'Mulheres em Convergência - Símbolo',
+      },
+      vertical: {
+        storage: getStoragePublicUrl('logo-vertical.png'),
+        local: logoVerticalLocal,
+        alt: 'Mulheres em Convergência - Logo vertical',
+      },
+    } as const;
+
+    const item = mapping[variant];
+    const shouldFallback = useFallback[variant];
+    return {
+      src: shouldFallback ? item.local : item.storage,
+      alt: item.alt,
+    };
+  }, [variant, useFallback]);
+
+  const onError = () => {
+    // Se a imagem do Storage não existir, cai para o arquivo local do projeto
+    setUseFallback(prev => ({ ...prev, [variant]: true }));
   };
 
-  // Temporário: logo em texto até as imagens serem adicionadas
+  // Aplica tamanho de altura e mantém proporção
+  const sizeClass = sizeClasses[size];
+
   return (
     <div className={`flex items-center ${className}`}>
-      <div className={`${sizeClasses[size]} flex items-center`}>
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <span className="text-white font-bold text-lg">M</span>
-          </div>
-          {variant !== 'circular' && (
-            <div className="flex flex-col">
-              <span className="text-secondary font-semibold text-lg leading-tight">
-                Mulheres em
-              </span>
-              <span className="text-primary font-bold text-xl leading-tight">
-                Convergência
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+      <img
+        src={src}
+        alt={alt}
+        onError={onError}
+        className={`${sizeClass} w-auto object-contain`}
+        loading="lazy"
+      />
     </div>
   );
 };

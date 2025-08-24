@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +13,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   canEditBlog: boolean;
+  requestPasswordReset: (email: string) => Promise<{ error: any }>;
+  updatePassword: (newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +42,13 @@ export const useAuthProvider = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        if (event === 'PASSWORD_RECOVERY') {
+          toast({
+            title: "Recuperação de senha",
+            description: "Defina sua nova senha na página de redefinição.",
+          });
+        }
 
         // Check user permissions when session changes
         if (session?.user) {
@@ -134,6 +144,52 @@ export const useAuthProvider = () => {
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const redirectTo = `${window.location.origin}/reset-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
+      if (error) {
+        toast({
+          title: "Erro ao enviar link",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Verifique seu email",
+          description: "Enviamos um link para redefinir sua senha.",
+        });
+      }
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast({
+          title: "Erro ao redefinir senha",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Senha atualizada",
+          description: "Você já pode entrar com sua nova senha.",
+        });
+      }
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -155,6 +211,8 @@ export const useAuthProvider = () => {
     signOut,
     isAdmin,
     canEditBlog,
+    requestPasswordReset,
+    updatePassword,
   };
 };
 

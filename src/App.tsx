@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,9 @@ import Auth from "./pages/Auth";
 import Convergindo from "./pages/Convergindo";
 import Post from "./pages/Post";
 import NotFound from "./pages/NotFound";
+import Favicon from "@/components/layout/Favicon";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +25,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <Favicon />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -28,6 +33,8 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/convergindo" element={<Convergindo />} />
               <Route path="/convergindo/:slug" element={<Post />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

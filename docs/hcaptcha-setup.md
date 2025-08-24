@@ -1,48 +1,37 @@
+
 # Configuração do hCaptcha
 
-## Problema: "sitekey-secret-mismatch"
+## Erro: "captcha protection: request disallowed (sitekey-secret-mismatch)"
 
-O erro `captcha protection: request disallowed (sitekey-secret-mismatch)` indica que as chaves do hCaptcha não estão configuradas corretamente.
+Isso ocorre quando a Site Key usada no frontend não corresponde à Secret Key configurada no Supabase Auth (Authentication > Settings > Security > Bot Protection) ou quando o domínio não está autorizado no painel do hCaptcha.
 
-## Solução
+## Passo a passo para corrigir
 
-### 1. Obter as Chaves do hCaptcha
+1. Painel do hCaptcha
+   - Em Sites, selecione sua site key.
+   - Verifique a allowlist de domínios. Adicione:
+     - `localhost` (para desenvolvimento)
+     - Seu domínio de produção, ex: `seu-dominio.com`
+   - Copie a Site Key correta.
 
-1. Acesse [hCaptcha Dashboard](https://dashboard.hcaptcha.com/sites)
-2. Crie uma nova site ou use uma existente
-3. Anote a **Site Key** (pública) e **Secret Key** (privada)
+2. Supabase
+   - Em Authentication > Settings > Security > Bot Protection
+   - Provider: hCaptcha
+   - Cole a Site Key e a Secret Key correspondentes (da mesma propriedade criada no hCaptcha).
+   - Salve.
 
-### 2. Configurar no Supabase
+3. Frontend
+   - No arquivo `src/pages/Auth.tsx`, usamos:
+     - Chave de teste automaticamente no `localhost`: `10000000-ffff-ffff-ffff-000000000001`
+     - Sua chave real em produção: substitua a constante pela sua Site Key real (se ainda não for a correta).
 
-1. Acesse o painel do Supabase: `Authentication > Settings > Security`
-2. Na seção **Bot Protection**, configure:
-   - **Provider**: hCaptcha
-   - **Site Key**: Sua chave pública do hCaptcha
-   - **Secret Key**: Sua chave privada do hCaptcha
+4. Teste
+   - Em desenvolvimento (localhost), a chave de teste deve funcionar sem erro.
+   - Em produção, ao resolver o captcha, o login/cadastro devem funcionar sem o erro 400.
 
-### 3. Atualizar o Frontend
+## Dicas de diagnóstico
 
-No arquivo `src/pages/Auth.tsx`, linha 23, substitua:
-```javascript
-const HCAPTCHA_SITE_KEY = "10000000-ffff-ffff-ffff-000000000001";
-```
+- Se ver 400 em `auth/v1/token?grant_type=password` com mensagem `sitekey-secret-mismatch`, quase sempre é a Site Key incorreta ou Secret Key não correspondente no Supabase.
+- Certifique-se de que não há espaços extras e que a site key usada no frontend é exatamente a mesma salva no Supabase.
+- Verifique o domínio no dashboard do hCaptcha.
 
-Por sua Site Key real:
-```javascript
-const HCAPTCHA_SITE_KEY = "SUA_SITE_KEY_AQUI";
-```
-
-## Chaves de Teste
-
-Para desenvolvimento, você pode usar:
-- **Site Key**: `10000000-ffff-ffff-ffff-000000000001`
-- **Secret Key**: `0x0000000000000000000000000000000000000000`
-
-⚠️ **Importante**: As chaves de teste só funcionam em localhost. Para produção, use chaves reais.
-
-## Verificação
-
-Após configurar corretamente:
-1. O widget do hCaptcha deve aparecer normalmente
-2. Não deve haver erros no console
-3. O login/cadastro deve funcionar após resolver o captcha
