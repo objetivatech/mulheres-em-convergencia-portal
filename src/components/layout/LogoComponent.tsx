@@ -1,4 +1,7 @@
 import React from 'react';
+import logoHorizontal from '@/assets/logo-horizontal.png';
+import logoCircular from '@/assets/logo-circular.png';
+import logoVertical from '@/assets/logo-vertical.png';
 
 interface LogoComponentProps {
   variant?: 'horizontal' | 'circular' | 'vertical';
