@@ -19,11 +19,8 @@ const Auth = () => {
   const signInCaptchaRef = useRef<HCaptcha>(null);
   const signUpCaptchaRef = useRef<HCaptcha>(null);
   
-  // hCaptcha site key
-  // Em localhost usamos a chave de teste do hCaptcha automaticamente.
-  const HCAPTCHA_SITE_KEY = window.location.hostname === 'localhost'
-    ? '923efbe4-6b78-4ede-84c4-a830848abf32'
-    : '1be60d62-1f8e-427a-bc8e-6b6ef08a521e';
+  // hCaptcha site key - production only
+  const HCAPTCHA_SITE_KEY = '923efbe4-6b78-4ede-84c4-a830848abf32';
 
   // Redirect if already authenticated
   if (user && !loading) {
