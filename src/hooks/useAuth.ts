@@ -111,7 +111,7 @@ export const useAuthProvider = () => {
 
   const signUp = async (email: string, password: string, fullName?: string, captchaToken?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `https://mulheresemconvergencia.com.br/`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -146,7 +146,7 @@ export const useAuthProvider = () => {
 
   const requestPasswordReset = async (email: string) => {
     try {
-      const redirectTo = `${window.location.origin}/reset-password`;
+      const redirectTo = `https://mulheresemconvergencia.com.br/reset-password`;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
       });

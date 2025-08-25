@@ -10,12 +10,11 @@ import { Mail, MapPin, Phone, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { PRODUCTION_DOMAIN, HCAPTCHA_SITE_KEY } from '@/lib/constants';
 
 const Contato = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
-
-  const HCAPTCHA_SITE_KEY = '923efbe4-6b78-4ede-84c4-a830848abf32';
 
   const handleCaptchaVerify = (token: string) => {
     setCaptchaToken(token);
@@ -72,7 +71,7 @@ const Contato = () => {
         <meta property="og:title" content="Contato - Mulheres em Convergência" />
         <meta property="og:description" content="Entre em contato conosco. Estamos aqui para ouvir você e responder suas dúvidas sobre o movimento Mulheres em Convergência." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={`${window.location.origin}/contato`} />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/contato`} />
       </Helmet>
 
       <Layout>

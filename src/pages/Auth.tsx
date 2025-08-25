@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { HCAPTCHA_SITE_KEY } from '@/lib/constants';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,9 +19,6 @@ const Auth = () => {
   const [captchaToken, setCaptchaToken] = useState<string>('');
   const signInCaptchaRef = useRef<HCaptcha>(null);
   const signUpCaptchaRef = useRef<HCaptcha>(null);
-  
-  // hCaptcha site key - production only
-  const HCAPTCHA_SITE_KEY = '923efbe4-6b78-4ede-84c4-a830848abf32';
 
   // Redirect if already authenticated
   if (user && !loading) {

@@ -174,19 +174,21 @@ const Post = () => {
   }, [slug]);
 
   const handleShare = async () => {
+    const postUrl = `https://mulheresemconvergencia.com.br/convergindo/${post?.slug}`;
+    
     if (navigator.share && post) {
       try {
         await navigator.share({
           title: post.title,
           text: post.excerpt,
-          url: window.location.href,
+          url: postUrl,
         });
       } catch (error) {
         // Fallback to copying URL
-        navigator.clipboard.writeText(window.location.href);
+        navigator.clipboard.writeText(postUrl);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(postUrl);
     }
   };
 
@@ -233,7 +235,7 @@ const Post = () => {
         <meta property="og:title" content={post.seo_title || post.title} />
         <meta property="og:description" content={post.seo_description || post.excerpt} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={`https://mulheresemconvergencia.com.br/convergindo/${post.slug}`} />
         {post.featured_image_url && (
           <meta property="og:image" content={post.featured_image_url} />
         )}

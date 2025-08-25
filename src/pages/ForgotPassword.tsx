@@ -8,13 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { HCAPTCHA_SITE_KEY } from '@/lib/constants';
 
 const ForgotPassword = () => {
   const { requestPasswordReset } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
-
-  const HCAPTCHA_SITE_KEY = '923efbe4-6b78-4ede-84c4-a830848abf32';
 
   const handleCaptchaVerify = (token: string) => {
     setCaptchaToken(token);
