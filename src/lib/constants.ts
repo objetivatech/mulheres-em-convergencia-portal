@@ -5,8 +5,7 @@
 // Domínio de produção
 export const PRODUCTION_DOMAIN = 'https://mulheresemconvergencia.com.br';
 
-// hCaptcha Site Key (produção)
-export const HCAPTCHA_SITE_KEY = '923efbe4-6b78-4ede-84c4-a830848abf32';
+// hCaptcha removido: Bot Protection desativado no Supabase e proteções alternativas implementadas
 
 // Email para contato
 export const CONTACT_EMAIL = 'juntas@mulheresemconvergencia.com.br';

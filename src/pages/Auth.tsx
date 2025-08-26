@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layout/Layout';
@@ -15,6 +15,36 @@ const Auth = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const formStartRef = useRef<number>(Date.now());
+  const [error, setError] = useState<string | null>(null);
+
+  const MIN_SUBMIT_TIME_MS = 1200;
+  const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+  const MAX_SIGNIN_ATTEMPTS = 10;
+  const MAX_SIGNUP_ATTEMPTS = 5;
+
+  const getAttempts = (key: string): number[] => {
+    try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+  };
+  const saveAttempts = (key: string, attempts: number[]) => {
+    try { localStorage.setItem(key, JSON.stringify(attempts)); } catch {}
+  };
+  const recordAttempt = (key: string) => {
+    const now = Date.now();
+    const attempts = getAttempts(key).filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    attempts.push(now);
+    saveAttempts(key, attempts);
+  };
+  const canAttempt = (key: string, max: number) => {
+    const now = Date.now();
+    const attempts = getAttempts(key).filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+    if (attempts.length >= max) {
+      const oldest = Math.min(...attempts);
+      const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldest);
+      return { ok: false, retryAfterMs };
+    }
+    return { ok: true, retryAfterMs: 0 };
+  };
 
   // Redirect if already authenticated
   if (user && !loading) {
@@ -24,26 +54,93 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = (formData.get('email') as string)?.trim();
+    const password = (formData.get('password') as string) || '';
+    const honeypot = (formData.get('website') as string) || '';
 
-    await signIn(email, password);
-    setIsSubmitting(false);
+    // Honeypot
+    if (honeypot) {
+      setError('Ação bloqueada.');
+      setIsSubmitting(false);
+      return;
+    }
+    // Tempo mínimo de preenchimento
+    if (Date.now() - formStartRef.current < MIN_SUBMIT_TIME_MS) {
+      setError('Envio muito rápido. Tente novamente.');
+      setIsSubmitting(false);
+      return;
+    }
+    // Rate limiting por dispositivo
+    const rl = canAttempt('auth:signin', MAX_SIGNIN_ATTEMPTS);
+    if (!rl.ok) {
+      setError(`Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfterMs / 1000)}s.`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    recordAttempt('auth:signin');
+
+    try {
+      await signIn(email, password);
+      // Sucesso: zera tentativas
+      saveAttempts('auth:signin', []);
+    } catch (err: any) {
+      setError(err?.message || 'Falha ao entrar. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const fullName = formData.get('fullName') as string;
+    const email = (formData.get('email') as string)?.trim();
+    const password = (formData.get('password') as string) || '';
+    const fullName = (formData.get('fullName') as string)?.trim();
+    const honeypot = (formData.get('website') as string) || '';
 
-    await signUp(email, password, fullName);
-    setIsSubmitting(false);
+    // Honeypot
+    if (honeypot) {
+      setError('Ação bloqueada.');
+      setIsSubmitting(false);
+      return;
+    }
+    // Tempo mínimo de preenchimento
+    if (Date.now() - formStartRef.current < MIN_SUBMIT_TIME_MS) {
+      setError('Envio muito rápido. Tente novamente.');
+      setIsSubmitting(false);
+      return;
+    }
+    // Regras simples
+    if (password.length < 6) {
+      setError('A senha deve ter ao menos 6 caracteres.');
+      setIsSubmitting(false);
+      return;
+    }
+    // Rate limiting
+    const rl = canAttempt('auth:signup', MAX_SIGNUP_ATTEMPTS);
+    if (!rl.ok) {
+      setError(`Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfterMs / 1000)}s.`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    recordAttempt('auth:signup');
+
+    try {
+      await signUp(email, password, fullName);
+      saveAttempts('auth:signup', []);
+    } catch (err: any) {
+      setError(err?.message || 'Falha ao cadastrar. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -85,6 +182,7 @@ const Auth = () => {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignIn} className="space-y-4">
+                    <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
                     <div className="space-y-2">
                       <Label htmlFor="signin-email">Email</Label>
                       <div className="relative">
@@ -135,6 +233,7 @@ const Auth = () => {
                     >
                       {isSubmitting ? 'Entrando...' : 'Entrar'}
                     </Button>
+                    {error && <p className="text-sm text-destructive mt-2">{error}</p>}
                   </form>
                 </CardContent>
               </Card>
@@ -150,6 +249,7 @@ const Auth = () => {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
                     <div className="space-y-2">
                       <Label htmlFor="signup-name">Nome completo</Label>
                       <div className="relative">
@@ -210,6 +310,7 @@ const Auth = () => {
                     >
                       {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                     </Button>
+                    {error && <p className="text-sm text-destructive mt-2">{error}</p>}
                   </form>
                 </CardContent>
               </Card>
