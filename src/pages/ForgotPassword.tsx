@@ -7,31 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
-import { HCAPTCHA_SITE_KEY } from '@/lib/constants';
 
 const ForgotPassword = () => {
   const { requestPasswordReset } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!captchaToken) {
-      return;
-    }
 
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     await requestPasswordReset(email);
     setIsSubmitting(false);
-    setCaptchaToken('');
+    
   };
 
   return (
@@ -62,16 +51,7 @@ const ForgotPassword = () => {
                   </div>
                 </div>
                 
-                <div className="flex justify-center">
-                  <HCaptcha
-                    sitekey={HCAPTCHA_SITE_KEY}
-                    onVerify={handleCaptchaVerify}
-                    onExpire={() => setCaptchaToken('')}
-                    onError={() => setCaptchaToken('')}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" disabled={isSubmitting || !captchaToken}>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Enviando...' : 'Enviar link de redefinição'}
                 </Button>
               </form>

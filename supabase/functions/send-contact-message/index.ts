@@ -14,6 +14,8 @@ interface ContactMessage {
   email: string;
   subject: string;
   message: string;
+  hp?: string;
+  ts?: number;
 }
 
 serve(async (req) => {
@@ -35,7 +37,19 @@ serve(async (req) => {
       );
     }
 
-    const { name, email, subject, message }: ContactMessage = await req.json();
+    // Check Origin/Referer
+    const origin = req.headers.get('origin') || '';
+    const referer = req.headers.get('referer') || '';
+    const allowedOrigins = ['https://mulheresemconvergencia.com.br', 'http://localhost:5173'];
+    const isAllowed = allowedOrigins.some((o) => origin.startsWith(o) || referer.startsWith(o));
+    if (!isAllowed) {
+      return new Response(
+        JSON.stringify({ error: 'Origin not allowed' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { name, email, subject, message, hp, ts }: ContactMessage = await req.json();
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -54,7 +68,47 @@ serve(async (req) => {
       );
     }
 
-    console.log('Received contact form submission:', { name, email, subject });
+    // Honeypot check
+    if (hp && String(hp).trim() !== '') {
+      // Pretend success to mislead bots
+      return new Response(
+        JSON.stringify({ success: true, message: 'Mensagem enviada com sucesso!' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Minimum time on page (3s) to avoid instant bot submissions
+    if (typeof ts === 'number' && Number.isFinite(ts)) {
+      if (Date.now() - ts < 3000) {
+        return new Response(
+          JSON.stringify({ error: 'Envio muito rápido, tente novamente.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Basic content validation
+    if (subject.trim().length < 3 || message.trim().length < 10) {
+      return new Response(
+        JSON.stringify({ error: 'Informe um assunto e mensagem válidos.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limit: max 3 messages por email em 10 minutos
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { count: recentCount } = await supabase
+      .from('contact_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('email', email.trim().toLowerCase())
+      .gte('created_at', tenMinutesAgo);
+
+    if ((recentCount ?? 0) >= 3) {
+      return new Response(
+        JSON.stringify({ error: 'Muitas mensagens recentes. Tente novamente mais tarde.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Insert contact message into database
     const { data, error: insertError } = await supabase

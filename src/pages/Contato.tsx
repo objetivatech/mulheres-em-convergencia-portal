@@ -9,24 +9,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, MapPin, Phone, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
-import { PRODUCTION_DOMAIN, HCAPTCHA_SITE_KEY } from '@/lib/constants';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Contato = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
+  const [hp, setHp] = useState('');
+  const [formTs] = useState(() => Date.now());
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!captchaToken) {
-      toast.error('Por favor, complete o captcha antes de enviar.');
-      return;
-    }
 
     setIsSubmitting(true);
     
@@ -40,7 +31,7 @@ const Contato = () => {
       };
 
       const { data, error } = await supabase.functions.invoke('send-contact-message', {
-        body: contactData
+        body: { ...contactData, hp, ts: formTs }
       });
 
       if (error) {
@@ -51,9 +42,8 @@ const Contato = () => {
 
       toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
       
-      // Reset form
       e.currentTarget.reset();
-      setCaptchaToken('');
+      setHp('');
       
     } catch (error) {
       console.error('Error:', error);
@@ -151,19 +141,22 @@ const Contato = () => {
                       />
                     </div>
                     
-                    <div className="flex justify-center">
-                      <HCaptcha
-                        sitekey={HCAPTCHA_SITE_KEY}
-                        onVerify={handleCaptchaVerify}
-                        onExpire={() => setCaptchaToken('')}
-                        onError={() => setCaptchaToken('')}
-                      />
-                    </div>
+                    {/* Honeypot field (bots tendem a preencher) */}
+                    <input
+                      type="text"
+                      name="website"
+                      value={hp}
+                      onChange={(e) => setHp(e.target.value)}
+                      className="hidden"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                    />
 
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={isSubmitting || !captchaToken}
+                      disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
                     </Button>
