@@ -17,7 +17,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
+import UserManagement from './pages/UserManagement';
+import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -39,11 +42,26 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/contato" element={<Contato />} />
+              
+              {/* Admin Routes */}
               <Route path="/admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <Admin />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/users" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <UserManagement />
+                </ProtectedRoute>
+              } />
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard/:type" element={
+                <RoleProtectedRoute>
+                  <Dashboard />
+                </RoleProtectedRoute>
+              } />
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

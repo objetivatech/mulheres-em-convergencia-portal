@@ -33,7 +33,8 @@ const Admin = () => {
       description: 'Gerenciar usuários, permissões e perfis',
       icon: Users,
       available: isAdmin,
-      comingSoon: true
+      href: '/admin/users',
+      comingSoon: false
     },
     {
       title: 'Editor de Blog',
@@ -169,6 +170,7 @@ const Admin = () => {
                         variant={module.available ? "default" : "secondary"}
                         className="w-full"
                         disabled={!module.available || module.comingSoon}
+                        onClick={() => module.href && (window.location.href = module.href)}
                       >
                         {module.comingSoon ? 'Em Desenvolvimento' : 'Acessar'}
                       </Button>
