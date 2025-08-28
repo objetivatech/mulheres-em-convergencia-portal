@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Settings, Users, FileText, Mail, BarChart3, Shield } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
   const { user, loading, isAdmin, canEditBlog } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -170,7 +171,7 @@ const Admin = () => {
                         variant={module.available ? "default" : "secondary"}
                         className="w-full"
                         disabled={!module.available || module.comingSoon}
-                        onClick={() => module.href && (window.location.href = module.href)}
+                        onClick={() => module.href && navigate(module.href)}
                       >
                         {module.comingSoon ? 'Em Desenvolvimento' : 'Acessar'}
                       </Button>

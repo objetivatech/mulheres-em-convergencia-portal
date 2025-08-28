@@ -1,9 +1,19 @@
+import { Helmet } from 'react-helmet-async';
 import Layout from "@/components/layout/Layout";
+import { Timeline } from '@/components/timeline/Timeline';
 import { CheckCircle, Users, Target, Heart } from "lucide-react";
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Sobre = () => {
   return (
-    <Layout>
+    <>
+      <Helmet>
+        <title>Sobre Nós - Mulheres em Convergência</title>
+        <meta name="description" content="Conheça nossa missão de empoderar mulheres empreendedoras através da educação, comunidade e oportunidades de crescimento." />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/sobre`} />
+      </Helmet>
+      
+      <Layout>
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-tertiary/20 via-background to-background py-20">
         <div className="container mx-auto px-4">
@@ -77,64 +87,8 @@ const Sobre = () => {
         </div>
       </section>
 
-      {/* Linha do Tempo - Placeholder */}
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-brand-secondary text-center mb-12">
-              Nossa Jornada
-            </h2>
-            
-            {/* Timeline placeholder - será implementada posteriormente com base no site original */}
-            <div className="space-y-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    Início do Projeto
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Identificação da necessidade de criar um espaço dedicado 
-                    ao desenvolvimento de mulheres empreendedoras no Brasil.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-brand-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    Primeiras Conexões
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Formação da primeira rede de mulheres empreendedoras 
-                    e início das atividades de mentoria e networking.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-tertiary rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    Expansão Digital
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Lançamento da plataforma digital para ampliar o alcance 
-                    e conectar mais mulheres em todo o país.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Timeline Interativa */}
+      <Timeline />
 
       {/* Valores */}
       <section className="py-16">
@@ -180,7 +134,8 @@ const Sobre = () => {
           </div>
         </div>
       </section>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 
