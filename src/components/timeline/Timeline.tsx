@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Calendar, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -204,6 +204,9 @@ export const Timeline = () => {
   };
 
   const [itemsToShow, setItemsToShow] = useState(getItemsPerView);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  const maxIndex = Math.max(0, timelineData.length - itemsToShow);
 
   useEffect(() => {
     const handleResize = () => {
@@ -214,7 +217,23 @@ export const Timeline = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const maxIndex = Math.max(0, timelineData.length - itemsToShow);
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => {
+        const nextIndex = prev + 1;
+        return nextIndex > maxIndex ? 0 : nextIndex;
+      });
+    }, 4000); // Muda slide a cada 4 segundos
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, maxIndex]);
+
+  const toggleAutoPlay = () => {
+    setIsAutoPlaying(!isAutoPlaying);
+  };
 
   const nextSlide = () => {
     setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
@@ -260,18 +279,33 @@ export const Timeline = () => {
               <ChevronLeft className="h-6 w-6" />
             </Button>
             
-            <div className="flex space-x-2">
-              {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    currentIndex === index 
-                      ? 'bg-primary' 
-                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                  }`}
-                />
-              ))}
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleAutoPlay}
+                className="h-10 w-10 rounded-full"
+                title={isAutoPlaying ? "Pausar apresentação automática" : "Retomar apresentação automática"}
+              >
+                {isAutoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              
+              <div className="flex space-x-2">
+                {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setCurrentIndex(index);
+                      setIsAutoPlaying(false); // Pausa o autoplay quando o usuário clica manualmente
+                    }}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      currentIndex === index 
+                        ? 'bg-primary' 
+                        : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
 
             <Button
@@ -331,7 +365,7 @@ export const Timeline = () => {
                         {item.title}
                       </h3>
                       
-                      <p className="text-muted-foreground leading-relaxed line-clamp-4">
+                      <p className="text-muted-foreground leading-relaxed">
                         {item.description}
                       </p>
                     </CardContent>

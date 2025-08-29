@@ -11,8 +11,11 @@ O componente `Timeline` foi implementado na página "Sobre" para mostrar de form
   - Mobile: 1 item por vez
   - Tablet: 2 itens por vez  
   - Desktop: 3 itens por vez
+- **Apresentação Automática**: Muda slides automaticamente a cada 4 segundos
+- **Controles Interativos**: Botão para pausar/retomar apresentação automática
 - **Lightbox**: Clique nas imagens para visualizá-las em tamanho ampliado
 - **Navegação**: Botões de navegação e indicadores de posição
+- **Textos Completos**: Exibe a descrição completa de cada marco histórico
 - **Transições Suaves**: Animações CSS elegantes em todos os elementos
 - **Barra de Progresso**: Indicador visual do progresso na timeline
 
@@ -89,10 +92,12 @@ import { Timeline } from '@/components/timeline/Timeline';
 - `currentIndex`: Posição atual do slider
 - `selectedImage`: Imagem selecionada para o lightbox
 - `itemsToShow`: Número de itens visíveis (responsivo)
+- `isAutoPlaying`: Controle da apresentação automática
 
 ### Interações Disponíveis
 - **Navegação**: Botões anterior/próximo
 - **Indicadores**: Clique nos dots para ir para posição específica
+- **Auto-play**: Apresentação automática com botão pausar/retomar
 - **Lightbox**: Clique na imagem para ampliar
 - **Responsivo**: Ajuste automático baseado no tamanho da tela
 
@@ -127,6 +132,6 @@ import { Timeline } from '@/components/timeline/Timeline';
 
 ---
 
-**Data de Implementação**: Janeiro 2025  
-**Versão**: 1.0  
-**Status**: ✅ Implementado e Funcional
+**Data de Implementação**: Agosto 2025  
+**Versão**: 2.0  
+**Status**: ✅ Implementado com Auto-play e Textos Completos
