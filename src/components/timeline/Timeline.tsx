@@ -18,168 +18,168 @@ const timelineData: TimelineItem[] = [
     date: 'Maio 2015',
     title: 'APAE Gravataí',
     description: 'Trabalho voluntário na APAE de Gravataí, aulas semanais de artesanato com as mães das crianças e jovens atendidos na entidade. Começamos a perceber as barreiras e dificuldades enfrentadas pelas mulheres.',
-    image: '/assets/timeline/apae-gravatai.jpg'
+    image: '/assets/timeline/timeline-apae-gravatai.jpg'
   },
   {
     id: 'aulas-artesanato',
     date: 'Setembro 2015',
     title: 'Aulas de Artesanato',
     description: 'Aulas de artesanato para as mulheres da comunidade, Jardim Algarve, em Alvorada parceria com a Rádio Comunitária Acácia FM 87.9.',
-    image: '/assets/timeline/aulas-artesanato.jpg'
+    image: '/assets/timeline/timeline-aulas-artesanato.jpg'
   },
   {
     id: 'multifeira',
     date: '2015 - 2017',
     title: 'Multifeira',
     description: 'Em um chamamento nas redes sociais, reunimos aproximadamente 20 moradores entre artesãos e empreendedores da área da alimentação e formamos a Multifeira do Jardim Algarve, fazendo feiras mensais nas praças do bairro.',
-    image: '/assets/timeline/multifeira.jpg'
+    image: '/assets/timeline/timeline-multifeira.jpg'
   },
   {
     id: 'acao-fgtas',
     date: 'Março 2017',
     title: 'Ação FGTAS',
     description: 'Confecção das carteirinhas de artesão pelo FGTAS, realizada na comunidade. Conseguimos em parceria com a SMDE, trazer os examinadores para realizar mais de 40 carteirinhas, para os artesãos da Multifeira Jardim Algarve e outros das comunidades próximas.',
-    image: '/assets/timeline/fgtas.jpg'
+    image: '/assets/timeline/timeline-fgtas.jpg'
   },
   {
     id: 'acao-acessuas',
     date: 'Abril 2018',
     title: 'Ação ACESSUAS - PMA',
     description: 'Parceria com a Secretaria de Assistência Social da Prefeitura de Alvorada, através da diretora do ACESSUAS, Vera Lúcia Alves, aulas sobre letramento digital para artesãs do município.',
-    image: '/assets/timeline/acessuas.jpg'
+    image: '/assets/timeline/timeline-acessuas.jpg'
   },
   {
     id: 'portal-vida',
     date: 'Março - Dezembro 2019',
     title: 'Portal da Vida',
     description: 'Trabalho voluntário no projeto Portal da Vida, da ativista social Karen Monteiro, escuta ativa de mulheres em situação de vulnerabilidade, encontros quinzenais com as atendidas pelo projeto na sede da Rádio Comunitária Acácia FM.',
-    image: '/assets/timeline/portal-vida.jpg'
+    image: '/assets/timeline/timeline-portal-vida.jpg'
   },
   {
     id: 'motiva-artesao',
     date: 'Agosto - Outubro 2019',
     title: 'Motiva Artesão - IFRS',
     description: 'Projeto de educação empreendedora, O MOTIVA ARTESÃO, foram 10 aulas sobre empreendedorismo, gestão e planejamento, formamos 20 alunas em parceria com o IFRS Alvorada.',
-    image: '/assets/timeline/motiva-artesao.jpg'
+    image: '/assets/timeline/timeline-motiva-artesao.jpg'
   },
   {
     id: 'ela-pode-palestras',
     date: 'Durante 2019',
     title: 'Ela Pode - Palestras',
     description: 'Trabalho voluntário no projeto Ela Pode, da RME, patrocinado pelo Google, facilitadora de conteúdos sobre empreendedorismo feminino. Feira do Livro, palestra para o grupo Empreendedoras Restinga / Workshop no IFRS Alvorada.',
-    image: '/assets/timeline/ela-pode-1.jpg'
+    image: '/assets/timeline/timeline-ela-pode-1.jpg'
   },
   {
     id: 'ela-pode-senac',
     date: 'Durante 2019',
     title: 'Ela Pode - Workshops SENAC',
     description: 'Trabalho voluntário no projeto Ela Pode, da RME, patrocinado pelo Google, facilitadora de conteúdos sobre empreendedorismo feminino. Workshop para as alunas do SENAC Comunidade/Porto Alegre.',
-    image: '/assets/timeline/ela-pode-2.jpg'
+    image: '/assets/timeline/timeline-ela-pode-2.jpg'
   },
   {
     id: 'ela-pode-comunidades',
     date: 'Durante 2019',
     title: 'Ela Pode - Comunidades',
     description: 'Trabalho voluntário no projeto Ela Pode, da RME, patrocinado pelo Google, facilitadora de conteúdos sobre empreendedorismo feminino. Workshops nas comunidades Vila Elza, Jardim Algarve, Piratini e 11 de Abril em Alvorada.',
-    image: '/assets/timeline/ela-pode-3.jpg'
+    image: '/assets/timeline/timeline-ela-pode-3.jpg'
   },
   {
     id: 'ela-pode-centros',
     date: 'Durante 2019',
     title: 'Ela Pode - Centros Profissionalizantes',
     description: 'Trabalho voluntário no projeto Ela Pode, da RME, patrocinado pelo Google, facilitadora de conteúdos sobre empreendedorismo feminino. Workshops no Centro Profissionalizante Florestan Fernandes em Alvorada e na Kurti Festas em Viamão.',
-    image: '/assets/timeline/ela-pode-4.jpg'
+    image: '/assets/timeline/timeline-ela-pode-4.jpg'
   },
   {
     id: 'coletivo-tpm',
     date: '2019 - 2022',
     title: 'Coletivo TPM',
     description: 'Coletivo TPM – **Todas Podem Mais** – formado a partir do desejo das empreendedoras em continuar formando conexões e aprendendo sobre empreendedorismo feminino; começou no final de 2019, onde conseguimos realizar algumas feiras, durou durante toda pandemia, se mantendo como um grupo de Whatsapp, onde havia troca de informações, indicação de cursos e locais de feiras e eventos. Foi desativado em 2022.',
-    image: '/assets/timeline/coletivo-tpm.jpg'
+    image: '/assets/timeline/timeline-coletivo-tpm.jpg'
   },
   {
     id: 'mulheres-proposito',
     date: 'Dezembro 2019',
     title: 'Mulheres com Propósito Pepsico',
     description: 'Mulheres com Propósito da Pepsico e Banco de Alimentos, participamos das atividades em Porto Alegre, contribuindo com palestras e formações sobre empreendedorismo e gestão.',
-    image: '/assets/timeline/mulheres-proposito.jpg'
+    image: '/assets/timeline/timeline-mulheres-proposito.jpg'
   },
   {
     id: 'eventos-online-1',
     date: 'Durante 2020',
     title: 'Eventos Online - Pandemia',
     description: 'A partir de abril de 2020 nossas atividades tiveram de mudar de formato. Palestras, cursos, clube de negócios, mentorias, tudo passou a ser online para empreendedoras.',
-    image: '/assets/timeline/eventos-online-1.jpg'
+    image: '/assets/timeline/timeline-eventos-online-1.jpg'
   },
   {
     id: 'eventos-online-2',
     date: 'Durante 2020',
     title: 'Acelera Empreendedora Online',
     description: 'Continuidade dos eventos online durante a pandemia, mantendo o apoio às empreendedoras através de palestras, cursos e networking virtual.',
-    image: '/assets/timeline/eventos-online-2.jpg'
+    image: '/assets/timeline/timeline-eventos-online-2.jpg'
   },
   {
     id: 'podcast',
     date: '2020 - 2021',
     title: 'Podcast Convergência Feminina',
     description: 'Em abril de 2021, nasce o Podcast Convergência Feminina, que começa de forma solo. Em novembro de 2022 com a flexibilização da pandemia, acontecem as primeiras entrevistas com convidadas. Está pausado agora, mas voltaremos com certeza, quem sabe em 2026.',
-    image: '/assets/timeline/podcast.jpg'
+    image: '/assets/timeline/timeline-podcast.jpg'
   },
   {
     id: 'economia-solidaria',
     date: '2021 - 2023',
     title: 'Economia Solidária Alvorada',
     description: 'Participamos dos encontros para reativação e fortalecimento da economia solidária no município de Alvorada, representando o coletivo TPM.',
-    image: '/assets/timeline/economia-solidaria.jpg'
+    image: '/assets/timeline/timeline-economia-solidaria.jpg'
   },
   {
     id: 'projeto-nasce',
     date: 'Fevereiro 2022',
     title: 'Nasce o projeto Mulheres em Convergência',
     description: 'Nasce também o MULHERES EM CONVERGÊNCIA, programa de capacitação de empreendedoras, o primeiro encontro foi no jardim Algarve em Alvorada, com um pequeno grupo de mulheres.',
-    image: '/assets/timeline/projeto-nasce.jpg'
+    image: '/assets/timeline/timeline-projeto-nasce.jpg'
   },
   {
     id: 'projeto-morro-santana',
     date: 'Março 2022',
     title: 'Projeto - Morro Santana',
     description: 'Capacitação no Bairro Morro Santana em Porto Alegre, com o grupo de mulheres do coletivo **Bazarte no morro**. 1º encontro em abril.',
-    image: '/assets/timeline/projeto-morro-santana.jpg'
+    image: '/assets/timeline/timeline-projeto-morro-santana.jpg'
   },
   {
     id: 'projeto-sumare',
     date: 'Abril 2022',
     title: 'Projeto - Sumaré',
     description: 'Capacitação no Bairro Sumaré em Alvorada, com o grupo de mulheres do coletivo TPM.',
-    image: '/assets/timeline/projeto-sumare.jpg'
+    image: '/assets/timeline/timeline-projeto-sumare.jpg'
   },
   {
     id: 'projeto-formosa',
     date: 'Abril 2022',
     title: 'Projeto - Formosa',
     description: 'Capacitação no Bairro Formosa em Alvorada, com o grupo de mulheres do coletivo TPM.',
-    image: '/assets/timeline/projeto-formosa.jpg'
+    image: '/assets/timeline/timeline-projeto-formosa.jpg'
   },
   {
     id: 'acelera-presencial',
     date: 'Maio 2022',
     title: 'Acelera Empreendedora Presencial',
     description: 'Realizamos um encontro presencial de empreendedoras, o ACELERA EMPREENDEDORA, onde reunimos mais de 40 mulheres. Tivemos palestras, pitch e rodada de negócios.',
-    image: '/assets/timeline/acelera-empreendedora.jpg'
+    image: '/assets/timeline/timeline-acelera-empreendedora.jpg'
   },
   {
     id: 'planejamento-financeiro',
     date: 'Junho 2022',
     title: 'Workshop Planejamento Financeiro',
     description: 'Workshop sobre Organização e Produtividade, realizado no Bairro Jardim Algarve.',
-    image: '/assets/timeline/planejamento-financeiro.jpg'
+    image: '/assets/timeline/timeline-planejamento-financeiro.jpg'
   },
   {
     id: 'adelino-borba',
     date: 'Outubro 2023',
     title: 'Palestra Centro Adelino Borba',
     description: 'Palestra sobre Empreendedorismo – Mais Mulheres a frente de negócios – realizada no centro municipal de capacitação profissional Adelino Borba, em Alvorada.',
-    image: '/assets/timeline/adelino-borba.jpg'
+    image: '/assets/timeline/timeline-adelino-borba.jpg'
   }
 ];
 
