@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useRoles, UserRole } from '@/hooks/useRoles';
+import { useRoles, UserRole, UserProfile } from '@/hooks/useRoles';
 import { useToast } from '@/hooks/use-toast';
-import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3 } from 'lucide-react';
+import { AddUserDialog } from './AddUserDialog';
+import { EditUserDialog } from './EditUserDialog';
+import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2 } from 'lucide-react';
 
 const roleIcons: Record<UserRole, any> = {
   admin: Shield,
@@ -43,12 +45,17 @@ const roleColors: Record<UserRole, string> = {
 export const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole | 'all'>('all');
-  const { useUserProfiles, useAddRole, useRemoveRole } = useRoles();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  
+  const { useUserProfiles, useAddRole, useRemoveRole, useDeleteUser } = useRoles();
   const { toast } = useToast();
 
   const { data: users = [], isLoading, error } = useUserProfiles();
   const addRoleMutation = useAddRole();
   const removeRoleMutation = useRemoveRole();
+  const deleteUserMutation = useDeleteUser();
 
   // Filtrar usuários
   const filteredUsers = users.filter(user => {
@@ -90,6 +97,27 @@ export const UserManagement = () => {
     }
   };
 
+  const handleEditUser = (user: UserProfile) => {
+    setEditingUser(user);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    try {
+      await deleteUserMutation.mutateAsync(userId);
+      toast({
+        title: 'Usuário removido',
+        description: `Usuário ${userName} removido com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível remover o usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -115,9 +143,15 @@ export const UserManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Users className="h-5 w-5" />
-            <span>Gestão de Usuários</span>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5" />
+              <span>Gestão de Usuários</span>
+            </div>
+            <Button onClick={() => setShowAddDialog(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Adicionar Usuário
+            </Button>
           </CardTitle>
           <CardDescription>
             Gerencie usuários, roles e permissões do portal
@@ -225,6 +259,15 @@ export const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
@@ -276,6 +319,33 @@ export const UserManagement = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Excluir
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir Usuário</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o usuário {user.full_name || user.email}? 
+                                Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteUser(user.id, user.full_name || user.email)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -291,6 +361,23 @@ export const UserManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <AddUserDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
+
+      <EditUserDialog
+        user={editingUser}
+        open={showEditDialog}
+        onOpenChange={(open) => {
+          setShowEditDialog(open);
+          if (!open) {
+            setEditingUser(null);
+          }
+        }}
+      />
     </div>
   );
 };
