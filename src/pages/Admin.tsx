@@ -42,7 +42,8 @@ const Admin = () => {
       description: 'Criar e editar posts do blog Convergindo',
       icon: FileText,
       available: isAdmin || canEditBlog,
-      comingSoon: true
+      href: '/admin/blog',
+      comingSoon: false
     },
     {
       title: 'Mensagens de Contato',
