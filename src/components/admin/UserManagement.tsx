@@ -241,11 +241,13 @@ export const UserManagement = () => {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((role) => {
-                          const Icon = roleIcons[role];
+                          const IconComp = roleIcons[role as UserRole] ?? Users;
+                          const label = roleLabels[role as UserRole] ?? role;
+                          const colorClass = roleColors[role as UserRole] ?? '';
                           return (
-                            <Badge key={role} className={roleColors[role]}>
-                              <Icon className="h-3 w-3 mr-1" />
-                              {roleLabels[role]}
+                            <Badge key={role} className={colorClass || undefined} variant={colorClass ? 'default' : 'outline'}>
+                              <IconComp className="h-3 w-3 mr-1" />
+                              {label}
                             </Badge>
                           );
                         })}
