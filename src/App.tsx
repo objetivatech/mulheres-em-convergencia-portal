@@ -19,6 +19,9 @@ import ResetPassword from "./pages/ResetPassword";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
 import UserManagement from './pages/UserManagement';
+import BlogDashboard from './pages/BlogDashboard';
+import BlogEditor from './pages/BlogEditor';
+import BlogCategories from './pages/BlogCategories';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
@@ -65,6 +68,28 @@ const App = () => (
               <Route path="/admin/users" element={
                 <ProtectedRoute requireAdmin={true}>
                   <UserManagement />
+                </ProtectedRoute>
+              } />
+              
+              {/* Blog Routes */}
+              <Route path="/admin/blog" element={
+                <ProtectedRoute requireBlogEditor={true}>
+                  <BlogDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/blog/novo" element={
+                <ProtectedRoute requireBlogEditor={true}>
+                  <BlogEditor />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/blog/editar/:id" element={
+                <ProtectedRoute requireBlogEditor={true}>
+                  <BlogEditor />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/blog/categorias" element={
+                <ProtectedRoute requireBlogEditor={true}>
+                  <BlogCategories />
                 </ProtectedRoute>
               } />
               
