@@ -24,6 +24,7 @@ import UserManagement from './pages/UserManagement';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
+import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
@@ -102,6 +103,11 @@ const App = () => (
                 <RoleProtectedRoute>
                   <Dashboard />
                 </RoleProtectedRoute>
+              } />
+              <Route path="/dashboard/empresa" element={
+                <ProtectedRoute>
+                  <DashboardEmpresa />
+                </ProtectedRoute>
               } />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

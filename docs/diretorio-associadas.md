@@ -102,10 +102,20 @@ src/
 
 ## Próximas Funcionalidades (Roadmap)
 
-### Fase 2 - Dashboard da Associada
-- Área restrita para edição do perfil
-- Métricas detalhadas de performance
-- Gestão de imagens e informações
+### ✅ FASE 1 - Implementada
+- ✅ Estrutura base e navegação (páginas públicas, busca, filtros)
+- ✅ Integração com banco de dados Supabase
+- ✅ Sistema de busca e filtros geográficos
+- ✅ Páginas responsivas e otimizadas para SEO
+
+### ✅ FASE 2 - Implementada 
+- ✅ Dashboard da Associada (`/dashboard/empresa`)
+- ✅ Formulários completos de edição (dados, contatos, localização)
+- ✅ Sistema de upload de imagens (logo, capa, galeria)
+- ✅ Métricas básicas (visualizações, cliques, contatos)
+- ✅ Interface em abas organizadas
+- ✅ Validação de formulários com Zod
+- ✅ Integração com Supabase Storage
 
 ### Fase 3 - Sistema de Assinaturas
 - Planos Iniciante, Intermediário e Master
@@ -150,4 +160,4 @@ src/
 ---
 
 *Documentação atualizada em: Janeiro 2025*
-*Versão: 1.0 - Fase 1 Implementada*
+*Versão: 2.0 - Fases 1 e 2 Implementadas*
