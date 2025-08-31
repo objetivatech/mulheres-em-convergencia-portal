@@ -12,6 +12,8 @@ import Sobre from "./pages/Sobre";
 import Auth from "./pages/Auth";
 import Convergindo from "./pages/Convergindo";
 import Post from "./pages/Post";
+import Diretorio from "./pages/Diretorio";
+import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import NotFound from "./pages/NotFound";
 import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -53,6 +55,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/sobre" element={<Sobre />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/diretorio" element={<Diretorio />} />
+              <Route path="/diretorio/:id" element={<DiretorioEmpresa />} />
               <Route path="/convergindo" element={<Convergindo />} />
               <Route path="/convergindo/:slug" element={<Post />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
