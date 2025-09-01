@@ -11,7 +11,8 @@ import {
   Star, 
   Eye,
   ArrowLeft,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import Map from '@/components/ui/map';
+import ReviewForm from '@/components/ui/review-form';
 
 interface BusinessDetails {
   id: string;
@@ -72,6 +75,7 @@ const DiretorioEmpresa = () => {
   const [reviews, setReviews] = useState<BusinessReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllImages, setShowAllImages] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -175,6 +179,14 @@ const DiretorioEmpresa = () => {
   const averageRating = reviews.length > 0 
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
+
+  const handleReviewSubmitted = () => {
+    setShowReviewForm(false);
+    // Recarregar avaliações
+    if (id) {
+      fetchBusinessDetails(id);
+    }
+  };
 
   if (loading) {
     return (
@@ -361,55 +373,75 @@ const DiretorioEmpresa = () => {
               )}
 
               {/* Reviews */}
-              {reviews.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      Avaliações ({reviews.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {reviews.map(review => (
-                      <div key={review.id} className="border-b pb-4 last:border-b-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`w-4 h-4 ${
-                                  i < review.rating 
-                                    ? 'fill-yellow-400 text-yellow-400' 
-                                    : 'text-gray-300'
-                                }`} 
-                              />
-                            ))}
-                          </div>
-                          <span className="font-medium">{review.reviewer_name}</span>
-                          {review.verified && (
-                            <Badge variant="outline" className="text-xs">
-                              Verificado
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {review.title && (
-                          <h4 className="font-medium mb-1">{review.title}</h4>
-                        )}
-                        
-                        {review.comment && (
-                          <p className="text-muted-foreground text-sm">
-                            {review.comment}
-                          </p>
-                        )}
-                        
-                        <div className="text-xs text-muted-foreground mt-2">
-                          {new Date(review.created_at).toLocaleDateString('pt-BR')}
-                        </div>
-                      </div>
-                    ))}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>
+                    Avaliações ({reviews.length})
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReviewForm(!showReviewForm)}
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    {showReviewForm ? 'Cancelar' : 'Avaliar'}
+                  </Button>
+                </CardHeader>
+                
+                {showReviewForm && (
+                  <CardContent className="border-t pt-6">
+                    <ReviewForm 
+                      businessId={business.id}
+                      onReviewSubmitted={handleReviewSubmitted}
+                    />
                   </CardContent>
-                </Card>
-              )}
+                )}
+                
+                {reviews.length > 0 && (
+                  <CardContent className={showReviewForm ? "border-t pt-6" : ""}>
+                    <div className="space-y-4">
+                      {reviews.map(review => (
+                        <div key={review.id} className="border-b pb-4 last:border-b-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`w-4 h-4 ${
+                                    i < review.rating 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              ))}
+                            </div>
+                            <span className="font-medium">{review.reviewer_name}</span>
+                            {review.verified && (
+                              <Badge variant="outline" className="text-xs">
+                                Verificado
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {review.title && (
+                            <h4 className="font-medium mb-1">{review.title}</h4>
+                          )}
+                          
+                          {review.comment && (
+                            <p className="text-muted-foreground text-sm">
+                              {review.comment}
+                            </p>
+                          )}
+                          
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {new Date(review.created_at).toLocaleDateString('pt-BR')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
             </div>
 
             {/* Sidebar */}
@@ -500,6 +532,34 @@ const DiretorioEmpresa = () => {
                           </p>
                         )}
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Map */}
+              {business.latitude && business.longitude && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Localização</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <Map
+                        businesses={[{
+                          id: business.id,
+                          name: business.name,
+                          latitude: business.latitude,
+                          longitude: business.longitude,
+                          category: business.category,
+                          city: business.city,
+                          state: business.state
+                        }]}
+                        center={[business.longitude, business.latitude]}
+                        zoom={15}
+                        height="100%"
+                        showSearch={false}
+                      />
                     </div>
                   </CardContent>
                 </Card>

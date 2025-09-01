@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Grid, List, Filter } from 'lucide-react';
+import { Search, MapPin, Grid, List, Filter, Map as MapIcon, Navigation } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import Map from '@/components/ui/map';
 
 interface Business {
   id: string;
@@ -18,6 +19,8 @@ interface Business {
   subcategory: string;
   city: string;
   state: string;
+  latitude?: number;
+  longitude?: number;
   logo_url: string;
   cover_image_url: string;
   website: string;
@@ -28,14 +31,17 @@ interface Business {
 }
 
 const Diretorio = () => {
+  const navigate = useNavigate();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [nearbyRadius, setNearbyRadius] = useState(50); // km
 
   // Categorias disponíveis
   const categories = [
@@ -78,6 +84,19 @@ const Diretorio = () => {
     }
   };
 
+  // Função para calcular distância entre dois pontos
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
   const filteredBusinesses = businesses.filter(business => {
     const matchesSearch = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          business.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -85,8 +104,33 @@ const Diretorio = () => {
     const matchesState = !selectedState || business.state === selectedState;
     const matchesCity = !selectedCity || business.city.toLowerCase().includes(selectedCity.toLowerCase());
 
-    return matchesSearch && matchesCategory && matchesState && matchesCity;
+    // Filtro por proximidade se localização do usuário disponível
+    let matchesProximity = true;
+    if (userLocation && business.latitude && business.longitude) {
+      const distance = calculateDistance(
+        userLocation[1], userLocation[0],
+        business.latitude, business.longitude
+      );
+      matchesProximity = distance <= nearbyRadius;
+    }
+
+    return matchesSearch && matchesCategory && matchesState && matchesCity && matchesProximity;
   });
+
+  // Obter localização do usuário
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([longitude, latitude]);
+        },
+        (error) => {
+          console.error('Erro ao obter localização:', error);
+        }
+      );
+    }
+  };
 
   const BusinessCard = ({ business }: { business: Business }) => (
     <Card className="group hover:shadow-lg transition-all duration-200">
@@ -308,6 +352,36 @@ const Diretorio = () => {
                 </div>
               </div>
 
+              {/* Location and Proximity */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  disabled={!!userLocation}
+                >
+                  <Navigation className="w-4 h-4 mr-2" />
+                  {userLocation ? 'Localização ativa' : 'Buscar próximas'}
+                </Button>
+                
+                {userLocation && (
+                  <Select 
+                    value={nearbyRadius.toString()} 
+                    onValueChange={(value) => setNearbyRadius(Number(value))}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 km</SelectItem>
+                      <SelectItem value="25">25 km</SelectItem>
+                      <SelectItem value="50">50 km</SelectItem>
+                      <SelectItem value="100">100 km</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
               {/* View Mode and Results */}
               <div className="flex items-center gap-4">
                 <span className="text-sm text-muted-foreground">
@@ -331,6 +405,14 @@ const Diretorio = () => {
                   >
                     <List className="w-4 h-4" />
                   </Button>
+                  <Button
+                    variant={viewMode === 'map' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('map')}
+                    className="px-2"
+                  >
+                    <MapIcon className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -350,6 +432,15 @@ const Diretorio = () => {
                   Nenhuma empresa encontrada com os filtros selecionados.
                 </p>
               </div>
+            ) : viewMode === 'map' ? (
+              <Map
+                businesses={filteredBusinesses}
+                center={userLocation || [-51.2177, -30.0346]}
+                zoom={userLocation ? 12 : 10}
+                height="600px"
+                showSearch={true}
+                onBusinessClick={(businessId) => navigate(`/diretorio/${businessId}`)}
+              />
             ) : (
               <div className={
                 viewMode === 'grid' 

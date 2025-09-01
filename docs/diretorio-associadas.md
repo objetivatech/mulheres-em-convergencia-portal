@@ -126,16 +126,13 @@ src/
 - ✅ Planos inseridos no banco: Iniciante, Intermediário, Master
 - ✅ Controle de funcionalidades por plano
 
-### Fase 4 - Sistema de Assinaturas Avançado
-- Planos Iniciante, Intermediário e Master
-- Gateway de pagamento ASAAS
-- Controle de recursos por plano
-
-### Fase 4 - Recursos Avançados
-- Mapa interativo com geolocalização
-- Sistema de reviews expandido
-- Busca por proximidade geográfica
-- Notificações por email
+### ✅ FASE 4 - Implementada (Recursos Avançados)
+- ✅ Mapa interativo com geolocalização (Mapbox)
+- ✅ Sistema de reviews expandido com formulário
+- ✅ Busca por proximidade geográfica
+- ✅ Visualização em mapa no diretório
+- ✅ Mapa individual na página da empresa
+- ✅ Formulário para criar avaliações
 
 ### Fase 5 - Recursos Premium
 - Empresas em destaque
@@ -169,4 +166,4 @@ src/
 ---
 
 *Documentação atualizada em: Janeiro 2025*
-*Versão: 2.0 - Fases 1 e 2 Implementadas*
+*Versão: 4.0 - Fases 1, 2, 3 e 4 Implementadas*
