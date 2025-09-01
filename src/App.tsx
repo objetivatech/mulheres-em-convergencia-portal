@@ -26,6 +26,7 @@ import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
+import Planos from './pages/Planos';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
@@ -109,6 +110,7 @@ const App = () => (
                   <DashboardEmpresa />
                 </ProtectedRoute>
               } />
+              <Route path="/planos" element={<Planos />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

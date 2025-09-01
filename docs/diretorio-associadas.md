@@ -117,7 +117,16 @@ src/
 - ✅ Validação de formulários com Zod
 - ✅ Integração com Supabase Storage
 
-### Fase 3 - Sistema de Assinaturas
+### ✅ FASE 3 - Implementada
+- ✅ Página de Planos (`/planos`) com os 3 planos definidos
+- ✅ Integração com gateway ASAAS via edge function
+- ✅ Sistema de assinaturas com controle de recursos
+- ✅ Exibição do plano atual no dashboard
+- ✅ Checkout em nova aba via ASAAS
+- ✅ Planos inseridos no banco: Iniciante, Intermediário, Master
+- ✅ Controle de funcionalidades por plano
+
+### Fase 4 - Sistema de Assinaturas Avançado
 - Planos Iniciante, Intermediário e Master
 - Gateway de pagamento ASAAS
 - Controle de recursos por plano

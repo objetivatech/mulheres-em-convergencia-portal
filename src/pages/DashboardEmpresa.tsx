@@ -85,6 +85,7 @@ export const DashboardEmpresa = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [business, setBusiness] = useState<any>(null);
+  const [userSubscription, setUserSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>('');
@@ -104,6 +105,7 @@ export const DashboardEmpresa = () => {
   useEffect(() => {
     if (user) {
       fetchBusiness();
+      fetchUserSubscription();
     }
   }, [user]);
 
@@ -141,6 +143,32 @@ export const DashboardEmpresa = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserSubscription = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          subscription_plans (
+            name,
+            display_name,
+            features,
+            limits
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setUserSubscription(data);
+    } catch (error) {
+      console.error('Erro ao carregar assinatura:', error);
     }
   };
 
@@ -252,6 +280,46 @@ export const DashboardEmpresa = () => {
             Gerencie o perfil da sua empresa no diretório
           </p>
         </div>
+
+        {/* Subscription Status */}
+        {userSubscription ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Building2 className="h-5 w-5" />
+                <span>Plano Atual: {userSubscription.subscription_plans?.display_name}</span>
+              </CardTitle>
+              <CardDescription>
+                Status: {userSubscription.status === 'active' ? 'Ativo' : userSubscription.status}
+                {userSubscription.expires_at && ` • Expira em ${new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">
+                  Ciclo: {userSubscription.billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}
+                </span>
+                <Button variant="outline" asChild>
+                  <a href="/planos">Alterar Plano</a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="text-yellow-800">Nenhum Plano Ativo</CardTitle>
+              <CardDescription className="text-yellow-700">
+                Assine um plano para liberar todas as funcionalidades do diretório
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <a href="/planos">Ver Planos Disponíveis</a>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Métricas */}
         {business && (
