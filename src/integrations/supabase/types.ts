@@ -256,6 +256,135 @@ export type Database = {
         }
         Relationships: []
       }
+      business_analytics: {
+        Row: {
+          business_id: string
+          clicks_count: number
+          contacts_count: number
+          created_at: string
+          date: string
+          id: string
+          map_clicks: number
+          reviews_count: number
+          search_appearances: number
+          views_count: number
+        }
+        Insert: {
+          business_id: string
+          clicks_count?: number
+          contacts_count?: number
+          created_at?: string
+          date: string
+          id?: string
+          map_clicks?: number
+          reviews_count?: number
+          search_appearances?: number
+          views_count?: number
+        }
+        Update: {
+          business_id?: string
+          clicks_count?: number
+          contacts_count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          map_clicks?: number
+          reviews_count?: number
+          search_appearances?: number
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_analytics_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_boosts: {
+        Row: {
+          active: boolean
+          boost_type: string
+          business_id: string
+          cost_credits: number
+          created_at: string
+          expires_at: string
+          id: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          boost_type: string
+          business_id: string
+          cost_credits?: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          boost_type?: string
+          business_id?: string
+          cost_credits?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_boosts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_credits: {
+        Row: {
+          business_id: string
+          created_at: string
+          credits_balance: number
+          credits_earned: number
+          credits_spent: number
+          id: string
+          last_updated: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          credits_balance?: number
+          credits_earned?: number
+          credits_spent?: number
+          id?: string
+          last_updated?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          credits_balance?: number
+          credits_earned?: number
+          credits_spent?: number
+          id?: string
+          last_updated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_credits_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_reviews: {
         Row: {
           business_id: string
@@ -369,6 +498,7 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          boost_score: number | null
           category: Database["public"]["Enums"]["business_category"]
           city: string | null
           clicks_count: number | null
@@ -390,12 +520,14 @@ export type Database = {
           phone: string | null
           plan_features: Json | null
           postal_code: string | null
+          premium_until: string | null
           requires_subscription: boolean | null
           state: string | null
           subcategory: string | null
           subscription_active: boolean | null
           subscription_expires_at: string | null
           subscription_plan: string | null
+          total_boost_credits: number | null
           updated_at: string | null
           views_count: number | null
           website: string | null
@@ -403,6 +535,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          boost_score?: number | null
           category: Database["public"]["Enums"]["business_category"]
           city?: string | null
           clicks_count?: number | null
@@ -424,12 +557,14 @@ export type Database = {
           phone?: string | null
           plan_features?: Json | null
           postal_code?: string | null
+          premium_until?: string | null
           requires_subscription?: boolean | null
           state?: string | null
           subcategory?: string | null
           subscription_active?: boolean | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
+          total_boost_credits?: number | null
           updated_at?: string | null
           views_count?: number | null
           website?: string | null
@@ -437,6 +572,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          boost_score?: number | null
           category?: Database["public"]["Enums"]["business_category"]
           city?: string | null
           clicks_count?: number | null
@@ -458,12 +594,14 @@ export type Database = {
           phone?: string | null
           plan_features?: Json | null
           postal_code?: string | null
+          premium_until?: string | null
           requires_subscription?: boolean | null
           state?: string | null
           subcategory?: string | null
           subscription_active?: boolean | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
+          total_boost_credits?: number | null
           updated_at?: string | null
           views_count?: number | null
           website?: string | null
@@ -768,6 +906,39 @@ export type Database = {
           type?: string
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      premium_features: {
+        Row: {
+          active: boolean
+          created_at: string
+          credits_cost: number | null
+          description: string | null
+          display_name: string
+          feature_name: string
+          id: string
+          required_plan: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          credits_cost?: number | null
+          description?: string | null
+          display_name: string
+          feature_name: string
+          id?: string
+          required_plan: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          credits_cost?: number | null
+          description?: string | null
+          display_name?: string
+          feature_name?: string
+          id?: string
+          required_plan?: string
         }
         Relationships: []
       }
@@ -1194,6 +1365,10 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      create_business_credits_account: {
+        Args: { business_uuid: string }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           notification_action_url?: string
@@ -1231,6 +1406,14 @@ export type Database = {
           commission_rate: number
           id: string
           user_id: string
+        }[]
+      }
+      get_business_boosts: {
+        Args: { business_uuid: string }
+        Returns: {
+          active: boolean
+          boost_type: string
+          expires_at: string
         }[]
       }
       get_business_contacts: {
@@ -1377,6 +1560,14 @@ export type Database = {
       }
       track_referral_click: {
         Args: { referral_code: string }
+        Returns: undefined
+      }
+      update_business_analytics: {
+        Args: {
+          business_uuid: string
+          increment_by?: number
+          metric_name: string
+        }
         Returns: undefined
       }
       user_has_permission: {

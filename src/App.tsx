@@ -14,6 +14,8 @@ import Convergindo from "./pages/Convergindo";
 import Post from "./pages/Post";
 import Diretorio from "./pages/Diretorio";
 import DiretorioEmpresa from "./pages/DiretorioEmpresa";
+import Planos from './pages/Planos';
+import PremiumDashboard from './pages/PremiumDashboard';
 import NotFound from "./pages/NotFound";
 import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -26,7 +28,6 @@ import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
-import Planos from './pages/Planos';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
@@ -111,6 +112,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/planos" element={<Planos />} />
+              <Route path="/premium" element={
+                <ProtectedRoute>
+                  <PremiumDashboard />
+                </ProtectedRoute>
+              } />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

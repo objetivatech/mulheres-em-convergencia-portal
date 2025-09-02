@@ -91,6 +91,13 @@ const Header = () => {
                       </Button>
                     </Link>
                   )}
+                  {user && (
+                    <Link to="/premium">
+                      <Button variant="outline" size="sm">
+                        Premium
+                      </Button>
+                    </Link>
+                  )}
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -150,6 +157,13 @@ const Header = () => {
                       <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" size="sm">
                           Admin
+                        </Button>
+                      </Link>
+                    )}
+                    {user && (
+                      <Link to="/premium" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="outline" size="sm">
+                          Premium
                         </Button>
                       </Link>
                     )}
