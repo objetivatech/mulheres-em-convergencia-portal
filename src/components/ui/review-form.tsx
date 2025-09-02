@@ -179,7 +179,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ businessId, onReviewSubmitted }
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full bg-brand-primary hover:bg-brand-primary/90"
+            className="w-full"
           >
             {isSubmitting ? 'Enviando...' : 'Enviar Avaliação'}
           </Button>

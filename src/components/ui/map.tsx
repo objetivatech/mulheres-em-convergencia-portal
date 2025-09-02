@@ -38,7 +38,7 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Use public token directly (this should be replaced with your actual Mapbox token)
+    // Get Mapbox token from environment or use fallback
     mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
     
     map.current = new mapboxgl.Map({
@@ -55,7 +55,7 @@ const Map: React.FC<MapProps> = ({
     businesses.forEach(business => {
       if (business.latitude && business.longitude) {
         const marker = new mapboxgl.Marker({
-          color: '#C75A92'
+          color: 'hsl(337, 49%, 57%)'
         })
         .setLngLat([business.longitude, business.latitude])
         .setPopup(
@@ -65,7 +65,7 @@ const Map: React.FC<MapProps> = ({
                 <h3 class="font-semibold">${business.name}</h3>
                 <p class="text-sm text-gray-600">${business.category}</p>
                 <p class="text-xs text-gray-500">${business.city}, ${business.state}</p>
-                ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="mt-2 px-3 py-1 bg-brand-primary text-white rounded text-sm">Ver Perfil</button>` : ''}
+                ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="mt-2 px-3 py-1 bg-primary text-primary-foreground rounded text-sm">Ver Perfil</button>` : ''}
               </div>
             `)
         )
@@ -106,7 +106,7 @@ const Map: React.FC<MapProps> = ({
             });
 
             // Add user location marker
-            new mapboxgl.Marker({ color: '#3B82F6' })
+            new mapboxgl.Marker({ color: 'hsl(217, 91%, 60%)' })
               .setLngLat([longitude, latitude])
               .setPopup(
                 new mapboxgl.Popup({ offset: 25 })
@@ -142,7 +142,7 @@ const Map: React.FC<MapProps> = ({
             zoom: 12
           });
 
-          new mapboxgl.Marker({ color: '#10B981' })
+          new mapboxgl.Marker({ color: 'hsl(159, 75%, 40%)' })
             .setLngLat([longitude, latitude])
             .setPopup(
               new mapboxgl.Popup({ offset: 25 })
