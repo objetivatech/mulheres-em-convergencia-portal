@@ -132,25 +132,20 @@ export const useRoles = () => {
       }) => {
         if (!isAdmin) throw new Error('Acesso negado');
         
-        // Criar usuário via auth
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email,
-          password,
-          user_metadata: { full_name: fullName }
+        // Usar Edge Function para criar usuário com segurança
+        const { data, error } = await supabase.functions.invoke('create-admin-user', {
+          body: { 
+            email, 
+            password, 
+            fullName, 
+            roles 
+          }
         });
         
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('Erro ao criar usuário');
+        if (error) throw error;
+        if (!data?.success) throw new Error(data?.error || 'Erro ao criar usuário');
         
-        // Adicionar roles se fornecidos
-        for (const role of roles) {
-          await supabase.rpc('add_user_role', {
-            user_uuid: authData.user.id,
-            new_role: role as any // Conversão temporária até ajustar enum no banco
-          });
-        }
-        
-        return authData.user;
+        return data.user;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['user-profiles'] });

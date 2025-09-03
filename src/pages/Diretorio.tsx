@@ -117,8 +117,8 @@ const Diretorio = () => {
   const filteredBusinesses = businesses.filter(business => {
     const matchesSearch = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          business.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || business.category === selectedCategory;
-    const matchesState = !selectedState || business.state === selectedState;
+    const matchesCategory = !selectedCategory || selectedCategory === 'all' || business.category === selectedCategory;
+    const matchesState = !selectedState || selectedState === 'all' || business.state === selectedState;
     const matchesCity = !selectedCity || business.city.toLowerCase().includes(selectedCity.toLowerCase());
 
     // Filtro por proximidade se localização do usuário disponível
@@ -361,7 +361,7 @@ const Diretorio = () => {
                       <SelectValue placeholder="Categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
+                      <SelectItem value="all">Todas</SelectItem>
                       {categories.map(category => (
                         <SelectItem key={category} value={category}>
                           {category}
@@ -375,7 +375,7 @@ const Diretorio = () => {
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       {states.map(state => (
                         <SelectItem key={state} value={state}>
                           {state}
