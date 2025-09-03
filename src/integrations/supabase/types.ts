@@ -997,7 +997,7 @@ export type Database = {
           can_edit_blog: boolean | null
           city: string | null
           country: string | null
-          cpf: string | null
+          cpf: string
           created_at: string | null
           email: string
           full_name: string | null
@@ -1020,7 +1020,7 @@ export type Database = {
           can_edit_blog?: boolean | null
           city?: string | null
           country?: string | null
-          cpf?: string | null
+          cpf: string
           created_at?: string | null
           email: string
           full_name?: string | null
@@ -1043,7 +1043,7 @@ export type Database = {
           can_edit_blog?: boolean | null
           city?: string | null
           country?: string | null
-          cpf?: string | null
+          cpf?: string
           created_at?: string | null
           email?: string
           full_name?: string | null
@@ -1247,6 +1247,112 @@ export type Database = {
           },
         ]
       }
+      user_addresses: {
+        Row: {
+          address_type: string
+          city: string
+          complement: string | null
+          country: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          latitude: number | null
+          longitude: number | null
+          neighborhood: string | null
+          number: string | null
+          postal_code: string | null
+          state: string
+          street: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address_type: string
+          city: string
+          complement?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
+          postal_code?: string | null
+          state: string
+          street: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address_type?: string
+          city?: string
+          complement?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
+          postal_code?: string | null
+          state?: string
+          street?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_contacts: {
+        Row: {
+          contact_type: string
+          contact_value: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          updated_at: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          contact_type: string
+          contact_value: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          contact_type?: string
+          contact_value?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_contacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_permissions: {
         Row: {
           active: boolean | null
@@ -1387,6 +1493,10 @@ export type Database = {
           user_cpf: string
           user_email: string
         }
+        Returns: string
+      }
+      format_cpf: {
+        Args: { cpf_input: string }
         Returns: string
       }
       get_admin_stats: {
@@ -1535,6 +1645,16 @@ export type Database = {
           verified: boolean
         }[]
       }
+      get_user_by_cpf: {
+        Args: { cpf_input: string }
+        Returns: {
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+        }[]
+      }
       remove_user_role: {
         Args: {
           old_role: Database["public"]["Enums"]["user_role"]
@@ -1570,6 +1690,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_user_by_cpf: {
+        Args: {
+          cpf_input: string
+          user_email?: string
+          user_full_name?: string
+          user_phone?: string
+        }
+        Returns: string
+      }
       user_has_permission: {
         Args: { permission_name: string; user_uuid: string }
         Returns: boolean
@@ -1579,6 +1708,10 @@ export type Database = {
           role_name: Database["public"]["Enums"]["user_role"]
           user_uuid: string
         }
+        Returns: boolean
+      }
+      validate_cpf: {
+        Args: { cpf_input: string }
         Returns: boolean
       }
     }
