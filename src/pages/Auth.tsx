@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, CreditCard } from 'lucide-react';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -103,6 +103,7 @@ const Auth = () => {
     const email = (formData.get('email') as string)?.trim();
     const password = (formData.get('password') as string) || '';
     const fullName = (formData.get('fullName') as string)?.trim();
+    const cpf = (formData.get('cpf') as string)?.trim();
     const honeypot = (formData.get('website') as string) || '';
 
     // Honeypot
@@ -123,6 +124,11 @@ const Auth = () => {
       setIsSubmitting(false);
       return;
     }
+    if (!cpf || cpf.length < 11) {
+      setError('CPF é obrigatório e deve ter 11 dígitos.');
+      setIsSubmitting(false);
+      return;
+    }
     // Rate limiting
     const rl = canAttempt('auth:signup', MAX_SIGNUP_ATTEMPTS);
     if (!rl.ok) {
@@ -134,7 +140,7 @@ const Auth = () => {
     recordAttempt('auth:signup');
 
     try {
-      await signUp(email, password, fullName);
+      await signUp(email, password, fullName, cpf);
       saveAttempts('auth:signup', []);
     } catch (err: any) {
       setError(err?.message || 'Falha ao cadastrar. Tente novamente.');
@@ -261,6 +267,27 @@ const Auth = () => {
                           required
                           className="pl-10"
                           placeholder="Seu nome completo"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-cpf">CPF *</Label>
+                      <div className="relative">
+                        <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-cpf"
+                          name="cpf"
+                          type="text"
+                          required
+                          className="pl-10"
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            const formatted = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                            e.target.value = formatted;
+                          }}
                         />
                       </div>
                     </div>

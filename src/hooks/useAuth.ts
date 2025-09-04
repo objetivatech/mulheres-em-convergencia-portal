@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string, captchaToken?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   canEditBlog: boolean;
@@ -109,7 +109,7 @@ export const useAuthProvider = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName?: string, captchaToken?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => {
     try {
       const redirectUrl = `https://mulheresemconvergencia.com.br/`;
       
@@ -120,6 +120,7 @@ export const useAuthProvider = () => {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
+            cpf: cpf,
           },
           captchaToken,
         },

@@ -46,15 +46,16 @@ serve(async (req) => {
       throw new Error("Plano não encontrado");
     }
 
-    // Get user profile
+    // Get user profile using email since profiles might not have the same ID as auth user
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
-      .eq('id', user.id)
+      .eq('email', user.email)
       .single();
 
     if (profileError) {
-      throw new Error("Perfil do usuário não encontrado");
+      console.error('Profile Error:', profileError);
+      throw new Error("Perfil do usuário não encontrado. Certifique-se de que o perfil foi criado com CPF.");
     }
 
     // Calculate price based on billing cycle
