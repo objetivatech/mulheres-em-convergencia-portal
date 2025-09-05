@@ -203,7 +203,8 @@ export const DashboardEmpresa = () => {
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
         owner_id: user?.id,
-        subscription_active: true // Por enquanto ativo por padrão
+        subscription_active: userSubscription?.status === 'active' ? true : false, // Só ativo se tiver assinatura ativa
+        requires_subscription: true
       };
 
       if (business) {
@@ -228,7 +229,9 @@ export const DashboardEmpresa = () => {
 
       toast({
         title: 'Sucesso',
-        description: business ? 'Empresa atualizada com sucesso!' : 'Empresa criada com sucesso!'
+        description: business ? 'Empresa atualizada com sucesso!' : userSubscription?.status === 'active'
+          ? 'Empresa criada e publicada com sucesso!'
+          : 'Empresa criada! Assine um plano para publicar no diretório.'
       });
 
       if (!business) {
@@ -306,16 +309,20 @@ export const DashboardEmpresa = () => {
             </CardContent>
           </Card>
         ) : (
-          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+          <Card className="mb-6 border-red-200 bg-red-50">
             <CardHeader>
-              <CardTitle className="text-yellow-800">Nenhum Plano Ativo</CardTitle>
-              <CardDescription className="text-yellow-700">
-                Assine um plano para liberar todas as funcionalidades do diretório
+              <CardTitle className="text-red-800">⚠️ Assinatura Necessária</CardTitle>
+              <CardDescription className="text-red-700">
+                Para publicar seu negócio no diretório, é necessário ter uma assinatura ativa. 
+                Seu perfil foi salvo mas não estará visível até que você assine um plano.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild>
-                <a href="/planos">Ver Planos Disponíveis</a>
+              <Button asChild className="mr-2">
+                <a href="/planos">Assinar Agora</a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/planos">Ver Planos</a>
               </Button>
             </CardContent>
           </Card>
@@ -369,9 +376,11 @@ export const DashboardEmpresa = () => {
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">Ativo</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {userSubscription?.status === 'active' ? 'Ativo' : 'Pendente'}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Assinatura em dia
+                  {userSubscription?.status === 'active' ? 'Assinatura em dia' : 'Aguardando pagamento'}
                 </p>
               </CardContent>
             </Card>

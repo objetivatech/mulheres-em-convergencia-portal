@@ -46,7 +46,7 @@ serve(async (req) => {
       throw new Error("Plano não encontrado");
     }
 
-    // Get user profile using email since profiles might not have the same ID as auth user
+    // Get user profile using email since profiles might use different IDs
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
@@ -55,7 +55,7 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Profile Error:', profileError);
-      throw new Error("Perfil do usuário não encontrado. Certifique-se de que o perfil foi criado com CPF.");
+      throw new Error("Perfil não encontrado. Certifique-se de completar seu cadastro com CPF.");
     }
 
     // Calculate price based on billing cycle
@@ -91,11 +91,11 @@ serve(async (req) => {
 
     const asaasData = await asaasResponse.json();
 
-    // Create pending subscription record
+    // Create pending subscription record (use auth user ID for consistency)
     const { error: subscriptionError } = await supabaseClient
       .from('user_subscriptions')
       .insert({
-        user_id: user.id,
+        user_id: user.id, // Keep using auth user ID for subscriptions
         plan_id: plan_id,
         billing_cycle: billing_cycle,
         status: 'pending',
