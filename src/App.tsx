@@ -31,6 +31,11 @@ import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
+import { UserDashboard } from '@/pages/UserDashboard';
+import { ProfileCompletionModal } from '@/components/auth/ProfileCompletionModal';
+import { useProfileCompletion } from '@/hooks/useProfileCompletion';
+import { useAuth } from '@/hooks/useAuth';
+
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
@@ -44,17 +49,21 @@ function ScrollToTop() {
   return null;
 }
 
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Favicon />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
+function App() {
+  const { needsCompletion, loading: profileLoading, markAsComplete } = useProfileCompletion();
+  const { user } = useAuth();
+
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Favicon />
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/sobre" element={<Sobre />} />
               <Route path="/auth" element={<Auth />} />
@@ -106,26 +115,41 @@ const App = () => (
                   <Dashboard />
                 </RoleProtectedRoute>
               } />
-              <Route path="/dashboard/empresa" element={
-                <ProtectedRoute>
-                  <DashboardEmpresa />
-                </ProtectedRoute>
-              } />
-              <Route path="/planos" element={<Planos />} />
-              <Route path="/premium" element={
-                <ProtectedRoute>
-                  <PremiumDashboard />
-                </ProtectedRoute>
-              } />
+                <Route path="/dashboard/empresa" element={
+                  <ProtectedRoute>
+                    <DashboardEmpresa />
+                  </ProtectedRoute>
+                } />
+                <Route path="/meu-dashboard" element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/planos" element={<Planos />} />
+                <Route path="/premium" element={
+                  <ProtectedRoute>
+                    <PremiumDashboard />
+                  </ProtectedRoute>
+                } />
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
               
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+              {/* Profile Completion Modal */}
+              {user && !profileLoading && needsCompletion && (
+                <ProfileCompletionModal
+                  user={user}
+                  open={needsCompletion}
+                  onComplete={markAsComplete}
+                />
+              )}
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+}
 
 export default App;

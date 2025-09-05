@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Instagram, Linkedin, Facebook, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import LogoComponent from './LogoComponent';
 
@@ -80,33 +88,33 @@ const Header = () => {
             {/* User Menu */}
             <div className="hidden md:flex items-center space-x-3">
               {user ? (
-                <>
-                  <span className="text-sm text-muted-foreground">
-                    Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                  </span>
-                  {(isAdmin || canEditBlog) && (
-                    <Link to="/admin">
-                      <Button variant="outline" size="sm">
-                        Admin
-                      </Button>
-                    </Link>
-                  )}
-                  {user && (
-                    <Link to="/premium">
-                      <Button variant="outline" size="sm">
-                        Premium
-                      </Button>
-                    </Link>
-                  )}
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={signOut}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <User className="h-4 w-4 mr-2" />
+                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/meu-dashboard">Meu Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/empresa">Dashboard Empresa</Link>
+                    </DropdownMenuItem>
+                    {(isAdmin || canEditBlog) && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">Painel Admin</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Link to="/auth">
                   <Button variant="outline" size="sm">
@@ -152,19 +160,28 @@ const Header = () => {
                   <span className="text-sm text-muted-foreground px-2">
                     Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col space-y-2">
+                    <Link 
+                      to="/meu-dashboard" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
+                    >
+                      Meu Dashboard
+                    </Link>
+                    <Link 
+                      to="/dashboard/empresa" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
+                    >
+                      Dashboard Empresa
+                    </Link>
                     {(isAdmin || canEditBlog) && (
-                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="outline" size="sm">
-                          Admin
-                        </Button>
-                      </Link>
-                    )}
-                    {user && (
-                      <Link to="/premium" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="outline" size="sm">
-                          Premium
-                        </Button>
+                      <Link 
+                        to="/admin" 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
+                      >
+                        Painel Admin
                       </Link>
                     )}
                     <Button 
@@ -174,7 +191,7 @@ const Header = () => {
                         signOut();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground w-fit"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sair
