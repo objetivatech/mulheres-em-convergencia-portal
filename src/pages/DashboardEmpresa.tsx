@@ -203,7 +203,7 @@ export const DashboardEmpresa = () => {
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
         owner_id: user?.id,
-        subscription_active: userSubscription?.status === 'active' ? true : false, // Só ativo se tiver assinatura ativa
+        subscription_active: !!userSubscription && userSubscription.status === 'active', // Only active if has subscription
         requires_subscription: true
       };
 

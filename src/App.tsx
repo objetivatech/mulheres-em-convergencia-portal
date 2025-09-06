@@ -32,6 +32,8 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
 import { UserDashboard } from '@/pages/UserDashboard';
+import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
+import DadosPessoaisPage from '@/pages/DadosPessoaisPage';
 import { ProfileCompletionModal } from '@/components/auth/ProfileCompletionModal';
 import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
@@ -120,6 +122,16 @@ function AppContent() {
           <Route path="/meu-dashboard" element={
             <ProtectedRoute>
               <UserDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/configuracoes/conta" element={
+            <ProtectedRoute>
+              <ConfiguracoesContaPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/configuracoes/dados-pessoais" element={
+            <ProtectedRoute>
+              <DadosPessoaisPage />
             </ProtectedRoute>
           } />
           <Route path="/planos" element={<Planos />} />

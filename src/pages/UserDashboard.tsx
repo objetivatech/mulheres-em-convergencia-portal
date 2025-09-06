@@ -117,16 +117,16 @@ export const UserDashboard = () => {
     items: [
       {
         title: 'Configurações da Conta',
-        description: 'Editar dados pessoais e preferências',
+        description: 'Editar dados pessoais e preferências',  
         icon: Settings,
-        href: '/configuracoes',
+        href: '/configuracoes/conta',
         available: true,
       },
       {
         title: 'Dados Pessoais',
         description: 'Atualizar CPF, telefone e endereço',
         icon: User,
-        href: '/perfil',
+        href: '/configuracoes/dados-pessoais',
         available: true,
       }
     ]
