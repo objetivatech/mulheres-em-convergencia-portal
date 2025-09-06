@@ -49,103 +49,109 @@ function ScrollToTop() {
   return null;
 }
 
-function App() {
+function AppContent() {
   const { needsCompletion, loading: profileLoading, markAsComplete } = useProfileCompletion();
   const { user } = useAuth();
 
   return (
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <Favicon />
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/sobre" element={<Sobre />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/diretorio" element={<Diretorio />} />
+        <Route path="/diretorio/:id" element={<DiretorioEmpresa />} />
+        <Route path="/convergindo" element={<Convergindo />} />
+        <Route path="/convergindo/:slug" element={<Post />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/contato" element={<Contato />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute requireAdmin={true}>
+            <Admin />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute requireAdmin={true}>
+            <UserManagement />
+          </ProtectedRoute>
+        } />
+        
+        {/* Blog Routes */}
+        <Route path="/admin/blog" element={
+          <ProtectedRoute requireBlogEditor={true}>
+            <BlogDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/blog/novo" element={
+          <ProtectedRoute requireBlogEditor={true}>
+            <BlogEditor />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/blog/editar/:id" element={
+          <ProtectedRoute requireBlogEditor={true}>
+            <BlogEditor />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/blog/categorias" element={
+          <ProtectedRoute requireBlogEditor={true}>
+            <BlogCategories />
+          </ProtectedRoute>
+        } />
+        
+        {/* Dashboard Routes */}
+        <Route path="/dashboard/:type" element={
+          <RoleProtectedRoute>
+            <Dashboard />
+          </RoleProtectedRoute>
+        } />
+          <Route path="/dashboard/empresa" element={
+            <ProtectedRoute>
+              <DashboardEmpresa />
+            </ProtectedRoute>
+          } />
+          <Route path="/meu-dashboard" element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/planos" element={<Planos />} />
+          <Route path="/premium" element={
+            <ProtectedRoute>
+              <PremiumDashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        
+        {/* Profile Completion Modal */}
+        {user && !profileLoading && needsCompletion && (
+          <ProfileCompletionModal
+            user={user}
+            open={needsCompletion}
+            onComplete={markAsComplete}
+          />
+        )}
+      </BrowserRouter>
+    </TooltipProvider>
+  );
+}
+
+function App() {
+  return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Favicon />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/sobre" element={<Sobre />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/diretorio" element={<Diretorio />} />
-              <Route path="/diretorio/:id" element={<DiretorioEmpresa />} />
-              <Route path="/convergindo" element={<Convergindo />} />
-              <Route path="/convergindo/:slug" element={<Post />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/contato" element={<Contato />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <Admin />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/users" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <UserManagement />
-                </ProtectedRoute>
-              } />
-              
-              {/* Blog Routes */}
-              <Route path="/admin/blog" element={
-                <ProtectedRoute requireBlogEditor={true}>
-                  <BlogDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/blog/novo" element={
-                <ProtectedRoute requireBlogEditor={true}>
-                  <BlogEditor />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/blog/editar/:id" element={
-                <ProtectedRoute requireBlogEditor={true}>
-                  <BlogEditor />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/blog/categorias" element={
-                <ProtectedRoute requireBlogEditor={true}>
-                  <BlogCategories />
-                </ProtectedRoute>
-              } />
-              
-              {/* Dashboard Routes */}
-              <Route path="/dashboard/:type" element={
-                <RoleProtectedRoute>
-                  <Dashboard />
-                </RoleProtectedRoute>
-              } />
-                <Route path="/dashboard/empresa" element={
-                  <ProtectedRoute>
-                    <DashboardEmpresa />
-                  </ProtectedRoute>
-                } />
-                <Route path="/meu-dashboard" element={
-                  <ProtectedRoute>
-                    <UserDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/planos" element={<Planos />} />
-                <Route path="/premium" element={
-                  <ProtectedRoute>
-                    <PremiumDashboard />
-                  </ProtectedRoute>
-                } />
-                
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              
-              {/* Profile Completion Modal */}
-              {user && !profileLoading && needsCompletion && (
-                <ProfileCompletionModal
-                  user={user}
-                  open={needsCompletion}
-                  onComplete={markAsComplete}
-                />
-              )}
-            </BrowserRouter>
-          </TooltipProvider>
+          <AppContent />
         </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
