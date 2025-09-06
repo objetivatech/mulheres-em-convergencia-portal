@@ -46,12 +46,11 @@ serve(async (req) => {
       throw new Error("Plano não encontrado");
     }
 
-    // Get user profile - create if doesn't exist
-    let profile;
-    const { data: existingProfile, error: profileError } = await supabaseClient
+    // Get user profile by user ID (more reliable)
+    const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('*')
-      .eq('email', user.email)
+      .eq('id', user.id)
       .maybeSingle();
 
     if (profileError) {
@@ -59,26 +58,8 @@ serve(async (req) => {
       throw new Error("Erro ao verificar perfil do usuário.");
     }
 
-    if (!existingProfile) {
-      // Create profile for user if doesn't exist (for old users)
-      const { data: newProfile, error: createError } = await supabaseClient
-        .from('profiles')
-        .insert({
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.email,
-          cpf: '', // Will be required to update later
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Create Profile Error:', createError);
-        throw new Error("Erro ao criar perfil do usuário.");
-      }
-      profile = newProfile;
-    } else {
-      profile = existingProfile;
+    if (!profile) {
+      throw new Error("Perfil do usuário não encontrado. Por favor, complete seu cadastro primeiro.");
     }
 
     // Calculate price based on billing cycle
