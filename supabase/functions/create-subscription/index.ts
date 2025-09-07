@@ -59,8 +59,11 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { plan_id, billing_cycle }: CreateSubscriptionRequest = await req.json();
-    logStep("Request data received", { plan_id, billing_cycle });
+    const body = await req.json();
+    const { plan_id, billing_cycle } = body as CreateSubscriptionRequest & { payment_method?: 'PIX' | 'BOLETO' | 'CREDIT_CARD'; customer?: any };
+    const payment_method: 'PIX' | 'BOLETO' | 'CREDIT_CARD' = body.payment_method ?? 'PIX';
+    const customerInput = body.customer ?? null;
+    logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
     // Get plan details using service client
     const { data: plan, error: planError } = await supabaseServiceClient
@@ -107,13 +110,37 @@ serve(async (req) => {
       throw new Error('ASAAS API key not configured');
     }
 
+    // Helper to call ASAAS API with automatic environment detection (prod -> sandbox)
+    const asaasBases = ['https://api.asaas.com/api/v3', 'https://sandbox.asaas.com/api/v3'];
+    const asaasFetch = async (path: string, init: RequestInit = {}) => {
+      for (let i = 0; i < asaasBases.length; i++) {
+        const base = asaasBases[i];
+        const res = await fetch(`${base}${path}`, {
+          ...init,
+          headers: {
+            'Content-Type': 'application/json',
+            'access_token': asaasApiKey,
+            ...(init.headers || {})
+          },
+        });
+        if (res.ok) return { res, base };
+        const text = await res.text();
+        let json: any;
+        try { json = JSON.parse(text); } catch { json = null; }
+        const envError = !!json?.errors?.some((e: any) => e.code === 'invalid_environment');
+        logStep('ASAAS request failed', { base, status: res.status, error: text?.slice(0, 300) });
+        if (envError && i === 0) {
+          logStep('Switching ASAAS environment due to invalid_environment', { tried: base });
+          continue;
+        }
+        return { res, base, body: text };
+      }
+      throw new Error('ASAAS request failed for all environments');
+    };
+
     // Check if customer exists in ASAAS
-    const customerCheckResponse = await fetch(`https://sandbox.asaas.com/api/v3/customers?email=${encodeURIComponent(user.email)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'access_token': asaasApiKey,
-      },
+    const { res: customerCheckResponse, base: asaasBase } = await asaasFetch(`/customers?email=${encodeURIComponent(user.email)}`, {
+      method: 'GET'
     });
 
     let customerId;
@@ -129,18 +156,23 @@ serve(async (req) => {
     // If no customer found, create one
     if (!customerId) {
       logStep("Creating new ASAAS customer");
-      const createCustomerResponse = await fetch('https://sandbox.asaas.com/api/v3/customers', {
+      const customerPayload: any = {
+        name: (customerInput?.name || profile.full_name || user.email),
+        email: user.email,
+        cpfCnpj: (customerInput?.cpfCnpj || profile.cpf || undefined),
+        phone: (customerInput?.phone || profile.phone || undefined),
+        postalCode: customerInput?.postalCode,
+        address: customerInput?.address,
+        addressNumber: customerInput?.addressNumber,
+        complement: customerInput?.complement,
+        province: customerInput?.province,
+        city: customerInput?.city,
+        state: customerInput?.state,
+      };
+
+      const { res: createCustomerResponse } = await asaasFetch('/customers', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'access_token': asaasApiKey,
-        },
-        body: JSON.stringify({
-          name: profile.full_name || user.email,
-          email: user.email,
-          cpfCnpj: profile.cpf || undefined,
-          phone: profile.phone || undefined,
-        }),
+        body: JSON.stringify(customerPayload),
       });
 
       if (!createCustomerResponse.ok) {
@@ -155,35 +187,33 @@ serve(async (req) => {
     }
 
     // Create ASAAS payment with customer ID
-    logStep("Creating ASAAS payment", { customerId, price });
-    const asaasResponse = await fetch('https://sandbox.asaas.com/api/v3/payments', {
+    logStep("Creating ASAAS payment", { customerId, price, payment_method });
+    const paymentPayload: any = {
+      customer: customerId,
+      billingType: payment_method,
+      value: price,
+      dueDate: new Date().toISOString().split('T')[0],
+      description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
+      externalReference: `subscription_${plan_id}_${user.id}`,
+      callback: {
+        successUrl: `${req.headers.get("origin") || ''}/dashboard/empresa?payment=success`,
+        autoRedirect: false
+      }
+    };
+
+    const { res: asaasResponse, base: usedAsaasBase } = await asaasFetch('/payments', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'access_token': asaasApiKey,
-      },
-      body: JSON.stringify({
-        customer: customerId, // Use customer ID instead of email
-        billingType: 'CREDIT_CARD',
-        value: price,
-        dueDate: new Date().toISOString().split('T')[0],
-        description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
-        externalReference: `subscription_${plan_id}_${user.id}`,
-        callback: {
-          successUrl: `${req.headers.get("origin")}/dashboard/empresa?payment=success`,
-          autoRedirect: false
-        }
-      }),
+      body: JSON.stringify(paymentPayload),
     });
 
     if (!asaasResponse.ok) {
       const errorText = await asaasResponse.text();
-      logStep("ASAAS payment creation failed", { error: errorText, status: asaasResponse.status });
+      logStep("ASAAS payment creation failed", { status: asaasResponse.status, error: errorText });
       throw new Error('Erro ao processar pagamento');
     }
 
     const asaasData = await asaasResponse.json();
-    logStep("ASAAS payment created", { paymentId: asaasData.id, invoiceUrl: asaasData.invoiceUrl });
+    logStep("ASAAS payment created", { paymentId: asaasData.id, invoiceUrl: asaasData.invoiceUrl, environment: usedAsaasBase });
 
     // Create pending subscription record using service client (bypasses RLS)
     const { error: subscriptionError } = await supabaseServiceClient
