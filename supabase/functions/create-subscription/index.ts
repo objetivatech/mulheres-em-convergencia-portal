@@ -65,6 +65,30 @@ serve(async (req) => {
     const customerInput = body.customer ?? null;
     logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
+    // Validate required customer data for ASAAS before proceeding
+    const missing: string[] = [];
+    if (!customerInput) {
+      missing.push('name','cpfCnpj','phone','postalCode','address','addressNumber','province','city','state');
+    } else {
+      if (!customerInput.name) missing.push('name');
+      if (!customerInput.cpfCnpj && (payment_method === 'PIX' || payment_method === 'BOLETO')) missing.push('cpfCnpj');
+      if (!customerInput.phone) missing.push('phone');
+      if (!customerInput.postalCode) missing.push('postalCode');
+      if (!customerInput.address) missing.push('address');
+      if (!customerInput.addressNumber) missing.push('addressNumber');
+      if (!customerInput.province) missing.push('province');
+      if (!customerInput.city) missing.push('city');
+      if (!customerInput.state) missing.push('state');
+    }
+
+    if (missing.length > 0) {
+      logStep('Missing required customer data', { fields: missing });
+      return new Response(
+        JSON.stringify({ success: false, error: `Dados do cliente incompletos: ${missing.join(', ')}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
     // Get plan details using service client
     const { data: plan, error: planError } = await supabaseServiceClient
       .from('subscription_plans')
@@ -119,12 +143,15 @@ serve(async (req) => {
           ...init,
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'access_token': asaasApiKey,
             ...(init.headers || {})
           },
         });
         if (res.ok) return { res, base };
-        const text = await res.text();
+        // Read body from a clone so original can still be consumed by caller
+        const resClone = res.clone();
+        const text = await resClone.text();
         let json: any;
         try { json = JSON.parse(text); } catch { json = null; }
         const envError = !!json?.errors?.some((e: any) => e.code === 'invalid_environment');
@@ -133,7 +160,7 @@ serve(async (req) => {
           logStep('Switching ASAAS environment due to invalid_environment', { tried: base });
           continue;
         }
-        return { res, base, body: text };
+        return { res, base };
       }
       throw new Error('ASAAS request failed for all environments');
     };
@@ -192,7 +219,7 @@ serve(async (req) => {
       customer: customerId,
       billingType: payment_method,
       value: price,
-      dueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
       externalReference: `subscription_${plan_id}_${user.id}`,
       callback: {

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Star, Zap, Crown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import CustomerInfoDialog, { CustomerFormData } from '@/components/subscriptions/CustomerInfoDialog';
 
 type SubscriptionPlan = {
   id: string;
@@ -36,6 +37,10 @@ const Planos: React.FC = () => {
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [selectedBilling, setSelectedBilling] = useState<'monthly' | 'yearly' | null>(null);
+  const [dialogLoading, setDialogLoading] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -84,7 +89,11 @@ const Planos: React.FC = () => {
     }
   };
 
-  const handleSubscribe = async (planId: string, billingCycle: 'monthly' | 'yearly') => {
+  const handleSubscribe = async (
+    planId: string,
+    billingCycle: 'monthly' | 'yearly',
+    customer?: CustomerFormData
+  ) => {
     if (!user) {
       toast({
         title: 'Login necessário',
@@ -101,22 +110,22 @@ const Planos: React.FC = () => {
         body: {
           plan_id: planId,
           billing_cycle: billingCycle,
+          payment_method: 'PIX',
+          customer,
         },
       });
 
       if (error) throw error;
 
-      if (data.checkout_url) {
-        // Abrir checkout do ASAAS em nova aba
+      if (data?.checkout_url) {
         window.open(data.checkout_url, '_blank');
+      } else {
+        toast({ title: 'Atenção', description: 'Resposta sem URL de pagamento.', variant: 'destructive' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar assinatura:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível processar a assinatura',
-        variant: 'destructive',
-      });
+      const message = error?.message || 'Não foi possível processar a assinatura';
+      toast({ title: 'Erro', description: message, variant: 'destructive' });
     } finally {
       setProcessingPlan(null);
     }
@@ -254,7 +263,7 @@ const Planos: React.FC = () => {
                       <Button
                         className="w-full"
                         variant={plan.is_featured ? "default" : "outline"}
-                        onClick={() => handleSubscribe(plan.id, 'monthly')}
+                        onClick={() => { setSelectedPlanId(plan.id); setSelectedBilling('monthly'); setDialogOpen(true); }}
                         disabled={processingPlan === plan.id}
                       >
                         {processingPlan === plan.id ? 'Processando...' : 'Assinar Mensalmente'}
@@ -262,7 +271,7 @@ const Planos: React.FC = () => {
                       <Button
                         className="w-full"
                         variant="secondary"
-                        onClick={() => handleSubscribe(plan.id, 'yearly')}
+                        onClick={() => { setSelectedPlanId(plan.id); setSelectedBilling('yearly'); setDialogOpen(true); }}
                         disabled={processingPlan === plan.id}
                       >
                         {processingPlan === plan.id ? 'Processando...' : 'Assinar Anualmente'}
@@ -290,6 +299,25 @@ const Planos: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <CustomerInfoDialog
+        open={dialogOpen}
+        loading={dialogLoading}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={async (values) => {
+          if (!selectedPlanId || !selectedBilling) {
+            toast({ title: 'Erro', description: 'Selecione um plano.', variant: 'destructive' });
+            return;
+          }
+          setDialogLoading(true);
+          try {
+            await handleSubscribe(selectedPlanId, selectedBilling, values);
+          } finally {
+            setDialogLoading(false);
+            setDialogOpen(false);
+          }
+        }}
+      />
     </Layout>
   );
 };
