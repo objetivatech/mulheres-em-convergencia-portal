@@ -65,26 +65,51 @@ serve(async (req) => {
     const customerInput = body.customer ?? null;
     logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
-    // Validate required customer data for ASAAS before proceeding
-    const missing: string[] = [];
-    if (!customerInput) {
-      missing.push('name','cpfCnpj','phone','postalCode','address','addressNumber','province','city','state');
-    } else {
-      if (!customerInput.name) missing.push('name');
-      if (!customerInput.cpfCnpj && (payment_method === 'PIX' || payment_method === 'BOLETO')) missing.push('cpfCnpj');
-      if (!customerInput.phone) missing.push('phone');
-      if (!customerInput.postalCode) missing.push('postalCode');
-      if (!customerInput.address) missing.push('address');
-      if (!customerInput.addressNumber) missing.push('addressNumber');
-      if (!customerInput.province) missing.push('province');
-      if (!customerInput.city) missing.push('city');
-      if (!customerInput.state) missing.push('state');
+    // Get user profile using service client first to check existing data
+    const { data: profile, error: profileError } = await supabaseServiceClient
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      logStep("Profile error", { error: profileError });
+      throw new Error("Erro ao verificar perfil do usuário.");
     }
 
+    logStep("Profile loaded for validation", { 
+      profileId: profile?.id || 'not found', 
+      hasName: !!profile?.full_name,
+      hasCpf: !!profile?.cpf,
+      hasPhone: !!profile?.phone 
+    });
+
+    // Smart validation: check both customerInput and profile data
+    const getName = () => customerInput?.name || profile?.full_name;
+    const getCpfCnpj = () => customerInput?.cpfCnpj || profile?.cpf;
+    const getPhone = () => customerInput?.phone || profile?.phone;
+    const getCity = () => customerInput?.city || profile?.city;
+    const getState = () => customerInput?.state || profile?.state;
+
+    // Only validate required fields that are missing from BOTH sources
+    const missing: string[] = [];
+    if (!getName()) missing.push('name');
+    if (!getCpfCnpj() && (payment_method === 'PIX' || payment_method === 'BOLETO')) missing.push('cpfCnpj');
+    if (!getPhone()) missing.push('phone');
+    if (!customerInput?.postalCode) missing.push('postalCode');
+    if (!customerInput?.address) missing.push('address');
+    if (!customerInput?.addressNumber) missing.push('addressNumber');
+    if (!customerInput?.province) missing.push('province');
+    if (!getCity()) missing.push('city');
+    if (!getState()) missing.push('state');
+
     if (missing.length > 0) {
-      logStep('Missing required customer data', { fields: missing });
+      logStep('Missing required customer data after checking profile', { fields: missing });
       return new Response(
-        JSON.stringify({ success: false, error: `Dados do cliente incompletos: ${missing.join(', ')}` }),
+        JSON.stringify({ 
+          success: false, 
+          error: `Dados obrigatórios não informados: ${missing.join(', ')}. Complete seu perfil ou forneça os dados no formulário.`
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
@@ -102,25 +127,6 @@ serve(async (req) => {
     }
 
     logStep("Plan found", { planName: plan.display_name, planId: plan.id });
-
-    // Get user profile using service client (bypasses RLS)
-    const { data: profile, error: profileError } = await supabaseServiceClient
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      logStep("Profile error", { error: profileError });
-      throw new Error("Erro ao verificar perfil do usuário.");
-    }
-
-    if (!profile) {
-      logStep("Profile not found - this should not happen after migration", { userId: user.id });
-      throw new Error("Perfil do usuário não encontrado. Tente fazer logout e login novamente.");
-    }
-
-    logStep("Profile found", { profileId: profile.id, email: profile.email });
 
     // Calculate price based on billing cycle
     const price = billing_cycle === 'yearly' ? plan.price_yearly : plan.price_monthly;
@@ -184,17 +190,17 @@ serve(async (req) => {
     if (!customerId) {
       logStep("Creating new ASAAS customer");
       const customerPayload: any = {
-        name: (customerInput?.name || profile.full_name || user.email),
+        name: getName(),
         email: user.email,
-        cpfCnpj: (customerInput?.cpfCnpj || profile.cpf || undefined),
-        phone: (customerInput?.phone || profile.phone || undefined),
+        cpfCnpj: getCpfCnpj(),
+        phone: getPhone(),
         postalCode: customerInput?.postalCode,
         address: customerInput?.address,
         addressNumber: customerInput?.addressNumber,
         complement: customerInput?.complement,
         province: customerInput?.province,
-        city: customerInput?.city,
-        state: customerInput?.state,
+        city: getCity(),
+        state: getState(),
       };
 
       const { res: createCustomerResponse } = await asaasFetch('/customers', {

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Star, Zap, Crown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import CustomerInfoDialog, { CustomerFormData } from '@/components/subscriptions/CustomerInfoDialog';
+import CustomerInfoDialog, { CustomerFormData, UserProfileData } from '@/components/subscriptions/CustomerInfoDialog';
 
 type SubscriptionPlan = {
   id: string;
@@ -35,6 +35,7 @@ const Planos: React.FC = () => {
   const { toast } = useToast();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,6 +47,7 @@ const Planos: React.FC = () => {
     fetchPlans();
     if (user) {
       fetchUserSubscription();
+      fetchUserProfile();
     }
   }, [user]);
 
@@ -86,6 +88,23 @@ const Planos: React.FC = () => {
       setUserSubscription(data);
     } catch (error) {
       console.error('Erro ao carregar assinatura:', error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, email, cpf, phone, city, state')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Erro ao carregar perfil:', error);
     }
   };
 
@@ -303,6 +322,7 @@ const Planos: React.FC = () => {
       <CustomerInfoDialog
         open={dialogOpen}
         loading={dialogLoading}
+        userProfile={userProfile}
         onClose={() => setDialogOpen(false)}
         onSubmit={async (values) => {
           if (!selectedPlanId || !selectedBilling) {
@@ -312,6 +332,34 @@ const Planos: React.FC = () => {
           setDialogLoading(true);
           try {
             await handleSubscribe(selectedPlanId, selectedBilling, values);
+            // Update profile with any new data provided
+            if (user && values) {
+              const profileUpdates: any = {};
+              if (values.name && values.name !== userProfile?.full_name) {
+                profileUpdates.full_name = values.name;
+              }
+              if (values.cpfCnpj && values.cpfCnpj !== userProfile?.cpf) {
+                profileUpdates.cpf = values.cpfCnpj;
+              }
+              if (values.phone && values.phone !== userProfile?.phone) {
+                profileUpdates.phone = values.phone;
+              }
+              if (values.city && values.city !== userProfile?.city) {
+                profileUpdates.city = values.city;
+              }
+              if (values.state && values.state !== userProfile?.state) {
+                profileUpdates.state = values.state;
+              }
+              
+              if (Object.keys(profileUpdates).length > 0) {
+                await supabase
+                  .from('profiles')
+                  .update(profileUpdates)
+                  .eq('id', user.id);
+                // Refresh profile data
+                fetchUserProfile();
+              }
+            }
           } finally {
             setDialogLoading(false);
             setDialogOpen(false);

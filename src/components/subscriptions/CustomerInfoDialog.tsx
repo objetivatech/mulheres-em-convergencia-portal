@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Informe o nome completo'),
@@ -22,14 +23,24 @@ const customerSchema = z.object({
 
 export type CustomerFormData = z.infer<typeof customerSchema>;
 
+export interface UserProfileData {
+  full_name?: string;
+  email?: string;
+  cpf?: string;
+  phone?: string;
+  city?: string;
+  state?: string;
+}
+
 interface CustomerInfoDialogProps {
   open: boolean;
   loading?: boolean;
+  userProfile?: UserProfileData;
   onClose: () => void;
   onSubmit: (data: CustomerFormData) => Promise<void> | void;
 }
 
-const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, onClose, onSubmit }) => {
+const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, userProfile, onClose, onSubmit }) => {
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
@@ -46,6 +57,33 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     },
   });
 
+  // Pre-fill form with user profile data when dialog opens
+  useEffect(() => {
+    if (open && userProfile) {
+      const updates: Partial<CustomerFormData> = {};
+      
+      if (userProfile.full_name) updates.name = userProfile.full_name;
+      if (userProfile.cpf) updates.cpfCnpj = userProfile.cpf;
+      if (userProfile.phone) updates.phone = userProfile.phone;
+      if (userProfile.city) updates.city = userProfile.city;
+      if (userProfile.state) updates.state = userProfile.state;
+      
+      // Reset form with new values
+      form.reset({
+        name: updates.name || '',
+        cpfCnpj: updates.cpfCnpj || '',
+        phone: updates.phone || '',
+        postalCode: '',
+        address: '',
+        addressNumber: '',
+        complement: '',
+        province: '',
+        city: updates.city || '',
+        state: updates.state || '',
+      });
+    }
+  }, [open, userProfile, form]);
+
   const handleSubmit = async (values: CustomerFormData) => {
     await onSubmit(values);
   };
@@ -55,6 +93,11 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Dados para Assinatura</DialogTitle>
+          {userProfile && (
+            <p className="text-sm text-muted-foreground">
+              Alguns dados foram preenchidos automaticamente com informações do seu perfil.
+            </p>
+          )}
         </DialogHeader>
 
         <Form {...form}>
@@ -64,7 +107,10 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="name"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Nome completo</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    Nome completo
+                    {userProfile?.full_name && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
                   <FormControl><Input placeholder="Seu nome" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -76,7 +122,10 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="cpfCnpj"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPF/CNPJ</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    CPF/CNPJ
+                    {userProfile?.cpf && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
                   <FormControl><Input placeholder="000.000.000-00" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -88,7 +137,10 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    Telefone
+                    {userProfile?.phone && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
                   <FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,7 +212,10 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    Cidade
+                    {userProfile?.city && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
                   <FormControl><Input placeholder="Cidade" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -172,7 +227,10 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado (UF)</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    Estado (UF)
+                    {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
                   <FormControl><Input placeholder="RS" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
