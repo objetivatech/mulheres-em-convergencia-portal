@@ -111,15 +111,39 @@ const Planos: React.FC = () => {
   const handleSubscribe = async (
     planId: string,
     billingCycle: 'monthly' | 'yearly',
-    customer?: CustomerFormData
+    customer?: CustomerFormData,
+    signupData?: { email: string; password: string; name: string; cpf: string }
   ) => {
-    if (!user) {
-      toast({
-        title: 'Login necessário',
-        description: 'Faça login para assinar um plano',
-        variant: 'destructive',
-      });
-      return;
+    // Handle signup for non-authenticated users
+    if (!user && signupData) {
+      try {
+        const { signUp } = useAuth();
+        const { error: signupError } = await signUp(
+          signupData.email,
+          signupData.password,
+          signupData.name,
+          signupData.cpf
+        );
+        
+        if (signupError) {
+          toast({
+            title: 'Erro no cadastro',
+            description: signupError.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        // Wait a moment for user to be authenticated
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error: any) {
+        toast({
+          title: 'Erro no cadastro',
+          description: error.message || 'Não foi possível criar a conta',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     setProcessingPlan(planId);
@@ -136,10 +160,29 @@ const Planos: React.FC = () => {
 
       if (error) throw error;
 
+      // Handle ASAAS errors returned as 400 status
+      if (data?.asaas_errors && data.asaas_errors.length > 0) {
+        const errorMessages = data.asaas_errors.map((err: any) => err.description || err.message).join('; ');
+        toast({
+          title: 'Erro nos dados',
+          description: errorMessages,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       if (data?.checkout_url) {
+        toast({
+          title: 'Redirecionando para pagamento',
+          description: 'Você será redirecionado para completar o pagamento.',
+        });
         window.open(data.checkout_url, '_blank');
       } else {
-        toast({ title: 'Atenção', description: 'Resposta sem URL de pagamento.', variant: 'destructive' });
+        toast({ 
+          title: 'Atenção', 
+          description: 'Resposta sem URL de pagamento.',
+          variant: 'destructive' 
+        });
       }
     } catch (error: any) {
       console.error('Erro ao criar assinatura:', error);
@@ -324,15 +367,16 @@ const Planos: React.FC = () => {
         loading={dialogLoading}
         userProfile={userProfile}
         onClose={() => setDialogOpen(false)}
-        onSubmit={async (values) => {
+        onSubmit={async (values, signupData) => {
           if (!selectedPlanId || !selectedBilling) {
             toast({ title: 'Erro', description: 'Selecione um plano.', variant: 'destructive' });
             return;
           }
           setDialogLoading(true);
           try {
-            await handleSubscribe(selectedPlanId, selectedBilling, values);
-            // Update profile with any new data provided
+            await handleSubscribe(selectedPlanId, selectedBilling, values, signupData);
+            
+            // Update profile with any new data provided (only for existing users)
             if (user && values) {
               const profileUpdates: any = {};
               if (values.name && values.name !== userProfile?.full_name) {
@@ -357,12 +401,14 @@ const Planos: React.FC = () => {
                   .update(profileUpdates)
                   .eq('id', user.id);
                 // Refresh profile data
-                fetchUserProfile();
+                await fetchUserProfile();
               }
             }
+            
+            // Close dialog on success
+            setDialogOpen(false);
           } finally {
             setDialogLoading(false);
-            setDialogOpen(false);
           }
         }}
       />

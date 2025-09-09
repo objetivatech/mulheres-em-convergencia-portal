@@ -140,33 +140,73 @@ serve(async (req) => {
       throw new Error('ASAAS API key not configured');
     }
 
-    // Helper to call ASAAS API with automatic environment detection (prod -> sandbox)
-    const asaasBases = ['https://api.asaas.com/api/v3', 'https://sandbox.asaas.com/api/v3'];
+    // Helper to call ASAAS API with automatic environment fallback
+    const asaasBases = ['https://www.asaas.com/api/v3', 'https://sandbox.asaas.com/api/v3'];
     const asaasFetch = async (path: string, init: RequestInit = {}) => {
       for (let i = 0; i < asaasBases.length; i++) {
         const base = asaasBases[i];
-        const res = await fetch(`${base}${path}`, {
-          ...init,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'access_token': asaasApiKey,
-            ...(init.headers || {})
-          },
-        });
-        if (res.ok) return { res, base };
-        // Read body from a clone so original can still be consumed by caller
-        const resClone = res.clone();
-        const text = await resClone.text();
-        let json: any;
-        try { json = JSON.parse(text); } catch { json = null; }
-        const envError = !!json?.errors?.some((e: any) => e.code === 'invalid_environment');
-        logStep('ASAAS request failed', { base, status: res.status, error: text?.slice(0, 300) });
-        if (envError && i === 0) {
-          logStep('Switching ASAAS environment due to invalid_environment', { tried: base });
-          continue;
+        try {
+          const res = await fetch(`${base}${path}`, {
+            ...init,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'access_token': asaasApiKey,
+              ...(init.headers || {})
+            },
+          });
+          
+          if (res.ok) {
+            logStep('ASAAS request successful', { base, status: res.status });
+            return { res, base };
+          }
+
+          // Try to get error details
+          const resClone = res.clone();
+          const contentType = res.headers.get('content-type');
+          let errorData: any = null;
+          let errorText = '';
+          
+          try {
+            if (contentType?.includes('application/json')) {
+              errorData = await resClone.json();
+              errorText = JSON.stringify(errorData);
+            } else {
+              errorText = await resClone.text();
+            }
+          } catch (e) {
+            errorText = 'Could not parse error response';
+          }
+
+          logStep('ASAAS request failed', { 
+            base, 
+            status: res.status, 
+            error: errorText.slice(0, 300),
+            hasJson: !!errorData
+          });
+
+          // If we have ASAAS errors in JSON format, return them properly
+          if (errorData?.errors && i === asaasBases.length - 1) {
+            return { res, base, asaasErrors: errorData.errors };
+          }
+
+          // If first base fails with 404 or other non-JSON, try sandbox
+          if (i === 0 && (res.status === 404 || !contentType?.includes('application/json'))) {
+            logStep('Trying sandbox environment due to API error', { 
+              status: res.status, 
+              contentType: contentType 
+            });
+            continue;
+          }
+
+          // If we're on the last attempt, return the response anyway
+          if (i === asaasBases.length - 1) {
+            return { res, base, asaasErrors: errorData?.errors };
+          }
+        } catch (fetchError) {
+          logStep('ASAAS fetch error', { base, error: fetchError.message });
+          if (i === asaasBases.length - 1) throw fetchError;
         }
-        return { res, base };
       }
       throw new Error('ASAAS request failed for all environments');
     };
@@ -208,9 +248,26 @@ serve(async (req) => {
         body: JSON.stringify(customerPayload),
       });
 
+      const { res: createCustomerResponse, asaasErrors } = await asaasFetch('/customers', {
+        method: 'POST',
+        body: JSON.stringify(customerPayload),
+      });
+
       if (!createCustomerResponse.ok) {
-        const errorText = await createCustomerResponse.text();
-        logStep("Failed to create ASAAS customer", { error: errorText });
+        logStep("Failed to create ASAAS customer", { status: createCustomerResponse.status, errors: asaasErrors });
+        
+        if (asaasErrors && asaasErrors.length > 0) {
+          const errorMessages = asaasErrors.map((err: any) => err.description || err.message || 'Erro desconhecido');
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: errorMessages.join('; '),
+              asaas_errors: asaasErrors
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          );
+        }
+        
         throw new Error('Erro ao criar cliente no sistema de pagamento');
       }
 
@@ -239,9 +296,26 @@ serve(async (req) => {
       body: JSON.stringify(paymentPayload),
     });
 
+    const { res: asaasResponse, base: usedAsaasBase, asaasErrors: paymentErrors } = await asaasFetch('/payments', {
+      method: 'POST',
+      body: JSON.stringify(paymentPayload),
+    });
+
     if (!asaasResponse.ok) {
-      const errorText = await asaasResponse.text();
-      logStep("ASAAS payment creation failed", { status: asaasResponse.status, error: errorText });
+      logStep("ASAAS payment creation failed", { status: asaasResponse.status, errors: paymentErrors });
+      
+      if (paymentErrors && paymentErrors.length > 0) {
+        const errorMessages = paymentErrors.map((err: any) => err.description || err.message || 'Erro desconhecido');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: errorMessages.join('; '),
+            asaas_errors: paymentErrors
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      
       throw new Error('Erro ao processar pagamento');
     }
 
