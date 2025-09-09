@@ -39,25 +39,25 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // Optional authentication - function works with or without logged-in user
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("Authorization header missing");
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    let user = null;
     
-    if (authError) {
-      logStep("Authentication error", { error: authError });
-      throw new Error(`Authentication failed: ${authError.message}`);
+    if (authHeader) {
+      try {
+        const token = authHeader.replace("Bearer ", "");
+        const { data, error: authError } = await supabaseClient.auth.getUser(token);
+        
+        if (!authError && data.user?.email) {
+          user = data.user;
+          logStep("User authenticated", { userId: user.id, email: user.email });
+        }
+      } catch (error) {
+        logStep("Authentication failed, continuing without user", { error });
+      }
     }
-
-    const user = data.user;
-    if (!user?.email) {
-      throw new Error("User not authenticated or email not available");
-    }
-
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    
+    logStep("Processing request", { hasUser: !!user, userEmail: user?.email });
 
     const body = await req.json();
     const { plan_id, billing_cycle } = body as CreateSubscriptionRequest & { payment_method?: 'PIX' | 'BOLETO' | 'CREDIT_CARD'; customer?: any };
@@ -65,16 +65,20 @@ serve(async (req) => {
     const customerInput = body.customer ?? null;
     logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
-    // Get user profile using service client first to check existing data
-    const { data: profile, error: profileError } = await supabaseServiceClient
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+    // Get user profile if user is authenticated
+    let profile = null;
+    if (user) {
+      const { data: profileData, error: profileError } = await supabaseServiceClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    if (profileError) {
-      logStep("Profile error", { error: profileError });
-      throw new Error("Erro ao verificar perfil do usuário.");
+      if (profileError) {
+        logStep("Profile error", { error: profileError });
+        throw new Error("Erro ao verificar perfil do usuário.");
+      }
+      profile = profileData;
     }
 
     logStep("Profile loaded for validation", { 
@@ -90,10 +94,12 @@ serve(async (req) => {
     const getPhone = () => customerInput?.phone || profile?.phone;
     const getCity = () => customerInput?.city || profile?.city;
     const getState = () => customerInput?.state || profile?.state;
+    const getEmail = () => customerInput?.email || user?.email;
 
     // Only validate required fields that are missing from BOTH sources
     const missing: string[] = [];
     if (!getName()) missing.push('name');
+    if (!getEmail()) missing.push('email');
     if (!getCpfCnpj() && (payment_method === 'PIX' || payment_method === 'BOLETO')) missing.push('cpfCnpj');
     if (!getPhone()) missing.push('phone');
     if (!customerInput?.postalCode) missing.push('postalCode');
@@ -212,7 +218,12 @@ serve(async (req) => {
     };
 
     // Check if customer exists in ASAAS
-    const { res: customerCheckResponse, base: asaasBase } = await asaasFetch(`/customers?email=${encodeURIComponent(user.email)}`, {
+    const customerEmail = getEmail();
+    if (!customerEmail) {
+      throw new Error('Email é obrigatório para processar a assinatura');
+    }
+    
+    const { res: customerCheckResponse, base: asaasBase } = await asaasFetch(`/customers?email=${encodeURIComponent(customerEmail)}`, {
       method: 'GET'
     });
 
@@ -231,7 +242,7 @@ serve(async (req) => {
       logStep("Creating new ASAAS customer");
       const customerPayload: any = {
         name: getName(),
-        email: user.email,
+        email: customerEmail,
         cpfCnpj: getCpfCnpj(),
         phone: getPhone(),
         postalCode: customerInput?.postalCode,
@@ -242,11 +253,6 @@ serve(async (req) => {
         city: getCity(),
         state: getState(),
       };
-
-      const { res: createCustomerResponse } = await asaasFetch('/customers', {
-        method: 'POST',
-        body: JSON.stringify(customerPayload),
-      });
 
       const { res: createCustomerResponse, asaasErrors } = await asaasFetch('/customers', {
         method: 'POST',
@@ -284,17 +290,12 @@ serve(async (req) => {
       value: price,
       dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
-      externalReference: `subscription_${plan_id}_${user.id}`,
+      externalReference: `subscription_${plan_id}_${user?.id || 'guest'}`,
       callback: {
-        successUrl: `${req.headers.get("origin") || ''}/dashboard/empresa?payment=success`,
+        successUrl: `${req.headers.get("origin") || ''}/planos?payment=success`,
         autoRedirect: false
       }
     };
-
-    const { res: asaasResponse, base: usedAsaasBase } = await asaasFetch('/payments', {
-      method: 'POST',
-      body: JSON.stringify(paymentPayload),
-    });
 
     const { res: asaasResponse, base: usedAsaasBase, asaasErrors: paymentErrors } = await asaasFetch('/payments', {
       method: 'POST',
@@ -323,26 +324,32 @@ serve(async (req) => {
     logStep("ASAAS payment created", { paymentId: asaasData.id, invoiceUrl: asaasData.invoiceUrl, environment: usedAsaasBase });
 
     // Create pending subscription record using service client (bypasses RLS)
-    const { error: subscriptionError } = await supabaseServiceClient
-      .from('user_subscriptions')
-      .insert({
-        user_id: user.id,
-        plan_id: plan_id,
-        billing_cycle: billing_cycle,
-        status: 'pending',
-        external_subscription_id: asaasData.id,
-        payment_provider: 'asaas',
-        expires_at: billing_cycle === 'yearly' 
-          ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      });
+    // Only create if user is authenticated - for guests, they'll need to complete signup first
+    if (user) {
+      const { error: subscriptionError } = await supabaseServiceClient
+        .from('user_subscriptions')
+        .insert({
+          user_id: user.id,
+          plan_id: plan_id,
+          billing_cycle: billing_cycle,
+          status: 'pending',
+          external_subscription_id: asaasData.id,
+          payment_provider: 'asaas',
+          expires_at: billing_cycle === 'yearly' 
+            ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        });
 
-    if (subscriptionError) {
-      logStep("Subscription creation failed", { error: subscriptionError });
-      throw new Error('Erro ao criar assinatura');
+      if (subscriptionError) {
+        logStep("Subscription creation failed", { error: subscriptionError });
+        throw new Error('Erro ao criar assinatura');
+      }
+      
+      logStep("Subscription created successfully", { userId: user.id, planId: plan_id });
+    } else {
+      logStep("Guest payment created - subscription will be created on signup", { paymentId: asaasData.id });
     }
 
-    logStep("Subscription created successfully", { userId: user.id, planId: plan_id });
 
     return new Response(
       JSON.stringify({

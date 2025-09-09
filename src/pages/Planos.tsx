@@ -31,7 +31,7 @@ type UserSubscription = {
 };
 
 const Planos: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signUp } = useAuth();
   const { toast } = useToast();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
@@ -117,7 +117,6 @@ const Planos: React.FC = () => {
     // Handle signup for non-authenticated users
     if (!user && signupData) {
       try {
-        const { signUp } = useAuth();
         const { error: signupError } = await signUp(
           signupData.email,
           signupData.password,
@@ -134,8 +133,13 @@ const Planos: React.FC = () => {
           return;
         }
         
-        // Wait a moment for user to be authenticated
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // For guest users, show success message and let them complete payment
+        if (!user) {
+          toast({
+            title: 'Conta criada com sucesso!',
+            description: 'Complete o pagamento para ativar sua assinatura.',
+          });
+        }
       } catch (error: any) {
         toast({
           title: 'Erro no cadastro',
@@ -154,7 +158,10 @@ const Planos: React.FC = () => {
           plan_id: planId,
           billing_cycle: billingCycle,
           payment_method: 'PIX',
-          customer,
+          customer: {
+            ...customer,
+            email: signupData?.email || customer?.email,
+          },
         },
       });
 
