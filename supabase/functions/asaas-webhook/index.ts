@@ -3,12 +3,36 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-token",
 };
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[ASAAS-WEBHOOK] ${step}${detailsStr}`);
+};
+
+// Função para verificar se evento já foi processado (idempotência)
+const isEventProcessed = async (supabaseClient: any, eventId: string, paymentId: string) => {
+  const { data } = await supabaseClient
+    .from("webhook_events_log")
+    .select("id")
+    .eq("event_id", eventId)
+    .eq("payment_id", paymentId)
+    .maybeSingle();
+  
+  return !!data;
+};
+
+// Função para marcar evento como processado
+const markEventAsProcessed = async (supabaseClient: any, eventId: string, paymentId: string, eventType: string) => {
+  await supabaseClient
+    .from("webhook_events_log")
+    .insert({
+      event_id: eventId,
+      payment_id: paymentId,
+      event_type: eventType,
+      processed_at: new Date().toISOString()
+    });
 };
 
 serve(async (req) => {
@@ -17,7 +41,19 @@ serve(async (req) => {
   }
 
   try {
-    logStep("Webhook received");
+    logStep("Webhook received", { method: req.method, url: req.url });
+
+    // Validar token de segurança
+    const webhookToken = req.headers.get("X-Webhook-Token") || req.headers.get("x-webhook-token");
+    const expectedToken = Deno.env.get("ASAAS_WEBHOOK_TOKEN");
+    
+    if (expectedToken && webhookToken !== expectedToken) {
+      logStep("Unauthorized webhook request", { providedToken: webhookToken ? "***" : "none" });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -28,87 +64,184 @@ serve(async (req) => {
     const webhookData = await req.json();
     logStep("Webhook data received", { 
       event: webhookData.event, 
-      paymentId: webhookData.payment?.id 
+      paymentId: webhookData.payment?.id,
+      subscriptionId: webhookData.subscription?.id
     });
 
-    // Processar apenas eventos de pagamento confirmado
-    if (webhookData.event === "PAYMENT_RECEIVED" || webhookData.event === "PAYMENT_CONFIRMED") {
-      const paymentId = webhookData.payment?.id;
+    // Eventos de pagamento
+    if (webhookData.event === "PAYMENT_RECEIVED" || 
+        webhookData.event === "PAYMENT_CONFIRMED" || 
+        webhookData.event === "PAYMENT_UPDATED") {
       
-      if (!paymentId) {
+      const payment = webhookData.payment;
+      if (!payment?.id) {
         throw new Error("Payment ID not found in webhook");
       }
 
-      logStep("Processing payment confirmation", { paymentId });
-
-      // Buscar assinatura pelo external_subscription_id
-      const { data: subscription, error: subError } = await supabaseClient
-        .from("user_subscriptions")
-        .select("*")
-        .eq("external_subscription_id", paymentId)
-        .single();
-
-      if (subError || !subscription) {
-        logStep("Subscription not found", { paymentId, error: subError });
-        return new Response("Subscription not found", { 
-          status: 404,
-          headers: corsHeaders 
+      // Verificar se já foi processado (idempotência)
+      const eventId = `${webhookData.event}_${payment.id}_${Date.now()}`;
+      if (await isEventProcessed(supabaseClient, eventId, payment.id)) {
+        logStep("Event already processed", { eventId, paymentId: payment.id });
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: "Event already processed" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
         });
       }
 
-      logStep("Subscription found", { 
-        subscriptionId: subscription.id,
-        currentStatus: subscription.status 
-      });
+      // Processar apenas pagamentos confirmados
+      if (payment.status === "RECEIVED" || payment.status === "CONFIRMED") {
+        logStep("Processing payment confirmation", { 
+          paymentId: payment.id, 
+          status: payment.status,
+          value: payment.value 
+        });
 
-      // Atualizar status da assinatura para active
-      const { error: updateError } = await supabaseClient
-        .from("user_subscriptions")
-        .update({ 
-          status: "active",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", subscription.id);
+        // Buscar assinatura pelo external_subscription_id
+        const { data: subscription, error: subError } = await supabaseClient
+          .from("user_subscriptions")
+          .select("*")
+          .eq("external_subscription_id", payment.id)
+          .maybeSingle();
 
-      if (updateError) {
-        throw new Error(`Failed to update subscription: ${updateError.message}`);
-      }
+        if (subError) {
+          logStep("Error searching subscription", { paymentId: payment.id, error: subError });
+          throw new Error(`Database error: ${subError.message}`);
+        }
 
-      logStep("Subscription status updated to active");
+        if (!subscription) {
+          logStep("Subscription not found for payment", { paymentId: payment.id });
+          // Marcar como processado mesmo assim para evitar reprocessamento
+          await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event);
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: "Subscription not found - payment may be unrelated" 
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
 
-      // Ativar negócios do usuário
-      const { data: businesses, error: bizError } = await supabaseClient
-        .from("businesses")
-        .update({
-          subscription_active: true,
-          subscription_expires_at: subscription.expires_at,
-          updated_at: new Date().toISOString()
-        })
-        .eq("owner_id", subscription.user_id)
-        .select("id, name");
+        logStep("Subscription found", { 
+          subscriptionId: subscription.id,
+          currentStatus: subscription.status,
+          userId: subscription.user_id
+        });
 
-      if (bizError) {
-        logStep("Error updating businesses", { error: bizError });
+        // Só atualizar se não estiver ativo
+        if (subscription.status !== "active") {
+          // Atualizar status da assinatura para active
+          const { error: updateError } = await supabaseClient
+            .from("user_subscriptions")
+            .update({ 
+              status: "active",
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", subscription.id);
+
+          if (updateError) {
+            throw new Error(`Failed to update subscription: ${updateError.message}`);
+          }
+
+          logStep("Subscription status updated to active");
+        } else {
+          logStep("Subscription already active, skipping update");
+        }
+
+        // Ativar negócios do usuário
+        const { data: businesses, error: bizError } = await supabaseClient
+          .from("businesses")
+          .update({
+            subscription_active: true,
+            subscription_expires_at: subscription.expires_at,
+            updated_at: new Date().toISOString()
+          })
+          .eq("owner_id", subscription.user_id)
+          .eq("subscription_active", false) // Só atualizar os inativos
+          .select("id, name");
+
+        if (bizError) {
+          logStep("Error updating businesses", { error: bizError });
+        } else {
+          logStep("Businesses activated", { 
+            count: businesses?.length || 0,
+            businesses: businesses?.map(b => ({ id: b.id, name: b.name }))
+          });
+        }
+
+        // Marcar evento como processado
+        await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event);
+
+        return new Response(JSON.stringify({ 
+          success: true,
+          message: "Payment processed successfully",
+          subscriptionId: subscription.id,
+          businessesActivated: businesses?.length || 0
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
       } else {
-        logStep("Businesses activated", { businesses });
+        logStep("Payment not confirmed yet", { paymentId: payment.id, status: payment.status });
+      }
+    }
+    
+    // Eventos de assinatura recorrente
+    else if (webhookData.event === "SUBSCRIPTION_RECEIVED" || 
+             webhookData.event === "SUBSCRIPTION_CONFIRMED") {
+      
+      const subscription = webhookData.subscription;
+      if (!subscription?.id) {
+        throw new Error("Subscription ID not found in webhook");
       }
 
-      return new Response(JSON.stringify({ 
-        success: true,
-        message: "Payment processed successfully",
+      logStep("Processing subscription event", { 
         subscriptionId: subscription.id,
-        businessesActivated: businesses?.length || 0
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: subscription.status,
+        event: webhookData.event
       });
+
+      // Buscar assinatura local pelo external_subscription_id
+      const { data: localSub, error: subError } = await supabaseClient
+        .from("user_subscriptions")
+        .select("*")
+        .eq("external_subscription_id", subscription.id)
+        .maybeSingle();
+
+      if (localSub && subscription.status === "ACTIVE") {
+        // Ativar assinatura e negócios
+        await supabaseClient
+          .from("user_subscriptions")
+          .update({ 
+            status: "active",
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", localSub.id);
+
+        await supabaseClient
+          .from("businesses")
+          .update({
+            subscription_active: true,
+            subscription_expires_at: localSub.expires_at,
+            updated_at: new Date().toISOString()
+          })
+          .eq("owner_id", localSub.user_id);
+
+        logStep("Subscription activated", { subscriptionId: localSub.id });
+      }
     }
 
     // Para outros eventos, apenas logar
-    logStep("Event ignored", { event: webhookData.event });
+    logStep("Event processed", { 
+      event: webhookData.event,
+      processed: true 
+    });
+    
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "Event received but not processed" 
+      message: "Event processed successfully" 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -116,9 +249,15 @@ serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in webhook processing", { message: errorMessage });
+    logStep("ERROR in webhook processing", { 
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      success: false 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

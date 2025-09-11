@@ -282,14 +282,22 @@ serve(async (req) => {
       logStep("New ASAAS customer created", { customerId });
     }
 
-    // Create ASAAS payment with customer ID
-    logStep("Creating ASAAS payment", { customerId, price, payment_method });
-    const paymentPayload: any = {
+    // Create ASAAS subscription (not single payment) for recurring billing
+    logStep("Creating ASAAS subscription", { customerId, price, payment_method, billing_cycle });
+    
+    // Calculate the subscription cycle and next due date
+    const cycleMapping = {
+      'monthly': 'MONTHLY',
+      'yearly': 'YEARLY'
+    };
+    
+    const subscriptionPayload: any = {
       customer: customerId,
       billingType: payment_method,
       value: price,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      nextDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
+      cycle: cycleMapping[billing_cycle] || 'MONTHLY',
       externalReference: `subscription_${plan_id}_${user?.id || 'guest'}`,
       callback: {
         successUrl: `${req.headers.get("origin") || ''}/planos?payment=success`,
@@ -297,65 +305,125 @@ serve(async (req) => {
       }
     };
 
-    const { res: asaasResponse, base: usedAsaasBase, asaasErrors: paymentErrors } = await asaasFetch('/payments', {
-      method: 'POST',
-      body: JSON.stringify(paymentPayload),
-    });
+    // Try to create subscription first, fallback to single payment if needed
+    let asaasData;
+    let isRecurringSubscription = true;
+    let usedAsaasBase;
 
-    if (!asaasResponse.ok) {
-      logStep("ASAAS payment creation failed", { status: asaasResponse.status, errors: paymentErrors });
-      
-      if (paymentErrors && paymentErrors.length > 0) {
-        const errorMessages = paymentErrors.map((err: any) => err.description || err.message || 'Erro desconhecido');
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: errorMessages.join('; '),
-            asaas_errors: paymentErrors
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
+    try {
+      const subscriptionResult = await asaasFetch('/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify(subscriptionPayload),
+      });
+
+      if (subscriptionResult.res.ok) {
+        asaasData = await subscriptionResult.res.json();
+        usedAsaasBase = subscriptionResult.base;
+        logStep("ASAAS subscription created successfully", { 
+          subscriptionId: asaasData.id, 
+          environment: usedAsaasBase,
+          cycle: subscriptionPayload.cycle
+        });
+      } else {
+        throw new Error('Subscription creation failed, will try single payment');
       }
-      
-      throw new Error('Erro ao processar pagamento');
-    }
+    } catch (subscriptionError) {
+      logStep("Subscription creation failed, falling back to single payment", { error: subscriptionError.message });
+      isRecurringSubscription = false;
 
-    const asaasData = await asaasResponse.json();
-    logStep("ASAAS payment created", { paymentId: asaasData.id, invoiceUrl: asaasData.invoiceUrl, environment: usedAsaasBase });
+      // Fallback to single payment
+      const paymentPayload: any = {
+        customer: customerId,
+        billingType: payment_method,
+        value: price,
+        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        description: `Pagamento ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
+        externalReference: `payment_${plan_id}_${user?.id || 'guest'}`,
+        callback: {
+          successUrl: `${req.headers.get("origin") || ''}/planos?payment=success`,
+          autoRedirect: false
+        }
+      };
+
+      const { res: asaasResponse, base: paymentAsaasBase, asaasErrors: paymentErrors } = await asaasFetch('/payments', {
+        method: 'POST',
+        body: JSON.stringify(paymentPayload),
+      });
+
+      if (!asaasResponse.ok) {
+        logStep("ASAAS payment creation failed", { status: asaasResponse.status, errors: paymentErrors });
+        
+        if (paymentErrors && paymentErrors.length > 0) {
+          const errorMessages = paymentErrors.map((err: any) => err.description || err.message || 'Erro desconhecido');
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: errorMessages.join('; '),
+              asaas_errors: paymentErrors
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          );
+        }
+        
+        throw new Error('Erro ao processar pagamento');
+      }
+
+      asaasData = await asaasResponse.json();
+      usedAsaasBase = paymentAsaasBase;
+      logStep("ASAAS single payment created as fallback", { 
+        paymentId: asaasData.id, 
+        invoiceUrl: asaasData.invoiceUrl, 
+        environment: usedAsaasBase 
+      });
+    }
 
     // Create pending subscription record using service client (bypasses RLS)
     // Only create if user is authenticated - for guests, they'll need to complete signup first
     if (user) {
+      const subscriptionData = {
+        user_id: user.id,
+        plan_id: plan_id,
+        billing_cycle: billing_cycle,
+        status: 'pending',
+        external_subscription_id: asaasData.id, // This could be subscription ID or payment ID
+        payment_provider: 'asaas',
+        expires_at: billing_cycle === 'yearly' 
+          ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
       const { error: subscriptionError } = await supabaseServiceClient
         .from('user_subscriptions')
-        .insert({
-          user_id: user.id,
-          plan_id: plan_id,
-          billing_cycle: billing_cycle,
-          status: 'pending',
-          external_subscription_id: asaasData.id,
-          payment_provider: 'asaas',
-          expires_at: billing_cycle === 'yearly' 
-            ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        });
+        .insert(subscriptionData);
 
       if (subscriptionError) {
         logStep("Subscription creation failed", { error: subscriptionError });
         throw new Error('Erro ao criar assinatura');
       }
       
-      logStep("Subscription created successfully", { userId: user.id, planId: plan_id });
+      logStep("Subscription created successfully", { 
+        userId: user.id, 
+        planId: plan_id,
+        isRecurring: isRecurringSubscription,
+        externalId: asaasData.id
+      });
     } else {
-      logStep("Guest payment created - subscription will be created on signup", { paymentId: asaasData.id });
+      logStep("Guest transaction created - subscription will be created on signup", { 
+        externalId: asaasData.id,
+        isRecurring: isRecurringSubscription
+      });
     }
 
+    // Get the correct URL for checkout
+    const checkoutUrl = asaasData.invoiceUrl || asaasData.url || `${usedAsaasBase}/checkout/${asaasData.id}`;
 
     return new Response(
       JSON.stringify({
         success: true,
-        checkout_url: asaasData.invoiceUrl,
-        payment_id: asaasData.id
+        checkout_url: checkoutUrl,
+        payment_id: asaasData.id,
+        subscription_type: isRecurringSubscription ? 'recurring' : 'single',
+        environment: usedAsaasBase?.includes('sandbox') ? 'sandbox' : 'production'
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
