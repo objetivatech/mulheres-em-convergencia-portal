@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-token",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const logStep = (step: string, details?: any) => {
@@ -24,13 +24,15 @@ const isEventProcessed = async (supabaseClient: any, eventId: string, paymentId:
 };
 
 // Função para marcar evento como processado
-const markEventAsProcessed = async (supabaseClient: any, eventId: string, paymentId: string, eventType: string) => {
+const markEventAsProcessed = async (supabaseClient: any, eventId: string, paymentId: string, eventType: string, webhookData?: any) => {
   await supabaseClient
     .from("webhook_events_log")
     .insert({
       event_id: eventId,
       payment_id: paymentId,
+      subscription_id: webhookData?.subscription?.id || null,
       event_type: eventType,
+      webhook_data: webhookData || null,
       processed_at: new Date().toISOString()
     });
 };
@@ -43,17 +45,8 @@ serve(async (req) => {
   try {
     logStep("Webhook received", { method: req.method, url: req.url });
 
-    // Validar token de segurança
-    const webhookToken = req.headers.get("X-Webhook-Token") || req.headers.get("x-webhook-token");
-    const expectedToken = Deno.env.get("ASAAS_WEBHOOK_TOKEN");
-    
-    if (expectedToken && webhookToken !== expectedToken) {
-      logStep("Unauthorized webhook request", { providedToken: webhookToken ? "***" : "none" });
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
+    // ASAAS usa validação por IP (já configurado no Supabase)
+    // Removida validação X-Webhook-Token conforme documentação oficial
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -114,7 +107,7 @@ serve(async (req) => {
         if (!subscription) {
           logStep("Subscription not found for payment", { paymentId: payment.id });
           // Marcar como processado mesmo assim para evitar reprocessamento
-          await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event);
+          await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
           return new Response(JSON.stringify({ 
             success: true, 
             message: "Subscription not found - payment may be unrelated" 
@@ -172,7 +165,7 @@ serve(async (req) => {
         }
 
         // Marcar evento como processado
-        await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event);
+        await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
 
         return new Response(JSON.stringify({ 
           success: true,

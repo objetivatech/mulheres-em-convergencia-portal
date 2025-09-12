@@ -1451,6 +1451,39 @@ export type Database = {
           },
         ]
       }
+      webhook_events_log: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+          id: string
+          payment_id: string | null
+          processed_at: string
+          subscription_id: string | null
+          webhook_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+          id?: string
+          payment_id?: string | null
+          processed_at?: string
+          subscription_id?: string | null
+          webhook_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          payment_id?: string | null
+          processed_at?: string
+          subscription_id?: string | null
+          webhook_data?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

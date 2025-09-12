@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUploader } from '@/components/blog/ImageUploader';
+import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -91,6 +92,9 @@ export const DashboardEmpresa = () => {
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewStats, setReviewStats] = useState<any>(null);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   const {
     register,
@@ -108,6 +112,12 @@ export const DashboardEmpresa = () => {
       fetchUserSubscription();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (business?.id) {
+      fetchReviews();
+    }
+  }, [business?.id]);
 
   const fetchBusiness = async () => {
     try {
@@ -171,6 +181,87 @@ export const DashboardEmpresa = () => {
       console.error('Erro ao carregar assinatura:', error);
     }
   };
+
+  const fetchReviews = async () => {
+    if (!business?.id) return;
+    
+    setLoadingReviews(true);
+    try {
+      // Buscar avaliações
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('business_reviews')
+        .select('*')
+        .eq('business_id', business.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (reviewsError) throw reviewsError;
+      setReviews(reviewsData || []);
+
+      // Calcular estatísticas
+      if (reviewsData && reviewsData.length > 0) {
+        const avgRating = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
+        const totalReviews = reviewsData.length;
+        
+        const distribution = {
+          5: reviewsData.filter(r => r.rating === 5).length,
+          4: reviewsData.filter(r => r.rating === 4).length,
+          3: reviewsData.filter(r => r.rating === 3).length,
+          2: reviewsData.filter(r => r.rating === 2).length,
+          1: reviewsData.filter(r => r.rating === 1).length,
+        };
+
+        setReviewStats({
+          averageRating: Number(avgRating.toFixed(1)),
+          totalReviews,
+          distribution
+        });
+      } else {
+        setReviewStats({ averageRating: 0, totalReviews: 0, distribution: {} });
+      }
+    } catch (error: any) {
+      console.error('Erro ao carregar avaliações:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar avaliações',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!userSubscription?.id || !window.confirm('Tem certeza que deseja cancelar sua assinatura?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('subscription-management', {
+        body: {
+          action: 'cancel',
+          subscriptionId: userSubscription.id
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Sucesso',
+        description: 'Assinatura cancelada com sucesso'
+      });
+
+      // Recarregar dados
+      fetchUserSubscription();
+      fetchBusiness();
+    } catch (error: any) {
+      console.error('Erro ao cancelar assinatura:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao cancelar assinatura. Tente novamente.',
+        variant: 'destructive'
+      });
+    }
 
   const onSubmit = async (data: BusinessFormData) => {
     setSaving(true);
@@ -302,9 +393,18 @@ export const DashboardEmpresa = () => {
                 <span className="text-sm text-muted-foreground">
                   Ciclo: {userSubscription.billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}
                 </span>
-                <Button variant="outline" asChild>
-                  <a href="/planos">Alterar Plano</a>
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" asChild>
+                    <a href="/planos">Alterar Plano</a>
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleCancelSubscription}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -388,10 +488,11 @@ export const DashboardEmpresa = () => {
         )}
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
             <TabsTrigger value="imagens">Imagens</TabsTrigger>
             <TabsTrigger value="contatos">Contatos</TabsTrigger>
+            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dados" className="space-y-6">
@@ -668,8 +769,18 @@ export const DashboardEmpresa = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="avaliacoes" className="space-y-6">
+            <BusinessReviewsTab 
+              reviews={reviews}
+              reviewStats={reviewStats}
+              loadingReviews={loadingReviews}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </Layout>
   );
 };
+
+export default DashboardEmpresa;
