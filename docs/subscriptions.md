@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-O sistema de assinaturas do Portal Mulheres em Convergência permite que usuários assinem planos para ter acesso ao Diretório de Associadas e recursos premium. O sistema suporta tanto usuários logados quanto não logados, com integração completa ao gateway de pagamento ASAAS.
+O sistema de assinaturas do Portal Mulheres em Convergência permite que usuários assinem planos para ter acesso ao Diretório de Associadas e recursos premium. O sistema suporta tanto usuários logados quanto não logados, com integração completa ao gateway de pagamento ASAAS e persistência automática de dados do cliente (perfil, endereços, contatos).
 
 ## Fluxo de Assinatura
 
@@ -12,8 +12,10 @@ O sistema de assinaturas do Portal Mulheres em Convergência permite que usuári
 2. **Seleção de Plano**: Escolhe entre assinatura mensal ou anual
 3. **Dados do Cliente**: Modal abre com dados pré-preenchidos do perfil do usuário
 4. **Validação**: Sistema verifica CPF duplicado e valida dados
-5. **Pagamento**: Usuário é redirecionado para gateway ASAAS
-6. **Confirmação**: Sistema registra assinatura pendente no banco de dados
+5. **Pagamento**: Usuário é redirecionado para checkout ASAAS (URL /i/...)
+6. **Persistência**: Sistema salva automaticamente perfil, endereço de cobrança e contatos
+7. **Confirmação**: Sistema registra assinatura pendente no banco de dados
+8. **Log de Atividade**: Todas as ações são registradas no histórico do usuário
 
 ### 2. Para Usuários Não Logados
 
@@ -22,8 +24,9 @@ O sistema de assinaturas do Portal Mulheres em Convergência permite que usuári
 3. **Cadastro + Dados**: Modal abre com campos de cadastro (email, senha) + dados de cobrança
 4. **Validação**: Sistema verifica se email/CPF já existem
 5. **Criação de Conta**: Sistema cria conta via Supabase Auth
-6. **Pagamento**: Usuário é redirecionado para gateway ASAAS
+6. **Pagamento**: Usuário é redirecionado para checkout ASAAS (URL /i/...)
 7. **Confirmação**: Sistema registra assinatura pendente
+8. **Observação**: Dados de endereço/contatos são salvos após confirmação de email
 
 ## Componentes Principais
 
@@ -43,9 +46,12 @@ Função serverless que gerencia a criação de assinaturas:
 
 - **Autenticação**: Verifica token do usuário logado
 - **Validação Inteligente**: Usa dados do perfil + formulário
-- **ASAAS Integration**: Cria cliente e cobrança no gateway
+- **ASAAS Integration**: Cria cliente e assinatura/cobrança no gateway
+- **URL Correta**: Busca pagamento PENDING da assinatura e retorna invoiceUrl (/i/...)
 - **Fallback Environment**: Tenta produção, depois sandbox
 - **Error Handling**: Retorna erros detalhados do ASAAS
+- **Persistência de Dados**: Salva perfil, endereços e contatos do cliente
+- **Log de Atividades**: Registra todas as ações no histórico do usuário
 
 ### Página Planos
 
@@ -66,9 +72,11 @@ Interface principal para visualização e seleção de planos:
 ### Funcionalidades
 
 1. **Criação de Cliente**: Cadastra cliente com dados completos
-2. **Geração de Cobrança**: Cria PIX/Boleto com vencimento
-3. **URL de Pagamento**: Retorna link para checkout
-4. **Webhook**: Recebe notificações de status (a implementar)
+2. **Criação de Assinatura**: Cria assinatura recorrente no ASAAS
+3. **Busca de Pagamento**: Localiza pagamento PENDING da assinatura
+4. **URL Correta**: Retorna invoiceUrl do pagamento (/i/... format)
+5. **Fallback**: Em caso de falha, cria pagamento único
+6. **Webhook**: Recebe notificações de status (a implementar)
 
 ## Validações e Segurança
 
@@ -105,6 +113,22 @@ user_subscriptions (
 profiles (
   id, email, full_name, cpf, phone, city, state
 )
+
+-- Endereços dos usuários
+user_addresses (
+  id, user_id, address_type, street, number, 
+  complement, neighborhood, city, state, postal_code, is_primary
+)
+
+-- Contatos dos usuários
+user_contacts (
+  id, user_id, contact_type, contact_value, is_primary, verified
+)
+
+-- Log de atividades
+user_activity_log (
+  id, user_id, activity_type, activity_description, metadata, created_at
+)
 ```
 
 ## Estados de Assinatura
@@ -116,6 +140,15 @@ profiles (
 
 ## Troubleshooting
 
+### Link de Checkout Inválido (/c/sub_...)
+
+**Sintomas**: Link gerado não funciona, formato /c/sub_...
+**Causa**: Sistema tentando usar ID da assinatura como ID de pagamento
+**Solução**: 
+1. Verificar se o sistema está buscando pagamentos PENDING da assinatura
+2. Confirmar que está retornando o invoiceUrl correto (/i/...)
+3. Nunca retornar URLs com formato /c/sub_...
+
 ### Erro 500 na Edge Function
 
 **Sintomas**: Falha ao criar assinatura com erro interno
@@ -123,11 +156,13 @@ profiles (
 - URL incorreta da API ASAAS
 - Chave API inválida ou expirada
 - Dados obrigatórios não fornecidos
+- Falha ao buscar pagamentos da assinatura
 
 **Solução**:
 1. Verificar logs da Edge Function
 2. Confirmar configuração da chave ASAAS
 3. Validar dados enviados no payload
+4. Verificar se as APIs de pagamento estão acessíveis
 
 ### CPF Duplicado
 
@@ -143,6 +178,14 @@ profiles (
 
 **Sintomas**: Endereço não é preenchido automaticamente
 **Solução**: Preencher manualmente ou corrigir CEP informado
+
+### Dados Não Persistidos
+
+**Sintomas**: Informações preenchidas na compra não aparecem no perfil
+**Solução**: 
+1. Verificar se usuário estava logado durante a compra
+2. Confirmar que logs de atividade estão sendo criados
+3. Verificar políticas RLS das tabelas user_addresses e user_contacts
 
 ## Melhorias Futuras
 

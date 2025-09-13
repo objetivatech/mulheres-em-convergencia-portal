@@ -15,6 +15,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import UserActivityHistory from '@/components/user/UserActivityHistory';
+import { AddressFormDialog } from '@/components/user/AddressFormDialog';
+import { ContactFormDialog } from '@/components/user/ContactFormDialog';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -34,6 +36,10 @@ const DadosPessoaisPage = () => {
   const [profile, setProfile] = useState<any>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [contacts, setContacts] = useState<any[]>([]);
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [editingContact, setEditingContact] = useState<any>(null);
 
   const {
     register,
@@ -126,6 +132,14 @@ const DadosPessoaisPage = () => {
         .eq('id', user?.id);
 
       if (error) throw error;
+
+      // Log profile update activity
+      await supabase.rpc('log_user_activity', {
+        p_user_id: user.id,
+        p_activity_type: 'profile_updated',
+        p_description: 'Dados pessoais atualizados',
+        p_metadata: { updated_fields: Object.keys(data) }
+      });
 
       toast({
         title: 'Sucesso',
@@ -319,7 +333,14 @@ const DadosPessoaisPage = () => {
                               </p>
                             )}
                           </div>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setEditingAddress(address);
+                              setAddressDialogOpen(true);
+                            }}
+                          >
                             Editar
                           </Button>
                         </div>
@@ -330,14 +351,28 @@ const DadosPessoaisPage = () => {
                   <div className="text-center py-8">
                     <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Nenhum endereço cadastrado</p>
-                    <Button className="mt-4" variant="outline">
+                    <Button 
+                      className="mt-4" 
+                      variant="outline"
+                      onClick={() => {
+                        setEditingAddress(null);
+                        setAddressDialogOpen(true);
+                      }}
+                    >
                       Adicionar Endereço
                     </Button>
                   </div>
                 )}
                 
                 {addresses.length > 0 && (
-                  <Button className="w-full mt-4" variant="outline">
+                  <Button 
+                    className="w-full mt-4" 
+                    variant="outline"
+                    onClick={() => {
+                      setEditingAddress(null);
+                      setAddressDialogOpen(true);
+                    }}
+                  >
                     Adicionar Novo Endereço
                   </Button>
                 )}
@@ -379,7 +414,14 @@ const DadosPessoaisPage = () => {
                               {contact.contact_value}
                             </p>
                           </div>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setEditingContact(contact);
+                              setContactDialogOpen(true);
+                            }}
+                          >
                             Editar
                           </Button>
                         </div>
@@ -390,14 +432,28 @@ const DadosPessoaisPage = () => {
                   <div className="text-center py-8">
                     <Phone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">Nenhum contato adicional cadastrado</p>
-                    <Button className="mt-4" variant="outline">
+                    <Button 
+                      className="mt-4" 
+                      variant="outline"
+                      onClick={() => {
+                        setEditingContact(null);
+                        setContactDialogOpen(true);
+                      }}
+                    >
                       Adicionar Contato
                     </Button>
                   </div>
                 )}
                 
                 {contacts.length > 0 && (
-                  <Button className="w-full mt-4" variant="outline">
+                  <Button 
+                    className="w-full mt-4" 
+                    variant="outline"
+                    onClick={() => {
+                      setEditingContact(null);
+                      setContactDialogOpen(true);
+                    }}
+                  >
                     Adicionar Novo Contato
                   </Button>
                 )}
@@ -419,6 +475,34 @@ const DadosPessoaisPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Address Dialog */}
+        <AddressFormDialog
+          open={addressDialogOpen}
+          loading={loading}
+          address={editingAddress}
+          onClose={() => {
+            setAddressDialogOpen(false);
+            setEditingAddress(null);
+          }}
+          onSuccess={() => {
+            fetchAddresses();
+          }}
+        />
+
+        {/* Contact Dialog */}
+        <ContactFormDialog
+          open={contactDialogOpen}
+          loading={loading}
+          contact={editingContact}
+          onClose={() => {
+            setContactDialogOpen(false);
+            setEditingContact(null);
+          }}
+          onSuccess={() => {
+            fetchContacts();
+          }}
+        />
       </div>
     </Layout>
   );

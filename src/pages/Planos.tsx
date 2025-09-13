@@ -383,32 +383,109 @@ const Planos: React.FC = () => {
           try {
             await handleSubscribe(selectedPlanId, selectedBilling, values, signupData);
             
-            // Update profile with any new data provided (only for existing users)
+            // Persist customer data (profile, address, contacts) for authenticated users
             if (user && values) {
               const profileUpdates: any = {};
+              let hasProfileUpdates = false;
+              
+              // Update profile data
               if (values.name && values.name !== userProfile?.full_name) {
                 profileUpdates.full_name = values.name;
+                hasProfileUpdates = true;
               }
               if (values.cpfCnpj && values.cpfCnpj !== userProfile?.cpf) {
                 profileUpdates.cpf = values.cpfCnpj;
+                hasProfileUpdates = true;
               }
               if (values.phone && values.phone !== userProfile?.phone) {
                 profileUpdates.phone = values.phone;
+                hasProfileUpdates = true;
               }
               if (values.city && values.city !== userProfile?.city) {
                 profileUpdates.city = values.city;
+                hasProfileUpdates = true;
               }
               if (values.state && values.state !== userProfile?.state) {
                 profileUpdates.state = values.state;
+                hasProfileUpdates = true;
               }
               
-              if (Object.keys(profileUpdates).length > 0) {
+              if (hasProfileUpdates) {
                 await supabase
                   .from('profiles')
                   .update(profileUpdates)
                   .eq('id', user.id);
+                
+                // Log profile update
+                await supabase.rpc('log_user_activity', {
+                  p_user_id: user.id,
+                  p_activity_type: 'profile_updated',
+                  p_description: 'Perfil atualizado durante assinatura',
+                  p_metadata: { updated_fields: Object.keys(profileUpdates) }
+                });
+                
                 // Refresh profile data
                 await fetchUserProfile();
+              }
+
+              // Save billing address if provided
+              if (values.address && values.city && values.state) {
+                try {
+                  const { error: addressError } = await supabase
+                    .from('user_addresses')
+                    .insert({
+                      user_id: user.id,
+                      address_type: 'billing',
+                      street: values.address,
+                      number: values.addressNumber || 'S/N',
+                      complement: values.complement || null,
+                      neighborhood: values.province || null,
+                      city: values.city,
+                      state: values.state,
+                      postal_code: values.postalCode || null,
+                      is_primary: true,
+                      country: 'Brasil'
+                    });
+
+                  if (!addressError) {
+                    // Log address addition
+                    await supabase.rpc('log_user_activity', {
+                      p_user_id: user.id,
+                      p_activity_type: 'address_added',
+                      p_description: 'Endereço de cobrança adicionado durante assinatura',
+                      p_metadata: { address_type: 'billing', city: values.city, state: values.state }
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error saving billing address:', error);
+                }
+              }
+
+              // Save phone contact if provided
+              if (values.phone) {
+                try {
+                  const { error: contactError } = await supabase
+                    .from('user_contacts')
+                    .insert({
+                      user_id: user.id,
+                      contact_type: 'phone',
+                      contact_value: values.phone,
+                      is_primary: true,
+                      verified: false
+                    });
+
+                  if (!contactError) {
+                    // Log contact addition
+                    await supabase.rpc('log_user_activity', {
+                      p_user_id: user.id,
+                      p_activity_type: 'contact_added',
+                      p_description: 'Contato telefônico adicionado durante assinatura',
+                      p_metadata: { contact_type: 'phone' }
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error saving phone contact:', error);
+                }
               }
             }
             

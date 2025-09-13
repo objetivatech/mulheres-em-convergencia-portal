@@ -414,32 +414,87 @@ serve(async (req) => {
       });
     }
 
-    // Get the payment details to get the correct checkout URL
+    // Get the correct checkout URL - CRITICAL FIX
     let checkoutUrl = asaasData.invoiceUrl || asaasData.url;
     
-    if (!checkoutUrl) {
+    // For recurring subscriptions, we need to get the PENDING payment URL
+    if (!checkoutUrl && isRecurringSubscription) {
       try {
-        // Fetch the payment details to get the correct public URL
-        const paymentResponse = await fetch(`${usedAsaasBase}/payments/${asaasData.id}`, {
-          method: 'GET',
-          headers: {
-            'access_token': asaasApiKey,
-            'Content-Type': 'application/json'
+        logStep("Fetching PENDING payment for subscription", { subscriptionId: asaasData.id });
+        
+        // Try to get PENDING payments for this subscription
+        const paymentsResponse = await asaasFetch(`/payments?subscription=${asaasData.id}&status=PENDING&limit=1&offset=0`, {
+          method: 'GET'
+        });
+
+        if (paymentsResponse.res.ok) {
+          const paymentsData = await paymentsResponse.res.json();
+          if (paymentsData.data && paymentsData.data.length > 0) {
+            const pendingPayment = paymentsData.data[0];
+            checkoutUrl = pendingPayment.invoiceUrl || pendingPayment.bankSlipUrl;
+            logStep("Found PENDING payment for subscription", { 
+              paymentId: pendingPayment.id, 
+              invoiceUrl: checkoutUrl 
+            });
           }
+        } else {
+          logStep("Failed to fetch subscription payments, trying alternative endpoint");
+          
+          // Fallback: try alternative endpoint
+          const altPaymentsResponse = await asaasFetch(`/subscriptions/${asaasData.id}/payments?status=PENDING&limit=1&offset=0`, {
+            method: 'GET'
+          });
+
+          if (altPaymentsResponse.res.ok) {
+            const altPaymentsData = await altPaymentsResponse.res.json();
+            if (altPaymentsData.data && altPaymentsData.data.length > 0) {
+              const pendingPayment = altPaymentsData.data[0];
+              checkoutUrl = pendingPayment.invoiceUrl || pendingPayment.bankSlipUrl;
+              logStep("Found PENDING payment via alternative endpoint", { 
+                paymentId: pendingPayment.id, 
+                invoiceUrl: checkoutUrl 
+              });
+            }
+          }
+        }
+      } catch (error) {
+        logStep("Error fetching subscription payments", error);
+      }
+    }
+    
+    // For single payments, try to fetch payment details if no URL
+    if (!checkoutUrl && !isRecurringSubscription) {
+      try {
+        const { res: paymentResponse } = await asaasFetch(`/payments/${asaasData.id}`, {
+          method: 'GET'
         });
 
         if (paymentResponse.ok) {
           const paymentData = await paymentResponse.json();
-          checkoutUrl = paymentData.invoiceUrl || paymentData.bankSlipUrl || `https://www.asaas.com/c/${asaasData.id}`;
+          checkoutUrl = paymentData.invoiceUrl || paymentData.bankSlipUrl;
           logStep("Payment details fetched", { paymentUrl: checkoutUrl });
-        } else {
-          logStep("Failed to fetch payment details, using fallback", await paymentResponse.text());
-          checkoutUrl = `https://www.asaas.com/c/${asaasData.id}`;
         }
       } catch (error) {
-        logStep("Error fetching payment details, using fallback", error);
-        checkoutUrl = `https://www.asaas.com/c/${asaasData.id}`;
+        logStep("Error fetching single payment details", error);
       }
+    }
+
+    // Final validation - never return /c/sub_ URLs
+    if (!checkoutUrl || checkoutUrl.includes('/c/sub_')) {
+      const errorMsg = 'Não foi possível gerar link de pagamento. Verifique o email enviado pelo ASAAS ou entre em contato conosco.';
+      logStep("CRITICAL: No valid checkout URL found", { 
+        originalUrl: checkoutUrl, 
+        subscriptionId: asaasData.id,
+        isRecurring: isRecurringSubscription
+      });
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: errorMsg
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
     // Log user activity if authenticated
