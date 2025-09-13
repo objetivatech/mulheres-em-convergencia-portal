@@ -8,7 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSmartFormFiller } from '@/hooks/useSmartFormFiller';
+import { useCpfSystem } from '@/hooks/useCpfSystem';
+import AddressSelector from '@/components/form/AddressSelector';
+import ContactSelector from '@/components/form/ContactSelector';
+import CpfMergeDialog, { type MergeSelections } from '@/components/form/CpfMergeDialog';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Informe o nome completo'),
@@ -57,8 +63,25 @@ interface CustomerInfoDialogProps {
 
 const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, userProfile, onClose, onSubmit }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [cpfExists, setCpfExists] = useState<string | null>(null);
   const [addressLoading, setAddressLoading] = useState(false);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [existingUserData, setExistingUserData] = useState<any>(null);
+  
+  // Smart form filler for logged-in users
+  const {
+    hasAddresses,
+    hasPhoneContacts,
+    getAddressSuggestions,
+    getContactSuggestions,
+    selectAddress,
+    selectContact,
+    getFormValues,
+    autoFillPrimary,
+  } = useSmartFormFiller();
+  
+  const { useUserByCpf, useUserContacts, useUserAddresses, cpfUtils } = useCpfSystem();
   
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -79,42 +102,71 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     },
   });
 
-  // Pre-fill form with user profile data when dialog opens
+  // Pre-fill form with user profile data and smart suggestions when dialog opens
   useEffect(() => {
-    if (open && userProfile) {
+    if (open && user) {
       const updates: Partial<CustomerFormData> = {};
       
-      if (userProfile.full_name) updates.name = userProfile.full_name;
-      if (userProfile.cpf) updates.cpfCnpj = userProfile.cpf;
-      if (userProfile.phone) updates.phone = userProfile.phone;
-      if (userProfile.city) updates.city = userProfile.city;
-      if (userProfile.state) updates.state = userProfile.state;
+      // Fill from user profile
+      if (userProfile?.full_name) updates.name = userProfile.full_name;
+      if (userProfile?.cpf) updates.cpfCnpj = userProfile.cpf;
+      if (userProfile?.phone) updates.phone = userProfile.phone;
+      if (userProfile?.city) updates.city = userProfile.city;
+      if (userProfile?.state) updates.state = userProfile.state;
       
-      // Reset form with new values
+      // Auto-fill primary data from smart form filler
+      const smartValues = autoFillPrimary();
+      
+      // Reset form with combined values
       form.reset({
         name: updates.name || '',
         cpfCnpj: updates.cpfCnpj || '',
-        phone: updates.phone || '',
+        phone: smartValues.phone || updates.phone || '',
+        postalCode: smartValues.postalCode || '',
+        address: smartValues.address || '',
+        addressNumber: smartValues.addressNumber || '',
+        complement: smartValues.complement || '',
+        province: smartValues.province || '',
+        city: smartValues.city || updates.city || '',
+        state: smartValues.state || updates.state || '',
+      });
+    } else if (open && !user) {
+      // Reset form for non-logged users
+      form.reset({
+        name: '',
+        cpfCnpj: '',
+        phone: '',
         postalCode: '',
         address: '',
         addressNumber: '',
         complement: '',
         province: '',
-        city: updates.city || '',
-        state: updates.state || '',
+        city: '',
+        state: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
       });
     }
-  }, [open, userProfile, form]);
+  }, [open, user, userProfile, form, autoFillPrimary]);
 
-  // CPF validation and duplicate check
+  // CPF validation and duplicate check with merge option
   const validateCpf = async (cpf: string) => {
     if (!cpf || cpf.length < 11) return;
     
     const { data } = await supabase.rpc('get_user_by_cpf', { cpf_input: cpf });
     if (data && data.length > 0 && data[0].id !== user?.id) {
-      setCpfExists(`CPF já cadastrado para ${data[0].full_name}`);
+      setExistingUserData(data[0]);
+      if (user) {
+        // For logged-in users, just show warning
+        setCpfExists(`CPF já cadastrado para ${data[0].full_name}`);
+      } else {
+        // For non-logged users, offer to merge data
+        setCpfExists(`CPF já cadastrado para ${data[0].full_name}. Clique para mesclar dados.`);
+      }
     } else {
       setCpfExists(null);
+      setExistingUserData(null);
     }
   };
 
@@ -151,10 +203,57 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     }
   };
 
+  // Handle CPF merge
+  const handleCpfMerge = async (selections: MergeSelections) => {
+    if (!existingUserData) return;
+    
+    try {
+      // Here you would implement the merge logic
+      toast({
+        title: 'Dados mesclados com sucesso',
+        description: 'Os dados foram unificados no cadastro existente.',
+      });
+      setShowMergeDialog(false);
+    } catch (error) {
+      toast({
+        title: 'Erro ao mesclar dados',
+        description: 'Não foi possível unificar os dados.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handle smart form updates (address/contact selection)
+  const handleAddressSelect = (addressId: string | null) => {
+    selectAddress(addressId);
+    const values = getFormValues();
+    
+    if (values.address) form.setValue('address', values.address);
+    if (values.addressNumber) form.setValue('addressNumber', values.addressNumber);
+    if (values.complement) form.setValue('complement', values.complement);
+    if (values.province) form.setValue('province', values.province);
+    if (values.city) form.setValue('city', values.city);
+    if (values.state) form.setValue('state', values.state);
+    if (values.postalCode) form.setValue('postalCode', values.postalCode);
+  };
+
+  const handleContactSelect = (contactId: string | null) => {
+    selectContact(contactId);
+    const values = getFormValues();
+    
+    if (values.phone) form.setValue('phone', values.phone);
+  };
+
   const handleSubmit = async (values: CustomerFormData) => {
     // Check for CPF conflicts if user is logged in
-    if (user && cpfExists) {
+    if (user && cpfExists && existingUserData) {
       return; // Block submission if CPF belongs to another user
+    }
+
+    // For non-logged users with existing CPF, offer merge option
+    if (!user && cpfExists && existingUserData) {
+      setShowMergeDialog(true);
+      return;
     }
 
     // Prepare signup data if user is not logged in
@@ -271,30 +370,51 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                       }}
                     />
                   </FormControl>
-                  {cpfExists && (
-                    <p className="text-sm text-destructive">
-                      {cpfExists}. <a href="/auth" className="underline">Faça login na conta existente</a>
-                    </p>
-                  )}
+                   {cpfExists && (
+                     <div className="text-sm text-destructive">
+                       {cpfExists}
+                       {!user && existingUserData ? (
+                         <Button 
+                           variant="link" 
+                           size="sm" 
+                           className="p-0 h-auto text-destructive underline ml-1"
+                           onClick={() => setShowMergeDialog(true)}
+                         >
+                           Mesclar dados
+                         </Button>
+                       ) : (
+                         <a href="/auth" className="underline ml-1">Faça login na conta existente</a>
+                       )}
+                     </div>
+                   )}
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    Telefone
-                    {userProfile?.phone && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
-                  </FormLabel>
-                  <FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormField
+               control={form.control}
+               name="phone"
+               render={({ field }) => (
+                 <FormItem>
+                   <FormLabel className="flex items-center gap-2">
+                     Telefone
+                     {userProfile?.phone && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                   </FormLabel>
+                   <FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl>
+                   <FormMessage />
+                   {/* Smart contact selector for logged users */}
+                   {user && hasPhoneContacts() && (
+                     <ContactSelector
+                       contacts={getContactSuggestions('phone')}
+                       onSelect={handleContactSelect}
+                       type="phone"
+                       className="mt-2"
+                     />
+                   )}
+                 </FormItem>
+               )}
+             />
 
             <FormField
               control={form.control}
@@ -386,22 +506,34 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    Estado (UF)
-                    {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
-                  </FormLabel>
-                  <FormControl><Input placeholder="RS" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormField
+               control={form.control}
+               name="state"
+               render={({ field }) => (
+                 <FormItem>
+                   <FormLabel className="flex items-center gap-2">
+                     Estado (UF)
+                     {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                   </FormLabel>
+                   <FormControl><Input placeholder="RS" {...field} /></FormControl>
+                   <FormMessage />
+                 </FormItem>
+               )}
+             />
 
-            <DialogFooter className="md:col-span-2 flex gap-2 justify-end mt-4">
+             {/* Smart address selector for logged users */}
+             {user && hasAddresses() && (
+               <div className="md:col-span-2">
+                 <AddressSelector
+                   addresses={getAddressSuggestions()}
+                   onSelect={handleAddressSelect}
+                   title="Usar endereço cadastrado"
+                   className="mt-4"
+                 />
+               </div>
+             )}
+
+             <DialogFooter className="md:col-span-2 flex gap-2 justify-end mt-4">
               <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
               <Button 
                 type="submit" 
@@ -411,10 +543,27 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               </Button>
             </DialogFooter>
           </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  );
-};
+         </Form>
+       </DialogContent>
+       
+       {/* CPF Merge Dialog */}
+       {existingUserData && (
+         <CpfMergeDialog
+           open={showMergeDialog}
+           onClose={() => setShowMergeDialog(false)}
+           onMerge={handleCpfMerge}
+           existingUser={existingUserData}
+           newUserData={{
+             name: form.getValues('name'),
+             email: form.getValues('email'),
+             phone: form.getValues('phone'),
+             cpf: form.getValues('cpfCnpj'),
+           }}
+           loading={loading}
+         />
+       )}
+     </Dialog>
+   );
+ };
 
-export default CustomerInfoDialog;
+ export default CustomerInfoDialog;

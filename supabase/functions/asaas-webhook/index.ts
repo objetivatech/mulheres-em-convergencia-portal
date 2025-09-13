@@ -147,37 +147,36 @@ serve(async (req) => {
 
         // Só atualizar se não estiver ativo
         if (subscription.status !== "active") {
-          // Atualizar status da assinatura para active
+          // Update subscription status to active
           const { error: updateError } = await supabaseClient
-            .from("user_subscriptions")
+            .from('user_subscriptions')
             .update({ 
-              status: "active",
-              updated_at: new Date().toISOString()
+              status: 'active'
             })
-            .eq("id", subscription.id);
+            .eq('id', subscription.id);
 
           if (updateError) {
-            throw new Error(`Failed to update subscription: ${updateError.message}`);
+            logStep('Failed to update subscription status', { error: updateError });
+          } else {
+            logStep('Subscription status updated to active');
           }
-
-          logStep("Subscription status updated to active");
-        } else {
-          logStep("Subscription already active, skipping update");
         }
+        
+        // Use new 31-day renewal system
+        const { data: renewalResult, error: renewalError } = await supabaseClient
+          .rpc('process_subscription_payment', {
+            p_user_id: subscription.user_id,
+            p_external_payment_id: payment.id,
+            p_amount: payment.value
+          });
 
-        // Ativar negócios do usuário
-        const { data: businesses, error: bizError } = await supabaseClient
-          .from("businesses")
-          .update({
-            subscription_active: true,
-            subscription_expires_at: subscription.expires_at,
-            updated_at: new Date().toISOString()
-          })
-          .eq("owner_id", subscription.user_id)
-          .eq("subscription_active", false) // Só atualizar os inativos
-          .select("id, name");
-
-        if (bizError) {
+        if (renewalError) {
+          logStep('Failed to process subscription renewal', { error: renewalError });
+        } else {
+          logStep('Businesses activated', {
+            count: renewalResult?.businesses_renewed || 0
+          });
+        }
           logStep("Error updating businesses", { error: bizError });
         } else {
           logStep("Businesses activated", { 

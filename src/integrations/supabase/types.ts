@@ -509,8 +509,10 @@ export type Database = {
           email: string | null
           featured: boolean | null
           gallery_images: string[] | null
+          grace_period_end: string | null
           id: string
           instagram: string | null
+          last_payment_date: string | null
           latitude: number | null
           logo_url: string | null
           longitude: number | null
@@ -527,6 +529,7 @@ export type Database = {
           subscription_active: boolean | null
           subscription_expires_at: string | null
           subscription_plan: string | null
+          subscription_renewal_date: string | null
           total_boost_credits: number | null
           updated_at: string | null
           views_count: number | null
@@ -546,8 +549,10 @@ export type Database = {
           email?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          grace_period_end?: string | null
           id?: string
           instagram?: string | null
+          last_payment_date?: string | null
           latitude?: number | null
           logo_url?: string | null
           longitude?: number | null
@@ -564,6 +569,7 @@ export type Database = {
           subscription_active?: boolean | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
+          subscription_renewal_date?: string | null
           total_boost_credits?: number | null
           updated_at?: string | null
           views_count?: number | null
@@ -583,8 +589,10 @@ export type Database = {
           email?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          grace_period_end?: string | null
           id?: string
           instagram?: string | null
+          last_payment_date?: string | null
           latitude?: number | null
           logo_url?: string | null
           longitude?: number | null
@@ -601,6 +609,7 @@ export type Database = {
           subscription_active?: boolean | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
+          subscription_renewal_date?: string | null
           total_boost_credits?: number | null
           updated_at?: string | null
           views_count?: number | null
@@ -1556,6 +1565,10 @@ export type Database = {
         }
         Returns: string
       }
+      deactivate_expired_businesses: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       evolve_newsletter_to_profile: {
         Args: {
           full_name?: string
@@ -1734,12 +1747,24 @@ export type Database = {
         }
         Returns: string
       }
+      process_subscription_payment: {
+        Args: {
+          p_amount: number
+          p_external_payment_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       remove_user_role: {
         Args: {
           old_role: Database["public"]["Enums"]["user_role"]
           user_uuid: string
         }
         Returns: undefined
+      }
+      renew_business_subscription: {
+        Args: { business_uuid: string }
+        Returns: boolean
       }
       secure_toggle_admin_status: {
         Args: { new_admin_status: boolean; target_user_id: string }
