@@ -176,7 +176,7 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{contact ? 'Editar Contato' : 'Adicionar Contato'}</DialogTitle>

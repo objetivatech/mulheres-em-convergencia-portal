@@ -171,7 +171,7 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{address ? 'Editar Endereço' : 'Adicionar Endereço'}</DialogTitle>

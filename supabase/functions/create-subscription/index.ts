@@ -512,6 +512,98 @@ serve(async (req) => {
           subscription_type: isRecurringSubscription ? 'recurring' : 'single'
         }
       });
+
+      // Persist customer data server-side (profile, address, contacts)
+      try {
+        // Update profile with customer data
+        if (getName() || getCpfCnpj() || getPhone()) {
+          const { error: profileError } = await supabaseServiceClient
+            .from('profiles')
+            .update({
+              full_name: getName() || undefined,
+              cpf: getCpfCnpj() || undefined,
+              phone: getPhone() || undefined,
+              city: getCity() || undefined,
+              state: getState() || undefined,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+          if (!profileError) {
+            await supabaseServiceClient.rpc('log_user_activity', {
+              p_user_id: user.id,
+              p_activity_type: 'profile_updated',
+              p_description: 'Perfil atualizado durante assinatura',
+              p_metadata: { source: 'subscription', plan_id: plan_id }
+            });
+            logStep("Profile updated server-side", { userId: user.id });
+          }
+        }
+
+        // Save billing address
+        if (customerInput?.address && getCity() && getState()) {
+          const addressData = {
+            user_id: user.id,
+            address_type: 'billing',
+            street: customerInput.address,
+            number: customerInput.addressNumber || '',
+            complement: customerInput.complement || null,
+            neighborhood: customerInput.province || null,
+            city: getCity(),
+            state: getState(),
+            postal_code: customerInput.postalCode || null,
+            country: 'Brasil',
+            is_primary: true
+          };
+
+          const { error: addressError } = await supabaseServiceClient
+            .from('user_addresses')
+            .insert(addressData);
+
+          if (!addressError) {
+            await supabaseServiceClient.rpc('log_user_activity', {
+              p_user_id: user.id,
+              p_activity_type: 'address_added',
+              p_description: 'Endereço de cobrança adicionado durante assinatura',
+              p_metadata: { address_type: 'billing', source: 'subscription' }
+            });
+            logStep("Billing address added server-side", { userId: user.id });
+          }
+        }
+
+        // Save phone contact
+        if (getPhone()) {
+          const contactData = {
+            user_id: user.id,
+            contact_type: 'phone',
+            contact_value: getPhone(),
+            is_primary: true,
+            verified: false
+          };
+
+          const { error: contactError } = await supabaseServiceClient
+            .from('user_contacts')
+            .insert(contactData);
+
+          if (!contactError) {
+            await supabaseServiceClient.rpc('log_user_activity', {
+              p_user_id: user.id,
+              p_activity_type: 'contact_added',
+              p_description: 'Contato telefônico adicionado durante assinatura',
+              p_metadata: { contact_type: 'phone', source: 'subscription' }
+            });
+            logStep("Phone contact added server-side", { userId: user.id });
+          }
+        }
+
+        logStep("Customer data persisted server-side successfully", { userId: user.id });
+      } catch (persistError) {
+        logStep("Error persisting customer data server-side", { 
+          error: persistError.message,
+          userId: user.id 
+        });
+        // Continue anyway - don't fail the subscription for data persistence errors
+      }
     }
 
     return new Response(

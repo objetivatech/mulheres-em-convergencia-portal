@@ -92,12 +92,31 @@ serve(async (req) => {
           value: payment.value 
         });
 
-        // Buscar assinatura pelo external_subscription_id
-        const { data: subscription, error: subError } = await supabaseClient
-          .from("user_subscriptions")
-          .select("*")
-          .eq("external_subscription_id", payment.id)
-          .maybeSingle();
+        // Buscar assinatura pelo payment.subscription (se pagamento for de assinatura)
+        let subscription = null;
+        let subError = null;
+
+        if (payment.subscription) {
+          // Se payment tem subscription, buscar pela subscription ID
+          const result = await supabaseClient
+            .from("user_subscriptions")
+            .select("*")
+            .eq("external_subscription_id", payment.subscription)
+            .maybeSingle();
+          
+          subscription = result.data;
+          subError = result.error;
+        } else {
+          // Fallback: buscar por payment ID (para pagamentos avulsos)
+          const result = await supabaseClient
+            .from("user_subscriptions")
+            .select("*")
+            .eq("external_subscription_id", payment.id)
+            .maybeSingle();
+          
+          subscription = result.data;
+          subError = result.error;
+        }
 
         if (subError) {
           logStep("Error searching subscription", { paymentId: payment.id, error: subError });
@@ -105,7 +124,10 @@ serve(async (req) => {
         }
 
         if (!subscription) {
-          logStep("Subscription not found for payment", { paymentId: payment.id });
+          logStep("Subscription not found for payment", { 
+            paymentId: payment.id, 
+            subscriptionId: payment.subscription 
+          });
           // Marcar como processado mesmo assim para evitar reprocessamento
           await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
           return new Response(JSON.stringify({ 

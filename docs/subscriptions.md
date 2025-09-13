@@ -4,6 +4,28 @@
 
 O sistema de assinaturas do Portal Mulheres em Convergência permite que usuários assinem planos para ter acesso ao Diretório de Associadas e recursos premium. O sistema suporta tanto usuários logados quanto não logados, com integração completa ao gateway de pagamento ASAAS e persistência automática de dados do cliente (perfil, endereços, contatos).
 
+## CORREÇÕES IMPLEMENTADAS
+
+### ✅ 1. Link de Checkout Corrigido
+- **Problema**: Links `/c/sub_...` não funcionavam
+- **Solução**: Sistema agora busca pagamento PENDING da assinatura e retorna `invoiceUrl` correto (formato `/i/...`)
+- **Implementação**: Edge Function `create-subscription` corrigida para buscar pagamentos associados à assinatura
+
+### ✅ 2. Webhook de Pagamento Corrigido  
+- **Problema**: Pagamentos confirmados não ativavam negócios
+- **Solução**: Webhook agora busca assinatura por `payment.subscription` em vez de `payment.id`
+- **Implementação**: Edge Function `asaas-webhook` corrigida para mapear corretamente IDs
+
+### ✅ 3. Botões de Endereço/Contato Funcionais
+- **Problema**: Modais não abriam ao clicar nos botões
+- **Solução**: Corrigido `onOpenChange` nos componentes de diálogo
+- **Implementação**: `AddressFormDialog` e `ContactFormDialog` totalmente funcionais
+
+### ✅ 4. Persistência de Dados Durante Compra
+- **Problema**: Dados preenchidos na assinatura não eram salvos no perfil
+- **Solução**: Implementada persistência server-side e client-side
+- **Implementação**: Dados salvos automaticamente nos perfis, endereços e contatos
+
 ## Fluxo de Assinatura
 
 ### 1. Para Usuários Logados
