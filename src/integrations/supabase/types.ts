@@ -1537,6 +1537,10 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      cleanup_old_activity_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_business_credits_account: {
         Args: { business_uuid: string }
         Returns: undefined
