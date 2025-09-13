@@ -262,6 +262,7 @@ export const DashboardEmpresa = () => {
         variant: 'destructive'
       });
     }
+  };
 
   const onSubmit = async (data: BusinessFormData) => {
     setSaving(true);

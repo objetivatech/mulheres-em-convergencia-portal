@@ -70,7 +70,7 @@ export const BusinessReviewsTab: React.FC<BusinessReviewsTabProps> = ({
                   .map(([stars, count]) => (
                     <div key={stars} className="flex items-center justify-between text-sm">
                       <span>{stars} ⭐</span>
-                      <span>{count}</span>
+                      <span>{count as number}</span>
                     </div>
                   ))}
               </div>
