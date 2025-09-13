@@ -173,15 +173,9 @@ serve(async (req) => {
         if (renewalError) {
           logStep('Failed to process subscription renewal', { error: renewalError });
         } else {
-          logStep('Businesses activated', {
-            count: renewalResult?.businesses_renewed || 0
-          });
-        }
-          logStep("Error updating businesses", { error: bizError });
-        } else {
-          logStep("Businesses activated", { 
-            count: businesses?.length || 0,
-            businesses: businesses?.map(b => ({ id: b.id, name: b.name }))
+          logStep('Businesses activated for 31 days', {
+            count: renewalResult?.businesses_renewed || 0,
+            renewal_date: renewalResult?.renewal_date || null
           });
         }
 
@@ -190,9 +184,10 @@ serve(async (req) => {
 
         return new Response(JSON.stringify({ 
           success: true,
-          message: "Payment processed successfully",
+          message: "Payment processed successfully - 31 day renewal applied",
           subscriptionId: subscription.id,
-          businessesActivated: businesses?.length || 0
+          businessesActivated: renewalResult?.businesses_renewed || 0,
+          renewal_date: renewalResult?.renewal_date || null
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,

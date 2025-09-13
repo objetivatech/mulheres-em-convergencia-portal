@@ -213,6 +213,7 @@ const Auth = () => {
                           name="password"
                           type={showPassword ? "text" : "password"}
                           required
+                          autoComplete="current-password"
                           className="pl-10 pr-10"
                           placeholder="Sua senha"
                         />
@@ -317,6 +318,7 @@ const Auth = () => {
                           type={showPassword ? "text" : "password"}
                           required
                           minLength={6}
+                          autoComplete="new-password"
                           className="pl-10 pr-10"
                           placeholder="Mínimo 6 caracteres"
                         />
