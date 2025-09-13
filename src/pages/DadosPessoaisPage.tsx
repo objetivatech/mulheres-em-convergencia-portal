@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import UserActivityHistory from '@/components/user/UserActivityHistory';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -407,21 +408,13 @@ const DadosPessoaisPage = () => {
           <TabsContent value="historico" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Histórico de Alterações</CardTitle>
+                <CardTitle>Histórico de Atividades</CardTitle>
                 <CardDescription>
-                  Veja o histórico de mudanças em seus dados
+                  Veja o histórico completo de suas ações no portal
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Funcionalidade em desenvolvimento
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Em breve você poderá visualizar o histórico completo de alterações
-                  </p>
-                </div>
+                <UserActivityHistory />
               </CardContent>
             </Card>
           </TabsContent>

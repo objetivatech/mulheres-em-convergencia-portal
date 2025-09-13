@@ -154,6 +154,19 @@ serve(async (req) => {
 
       logStep("Subscription cancelled successfully", { subscriptionId });
 
+      // Log subscription cancellation activity
+      await supabaseClient.rpc('log_user_activity', {
+        p_user_id: user.id,
+        p_activity_type: 'subscription_cancelled',
+        p_description: 'Assinatura cancelada pelo usuário',
+        p_metadata: {
+          subscription_id: subscription.id,
+          plan_id: subscription.plan_id,
+          external_subscription_id: subscription.external_subscription_id,
+          cancellation_reason: 'user_requested'
+        }
+      });
+
       return new Response(JSON.stringify({
         success: true,
         message: "Assinatura cancelada com sucesso"
@@ -231,6 +244,20 @@ serve(async (req) => {
         subscriptionId, 
         oldPlan: subscription.plan_id, 
         newPlan: newPlanId 
+      });
+
+      // Log subscription plan change activity
+      await supabaseClient.rpc('log_user_activity', {
+        p_user_id: user.id,
+        p_activity_type: 'subscription_updated',
+        p_description: `Plano de assinatura alterado para ${newPlan.display_name}`,
+        p_metadata: {
+          subscription_id: subscription.id,
+          old_plan_id: subscription.plan_id,
+          new_plan_id: newPlanId,
+          new_plan_name: newPlan.display_name,
+          billing_cycle: subscription.billing_cycle
+        }
       });
 
       return new Response(JSON.stringify({

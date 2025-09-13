@@ -414,8 +414,50 @@ serve(async (req) => {
       });
     }
 
-    // Get the correct URL for checkout
-    const checkoutUrl = asaasData.invoiceUrl || asaasData.url || `${usedAsaasBase}/checkout/${asaasData.id}`;
+    // Get the payment details to get the correct checkout URL
+    let checkoutUrl = asaasData.invoiceUrl || asaasData.url;
+    
+    if (!checkoutUrl) {
+      try {
+        // Fetch the payment details to get the correct public URL
+        const paymentResponse = await fetch(`${usedAsaasBase}/payments/${asaasData.id}`, {
+          method: 'GET',
+          headers: {
+            'access_token': usedAsaasApiKey,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          checkoutUrl = paymentData.invoiceUrl || paymentData.bankSlipUrl || `https://www.asaas.com/c/${asaasData.id}`;
+          logStep("Payment details fetched", { paymentUrl: checkoutUrl });
+        } else {
+          logStep("Failed to fetch payment details, using fallback", await paymentResponse.text());
+          checkoutUrl = `https://www.asaas.com/c/${asaasData.id}`;
+        }
+      } catch (error) {
+        logStep("Error fetching payment details, using fallback", error);
+        checkoutUrl = `https://www.asaas.com/c/${asaasData.id}`;
+      }
+    }
+
+    // Log user activity if authenticated
+    if (user) {
+      await supabaseServiceRole.rpc('log_user_activity', {
+        p_user_id: user.id,
+        p_activity_type: 'subscription_created',
+        p_description: `Assinatura do plano ${selectedPlan.display_name} (${billing_cycle})`,
+        p_metadata: {
+          plan_id: plan_id,
+          plan_name: selectedPlan.display_name,
+          billing_cycle: billing_cycle,
+          amount: billingPrice,
+          payment_id: asaasData.id,
+          subscription_type: isRecurringSubscription ? 'recurring' : 'single'
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({

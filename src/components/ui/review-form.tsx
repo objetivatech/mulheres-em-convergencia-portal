@@ -46,19 +46,26 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ businessId, onReviewSubmitted }
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('business_reviews')
-        .insert({
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase.functions.invoke('submit-business-review', {
+        body: {
           business_id: businessId,
           rating,
           title: title.trim() || null,
           comment: comment.trim() || null,
           reviewer_name: reviewerName.trim(),
-          reviewer_email: reviewerEmail.trim() || null,
-          verified: false
-        });
+          reviewer_email: reviewerEmail.trim() || null
+        },
+        headers: session ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : {}
+      });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(data?.error || error.message || 'Erro ao enviar avaliação');
+      }
 
       toast({
         title: "Avaliação enviada!",
@@ -76,11 +83,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ businessId, onReviewSubmitted }
         onReviewSubmitted();
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao enviar avaliação:', error);
       toast({
         title: "Erro ao enviar avaliação",
-        description: "Tente novamente em alguns instantes.",
+        description: error.message || "Tente novamente em alguns instantes.",
         variant: "destructive"
       });
     } finally {

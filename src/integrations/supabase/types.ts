@@ -1247,6 +1247,39 @@ export type Database = {
           },
         ]
       }
+      user_activity_log: {
+        Row: {
+          activity_description: string
+          activity_type: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_description: string
+          activity_type: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_description?: string
+          activity_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_addresses: {
         Row: {
           address_type: string
@@ -1687,6 +1720,15 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      log_user_activity: {
+        Args: {
+          p_activity_type: string
+          p_description: string
+          p_metadata?: Json
+          p_user_id: string
+        }
+        Returns: string
       }
       remove_user_role: {
         Args: {

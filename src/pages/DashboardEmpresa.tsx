@@ -307,6 +307,19 @@ export const DashboardEmpresa = () => {
           .eq('id', business.id);
 
         if (error) throw error;
+
+        // Log business update activity
+        await supabase.rpc('log_user_activity', {
+          p_user_id: user.id,
+          p_activity_type: 'business_updated',
+          p_description: `Informações da empresa ${data.name} foram atualizadas`,
+          p_metadata: {
+            business_id: business.id,
+            business_name: data.name,
+            updated_fields: Object.keys(data)
+          }
+        });
+        
       } else {
         // Criar novo
         const { data: newBusiness, error } = await supabase
@@ -317,6 +330,20 @@ export const DashboardEmpresa = () => {
 
         if (error) throw error;
         setBusiness(newBusiness);
+
+        // Log business creation activity
+        await supabase.rpc('log_user_activity', {
+          p_user_id: user.id,
+          p_activity_type: 'business_created',
+          p_description: `Empresa ${data.name} foi criada`,
+          p_metadata: {
+            business_id: newBusiness.id,
+            business_name: data.name,
+            category: data.category,
+            city: data.city,
+            state: data.state
+          }
+        });
       }
 
       toast({
