@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -178,16 +178,15 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
           <DialogTitle>
             {!user ? 'Cadastro e Dados para Assinatura' : 'Dados para Assinatura'}
           </DialogTitle>
-          {!user && (
-            <p className="text-sm text-muted-foreground">
-              Preencha seus dados para criar uma conta e assinar o plano.
-            </p>
-          )}
-          {user && userProfile && (
-            <p className="text-sm text-muted-foreground">
-              Alguns dados foram preenchidos automaticamente com informações do seu perfil.
-            </p>
-          )}
+          <DialogDescription>
+            {!user ? (
+              'Preencha seus dados para criar uma conta e assinar o plano.'
+            ) : userProfile ? (
+              'Alguns dados foram preenchidos automaticamente com informações do seu perfil.'
+            ) : (
+              'Complete os dados abaixo para finalizar sua assinatura.'
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

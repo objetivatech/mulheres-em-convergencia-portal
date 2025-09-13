@@ -423,7 +423,7 @@ serve(async (req) => {
         const paymentResponse = await fetch(`${usedAsaasBase}/payments/${asaasData.id}`, {
           method: 'GET',
           headers: {
-            'access_token': usedAsaasApiKey,
+            'access_token': asaasApiKey,
             'Content-Type': 'application/json'
           }
         });
@@ -444,15 +444,15 @@ serve(async (req) => {
 
     // Log user activity if authenticated
     if (user) {
-      await supabaseServiceRole.rpc('log_user_activity', {
+      await supabaseServiceClient.rpc('log_user_activity', {
         p_user_id: user.id,
         p_activity_type: 'subscription_created',
-        p_description: `Assinatura do plano ${selectedPlan.display_name} (${billing_cycle})`,
+        p_description: `Assinatura do plano ${plan.display_name} (${billing_cycle})`,
         p_metadata: {
           plan_id: plan_id,
-          plan_name: selectedPlan.display_name,
+          plan_name: plan.display_name,
           billing_cycle: billing_cycle,
-          amount: billingPrice,
+          amount: price,
           payment_id: asaasData.id,
           subscription_type: isRecurringSubscription ? 'recurring' : 'single'
         }

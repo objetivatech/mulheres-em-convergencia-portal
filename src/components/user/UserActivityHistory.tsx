@@ -34,9 +34,14 @@ const UserActivityHistory: React.FC = () => {
 
   const fetchUserActivities = async () => {
     try {
+      // Filter activities from the last 12 months
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
       const { data, error } = await supabase
         .from('user_activity_log')
         .select('*')
+        .gte('created_at', twelveMonthsAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(50);
 
