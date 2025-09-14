@@ -428,26 +428,27 @@ const Planos: React.FC = () => {
                 await fetchUserProfile();
               }
 
-              // Save billing address if provided
+              // Save billing address if provided using safe upsert
               if (values.address && values.city && values.state) {
                 try {
-                  const { error: addressError } = await supabase
-                    .from('user_addresses')
-                    .insert({
-                      user_id: user.id,
-                      address_type: 'billing',
-                      street: values.address,
-                      number: values.addressNumber || 'S/N',
-                      complement: values.complement || null,
-                      neighborhood: values.province || null,
-                      city: values.city,
-                      state: values.state,
-                      postal_code: values.postalCode || null,
-                      is_primary: true,
-                      country: 'Brasil'
+                  const { data: addressResult, error: addressError } = await supabase
+                    .rpc('upsert_user_address_safe', {
+                      p_user_id: user.id,
+                      p_address_type: 'billing',
+                      p_street: values.address,
+                      p_number: values.addressNumber || 'S/N',
+                      p_complement: values.complement || null,
+                      p_neighborhood: values.province || null,
+                      p_city: values.city,
+                      p_state: values.state,
+                      p_postal_code: values.postalCode || null,
+                      p_country: 'Brasil',
+                      p_is_primary: false // Don't set as primary to avoid conflicts
                     });
 
-                  if (!addressError) {
+                  if (addressError) {
+                    console.error('Error upserting billing address:', addressError);
+                  } else if (addressResult && (addressResult as any)?.success) {
                     // Log address addition
                     await supabase.rpc('log_user_activity', {
                       p_user_id: user.id,
@@ -461,20 +462,20 @@ const Planos: React.FC = () => {
                 }
               }
 
-              // Save phone contact if provided
+              // Save phone contact if provided using safe upsert
               if (values.phone) {
                 try {
-                  const { error: contactError } = await supabase
-                    .from('user_contacts')
-                    .insert({
-                      user_id: user.id,
-                      contact_type: 'phone',
-                      contact_value: values.phone,
-                      is_primary: true,
-                      verified: false
+                  const { data: contactResult, error: contactError } = await supabase
+                    .rpc('upsert_user_contact_safe', {
+                      p_user_id: user.id,
+                      p_contact_type: 'phone',
+                      p_contact_value: values.phone,
+                      p_is_primary: false // Don't set as primary to avoid conflicts
                     });
 
-                  if (!contactError) {
+                  if (contactError) {
+                    console.error('Error upserting phone contact:', contactError);
+                  } else if (contactResult && (contactResult as any)?.success) {
                     // Log contact addition
                     await supabase.rpc('log_user_activity', {
                       p_user_id: user.id,

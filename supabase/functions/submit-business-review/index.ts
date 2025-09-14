@@ -107,28 +107,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Insert the review
-    console.log('[SUBMIT-REVIEW] Inserting review');
-    const { data: review, error: reviewError } = await supabase
-      .from('business_reviews')
-      .insert({
-        business_id: body.business_id,
-        rating: body.rating,
-        title: body.title?.trim() || null,
-        comment: body.comment?.trim() || null,
-        reviewer_name: body.reviewer_name.trim(),
-        reviewer_email: body.reviewer_email?.trim() || null,
-        verified: false
-      })
-      .select()
-      .single();
+    // Get authenticated user if possible
+    const authHeader = req.headers.get('Authorization');
+    let reviewerId = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user) {
+        reviewerId = user.id;
+      }
+    }
 
-    if (reviewError) {
-      console.error('[SUBMIT-REVIEW] Error inserting review:', reviewError);
+    // Use the new safe RPC function
+    console.log('[SUBMIT-REVIEW] Calling submit_business_review_safe RPC');
+    const { data: result, error: rpcError } = await supabase.rpc('submit_business_review_safe', {
+      p_business_id: body.business_id,
+      p_rating: body.rating,
+      p_reviewer_name: body.reviewer_name,
+      p_title: body.title || null,
+      p_comment: body.comment || null,
+      p_reviewer_email: body.reviewer_email || null,
+      p_reviewer_id: reviewerId
+    });
+
+    if (rpcError) {
+      console.error('[SUBMIT-REVIEW] RPC error:', rpcError);
       return new Response(
         JSON.stringify({ 
           error: 'Erro interno do servidor. Tente novamente em alguns instantes.',
-          details: reviewError.message
+          details: rpcError.message
         }),
         { 
           status: 500, 
@@ -137,34 +145,41 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('[SUBMIT-REVIEW] Review inserted successfully:', review.id);
+    if (!result?.success) {
+      console.log('[SUBMIT-REVIEW] Review submission failed:', result?.error);
+      return new Response(
+        JSON.stringify({ 
+          error: result?.error || 'Erro ao enviar avaliação'
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('[SUBMIT-REVIEW] Review submitted successfully:', result.review_id);
 
     // Log activity if user is authenticated
-    const authHeader = req.headers.get('Authorization');
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
-      
-      if (user) {
-        await supabase.rpc('log_user_activity', {
-          p_user_id: user.id,
-          p_activity_type: 'review_submitted',
-          p_description: `Avaliação enviada para ${business.name}`,
-          p_metadata: {
-            business_id: body.business_id,
-            business_name: business.name,
-            rating: body.rating,
-            review_id: review.id
-          }
-        });
-      }
+    if (reviewerId) {
+      await supabase.rpc('log_user_activity', {
+        p_user_id: reviewerId,
+        p_activity_type: 'review_submitted',
+        p_description: `Avaliação enviada para ${result.business_name}`,
+        p_metadata: {
+          business_id: body.business_id,
+          business_name: result.business_name,
+          rating: body.rating,
+          review_id: result.review_id
+        }
+      });
     }
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'Avaliação enviada com sucesso!',
-        review_id: review.id
+        message: result.message,
+        review_id: result.review_id
       }),
       { 
         status: 200, 

@@ -1639,6 +1639,21 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_featured_businesses: {
+        Args: { limit_count?: number }
+        Returns: {
+          category: string
+          city: string
+          cover_image_url: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          slug: string
+          state: string
+          subscription_plan: string
+        }[]
+      }
       get_google_places_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1748,6 +1763,21 @@ export type Database = {
           subcategory: string
           views_count: number
           website: string
+        }[]
+      }
+      get_random_businesses: {
+        Args: { limit_count?: number }
+        Returns: {
+          category: string
+          city: string
+          cover_image_url: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          slug: string
+          state: string
+          subscription_plan: string
         }[]
       }
       get_safe_business_reviews: {
