@@ -15,6 +15,7 @@ export interface BlogPost {
   seo_description?: string;
   seo_keywords?: string[];
   published_at?: string;
+  scheduled_for?: string;
   views_count: number;
   author_id: string;
   category_id?: string;

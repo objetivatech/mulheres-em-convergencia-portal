@@ -49,6 +49,7 @@ const blogPostSchema = z.object({
   seo_keywords: z.array(z.string()).optional(),
   status: z.enum(['draft', 'published', 'archived']),
   published_at: z.string().optional(),
+  scheduled_for: z.string().optional(),
 });
 
 type BlogPostFormData = z.infer<typeof blogPostSchema>;
@@ -82,6 +83,7 @@ export default function BlogEditor() {
       seo_keywords: [],
       status: 'draft',
       published_at: '',
+      scheduled_for: '',
     },
   });
 
@@ -100,6 +102,7 @@ export default function BlogEditor() {
         seo_keywords: post.seo_keywords || [],
         status: post.status,
         published_at: post.published_at || '',
+        scheduled_for: post.scheduled_for || '',
       });
       setSelectedTags(post.tags?.map(tag => tag.id) || []);
     }
