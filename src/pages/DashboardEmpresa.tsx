@@ -279,6 +279,17 @@ export const DashboardEmpresa = () => {
 
       const businessData: Database['public']['Tables']['businesses']['Insert'] = {
         name: data.name,
+        slug: data.name
+          .toLowerCase()
+          .replace(/[àáâãäå]/g, 'a')
+          .replace(/[èéêë]/g, 'e')
+          .replace(/[ìíîï]/g, 'i')
+          .replace(/[òóôõö]/g, 'o')
+          .replace(/[ùúûü]/g, 'u')
+          .replace(/[ç]/g, 'c')
+          .replace(/[ñ]/g, 'n')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, ''), // Auto-generate slug
         description: data.description,
         category: data.category,
         subcategory: data.subcategory || null,

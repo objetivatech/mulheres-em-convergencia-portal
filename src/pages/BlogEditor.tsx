@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import Layout from '@/components/layout/Layout';
-import { RichTextEditor } from '@/components/blog/RichTextEditor';
+import { TrumbowygEditor } from '@/components/blog/TrumbowygEditor';
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { 
   useBlogPost, 
@@ -277,10 +277,10 @@ export default function BlogEditor() {
                     <FormItem>
                       <FormLabel>Conteúdo</FormLabel>
                       <FormControl>
-                        <RichTextEditor
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
+                  <TrumbowygEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -318,24 +318,17 @@ export default function BlogEditor() {
 
                   <FormField
                     control={form.control}
-                    name="category_id"
+                    name="scheduled_for"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoria</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories?.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Agendar Publicação</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="datetime-local"
+                            placeholder="Data e hora para publicar"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

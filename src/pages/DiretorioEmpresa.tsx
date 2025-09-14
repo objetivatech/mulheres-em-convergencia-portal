@@ -68,7 +68,7 @@ interface BusinessReview {
 }
 
 const DiretorioEmpresa = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [business, setBusiness] = useState<BusinessDetails | null>(null);
   const [contacts, setContacts] = useState<BusinessContacts | null>(null);
@@ -78,29 +78,34 @@ const DiretorioEmpresa = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchBusinessDetails(id);
-      incrementViewCount(id);
+    if (slug) {
+      fetchBusinessBySlug(slug);
     }
-  }, [id]);
+  }, [slug]);
 
-  const fetchBusinessDetails = async (businessId: string) => {
+  const fetchBusinessBySlug = async (businessSlug: string) => {
     try {
-      // Buscar detalhes públicos da empresa
+      // Buscar empresa por slug
       const { data: businessData, error: businessError } = await supabase
-        .rpc('get_public_business_by_id', { p_business_id: businessId });
+        .from('businesses')
+        .select('*')
+        .eq('slug', businessSlug)
+        .eq('subscription_active', true)
+        .single();
 
-      if (businessError) throw businessError;
-      if (!businessData || businessData.length === 0) {
+      if (businessError || !businessData) {
         navigate('/diretorio');
         return;
       }
 
-      setBusiness(businessData[0]);
+      setBusiness(businessData);
+      
+      // Incrementar visualizações
+      await incrementViewCount(businessData.id);
 
       // Buscar contatos (podem ser restritos por plano)
       const { data: contactsData, error: contactsError } = await supabase
-        .rpc('get_business_contacts', { p_business_id: businessId });
+        .rpc('get_business_contacts', { p_business_id: businessData.id });
 
       if (!contactsError && contactsData && contactsData.length > 0) {
         setContacts(contactsData[0]);
@@ -109,7 +114,7 @@ const DiretorioEmpresa = () => {
       // Buscar avaliações
       const { data: reviewsData, error: reviewsError } = await supabase
         .rpc('get_public_business_reviews', { 
-          business_uuid: businessId,
+          business_uuid: businessData.id,
           limit_count: 10,
           offset_count: 0
         });
@@ -183,8 +188,8 @@ const DiretorioEmpresa = () => {
   const handleReviewSubmitted = () => {
     setShowReviewForm(false);
     // Recarregar avaliações
-    if (id) {
-      fetchBusinessDetails(id);
+    if (slug) {
+      fetchBusinessBySlug(slug);
     }
   };
 

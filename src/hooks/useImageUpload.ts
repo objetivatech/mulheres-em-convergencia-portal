@@ -20,12 +20,33 @@ export const useImageUpload = () => {
         throw new Error('Imagem deve ter no máximo 5MB');
       }
 
-      // Generate unique filename
+      // Try to use optimization function first
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+        formData.append('sizes', JSON.stringify(['thumbnail', 'medium', 'large']));
+
+        const { data, error } = await supabase.functions.invoke('optimize-image', {
+          body: formData
+        });
+
+        if (!error && data?.success && data.urls?.medium) {
+          toast({
+            title: 'Sucesso',
+            description: 'Imagem otimizada e enviada com sucesso!'
+          });
+          return data.urls.medium; // Return optimized medium size
+        }
+      } catch (optimizeError) {
+        console.warn('Image optimization failed, falling back to direct upload:', optimizeError);
+      }
+
+      // Fallback to direct upload if optimization fails
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -37,7 +58,6 @@ export const useImageUpload = () => {
         throw uploadError;
       }
 
-      // Get public URL
       const { data } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);

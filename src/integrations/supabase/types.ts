@@ -173,6 +173,7 @@ export type Database = {
           featured_image_url: string | null
           id: string
           published_at: string | null
+          scheduled_for: string | null
           seo_description: string | null
           seo_keywords: string[] | null
           seo_title: string | null
@@ -191,6 +192,7 @@ export type Database = {
           featured_image_url?: string | null
           id?: string
           published_at?: string | null
+          scheduled_for?: string | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -209,6 +211,7 @@ export type Database = {
           featured_image_url?: string | null
           id?: string
           published_at?: string | null
+          scheduled_for?: string | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -524,6 +527,7 @@ export type Database = {
           postal_code: string | null
           premium_until: string | null
           requires_subscription: boolean | null
+          slug: string
           state: string | null
           subcategory: string | null
           subscription_active: boolean | null
@@ -564,6 +568,7 @@ export type Database = {
           postal_code?: string | null
           premium_until?: string | null
           requires_subscription?: boolean | null
+          slug: string
           state?: string | null
           subcategory?: string | null
           subscription_active?: boolean | null
@@ -604,6 +609,7 @@ export type Database = {
           postal_code?: string | null
           premium_until?: string | null
           requires_subscription?: boolean | null
+          slug?: string
           state?: string | null
           subcategory?: string | null
           subscription_active?: boolean | null
@@ -1582,6 +1588,10 @@ export type Database = {
         Args: { cpf_input: string }
         Returns: string
       }
+      generate_business_slug: {
+        Args: { business_id: string; business_name: string }
+        Returns: string
+      }
       get_admin_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1754,6 +1764,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      publish_scheduled_posts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       remove_user_role: {
         Args: {
