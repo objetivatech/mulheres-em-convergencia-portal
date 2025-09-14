@@ -188,15 +188,26 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Error in submit-business-review:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: 'Erro interno do servidor. Tente novamente em alguns instantes.' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    
+    // Return more detailed error information for debugging
+    let userFriendlyError = "Erro interno do servidor. Tente novamente.";
+    if (errorMessage.includes("business not found") || errorMessage.includes("inativo")) {
+      userFriendlyError = "Negócio não encontrado ou inativo.";
+    } else if (errorMessage.includes("rating")) {
+      userFriendlyError = "Avaliação deve ser entre 1 e 5 estrelas.";
+    } else if (errorMessage.includes("reviewer_name")) {
+      userFriendlyError = "Nome do avaliador é obrigatório.";
+    }
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: userFriendlyError,
+      details: errorMessage
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 });

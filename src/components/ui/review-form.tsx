@@ -64,7 +64,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ businessId, onReviewSubmitted }
       });
 
       if (error) {
+        console.error('Edge function error:', error, 'Data:', data);
         throw new Error(data?.error || error.message || 'Erro ao enviar avaliação');
+      }
+
+      if (data && !data.success) {
+        throw new Error(data.error || 'Erro ao processar avaliação');
       }
 
       toast({

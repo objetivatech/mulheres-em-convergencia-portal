@@ -130,11 +130,15 @@ serve(async (req) => {
         }
       }
 
-      // Atualizar status local
+      // Atualizar status local e definir data de expiração para 31 dias
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 31);
+      
       const { error: updateError } = await supabaseClient
         .from("user_subscriptions")
         .update({ 
           status: "cancelled",
+          expires_at: expiresAt.toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq("id", subscription.id);

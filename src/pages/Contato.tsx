@@ -178,15 +178,15 @@ const Contato = () => {
                       <Mail className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h3 className="font-semibold text-foreground">Email</h3>
-                        <p className="text-muted-foreground">contato@mulheresemconvergencia.com.br</p>
+                        <p className="text-muted-foreground">juntas@mulheresemconvergencia.com.br</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-secondary/5 to-tertiary/5 border border-secondary/10">
                       <Phone className="h-5 w-5 text-secondary mt-0.5" />
                       <div>
-                        <h3 className="font-semibold text-foreground">Telefone</h3>
-                        <p className="text-muted-foreground">+55 (11) 99999-9999</p>
+                        <h3 className="font-semibold text-foreground">Telefone/Whatsapp</h3>
+                        <p className="text-muted-foreground">(51) 99236-6002</p>
                       </div>
                     </div>
 
@@ -195,7 +195,7 @@ const Contato = () => {
                       <div>
                         <h3 className="font-semibold text-foreground">Localização</h3>
                         <p className="text-muted-foreground">
-                          São Paulo, SP<br />
+                          Alvorada, RS<br />
                           Brasil
                         </p>
                       </div>
@@ -214,13 +214,33 @@ const Contato = () => {
                         <span className="font-medium">9h às 18h</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sábado:</span>
-                        <span className="font-medium">9h às 14h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Domingo:</span>
+                        <span className="text-muted-foreground">Sábado e Domingo:</span>
                         <span className="font-medium">Fechado</span>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Google Maps */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Nossa Localização</CardTitle>
+                    <CardDescription>
+                      Encontre-nos em Alvorada, Rio Grande do Sul
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="aspect-video rounded-lg overflow-hidden">
+                      <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27584.66431858135!2d-51.125!3d-29.9894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951979f77ad91f07%3A0x2b238ad9b4be1c95!2sAlvorada%2C%20RS!5e0!3m2!1spt!2sbr!4v1694727600000!5m2!1spt!2sbr"
+                        width="100%"
+                        height="300"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Localização - Alvorada, RS"
+                      />
                     </div>
                   </CardContent>
                 </Card>
