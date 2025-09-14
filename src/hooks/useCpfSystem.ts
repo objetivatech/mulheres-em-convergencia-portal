@@ -187,11 +187,13 @@ export const useCpfSystem = () => {
       }) => {
         const { data, error } = await supabase
           .from('user_contacts')
-          .insert({
+          .upsert({
             user_id: userId,
             contact_type: contactType,
             contact_value: contactValue,
             is_primary: isPrimary
+          }, {
+            onConflict: 'user_id,contact_type,contact_value'
           })
           .select()
           .single();

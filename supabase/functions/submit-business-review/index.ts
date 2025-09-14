@@ -30,13 +30,22 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Use service role to bypass RLS for insertion
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Use service role to bypass RLS for insertion - explicitly set schema
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      db: { schema: 'public' }
+    });
 
+    console.log('[SUBMIT-REVIEW] Request received');
     const body: ReviewRequest = await req.json();
+    console.log('[SUBMIT-REVIEW] Request body:', { 
+      business_id: body.business_id, 
+      rating: body.rating, 
+      reviewer_name: body.reviewer_name 
+    });
 
     // Validate required fields
     if (!body.business_id || !body.rating || !body.reviewer_name) {
+      console.log('[SUBMIT-REVIEW] Validation failed - missing required fields');
       return new Response(
         JSON.stringify({ 
           error: 'Campos obrigatórios: business_id, rating, reviewer_name' 
@@ -50,6 +59,7 @@ Deno.serve(async (req) => {
 
     // Validate rating range
     if (body.rating < 1 || body.rating > 5) {
+      console.log('[SUBMIT-REVIEW] Validation failed - invalid rating range');
       return new Response(
         JSON.stringify({ 
           error: 'A avaliação deve ser entre 1 e 5 estrelas' 
@@ -61,14 +71,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify business exists
+    // Verify business exists using maybeSingle() to avoid errors when not found
+    console.log('[SUBMIT-REVIEW] Checking if business exists:', body.business_id);
     const { data: business, error: businessError } = await supabase
       .from('businesses')
       .select('id, name')
       .eq('id', body.business_id)
-      .single();
+      .maybeSingle();
 
-    if (businessError || !business) {
+    console.log('[SUBMIT-REVIEW] Business lookup result:', { business, businessError });
+
+    if (businessError) {
+      console.error('[SUBMIT-REVIEW] Business lookup error:', businessError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Erro ao verificar empresa' 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (!business) {
+      console.log('[SUBMIT-REVIEW] Business not found');
       return new Response(
         JSON.stringify({ 
           error: 'Empresa não encontrada' 
@@ -81,6 +108,7 @@ Deno.serve(async (req) => {
     }
 
     // Insert the review
+    console.log('[SUBMIT-REVIEW] Inserting review');
     const { data: review, error: reviewError } = await supabase
       .from('business_reviews')
       .insert({
@@ -96,10 +124,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (reviewError) {
-      console.error('Error inserting review:', reviewError);
+      console.error('[SUBMIT-REVIEW] Error inserting review:', reviewError);
       return new Response(
         JSON.stringify({ 
-          error: 'Erro interno do servidor. Tente novamente em alguns instantes.' 
+          error: 'Erro interno do servidor. Tente novamente em alguns instantes.',
+          details: reviewError.message
         }),
         { 
           status: 500, 
@@ -107,6 +136,8 @@ Deno.serve(async (req) => {
         }
       );
     }
+
+    console.log('[SUBMIT-REVIEW] Review inserted successfully:', review.id);
 
     // Log activity if user is authenticated
     const authHeader = req.headers.get('Authorization');

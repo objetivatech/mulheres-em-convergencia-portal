@@ -143,10 +143,12 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
           description: 'Contato atualizado com sucesso!'
         });
       } else {
-        // Create new contact
+        // Create new contact using upsert to handle conflicts
         const { error } = await supabase
           .from('user_contacts')
-          .insert(contactData);
+          .upsert(contactData, {
+            onConflict: 'user_id,contact_type,contact_value'
+          });
 
         if (error) throw error;
 
