@@ -16,6 +16,7 @@ type SubscriptionPlan = {
   display_name: string;
   price_monthly: number;
   price_yearly: number;
+  price_6monthly: number;
   features: any;
   limits: any;
   is_featured: boolean;
@@ -40,7 +41,7 @@ const Planos: React.FC = () => {
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [selectedBilling, setSelectedBilling] = useState<'monthly' | 'yearly' | null>(null);
+  const [selectedBilling, setSelectedBilling] = useState<'monthly' | 'yearly' | '6-monthly' | null>(null);
   const [dialogLoading, setDialogLoading] = useState(false);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ const Planos: React.FC = () => {
 
   const handleSubscribe = async (
     planId: string,
-    billingCycle: 'monthly' | 'yearly',
+    billingCycle: 'monthly' | 'yearly' | '6-monthly',
     customer?: CustomerFormData,
     signupData?: { email: string; password: string; name: string; cpf: string }
   ) => {
@@ -206,6 +207,7 @@ const Planos: React.FC = () => {
         return <Star className="h-6 w-6" />;
       case 'intermediario':
         return <Zap className="h-6 w-6" />;
+      case 'impulso':
       case 'master':
         return <Crown className="h-6 w-6" />;
       default:
@@ -289,11 +291,19 @@ const Planos: React.FC = () => {
                     <span className="text-3xl font-bold">{formatPrice(plan.price_monthly)}</span>
                     <span className="text-muted-foreground">/mês</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    ou {formatPrice(plan.price_yearly)}/ano
-                    <Badge variant="outline" className="ml-2">
-                      {Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)}% desconto
-                    </Badge>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div>
+                      ou {formatPrice(plan.price_6monthly)}/semestre
+                      <Badge variant="outline" className="ml-2">
+                        15% desconto
+                      </Badge>
+                    </div>
+                    <div>
+                      ou {formatPrice(plan.price_yearly)}/ano
+                      <Badge variant="outline" className="ml-2">
+                        20% desconto
+                      </Badge>
+                    </div>
                   </div>
                 </div>
 
@@ -336,6 +346,14 @@ const Planos: React.FC = () => {
                         disabled={processingPlan === plan.id}
                       >
                         {processingPlan === plan.id ? 'Processando...' : 'Assinar Mensalmente'}
+                      </Button>
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => { setSelectedPlanId(plan.id); setSelectedBilling('6-monthly'); setDialogOpen(true); }}
+                        disabled={processingPlan === plan.id}
+                      >
+                        {processingPlan === plan.id ? 'Processando...' : 'Assinar Semestralmente'}
                       </Button>
                       <Button
                         className="w-full"

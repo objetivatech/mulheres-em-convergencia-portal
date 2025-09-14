@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import Map from '@/components/ui/map';
 import ReviewForm from '@/components/ui/review-form';
+import BusinessContactForm from '@/components/business/BusinessContactForm';
 
 interface BusinessDetails {
   id: string;
@@ -367,6 +368,12 @@ const DiretorioEmpresa = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Contact Form */}
+              <BusinessContactForm 
+                businessId={business.id} 
+                businessName={business.name}
+              />
 
               {/* Reviews */}
               <Card>

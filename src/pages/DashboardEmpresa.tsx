@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
+import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -96,6 +97,9 @@ export const DashboardEmpresa = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
+
+  // Use business analytics hook for real metrics
+  const { percentageChanges, loading: analyticsLoading } = useBusinessAnalytics(business?.id);
 
   const {
     register,
@@ -493,7 +497,11 @@ export const DashboardEmpresa = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{business.views_count || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  +12% em relação ao mês passado
+                  {analyticsLoading ? 'Carregando...' : 
+                    percentageChanges ? 
+                      `${percentageChanges.views >= 0 ? '+' : ''}${percentageChanges.views}% em relação ao período anterior` :
+                      'Sem dados do período anterior'
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -506,7 +514,11 @@ export const DashboardEmpresa = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{business.clicks_count || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  +5% em relação ao mês passado
+                  {analyticsLoading ? 'Carregando...' : 
+                    percentageChanges ? 
+                      `${percentageChanges.clicks >= 0 ? '+' : ''}${percentageChanges.clicks}% em relação ao período anterior` :
+                      'Sem dados do período anterior'
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -519,7 +531,11 @@ export const DashboardEmpresa = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{business.contacts_count || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  +8% em relação ao mês passado
+                  {analyticsLoading ? 'Carregando...' : 
+                    percentageChanges ? 
+                      `${percentageChanges.contacts >= 0 ? '+' : ''}${percentageChanges.contacts}% em relação ao período anterior` :
+                      'Sem dados do período anterior'
+                  }
                 </p>
               </CardContent>
             </Card>

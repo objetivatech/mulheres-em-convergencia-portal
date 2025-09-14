@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface CreateSubscriptionRequest {
   plan_id: string;
-  billing_cycle: 'monthly' | 'yearly';
+  billing_cycle: 'monthly' | 'yearly' | '6-monthly';
 }
 
 // Helper logging function
@@ -135,7 +135,14 @@ serve(async (req) => {
     logStep("Plan found", { planName: plan.display_name, planId: plan.id });
 
     // Calculate price based on billing cycle
-    const price = billing_cycle === 'yearly' ? plan.price_yearly : plan.price_monthly;
+    let price;
+    if (billing_cycle === 'yearly') {
+      price = plan.price_yearly;
+    } else if (billing_cycle === '6-monthly') {
+      price = plan.price_6monthly;
+    } else {
+      price = plan.price_monthly;
+    }
     logStep("Price calculated", { price, billing_cycle });
     
     // ASAAS Integration: First, check if customer exists or create one
@@ -288,15 +295,33 @@ serve(async (req) => {
     // Calculate the subscription cycle and next due date
     const cycleMapping = {
       'monthly': 'MONTHLY',
-      'yearly': 'YEARLY'
+      'yearly': 'YEARLY',
+      '6-monthly': 'MONTHLY' // ASAAS doesn't support 6-monthly directly, so we use monthly
+    };
+
+    // For 6-monthly, we need to calculate the billing period differently
+    const getNextDueDate = () => {
+      const now = Date.now();
+      if (billing_cycle === '6-monthly') {
+        return new Date(now + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 6 months
+      }
+      return new Date(now + 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // Tomorrow
+    };
+
+    const getBillingDescription = () => {
+      switch(billing_cycle) {
+        case 'yearly': return 'Anual';
+        case '6-monthly': return 'Semestral';
+        default: return 'Mensal';
+      }
     };
     
     const subscriptionPayload: any = {
       customer: customerId,
       billingType: payment_method,
       value: price,
-      nextDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      description: `Assinatura ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,
+      nextDueDate: getNextDueDate(),
+      description: `Assinatura ${plan.display_name} - ${getBillingDescription()}`,
       cycle: cycleMapping[billing_cycle] || 'MONTHLY',
       externalReference: `subscription_${plan_id}_${user?.id || 'guest'}`,
       callback: {
@@ -389,7 +414,9 @@ serve(async (req) => {
         payment_provider: 'asaas',
         expires_at: billing_cycle === 'yearly' 
           ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          : billing_cycle === '6-monthly'
+            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString() // 6 months
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
 
       const { error: subscriptionError } = await supabaseServiceClient

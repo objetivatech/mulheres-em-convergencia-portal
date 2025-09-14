@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ const Contato = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hp, setHp] = useState('');
   const [formTs] = useState(() => Date.now());
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,7 +43,10 @@ const Contato = () => {
 
       toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
       
-      e.currentTarget.reset();
+      // Reset form safely
+      if (formRef.current) {
+        formRef.current.reset();
+      }
       setHp('');
       
     } catch (error) {
@@ -90,7 +94,7 @@ const Contato = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Nome completo</Label>

@@ -1193,6 +1193,7 @@ export type Database = {
           is_featured: boolean | null
           limits: Json
           name: string
+          price_6monthly: number | null
           price_monthly: number
           price_yearly: number
           sort_order: number | null
@@ -1207,6 +1208,7 @@ export type Database = {
           is_featured?: boolean | null
           limits?: Json
           name: string
+          price_6monthly?: number | null
           price_monthly?: number
           price_yearly?: number
           sort_order?: number | null
@@ -1221,6 +1223,7 @@ export type Database = {
           is_featured?: boolean | null
           limits?: Json
           name?: string
+          price_6monthly?: number | null
           price_monthly?: number
           price_yearly?: number
           sort_order?: number | null

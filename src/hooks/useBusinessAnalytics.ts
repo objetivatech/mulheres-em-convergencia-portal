@@ -88,9 +88,46 @@ export const useBusinessAnalytics = (businessId: string | null) => {
     { views: 0, clicks: 0, contacts: 0, reviews: 0, searchAppearances: 0, mapClicks: 0 }
   );
 
+  // Calculate percentage changes (comparing last 15 days vs previous 15 days)
+  const lastPeriod = analytics.slice(0, 15);
+  const previousPeriod = analytics.slice(15, 30);
+  
+  const lastPeriodTotals = lastPeriod.reduce(
+    (acc, day) => ({
+      views: acc.views + day.views_count,
+      clicks: acc.clicks + day.clicks_count,
+      contacts: acc.contacts + day.contacts_count,
+      reviews: acc.reviews + day.reviews_count,
+    }),
+    { views: 0, clicks: 0, contacts: 0, reviews: 0 }
+  );
+  
+  const previousPeriodTotals = previousPeriod.reduce(
+    (acc, day) => ({
+      views: acc.views + day.views_count,
+      clicks: acc.clicks + day.clicks_count,
+      contacts: acc.contacts + day.contacts_count,
+      reviews: acc.reviews + day.reviews_count,
+    }),
+    { views: 0, clicks: 0, contacts: 0, reviews: 0 }
+  );
+
+  const calculatePercentageChange = (current: number, previous: number): number => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  };
+
+  const percentageChanges = {
+    views: calculatePercentageChange(lastPeriodTotals.views, previousPeriodTotals.views),
+    clicks: calculatePercentageChange(lastPeriodTotals.clicks, previousPeriodTotals.clicks),
+    contacts: calculatePercentageChange(lastPeriodTotals.contacts, previousPeriodTotals.contacts),
+    reviews: calculatePercentageChange(lastPeriodTotals.reviews, previousPeriodTotals.reviews),
+  };
+
   return {
     analytics,
     totals,
+    percentageChanges,
     loading,
     error,
     trackView,
