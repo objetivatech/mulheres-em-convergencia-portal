@@ -1774,6 +1774,10 @@ export type Database = {
           id: string
         }[]
       }
+      is_valid_uuid: {
+        Args: { uuid_string: string }
+        Returns: boolean
+      }
       log_user_activity: {
         Args: {
           p_activity_type: string
@@ -1822,6 +1826,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      submit_business_review_safe: {
+        Args: {
+          p_business_id: string
+          p_comment?: string
+          p_rating: number
+          p_reviewer_email?: string
+          p_reviewer_id?: string
+          p_reviewer_name: string
+          p_title?: string
+        }
+        Returns: Json
+      }
       track_referral_click: {
         Args: { referral_code: string }
         Returns: undefined
@@ -1834,6 +1850,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_user_address_safe: {
+        Args: {
+          p_address_type: string
+          p_city: string
+          p_complement?: string
+          p_country?: string
+          p_is_primary?: boolean
+          p_neighborhood?: string
+          p_number?: string
+          p_postal_code?: string
+          p_state: string
+          p_street: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       upsert_user_by_cpf: {
         Args: {
           cpf_input: string
@@ -1842,6 +1874,15 @@ export type Database = {
           user_phone?: string
         }
         Returns: string
+      }
+      upsert_user_contact_safe: {
+        Args: {
+          p_contact_type: string
+          p_contact_value: string
+          p_is_primary?: boolean
+          p_user_id: string
+        }
+        Returns: Json
       }
       user_has_permission: {
         Args: { permission_name: string; user_uuid: string }
