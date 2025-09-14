@@ -30,6 +30,7 @@ interface Business {
   clicks_count: number;
   featured: boolean;
   slug: string;
+  reviews_count: number;
 }
 
 const Diretorio = () => {
@@ -214,11 +215,12 @@ const Diretorio = () => {
           {business.description}
         </p>
         
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            {business.views_count} visualizações
-          </div>
-          
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+          <span>{business.views_count} visualizações</span>
+          <span>{business.reviews_count} avaliações</span>
+        </div>
+        
+        <div className="flex justify-end">
           <Link to={`/diretorio/${business.slug}`}>
             <Button size="sm">
               Ver Perfil
@@ -286,8 +288,9 @@ const Diretorio = () => {
             </div>
           
           <div className="flex flex-col items-end gap-2">
-            <div className="text-xs text-muted-foreground">
-              {business.views_count} visualizações
+            <div className="text-xs text-muted-foreground text-right">
+              <div>{business.views_count} visualizações</div>
+              <div>{business.reviews_count} avaliações</div>
             </div>
             <Link to={`/diretorio/${business.slug}`}>
               <Button size="sm">

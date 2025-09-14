@@ -1731,9 +1731,11 @@ export type Database = {
           id: string
           logo_url: string
           name: string
+          reviews_count: number
           slug: string
           state: string
           subscription_plan: string
+          views_count: number
         }[]
       }
       get_google_places_api_key: {
@@ -1840,6 +1842,7 @@ export type Database = {
           logo_url: string
           longitude: number
           name: string
+          reviews_count: number
           slug: string
           state: string
           subcategory: string
@@ -1857,9 +1860,11 @@ export type Database = {
           id: string
           logo_url: string
           name: string
+          reviews_count: number
           slug: string
           state: string
           subscription_plan: string
+          views_count: number
         }[]
       }
       get_safe_business_reviews: {
@@ -1885,6 +1890,10 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      increment_blog_post_views: {
+        Args: { p_slug: string }
+        Returns: boolean
       }
       is_valid_uuid: {
         Args: { uuid_string: string }

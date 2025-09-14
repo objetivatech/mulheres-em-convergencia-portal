@@ -104,11 +104,8 @@ const Post = () => {
 
         setPost(formattedPost);
 
-        // Increment view count
-        await supabase
-          .from('blog_posts')
-          .update({ views_count: data.views_count + 1 })
-          .eq('id', data.id);
+        // Increment view count using RPC for security
+        await supabase.rpc('increment_blog_post_views', { p_slug: slug });
 
         // Load related posts
         if (data.blog_categories?.id) {

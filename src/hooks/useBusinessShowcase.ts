@@ -12,6 +12,8 @@ interface Business {
   cover_image_url: string;
   slug: string;
   subscription_plan: string;
+  views_count: number;
+  reviews_count: number;
 }
 
 export const useRandomBusinesses = (limit: number = 5) => {

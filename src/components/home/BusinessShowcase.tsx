@@ -16,6 +16,8 @@ interface Business {
   cover_image_url: string;
   slug: string;
   subscription_plan: string;
+  views_count: number;
+  reviews_count: number;
 }
 
 interface BusinessShowcaseProps {
@@ -147,13 +149,19 @@ const BusinessShowcase: React.FC<BusinessShowcaseProps> = ({
                   )}
                   
                   {/* Location */}
-                  <div className="flex items-center text-xs text-muted-foreground">
+                  <div className="flex items-center text-xs text-muted-foreground mb-2">
                     <MapPin className="w-3 h-3 mr-1" />
                     <span>{business.city}, {business.state}</span>
                   </div>
                   
+                  {/* Metrics */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                    <span>{business.views_count} visualizações</span>
+                    <span>{business.reviews_count} avaliações</span>
+                  </div>
+                  
                   {/* Visit Link */}
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                  <div className="flex items-center justify-between pt-2 border-t">
                     <span className="text-xs text-muted-foreground">Ver negócio</span>
                     <ExternalLink className="w-3 h-3 text-primary group-hover:translate-x-1 transition-transform" />
                   </div>

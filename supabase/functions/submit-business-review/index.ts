@@ -18,9 +18,12 @@ Deno.serve(async (req) => {
 
   if (req.method !== 'POST') {
     return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
+      JSON.stringify({ 
+        success: false,
+        error: 'Method not allowed' 
+      }),
       { 
-        status: 405, 
+        status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
@@ -48,10 +51,11 @@ Deno.serve(async (req) => {
       console.log('[SUBMIT-REVIEW] Validation failed - missing required fields');
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Campos obrigatórios: business_id, rating, reviewer_name' 
         }),
         { 
-          status: 400, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
@@ -62,10 +66,11 @@ Deno.serve(async (req) => {
       console.log('[SUBMIT-REVIEW] Validation failed - invalid rating range');
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'A avaliação deve ser entre 1 e 5 estrelas' 
         }),
         { 
-          status: 400, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
@@ -85,10 +90,11 @@ Deno.serve(async (req) => {
       console.error('[SUBMIT-REVIEW] Business lookup error:', businessError);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Erro ao verificar empresa' 
         }),
         { 
-          status: 500, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
@@ -98,10 +104,11 @@ Deno.serve(async (req) => {
       console.log('[SUBMIT-REVIEW] Business not found');
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Empresa não encontrada' 
         }),
         { 
-          status: 404, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
@@ -135,11 +142,12 @@ Deno.serve(async (req) => {
       console.error('[SUBMIT-REVIEW] RPC error:', rpcError);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Erro interno do servidor. Tente novamente em alguns instantes.',
           details: rpcError.message
         }),
         { 
-          status: 500, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
