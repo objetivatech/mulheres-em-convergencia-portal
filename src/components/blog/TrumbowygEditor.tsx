@@ -52,6 +52,7 @@ export const TrumbowygEditor = ({
         
         $editor.trumbowyg({
           lang: 'pt_br',
+          svgPath: 'https://cdn.jsdelivr.net/npm/trumbowyg@2.31.0/dist/ui/icons.svg',
           
           btns: [
             ['viewHTML'],

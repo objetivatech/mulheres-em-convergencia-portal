@@ -143,14 +143,10 @@ serve(async (req) => {
         throw new Error(`Failed to update local subscription: ${updateError.message}`);
       }
 
-      // Desativar negócios do usuário
-      await supabaseClient
-        .from("businesses")
-        .update({
-          subscription_active: false,
-          updated_at: new Date().toISOString()
-        })
-        .eq("owner_id", user.id);
+      // IMPORTANTE: NÃO desativar negócios imediatamente no cancelamento
+      // Os negócios devem permanecer ativos por 31 dias após o cancelamento
+      // A desativação será feita pela função renew-business-subscriptions quando expirar o período
+      logStep("Subscription cancelled but businesses remain active for 31-day period");
 
       logStep("Subscription cancelled successfully", { subscriptionId });
 
