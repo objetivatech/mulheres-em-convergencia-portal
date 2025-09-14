@@ -24,28 +24,41 @@ export const TrumbowygEditor = ({
       if (typeof window === 'undefined' || !editorRef.current) return;
 
       try {
-        // Import styles first
-        await import('trumbowyg/dist/ui/trumbowyg.min.css');
-        await import('trumbowyg/dist/plugins/colors/ui/trumbowyg.colors.min.css');
-        await import('trumbowyg/dist/plugins/emoji/ui/trumbowyg.emoji.min.css');
-        await import('trumbowyg/dist/plugins/table/ui/trumbowyg.table.min.css');
-        
-        // Import jQuery
+        // Import jQuery first
         const $ = (await import('jquery')).default;
         (window as any).$ = (window as any).jQuery = $;
 
-        // Import Trumbowyg core
-        await import('trumbowyg');
+        // Import styles and core in parallel
+        await Promise.all([
+          import('trumbowyg/dist/ui/trumbowyg.min.css'),
+          import('trumbowyg/dist/plugins/colors/ui/trumbowyg.colors.min.css'),
+          import('trumbowyg/dist/plugins/emoji/ui/trumbowyg.emoji.min.css'),
+          import('trumbowyg/dist/plugins/table/ui/trumbowyg.table.min.css'),
+          import('trumbowyg/dist/plugins/upload/ui/trumbowyg.upload.min.css'),
+          import('trumbowyg')
+        ]);
 
-        // Import plugins
-        await import('trumbowyg/dist/langs/pt_br.min.js');
-        await import('trumbowyg/dist/plugins/cleanpaste/trumbowyg.cleanpaste.min.js');
-        await import('trumbowyg/dist/plugins/colors/trumbowyg.colors.min.js');
-        await import('trumbowyg/dist/plugins/emoji/trumbowyg.emoji.min.js');
-        await import('trumbowyg/dist/plugins/fontfamily/trumbowyg.fontfamily.min.js');
-        await import('trumbowyg/dist/plugins/fontsize/trumbowyg.fontsize.min.js');
-        await import('trumbowyg/dist/plugins/history/trumbowyg.history.min.js');
-        await import('trumbowyg/dist/plugins/table/trumbowyg.table.min.js');
+        // Import plugins in parallel
+        await Promise.all([
+          import('trumbowyg/dist/langs/pt_br.min.js'),
+          import('trumbowyg/dist/plugins/allowtagsfrompaste/trumbowyg.allowtagsfrompaste.min.js'),
+          import('trumbowyg/dist/plugins/cleanpaste/trumbowyg.cleanpaste.min.js'),
+          import('trumbowyg/dist/plugins/colors/trumbowyg.colors.min.js'),
+          import('trumbowyg/dist/plugins/emoji/trumbowyg.emoji.min.js'),
+          import('trumbowyg/dist/plugins/fontfamily/trumbowyg.fontfamily.min.js'),
+          import('trumbowyg/dist/plugins/fontsize/trumbowyg.fontsize.min.js'),
+          import('trumbowyg/dist/plugins/giphy/trumbowyg.giphy.min.js'),
+          import('trumbowyg/dist/plugins/history/trumbowyg.history.min.js'),
+          import('trumbowyg/dist/plugins/insertaudio/trumbowyg.insertaudio.min.js'),
+          import('trumbowyg/dist/plugins/lineheight/trumbowyg.lineheight.min.js'),
+          import('trumbowyg/dist/plugins/mention/trumbowyg.mention.min.js'),
+          import('trumbowyg/dist/plugins/noembed/trumbowyg.noembed.min.js'),
+          import('trumbowyg/dist/plugins/pasteembed/trumbowyg.pasteembed.min.js'),
+          import('trumbowyg/dist/plugins/resizimg/trumbowyg.resizimg.min.js'),
+          import('trumbowyg/dist/plugins/table/trumbowyg.table.min.js'),
+          import('trumbowyg/dist/plugins/template/trumbowyg.template.min.js'),
+          import('trumbowyg/dist/plugins/upload/trumbowyg.upload.min.js')
+        ]);
 
         // Initialize Trumbowyg
         const $editor = $(editorRef.current!) as any;
@@ -59,21 +72,27 @@ export const TrumbowygEditor = ({
             ['undo', 'redo'],
             ['formatting'],
             ['fontfamily'],
-            ['fontsize'],
+            ['fontsize', 'lineheight'],
             ['foreColor', 'backColor'],
             ['strong', 'em', 'del'],
             ['superscript', 'subscript'],
             ['link'],
-            ['insertImage'],
-            ['emoji'],
+            ['upload', 'insertImage', 'insertAudio'],
+            ['emoji', 'giphy'],
             ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
             ['unorderedList', 'orderedList'],
             ['horizontalRule'],
-            ['removeformat'],
-            ['table']
+            ['table'],
+            ['template'],
+            ['noembed'],
+            ['removeformat']
           ],
 
           plugins: {
+            allowTagsFromPaste: {
+              allowedTags: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 'strike', 'a', 'img', 'ul', 'ol', 'li', 'blockquote', 'table', 'thead', 'tbody', 'tr', 'th', 'td']
+            },
+            
             cleanpaste: true,
             
             fontfamily: {
@@ -92,6 +111,56 @@ export const TrumbowygEditor = ({
 
             fontsize: {
               sizeList: ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '60px']
+            },
+
+            lineheight: {
+              sizeList: ['1.0', '1.2', '1.4', '1.6', '1.8', '2.0', '2.5', '3.0']
+            },
+
+            giphy: {
+              apiKey: 'ZnkCWjGQ4zeheyXy0VEIsxjFxkcBINvP'
+            },
+
+            upload: {
+              serverPath: '/api/upload',
+              fileFieldName: 'file',
+              urlPropertyName: 'url',
+              imageWidthModalEdit: true,
+              headers: {
+                'Authorization': 'Bearer ' + (localStorage.getItem('supabase.auth.token') || '')
+              },
+              success: async (data: any, trumbowyg: any, $modal: any, values: any) => {
+                // Custom upload to Supabase
+                if (values.file) {
+                  try {
+                    const imageUrl = await uploadImage(values.file);
+                    trumbowyg.execCmd('insertImage', imageUrl);
+                  } catch (error) {
+                    console.error('Upload error:', error);
+                  }
+                }
+                return false; // Prevent default behavior
+              }
+            },
+
+            mention: {
+              source: [
+                { label: '@admin', value: 'admin' },
+                { label: '@editor', value: 'editor' }
+              ]
+            },
+
+            template: {
+              templates: [
+                {
+                  name: 'Parágrafo de Destaque',
+                  html: '<div class="highlight-box"><p>Texto em destaque aqui...</p></div>'
+                },
+                {
+                  name: 'Citação',
+                  html: '<blockquote><p>Sua citação aqui...</p><footer>— Autor</footer></blockquote>'
+                }
+              ]
             }
           },
 

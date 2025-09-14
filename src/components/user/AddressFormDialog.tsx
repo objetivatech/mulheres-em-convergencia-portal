@@ -101,17 +101,27 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
     e.preventDefault();
     if (!user) return;
 
+    // Validate required fields
+    if (!formData.street.trim() || !formData.city.trim() || !formData.state.trim()) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha todos os campos obrigatórios (logradouro, cidade, estado)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
       const addressData = {
         user_id: user.id,
         address_type: formData.address_type,
-        street: formData.street,
-        number: formData.number,
-        complement: formData.complement || null,
-        neighborhood: formData.neighborhood || null,
-        city: formData.city,
-        state: formData.state,
-        postal_code: formData.postal_code || null,
+        street: formData.street.trim(),
+        number: formData.number?.trim() || null,
+        complement: formData.complement?.trim() || null,
+        neighborhood: formData.neighborhood?.trim() || null,
+        city: formData.city.trim(),
+        state: formData.state.trim().toUpperCase(),
+        postal_code: formData.postal_code?.replace(/\D/g, '') || null,
         is_primary: formData.is_primary,
         country: 'Brasil'
       };
@@ -162,9 +172,21 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
       onSuccess();
       onClose();
     } catch (error: any) {
+      console.error('Address save error:', error);
+      
+      let errorMessage = 'Erro ao salvar endereço';
+      
+      if (error.message?.includes('duplicate key')) {
+        errorMessage = 'Você já possui um endereço cadastrado com esses dados';
+      } else if (error.message?.includes('violates check constraint')) {
+        errorMessage = 'Dados do endereço são inválidos';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao salvar endereço',
+        description: errorMessage,
         variant: 'destructive'
       });
     }

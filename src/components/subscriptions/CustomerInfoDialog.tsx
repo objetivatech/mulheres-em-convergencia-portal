@@ -15,6 +15,7 @@ import { useCpfSystem } from '@/hooks/useCpfSystem';
 import AddressSelector from '@/components/form/AddressSelector';
 import ContactSelector from '@/components/form/ContactSelector';
 import CpfMergeDialog, { type MergeSelections } from '@/components/form/CpfMergeDialog';
+import { AddressFormDialog } from '@/components/user/AddressFormDialog';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Informe o nome completo'),
@@ -68,6 +69,9 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
   const [addressLoading, setAddressLoading] = useState(false);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const [existingUserData, setExistingUserData] = useState<any>(null);
+  const [showAddressDialog, setShowAddressDialog] = useState(false);
+  
+  const { useUserByCpf, useUserContacts, useUserAddresses, cpfUtils } = useCpfSystem();
   
   // Smart form filler for logged-in users
   const {
@@ -81,7 +85,8 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     autoFillPrimary,
   } = useSmartFormFiller();
   
-  const { useUserByCpf, useUserContacts, useUserAddresses, cpfUtils } = useCpfSystem();
+  // Refetch addresses when new one is added
+  const { refetch: refetchAddresses } = useUserAddresses(user?.id || '');
   
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -242,6 +247,22 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     const values = getFormValues();
     
     if (values.phone) form.setValue('phone', values.phone);
+  };
+
+  const handleNewAddress = () => {
+    setShowAddressDialog(true);
+  };
+
+  const handleAddressSuccess = () => {
+    refetchAddresses();
+    setShowAddressDialog(false);
+    // Auto-select the newly created address if it becomes primary
+    setTimeout(() => {
+      const values = autoFillPrimary();
+      Object.entries(values).forEach(([key, value]) => {
+        if (value) form.setValue(key as keyof CustomerFormData, value as string);
+      });
+    }, 100);
   };
 
   const handleSubmit = async (values: CustomerFormData) => {
@@ -521,17 +542,34 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                )}
              />
 
-             {/* Smart address selector for logged users */}
-             {user && hasAddresses() && (
-               <div className="md:col-span-2">
-                 <AddressSelector
-                   addresses={getAddressSuggestions()}
-                   onSelect={handleAddressSelect}
-                   title="Usar endereço cadastrado"
-                   className="mt-4"
-                 />
-               </div>
-             )}
+              {/* Smart address selector for logged users */}
+              {user && (
+                <div className="md:col-span-2">
+                  {hasAddresses() ? (
+                    <AddressSelector
+                      addresses={getAddressSuggestions()}
+                      onSelect={handleAddressSelect}
+                      onNewAddress={handleNewAddress}
+                      title="Usar endereço cadastrado"
+                      className="mt-4"
+                    />
+                  ) : (
+                    <div className="mt-4 p-4 border border-dashed rounded-lg text-center">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Nenhum endereço cadastrado
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleNewAddress}
+                      >
+                        Cadastrar Primeiro Endereço
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
 
              <DialogFooter className="md:col-span-2 flex gap-2 justify-end mt-4">
               <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
@@ -546,22 +584,29 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
          </Form>
        </DialogContent>
        
-       {/* CPF Merge Dialog */}
-       {existingUserData && (
-         <CpfMergeDialog
-           open={showMergeDialog}
-           onClose={() => setShowMergeDialog(false)}
-           onMerge={handleCpfMerge}
-           existingUser={existingUserData}
-           newUserData={{
-             name: form.getValues('name'),
-             email: form.getValues('email'),
-             phone: form.getValues('phone'),
-             cpf: form.getValues('cpfCnpj'),
-           }}
-           loading={loading}
-         />
-       )}
+        {/* CPF Merge Dialog */}
+        {existingUserData && (
+          <CpfMergeDialog
+            open={showMergeDialog}
+            onClose={() => setShowMergeDialog(false)}
+            onMerge={handleCpfMerge}
+            existingUser={existingUserData}
+            newUserData={{
+              name: form.getValues('name'),
+              email: form.getValues('email'),
+              phone: form.getValues('phone'),
+              cpf: form.getValues('cpfCnpj'),
+            }}
+            loading={loading}
+          />
+        )}
+
+        {/* Address Form Dialog */}
+        <AddressFormDialog
+          open={showAddressDialog}
+          onClose={() => setShowAddressDialog(false)}
+          onSuccess={handleAddressSuccess}
+        />
      </Dialog>
    );
  };
