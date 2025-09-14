@@ -388,6 +388,88 @@ export type Database = {
           },
         ]
       }
+      business_message_replies: {
+        Row: {
+          created_at: string
+          id: string
+          is_business_owner: boolean
+          message_id: string
+          reply_text: string
+          sender_email: string
+          sender_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_business_owner?: boolean
+          message_id: string
+          reply_text: string
+          sender_email: string
+          sender_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_business_owner?: boolean
+          message_id?: string
+          reply_text?: string
+          sender_email?: string
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_message_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "business_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_messages: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          message: string
+          sender_email: string
+          sender_name: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          message: string
+          sender_email: string
+          sender_name: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sender_email?: string
+          sender_name?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_reviews: {
         Row: {
           business_id: string

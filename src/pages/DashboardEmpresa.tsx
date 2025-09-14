@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
+import BusinessMessages from '@/components/business/BusinessMessages';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -172,7 +173,8 @@ export const DashboardEmpresa = () => {
           )
         `)
         .eq('user_id', user.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'cancelled'])
+        .order('created_at', { ascending: false })
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -416,15 +418,24 @@ export const DashboardEmpresa = () => {
 
         {/* Subscription Status */}
         {userSubscription ? (
-          <Card className="mb-6">
+          <Card className={`mb-6 ${userSubscription.status === 'cancelled' ? 'border-orange-200 bg-orange-50' : ''}`}>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Building2 className="h-5 w-5" />
                 <span>Plano Atual: {userSubscription.subscription_plans?.display_name}</span>
               </CardTitle>
-              <CardDescription>
-                Status: {userSubscription.status === 'active' ? 'Ativo' : userSubscription.status}
-                {userSubscription.expires_at && ` • Expira em ${new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}`}
+              <CardDescription className={userSubscription.status === 'cancelled' ? 'text-orange-700' : ''}>
+                {userSubscription.status === 'active' && 'Status: Ativo'}
+                {userSubscription.status === 'cancelled' && (
+                  <>
+                    Status: Cancelado • Válido até {new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}
+                    <br />
+                    <span className="text-sm text-orange-600">
+                      Seu perfil permanecerá ativo por 31 dias após o cancelamento
+                    </span>
+                  </>
+                )}
+                {userSubscription.expires_at && userSubscription.status === 'active' && ` • Expira em ${new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}`}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -434,15 +445,19 @@ export const DashboardEmpresa = () => {
                 </span>
                 <div className="flex gap-2">
                   <Button variant="outline" asChild>
-                    <a href="/planos">Alterar Plano</a>
+                    <a href="/planos">
+                      {userSubscription.status === 'cancelled' ? 'Reativar Plano' : 'Alterar Plano'}
+                    </a>
                   </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={handleCancelSubscription}
-                  >
-                    Cancelar
-                  </Button>
+                  {userSubscription.status === 'active' && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={handleCancelSubscription}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -526,13 +541,14 @@ export const DashboardEmpresa = () => {
           </div>
         )}
 
-        <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
-            <TabsTrigger value="imagens">Imagens</TabsTrigger>
-            <TabsTrigger value="contatos">Contatos</TabsTrigger>
-            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="dados" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
+              <TabsTrigger value="imagens">Imagens</TabsTrigger>
+              <TabsTrigger value="contatos">Contatos</TabsTrigger>
+              <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
+              <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="dados" className="space-y-6">
             <Card>
@@ -807,6 +823,20 @@ export const DashboardEmpresa = () => {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="mensagens" className="space-y-6">
+            {business ? (
+              <BusinessMessages businessId={business.id} />
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Cadastre sua empresa primeiro para receber mensagens.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="avaliacoes" className="space-y-6">

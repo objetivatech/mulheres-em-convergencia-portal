@@ -149,10 +149,11 @@ Deno.serve(async (req) => {
       console.log('[SUBMIT-REVIEW] Review submission failed:', result?.error);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: result?.error || 'Erro ao enviar avaliação'
         }),
         { 
-          status: 400, 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
@@ -206,7 +207,7 @@ Deno.serve(async (req) => {
       error: userFriendlyError,
       details: errorMessage
     }), {
-      status: 400,
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
