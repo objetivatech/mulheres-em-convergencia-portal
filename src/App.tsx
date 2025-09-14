@@ -67,7 +67,7 @@ function AppContent() {
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/diretorio" element={<Diretorio />} />
-        <Route path="/diretorio/:id" element={<DiretorioEmpresa />} />
+        <Route path="/diretorio/:slug" element={<DiretorioEmpresa />} />
         <Route path="/convergindo" element={<Convergindo />} />
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

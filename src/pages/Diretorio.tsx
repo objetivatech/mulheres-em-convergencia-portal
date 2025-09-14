@@ -29,6 +29,7 @@ interface Business {
   views_count: number;
   clicks_count: number;
   featured: boolean;
+  slug: string;
 }
 
 const Diretorio = () => {
@@ -218,7 +219,7 @@ const Diretorio = () => {
             {business.views_count} visualizações
           </div>
           
-          <Link to={`/diretorio/${business.id}`}>
+          <Link to={`/diretorio/${business.slug}`}>
             <Button size="sm">
               Ver Perfil
             </Button>
@@ -288,7 +289,7 @@ const Diretorio = () => {
             <div className="text-xs text-muted-foreground">
               {business.views_count} visualizações
             </div>
-            <Link to={`/diretorio/${business.id}`}>
+            <Link to={`/diretorio/${business.slug}`}>
               <Button size="sm">
                 Ver Perfil
               </Button>

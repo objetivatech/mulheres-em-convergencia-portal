@@ -85,27 +85,28 @@ const DiretorioEmpresa = () => {
 
   const fetchBusinessBySlug = async (businessSlug: string) => {
     try {
-      // Buscar empresa por slug
+      // Buscar empresa por slug usando RPC
       const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('slug', businessSlug)
-        .eq('subscription_active', true)
-        .single();
+        .rpc('get_public_business_by_slug', { p_slug: businessSlug });
 
-      if (businessError || !businessData) {
+      if (businessError || !businessData || businessData.length === 0) {
         navigate('/diretorio');
         return;
       }
 
-      setBusiness(businessData);
+      const business = businessData[0];
+
+      setBusiness(business);
       
-      // Incrementar visualizações
-      await incrementViewCount(businessData.id);
+      // Incrementar visualizações usando RPC
+      await supabase.rpc('update_business_analytics', { 
+        business_uuid: business.id, 
+        metric_name: 'views' 
+      });
 
       // Buscar contatos (podem ser restritos por plano)
       const { data: contactsData, error: contactsError } = await supabase
-        .rpc('get_business_contacts', { p_business_id: businessData.id });
+        .rpc('get_business_contacts', { p_business_id: business.id });
 
       if (!contactsError && contactsData && contactsData.length > 0) {
         setContacts(contactsData[0]);
@@ -114,7 +115,7 @@ const DiretorioEmpresa = () => {
       // Buscar avaliações
       const { data: reviewsData, error: reviewsError } = await supabase
         .rpc('get_public_business_reviews', { 
-          business_uuid: businessData.id,
+          business_uuid: business.id,
           limit_count: 10,
           offset_count: 0
         });
@@ -131,26 +132,16 @@ const DiretorioEmpresa = () => {
     }
   };
 
-  const incrementViewCount = async (businessId: string) => {
-    try {
-      await supabase
-        .from('businesses')
-        .update({ views_count: business?.views_count ? business.views_count + 1 : 1 })
-        .eq('id', businessId);
-    } catch (error) {
-      console.error('Erro ao incrementar contagem de visualizações:', error);
-    }
-  };
 
   const handleContactClick = async (type: 'phone' | 'email' | 'website' | 'whatsapp') => {
     if (!business || !contacts) return;
 
     try {
-      // Incrementar contagem de contatos
-      await supabase
-        .from('businesses')
-        .update({ contacts_count: business.contacts_count + 1 })
-        .eq('id', business.id);
+      // Incrementar contagem de contatos usando RPC
+      await supabase.rpc('update_business_analytics', { 
+        business_uuid: business.id, 
+        metric_name: 'contacts' 
+      });
 
       // Abrir o contato apropriado
       switch (type) {
@@ -162,10 +153,10 @@ const DiretorioEmpresa = () => {
           break;
         case 'website':
           if (contacts.website) {
-            await supabase
-              .from('businesses')
-              .update({ clicks_count: business.clicks_count + 1 })
-              .eq('id', business.id);
+            await supabase.rpc('update_business_analytics', { 
+              business_uuid: business.id, 
+              metric_name: 'clicks' 
+            });
             window.open(contacts.website, '_blank');
           }
           break;

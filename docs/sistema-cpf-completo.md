@@ -241,14 +241,29 @@ await addContact.mutateAsync({
 ## Próximos Passos
 
 ### Implementações Futuras
-1. **Interface de gestão de contatos**: Componente para gerenciar múltiplos contatos
-2. **Interface de gestão de endereços**: Componente para gerenciar múltiplos endereços
-3. **Integração com CEP**: API para autocompletar endereços
+1. **Interface de gestão de contatos**: ✅ **Implementado** - Componentes para gerenciar múltiplos contatos
+2. **Interface de gestão de endereços**: ✅ **Implementado** - Componentes para gerenciar múltiplos endereços  
+3. **Integração com CEP**: ✅ **Implementado** - API ViaCEP para autocompletar endereços
 4. **Relatórios demográficos**: Aproveitar dados únicos por CPF
 5. **Migração completa**: Gradualmente substituir campos antigos pelos novos
 
+### Recentes Atualizações ✅
+
+#### Sistema de Endereços Completo
+- **AddressFormDialog**: Modal para adicionar/editar endereços com busca automática via CEP
+- **AddressSelector**: Seletor de endereços existentes para uso em assinaturas
+- **Tipos corretos**: Alterados para `residential`, `commercial`, `billing`, `shipping` (compatível com constraints do banco)
+
+#### SEO e URLs Amigáveis
+- **Roteamento**: Alterado de `/diretorio/:id` para `/diretorio/:slug`
+- **RPCs criadas**:
+  - `get_public_business_by_slug(p_slug text)`: Busca empresa por slug
+  - `get_public_businesses()`: Atualizada para incluir slug
+- **Analytics**: Contadores via `update_business_analytics` RPC ao invés de updates diretos
+- **Navegação**: Todos os links usando slug ao invés de ID
+
 ### Melhorias de UX
-1. **Validação em tempo real**: CPF validado durante digitação
+1. **Validação em tempo real**: ✅ **Implementado** - CPF e endereços validados durante digitação
 2. **Busca inteligente**: Busca por nome, email ou CPF
 3. **Histórico de alterações**: Auditoria de mudanças nos dados
 4. **Verificação de contatos**: Sistema de confirmação por email/SMS

@@ -1682,6 +1682,31 @@ export type Database = {
           website: string
         }[]
       }
+      get_public_business_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          category: string
+          city: string
+          clicks_count: number
+          contacts_count: number
+          cover_image_url: string
+          created_at: string
+          description: string
+          featured: boolean
+          gallery_images: string[]
+          id: string
+          instagram: string
+          latitude: number
+          logo_url: string
+          longitude: number
+          name: string
+          opening_hours: Json
+          state: string
+          subcategory: string
+          views_count: number
+          website: string
+        }[]
+      }
       get_public_business_reviews: {
         Args: {
           business_uuid: string
@@ -1718,6 +1743,7 @@ export type Database = {
           logo_url: string
           longitude: number
           name: string
+          slug: string
           state: string
           subcategory: string
           views_count: number

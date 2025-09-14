@@ -40,7 +40,7 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState<AddressFormData>({
-    address_type: 'home',
+    address_type: 'residential',
     street: '',
     number: '',
     complement: '',
@@ -57,7 +57,7 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
       setFormData(address);
     } else {
       setFormData({
-        address_type: 'home',
+        address_type: 'residential',
         street: '',
         number: '',
         complement: '',
@@ -213,10 +213,10 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="home">Residencial</SelectItem>
-                <SelectItem value="work">Comercial</SelectItem>
+                <SelectItem value="residential">Residencial</SelectItem>
+                <SelectItem value="commercial">Comercial</SelectItem>
                 <SelectItem value="billing">Cobrança</SelectItem>
-                <SelectItem value="other">Outro</SelectItem>
+                <SelectItem value="shipping">Entrega</SelectItem>
               </SelectContent>
             </Select>
           </div>
