@@ -8,6 +8,9 @@ import { Calendar, User, Eye, Share2, ChevronRight, Home, Clock } from 'lucide-r
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Helmet } from 'react-helmet-async';
+import { ShareButtons } from '@/components/blog/ShareButtons';
+import { SchemaOrg } from '@/components/blog/SchemaOrg';
+import DOMPurify from 'dompurify';
 
 interface BlogPost {
   id: string;
@@ -256,7 +259,15 @@ const Post = () => {
         {post.tags.map(tag => (
           <meta key={tag.id} property="article:tag" content={tag.name} />
         ))}
+        {/* Canonical URL */}
+        <link 
+          rel="canonical" 
+          href={`https://mulheresemconvergencia.com.br/convergindo/${post.slug}`} 
+        />
       </Helmet>
+
+      {/* Schema.org structured data */}
+      <SchemaOrg post={post} />
 
       {/* Breadcrumbs */}
       <div className="bg-tertiary/20 py-4">
@@ -371,8 +382,18 @@ const Post = () => {
             {/* Content */}
             <div 
               className="prose prose-lg max-w-none prose-headings:text-secondary prose-a:text-primary prose-strong:text-foreground prose-blockquote:border-primary prose-blockquote:text-muted-foreground"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
             />
+
+            {/* Social Share Buttons */}
+            <div className="mt-8 pt-8 border-t border-border">
+              <ShareButtons
+                title={post.title}
+                url={`https://mulheresemconvergencia.com.br/convergindo/${post.slug}`}
+                description={post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 160)}
+                imageUrl={post.featured_image_url}
+              />
+            </div>
 
             {/* Tags */}
             {post.tags.length > 0 && (

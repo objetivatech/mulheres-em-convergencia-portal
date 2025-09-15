@@ -212,6 +212,82 @@ const Admin = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* SEO & Distribution Tools */}
+          {isAdmin && (
+            <div className="mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    SEO & Distribuição
+                  </CardTitle>
+                  <CardDescription>
+                    Links para RSS, Sitemap e outras ferramentas de SEO
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Feed RSS</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Feed RSS para agregadores e leitores
+                      </p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/rss.xml`, '_blank')}
+                        >
+                          Visualizar RSS
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/rss.xml`)}
+                        >
+                          Copiar URL
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Sitemap XML</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Sitemap para otimização em motores de busca
+                      </p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/sitemap.xml`, '_blank')}
+                        >
+                          Visualizar Sitemap
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/sitemap.xml`)}
+                        >
+                          Copiar URL
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h4 className="font-medium mb-2">Instruções para SEO</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Envie o sitemap para o Google Search Console</li>
+                      <li>• Configure o RSS no MailChimp ou similar para newsletters automáticas</li>
+                      <li>• Todos os posts incluem Schema.org para melhor indexação</li>
+                      <li>• Meta tags e Open Graph são gerados automaticamente</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </main>
       </Layout>
     </>

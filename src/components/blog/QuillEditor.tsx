@@ -124,7 +124,7 @@ export const QuillEditor = ({
         }}
       />
       
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .quill-editor-container .ql-container {
           font-family: 'Montserrat', system-ui, sans-serif;
           font-size: 14px;
@@ -182,7 +182,7 @@ export const QuillEditor = ({
         .quill-editor-container .ql-toolbar .ql-picker.ql-expanded .ql-picker-label {
           color: hsl(var(--primary));
         }
-      `}</style>
+      `}} />
     </div>
   );
 };
