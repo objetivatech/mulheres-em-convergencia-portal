@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import Layout from '@/components/layout/Layout';
-import { TrumbowygEditor } from '@/components/blog/TrumbowygEditor';
+import { QuillEditor } from '@/components/blog/QuillEditor';
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { 
   useBlogPost, 
