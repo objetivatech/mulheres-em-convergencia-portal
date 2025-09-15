@@ -176,6 +176,7 @@ export const useCreateBlogTag = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blog-tags'] });
+      queryClient.invalidateQueries({ queryKey: ['popular-blog-tags'] });
       toast({
         title: 'Sucesso',
         description: 'Tag criada com sucesso!'
@@ -188,5 +189,31 @@ export const useCreateBlogTag = () => {
         variant: 'destructive'
       });
     }
+  });
+};
+
+// Add hook to check user permissions
+export const useUserPermissions = () => {
+  return useQuery({
+    queryKey: ['user-permissions'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { isAdmin: false, isAuthor: false };
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('roles')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      const roles = profile?.roles || [];
+      return {
+        isAdmin: roles.includes('admin'),
+        isAuthor: roles.includes('author'),
+        canPublish: roles.includes('admin') || (!roles.includes('author'))
+      };
+    },
   });
 };

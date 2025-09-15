@@ -35,7 +35,22 @@ import {
   useUpdateBlogPost,
   BlogPost 
 } from '@/hooks/useBlogPosts';
-import { useBlogCategories, useBlogTags, useCreateBlogTag } from '@/hooks/useBlogCategories';
+import { 
+  useBlogCategories, 
+  useBlogTags, 
+  useCreateBlogTag,
+  useCreateBlogCategory,
+  useUserPermissions 
+} from '@/hooks/useBlogCategories';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Plus, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const blogPostSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -61,13 +76,19 @@ export default function BlogEditor() {
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
 
   const { data: post, isLoading: postLoading } = useBlogPost(id || '');
   const { data: categories } = useBlogCategories();
   const { data: tags } = useBlogTags();
+  const { data: permissions } = useUserPermissions();
   const createBlogPost = useCreateBlogPost();
   const updateBlogPost = useUpdateBlogPost();
   const createTag = useCreateBlogTag();
+  const createCategory = useCreateBlogCategory();
 
   const form = useForm<BlogPostFormData>({
     resolver: zodResolver(blogPostSchema),
@@ -125,7 +146,33 @@ export default function BlogEditor() {
       });
       setSelectedTags([...selectedTags, newTag.id]);
       setNewTagName('');
+      setIsTagDialogOpen(false);
     }
+  };
+
+  const handleCreateCategory = async () => {
+    if (newCategoryName.trim()) {
+      const newCategory = await createCategory.mutateAsync({
+        name: newCategoryName.trim(),
+        description: newCategoryDescription.trim() || undefined
+      });
+      form.setValue('category_id', newCategory.id);
+      setNewCategoryName('');
+      setNewCategoryDescription('');
+      setIsCategoryDialogOpen(false);
+    }
+  };
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
+  const removeTag = (tagId: string) => {
+    setSelectedTags(prev => prev.filter(id => id !== tagId));
   };
 
   const onSubmit = async (data: BlogPostFormData) => {
@@ -133,10 +180,17 @@ export default function BlogEditor() {
       // Sanitize HTML content
       const sanitizedContent = DOMPurify.sanitize(data.content);
       
+      // Force draft status for authors when publishing
+      let finalStatus = data.status;
+      if (permissions?.isAuthor && !permissions?.isAdmin && data.status === 'published') {
+        finalStatus = 'draft';
+      }
+      
       const postData = {
         ...data,
+        status: finalStatus,
         content: sanitizedContent,
-        published_at: data.status === 'published' && !data.published_at 
+        published_at: finalStatus === 'published' && !data.published_at 
           ? new Date().toISOString() 
           : data.published_at,
       };
@@ -194,23 +248,38 @@ export default function BlogEditor() {
           </div>
           
           <div className="flex space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
-              disabled={createBlogPost.isPending || updateBlogPost.isPending}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Rascunho
-            </Button>
-            <Button
-              type="button"
-              onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'published' }))()}
-              disabled={createBlogPost.isPending || updateBlogPost.isPending}
-            >
-              <Send className="w-4 h-4 mr-2" />
-              Publicar
-            </Button>
+            {form.watch('status') === 'published' && permissions?.canPublish ? (
+              <Button
+                type="button"
+                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'published' }))()}
+                disabled={createBlogPost.isPending || updateBlogPost.isPending}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Publicar
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
+                disabled={createBlogPost.isPending || updateBlogPost.isPending}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {permissions?.isAuthor ? 'Enviar para Revisão' : 'Salvar Rascunho'}
+              </Button>
+            )}
+            
+            {form.watch('status') === 'draft' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
+                disabled={createBlogPost.isPending || updateBlogPost.isPending}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Salvar Rascunho
+              </Button>
+            )}
           </div>
         </div>
 
@@ -296,28 +365,171 @@ export default function BlogEditor() {
                 <div className="bg-card p-6 rounded-lg border space-y-4">
                   <h3 className="font-medium text-foreground">Configurações</h3>
                   
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <div className="flex space-x-2">
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione o status" />
+                              <SelectValue placeholder="Selecione uma categoria" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="draft">Rascunho</SelectItem>
-                            <SelectItem value="published">Publicado</SelectItem>
-                            <SelectItem value="archived">Arquivado</SelectItem>
+                            {categories?.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                        <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button type="button" variant="outline" size="icon">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Nova Categoria</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="category-name">Nome</Label>
+                                <Input
+                                  id="category-name"
+                                  value={newCategoryName}
+                                  onChange={(e) => setNewCategoryName(e.target.value)}
+                                  placeholder="Nome da categoria"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="category-description">Descrição</Label>
+                                <Textarea
+                                  id="category-description"
+                                  value={newCategoryDescription}
+                                  onChange={(e) => setNewCategoryDescription(e.target.value)}
+                                  placeholder="Descrição da categoria (opcional)"
+                                />
+                              </div>
+                              <div className="flex justify-end space-x-2">
+                                <Button type="button" variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                                  Cancelar
+                                </Button>
+                                <Button type="button" onClick={handleCreateCategory}>
+                                  Criar Categoria
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="draft">Rascunho</SelectItem>
+                          {permissions?.canPublish && (
+                            <SelectItem value="published">Publicado</SelectItem>
+                          )}
+                          <SelectItem value="archived">Arquivado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Tags Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Tags</Label>
+                    <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Nova Tag
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Nova Tag</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="tag-name">Nome da Tag</Label>
+                            <Input
+                              id="tag-name"
+                              value={newTagName}
+                              onChange={(e) => setNewTagName(e.target.value)}
+                              placeholder="Nome da tag"
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsTagDialogOpen(false)}>
+                              Cancelar
+                            </Button>
+                            <Button type="button" onClick={handleCreateTag}>
+                              Criar Tag
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  {/* Selected Tags */}
+                  {selectedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedTags.map((tagId) => {
+                        const tag = tags?.find(t => t.id === tagId);
+                        return tag ? (
+                          <Badge key={tagId} variant="secondary" className="flex items-center gap-1">
+                            {tag.name}
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tagId)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  
+                  {/* Available Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {tags?.filter(tag => !selectedTags.includes(tag.id)).map((tag) => (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => toggleTag(tag.id)}
+                        className="text-sm px-2 py-1 border border-border rounded hover:bg-muted transition-colors"
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                   <FormField
                     control={form.control}

@@ -178,8 +178,9 @@ export const TrumbowygEditor = ({
         const $editor = (window as any).$(editorRef.current) as any;
         if ($editor.data && $editor.data('trumbowyg')) {
           const currentContent = $editor.trumbowyg('html');
-          if (currentContent !== value) {
-            $editor.trumbowyg('html', value);
+          // Only update if the content is different and the value is not empty or the editor is not focused
+          if (currentContent !== value && (!document.activeElement || !$editor[0].contains(document.activeElement))) {
+            $editor.trumbowyg('html', value || '');
           }
         }
       } catch (e) {

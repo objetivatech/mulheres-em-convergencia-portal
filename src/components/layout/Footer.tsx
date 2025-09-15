@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Linkedin, Facebook, Heart } from 'lucide-react';
 import LogoComponent from './LogoComponent';
+import { TagCloud } from '@/components/blog/TagCloud';
 
 // Pinterest icon component (since it's not in lucide-react)
 const PinterestIcon = ({ size = 20 }: { size?: number }) => (
@@ -58,25 +59,30 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* Redes Sociais */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Siga-nos</h3>
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-background rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-tertiary transition-all duration-200"
-                  >
-                    <Icon size={20} />
-                  </a>
-                );
-              })}
+          {/* Redes Sociais e Tags */}
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold text-foreground">Siga-nos</h3>
+              <div className="flex space-x-4">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-background rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-tertiary transition-all duration-200"
+                    >
+                      <Icon size={20} />
+                    </a>
+                  );
+                })}
+              </div>
             </div>
+            
+            {/* Tag Cloud */}
+            <TagCloud limit={12} />
           </div>
         </div>
 
