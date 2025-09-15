@@ -32,7 +32,7 @@ const Contato = () => {
       };
 
       const { data, error } = await supabase.functions.invoke('send-contact-message', {
-        body: { ...contactData, hp, ts: formTs }
+        body: { ...contactData, honeypot: hp, timestamp: formTs }
       });
 
       if (error) {
@@ -42,9 +42,9 @@ const Contato = () => {
       }
 
       if (data?.email_sent) {
-        toast.success(`Mensagem enviada com sucesso! Entraremos em contato em breve. (ID: ${data.id})`);
+        toast.success(`Mensagem enviada com sucesso! Entraremos em contato em breve. (ID: ${data.message_id})`);
       } else {
-        toast.success(`Mensagem salva com sucesso! Email será processado em breve. (ID: ${data.id})`);
+        toast.success(`Mensagem salva com sucesso! Email será processado em breve. (ID: ${data.message_id})`);
       }
       
       // Reset form safely

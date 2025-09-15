@@ -531,6 +531,35 @@ export default function BlogEditor() {
                   </div>
                 </div>
 
+                {/* Date Fields - Published At for published posts, Scheduled For for drafts */}
+                {form.watch('status') === 'published' && (
+                  <FormField
+                    control={form.control}
+                    name="published_at"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data de Publicação</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            {...field}
+                            value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ''}
+                            onChange={(e) => {
+                              const value = e.target.value ? new Date(e.target.value).toISOString() : '';
+                              field.onChange(value);
+                            }}
+                          />
+                        </FormControl>
+                        <p className="text-sm text-muted-foreground">
+                          Deixe em branco para usar a data atual. Você pode definir uma data no passado para posts históricos.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {form.watch('status') === 'draft' && (
                   <FormField
                     control={form.control}
                     name="scheduled_for"
@@ -542,12 +571,17 @@ export default function BlogEditor() {
                             {...field}
                             type="datetime-local"
                             placeholder="Data e hora para publicar"
+                            min={new Date().toISOString().slice(0, 16)}
                           />
                         </FormControl>
+                        <p className="text-sm text-muted-foreground">
+                          Opcional: Defina quando este post deve ser publicado automaticamente.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                )}
 
                   <FormField
                     control={form.control}

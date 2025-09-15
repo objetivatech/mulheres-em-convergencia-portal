@@ -171,20 +171,36 @@ export const TrumbowygEditor = ({
     };
   }, []);
 
-  // Update content when value prop changes
+  // Update content when value prop changes - force remount for different content
   useEffect(() => {
     if (editorRef.current && typeof window !== 'undefined' && (window as any).$) {
       try {
         const $editor = (window as any).$(editorRef.current) as any;
         if ($editor.data && $editor.data('trumbowyg')) {
           const currentContent = $editor.trumbowyg('html');
-          // Only update if the content is different and the value is not empty or the editor is not focused
-          if (currentContent !== value && (!document.activeElement || !$editor[0].contains(document.activeElement))) {
+          // Force update content when switching posts or initial load
+          if (currentContent !== value) {
             $editor.trumbowyg('html', value || '');
           }
         }
       } catch (e) {
-        // Ignore update errors
+        // If editor is not ready, destroy and reinitialize with new content
+        if (editorRef.current) {
+          try {
+            const $currentEditor = (window as any).$(editorRef.current) as any;
+            if ($currentEditor.data && $currentEditor.data('trumbowyg')) {
+              $currentEditor.trumbowyg('destroy');
+            }
+          } catch (destroyError) {
+            // Ignore destroy errors
+          }
+          // Trigger re-initialization with new content
+          setTimeout(() => {
+            if (editorRef.current) {
+              editorRef.current.setAttribute('data-force-reload', Date.now().toString());
+            }
+          }, 100);
+        }
       }
     }
   }, [value]);

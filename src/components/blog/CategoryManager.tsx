@@ -99,9 +99,9 @@ export const CategoryManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-nexa text-foreground">Categorias do Blog</h2>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsDialogOpen(true)}>
+            <Button>
               <Plus className="w-4 h-4 mr-2" />
               Nova Categoria
             </Button>
