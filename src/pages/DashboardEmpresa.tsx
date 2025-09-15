@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
+import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
@@ -839,6 +840,27 @@ export const DashboardEmpresa = () => {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="avaliacoes" className="space-y-6">
+            {business ? (
+              <>
+                <BusinessReviewsTab 
+                  reviews={reviews}
+                  reviewStats={reviewStats}
+                  loadingReviews={loadingReviews}
+                />
+                <BusinessReviewModeration businessId={business.id} />
+              </>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Crie seu perfil de empresa primeiro para ver as avaliações.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="mensagens" className="space-y-6">

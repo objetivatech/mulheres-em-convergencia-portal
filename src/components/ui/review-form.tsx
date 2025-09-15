@@ -74,7 +74,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ businessId, onReviewSubmitted }
 
       toast({
         title: "Avaliação enviada!",
-        description: "Obrigado por sua avaliação. Ela será analisada e publicada em breve."
+        description: "Sua avaliação foi enviada e está aguardando aprovação do proprietário do negócio. Será publicada após moderação."
       });
 
       // Reset form

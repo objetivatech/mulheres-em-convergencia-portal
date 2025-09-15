@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -481,6 +481,7 @@ export type Database = {
           reviewer_email: string | null
           reviewer_id: string | null
           reviewer_name: string
+          status: string
           title: string | null
           updated_at: string | null
           verified: boolean | null
@@ -495,6 +496,7 @@ export type Database = {
           reviewer_email?: string | null
           reviewer_id?: string | null
           reviewer_name: string
+          status?: string
           title?: string | null
           updated_at?: string | null
           verified?: boolean | null
@@ -509,6 +511,7 @@ export type Database = {
           reviewer_email?: string | null
           reviewer_id?: string | null
           reviewer_name?: string
+          status?: string
           title?: string | null
           updated_at?: string | null
           verified?: boolean | null
@@ -1745,6 +1748,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_pending_business_reviews: {
+        Args: { business_uuid: string }
+        Returns: {
+          business_id: string
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+          title: string
+          verified: boolean
+        }[]
+      }
       get_profiles_admin_safe: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
@@ -1910,6 +1927,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      moderate_business_review: {
+        Args: { new_status: string; review_uuid: string }
+        Returns: Json
       }
       process_subscription_payment: {
         Args: {
