@@ -1762,6 +1762,15 @@ export type Database = {
           verified: boolean
         }[]
       }
+      get_popular_blog_tags: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          name: string
+          post_count: number
+          slug: string
+        }[]
+      }
       get_profiles_admin_safe: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
@@ -1913,6 +1922,10 @@ export type Database = {
       }
       increment_blog_post_views: {
         Args: { p_slug: string }
+        Returns: boolean
+      }
+      is_user_author: {
+        Args: { user_uuid: string }
         Returns: boolean
       }
       is_valid_uuid: {
@@ -2074,6 +2087,7 @@ export type Database = {
         | "community_member"
         | "blog_editor"
         | "customer"
+        | "author"
       user_type:
         | "admin"
         | "member"
@@ -2237,6 +2251,7 @@ export const Constants = {
         "community_member",
         "blog_editor",
         "customer",
+        "author",
       ],
       user_type: [
         "admin",
