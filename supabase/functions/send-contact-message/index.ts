@@ -1,13 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { Resend } from 'npm:resend@4.0.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
+// MailRelay API configuration
+const MAILRELAY_API_KEY = Deno.env.get('MAILRELAY_API_KEY')
+const MAILRELAY_API_URL = 'https://api.mailrelay.com/v1'
 
 interface ContactMessage {
   name: string;
@@ -130,61 +131,111 @@ serve(async (req) => {
       );
     }
 
-    console.log('Contact message saved successfully:', data.id);
+    console.log('[SEND-CONTACT-MESSAGE] Message saved:', data.id);
 
-    // Send email notification
+    // Send email notification via MailRelay
+    let emailSuccess = false;
+    let emailError = null;
+
     try {
-      const emailResponse = await resend.emails.send({
-        from: 'Mulheres em Convergência <noreply@mulheresemconvergencia.com.br>',
-        to: ['juntas@mulheresemconvergencia.com.br'],
-        replyTo: email,
-        subject: `Nova mensagem de contato: ${subject}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #C75A92, #9191C0); padding: 30px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">Nova Mensagem de Contato</h1>
-            </div>
-            
-            <div style="padding: 30px; background-color: #f9f9f9;">
-              <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h2 style="color: #C75A92; margin-top: 0;">${subject}</h2>
-                
-                <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
-                  <p style="margin: 5px 0;"><strong>Nome:</strong> ${name}</p>
-                  <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-                  <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+      // Prepare email content
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #C75A92, #9191C0); padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Nova Mensagem de Contato</h1>
+          </div>
+          
+          <div style="padding: 30px; background-color: #f9f9f9;">
+            <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #C75A92; margin-top: 0;">${subject}</h2>
+              
+              <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                <p style="margin: 5px 0;"><strong>Nome:</strong> ${name}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+              </div>
+              
+              <div style="margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">Mensagem:</h3>
+                <div style="background-color: #fff; border-left: 4px solid #C75A92; padding: 15px; margin: 10px 0;">
+                  ${message.replace(/\n/g, '<br>')}
                 </div>
-                
-                <div style="margin: 20px 0;">
-                  <h3 style="color: #333; margin-bottom: 10px;">Mensagem:</h3>
-                  <div style="background-color: #fff; border-left: 4px solid #C75A92; padding: 15px; margin: 10px 0;">
-                    ${message.replace(/\n/g, '<br>')}
-                  </div>
-                </div>
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                  <p style="color: #666; font-size: 14px;">
-                    Esta mensagem foi enviada através do formulário de contato do site 
-                    <a href="https://mulheresemconvergencia.com.br" style="color: #C75A92;">Mulheres em Convergência</a>
-                  </p>
-                </div>
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                <p style="color: #666; font-size: 14px;">
+                  Esta mensagem foi enviada através do formulário de contato do site 
+                  <a href="https://mulheresemconvergencia.com.br" style="color: #C75A92;">Mulheres em Convergência</a>
+                </p>
               </div>
             </div>
           </div>
-        `,
+        </div>
+      `;
+
+      // Send via MailRelay API
+      const mailrelayResponse = await fetch(`${MAILRELAY_API_URL}/emails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AUTH-TOKEN': MAILRELAY_API_KEY || '',
+        },
+        body: JSON.stringify({
+          subject: `Nova mensagem de contato: ${subject}`,
+          html_part: emailHtml,
+          from: {
+            email: 'noreply@mulheresemconvergencia.com.br',
+            name: 'Mulheres em Convergência'
+          },
+          to: [{ 
+            email: 'juntas@mulheresemconvergencia.com.br',
+            name: 'Equipe Mulheres em Convergência'
+          }],
+          reply_to: { 
+            email: email,
+            name: name
+          }
+        })
       });
 
-      console.log('Email sent successfully:', emailResponse);
-    } catch (emailError) {
-      console.error('Error sending email:', emailError);
-      // Continue without failing the request - message is saved in DB
+      if (mailrelayResponse.ok) {
+        const mailrelayData = await mailrelayResponse.json();
+        console.log('[SEND-CONTACT-MESSAGE] MailRelay success:', mailrelayData);
+        emailSuccess = true;
+      } else {
+        const errorText = await mailrelayResponse.text();
+        emailError = `MailRelay API error: ${mailrelayResponse.status} - ${errorText}`;
+        console.error('[SEND-CONTACT-MESSAGE]', emailError);
+      }
+    } catch (error) {
+      emailError = `MailRelay request failed: ${error.message}`;
+      console.error('[SEND-CONTACT-MESSAGE]', emailError);
+    }
+
+    // Update message status based on email result
+    if (emailSuccess) {
+      await supabase
+        .from('contact_messages')
+        .update({ status: 'sent' })
+        .eq('id', data.id);
+    } else {
+      await supabase
+        .from('contact_messages')
+        .update({ 
+          status: 'email_failed',
+          admin_notes: emailError 
+        })
+        .eq('id', data.id);
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Mensagem enviada com sucesso! Entraremos em contato em breve.',
-        id: data.id
+        message: emailSuccess 
+          ? 'Mensagem enviada com sucesso! Entraremos em contato em breve.' 
+          : 'Mensagem salva com sucesso! Email será processado em breve.',
+        id: data.id,
+        email_sent: emailSuccess
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

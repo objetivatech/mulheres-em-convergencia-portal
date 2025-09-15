@@ -41,7 +41,11 @@ const Contato = () => {
         return;
       }
 
-      toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+      if (data?.email_sent) {
+        toast.success(`Mensagem enviada com sucesso! Entraremos em contato em breve. (ID: ${data.id})`);
+      } else {
+        toast.success(`Mensagem salva com sucesso! Email será processado em breve. (ID: ${data.id})`);
+      }
       
       // Reset form safely
       if (formRef.current) {
@@ -224,32 +228,32 @@ const Contato = () => {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Google Maps */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Nossa Localização</CardTitle>
-                    <CardDescription>
-                      Encontre-nos em Alvorada, Rio Grande do Sul
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="aspect-video rounded-lg overflow-hidden">
-                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27584.66431858135!2d-51.125!3d-29.9894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951979f77ad91f07%3A0x2b238ad9b4be1c95!2sAlvorada%2C%20RS!5e0!3m2!1spt!2sbr!4v1694727600000!5m2!1spt!2sbr"
-                        width="100%"
-                        height="300"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Localização - Alvorada, RS"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
+
+            {/* Google Maps - Full Width */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Nossa Localização</CardTitle>
+                <CardDescription>
+                  Encontre-nos em Alvorada, Rio Grande do Sul
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="rounded-lg overflow-hidden">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27584.66431858135!2d-51.125!3d-29.9894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951979f77ad91f07%3A0x2b238ad9b4be1c95!2sAlvorada%2C%20RS!5e0!3m2!1spt!2sbr!4v1694727600000!5m2!1spt!2sbr"
+                    width="100%"
+                    height="400"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Localização - Alvorada, RS"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </main>
       </Layout>
