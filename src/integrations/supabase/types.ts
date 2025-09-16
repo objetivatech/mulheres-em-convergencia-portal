@@ -526,6 +526,47 @@ export type Database = {
           },
         ]
       }
+      business_service_areas: {
+        Row: {
+          active: boolean
+          area_name: string
+          area_type: string
+          business_id: string
+          created_at: string
+          id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          area_name: string
+          area_type: string
+          business_id: string
+          created_at?: string
+          id?: string
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          area_name?: string
+          area_type?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_service_areas_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_subscriptions: {
         Row: {
           auto_renew: boolean | null
@@ -1640,6 +1681,14 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      calculate_business_rating_internal: {
+        Args: { business_uuid: string }
+        Returns: {
+          average_rating: number
+          rating_distribution: Json
+          total_reviews: number
+        }[]
+      }
       cleanup_old_activity_logs: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1680,6 +1729,25 @@ export type Database = {
         Args: { business_id: string; business_name: string }
         Returns: string
       }
+      get_admin_business_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          average_rating: number
+          business_category: string
+          business_city: string
+          business_id: string
+          business_name: string
+          business_state: string
+          created_at: string
+          owner_email: string
+          subscription_active: boolean
+          subscription_plan: string
+          total_clicks: number
+          total_contacts: number
+          total_reviews: number
+          total_views: number
+        }[]
+      }
       get_admin_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1717,6 +1785,16 @@ export type Database = {
           postal_code: string
           website: string
           whatsapp: string
+        }[]
+      }
+      get_business_service_areas: {
+        Args: { business_uuid: string }
+        Returns: {
+          active: boolean
+          area_name: string
+          area_type: string
+          id: string
+          state: string
         }[]
       }
       get_current_user_admin_status: {
@@ -1856,6 +1934,7 @@ export type Database = {
       get_public_businesses: {
         Args: Record<PropertyKey, never>
         Returns: {
+          average_rating: number
           category: string
           city: string
           clicks_count: number
@@ -2041,6 +2120,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      user_has_business: {
+        Args: { user_uuid: string }
+        Returns: boolean
       }
       user_has_permission: {
         Args: { permission_name: string; user_uuid: string }
