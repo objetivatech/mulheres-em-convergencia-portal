@@ -22,6 +22,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import UserManagement from './pages/UserManagement';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
@@ -83,6 +84,11 @@ function AppContent() {
         <Route path="/admin/users" element={
           <ProtectedRoute requireAdmin={true}>
             <UserManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/analytics" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminAnalytics />
           </ProtectedRoute>
         } />
         

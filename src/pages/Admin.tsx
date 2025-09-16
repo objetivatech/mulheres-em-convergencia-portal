@@ -64,7 +64,8 @@ const Admin = () => {
       description: 'Estatísticas de acesso e engajamento',
       icon: BarChart3,
       available: isAdmin,
-      comingSoon: true
+      href: '/admin/analytics',
+      comingSoon: false
     },
     {
       title: 'Configurações',

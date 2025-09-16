@@ -31,6 +31,7 @@ interface Business {
   featured: boolean;
   slug: string;
   reviews_count: number;
+  average_rating: number;
 }
 
 const Diretorio = () => {
@@ -217,7 +218,10 @@ const Diretorio = () => {
         
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <span>{business.views_count} visualizações</span>
-          <span>{business.reviews_count} avaliações</span>
+          <div className="flex items-center space-x-1">
+            <span>⭐ {business.average_rating.toFixed(1)}</span>
+            <span>({business.reviews_count})</span>
+          </div>
         </div>
         
         <div className="flex justify-end">
@@ -290,7 +294,10 @@ const Diretorio = () => {
           <div className="flex flex-col items-end gap-2">
             <div className="text-xs text-muted-foreground text-right">
               <div>{business.views_count} visualizações</div>
-              <div>{business.reviews_count} avaliações</div>
+              <div className="flex items-center space-x-1">
+                <span>⭐ {business.average_rating.toFixed(1)}</span>
+                <span>({business.reviews_count})</span>
+              </div>
             </div>
             <Link to={`/diretorio/${business.slug}`}>
               <Button size="sm">

@@ -13,6 +13,7 @@ import { ImageUploader } from '@/components/blog/ImageUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
 import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
+import { ServiceAreasManager } from '@/components/business/ServiceAreasManager';
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
@@ -559,9 +560,10 @@ export const DashboardEmpresa = () => {
         )}
 
           <Tabs defaultValue="dados" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
               <TabsTrigger value="imagens">Imagens</TabsTrigger>
+              <TabsTrigger value="areas">Áreas de Atendimento</TabsTrigger>
               <TabsTrigger value="contatos">Contatos</TabsTrigger>
               <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
               <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
@@ -883,6 +885,12 @@ export const DashboardEmpresa = () => {
               reviewStats={reviewStats}
               loadingReviews={loadingReviews}
             />
+          </TabsContent>
+
+          <TabsContent value="areas" className="space-y-6">
+            {business && (
+              <ServiceAreasManager businessId={business.id} />
+            )}
           </TabsContent>
         </Tabs>
       </div>

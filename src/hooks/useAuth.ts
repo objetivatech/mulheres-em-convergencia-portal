@@ -13,6 +13,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   canEditBlog: boolean;
+  hasBusiness: boolean;
   requestPasswordReset: (email: string) => Promise<{ error: any }>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
 }
@@ -33,6 +34,7 @@ export const useAuthProvider = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canEditBlog, setCanEditBlog] = useState(false);
+  const [hasBusiness, setHasBusiness] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -56,9 +58,13 @@ export const useAuthProvider = () => {
             try {
               const { data: adminStatus } = await supabase.rpc('get_current_user_admin_status');
               const { data: blogEditStatus } = await supabase.rpc('get_current_user_blog_edit_status');
+              const { data: businessStatus } = await supabase.rpc('user_has_business', { 
+                user_uuid: session.user.id 
+              });
               
               setIsAdmin(adminStatus || false);
               setCanEditBlog(blogEditStatus || false);
+              setHasBusiness(businessStatus || false);
             } catch (error) {
               console.error('Error checking user permissions:', error);
             }
@@ -66,6 +72,7 @@ export const useAuthProvider = () => {
         } else {
           setIsAdmin(false);
           setCanEditBlog(false);
+          setHasBusiness(false);
         }
       }
     );
@@ -212,6 +219,7 @@ export const useAuthProvider = () => {
     signOut,
     isAdmin,
     canEditBlog,
+    hasBusiness,
     requestPasswordReset,
     updatePassword,
   };

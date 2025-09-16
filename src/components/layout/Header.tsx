@@ -22,7 +22,7 @@ const PinterestIcon = ({ size = 20 }: { size?: number }) => (
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, signOut, isAdmin, canEditBlog } = useAuth();
+  const { user, signOut, isAdmin, canEditBlog, hasBusiness } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -99,11 +99,13 @@ const Header = () => {
                     <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/meu-dashboard">Meu Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard/empresa">Dashboard Empresa</Link>
-                    </DropdownMenuItem>
+                       <Link to="/meu-dashboard">Meu Dashboard</Link>
+                     </DropdownMenuItem>
+                     {hasBusiness && (
+                       <DropdownMenuItem asChild>
+                         <Link to="/dashboard/empresa">Dashboard Empresa</Link>
+                       </DropdownMenuItem>
+                     )}
                     {(isAdmin || canEditBlog) && (
                       <DropdownMenuItem asChild>
                         <Link to="/admin">Painel Admin</Link>
@@ -162,19 +164,21 @@ const Header = () => {
                   </span>
                   <div className="flex flex-col space-y-2">
                     <Link 
-                      to="/meu-dashboard" 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
-                    >
-                      Meu Dashboard
-                    </Link>
-                    <Link 
-                      to="/dashboard/empresa" 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
-                    >
-                      Dashboard Empresa
-                    </Link>
+                       to="/meu-dashboard" 
+                       onClick={() => setIsMobileMenuOpen(false)}
+                       className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
+                     >
+                       Meu Dashboard
+                     </Link>
+                     {hasBusiness && (
+                       <Link 
+                         to="/dashboard/empresa" 
+                         onClick={() => setIsMobileMenuOpen(false)}
+                         className="text-foreground hover:text-primary transition-colors font-medium px-2 py-1"
+                       >
+                         Dashboard Empresa
+                       </Link>
+                     )}
                     {(isAdmin || canEditBlog) && (
                       <Link 
                         to="/admin" 
