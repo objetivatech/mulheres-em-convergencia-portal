@@ -562,22 +562,13 @@ const DiretorioEmpresa = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">
-                <MapboxBusinessMap
-                  businessId={business.id}
-                  businessName={business.name}
-                  businessCity={business.city}
-                  businessState={business.state}
-                  latitude={business.latitude}
-                  longitude={business.longitude}
-                />
-                          category: business.category,
-                          city: business.city,
-                          state: business.state
-                        }]}
-                        center={[business.longitude, business.latitude]}
-                        zoom={15}
-                        height="100%"
-                        showSearch={false}
+                      <MapboxBusinessMap
+                        businessId={business.id}
+                        businessName={business.name}
+                        businessCity={business.city}
+                        businessState={business.state}
+                        latitude={business.latitude}
+                        longitude={business.longitude}
                       />
                     </div>
                   </CardContent>

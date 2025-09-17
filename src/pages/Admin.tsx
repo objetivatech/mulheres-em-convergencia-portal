@@ -68,6 +68,14 @@ const Admin = () => {
       comingSoon: false
     },
     {
+      title: 'Teste AYRSHARE',
+      description: 'Interface para testar integração com redes sociais',
+      icon: Settings,
+      available: isAdmin,
+      href: '/admin/ayrshare',
+      comingSoon: false
+    },
+    {
       title: 'Configurações',
       description: 'Configurações gerais do sistema',
       icon: Settings,
