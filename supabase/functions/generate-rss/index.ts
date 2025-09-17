@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     }
 
     const typedPosts = posts as unknown as BlogPost[];
-    const baseUrl = 'https://mulhereemconvergeencia.com.br';
+    const baseUrl = 'https://mulheresemconvergencia.com.br';
     const rssDate = new Date().toUTCString();
 
     // Generate RSS XML
@@ -69,8 +69,8 @@ Deno.serve(async (req) => {
     <language>pt-BR</language>
     <lastBuildDate>${rssDate}</lastBuildDate>
     <pubDate>${rssDate}</pubDate>
-    <managingEditor>contato@mulhereemconvergeencia.com.br (Mulheres em Convergência)</managingEditor>
-    <webMaster>contato@mulhereemconvergeencia.com.br (Mulheres em Convergência)</webMaster>
+    <managingEditor>contato@mulheresemconvergencia.com.br (Mulheres em Convergência)</managingEditor>
+    <webMaster>contato@mulheresemconvergencia.com.br (Mulheres em Convergência)</webMaster>
     <ttl>60</ttl>
     <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
     <image>
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
-      <author>contato@mulhereemconvergeencia.com.br (${author})</author>
+      <author>contato@mulheresemconvergencia.com.br (${author})</author>
       <category><![CDATA[${category}]]></category>
       ${post.featured_image_url ? `<enclosure url="${post.featured_image_url}" type="image/jpeg" />` : ''}
     </item>`;

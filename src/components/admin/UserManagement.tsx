@@ -49,13 +49,15 @@ export const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   
-  const { useUserProfiles, useAddRole, useRemoveRole, useDeleteUser } = useRoles();
+  const { useUserProfiles, useAddRole, useRemoveRole, useDeleteUser, useToggleAdmin, useToggleBlogEditor } = useRoles();
   const { toast } = useToast();
 
   const { data: users = [], isLoading, error } = useUserProfiles();
   const addRoleMutation = useAddRole();
   const removeRoleMutation = useRemoveRole();
   const deleteUserMutation = useDeleteUser();
+  const toggleAdminMutation = useToggleAdmin();
+  const toggleBlogEditorMutation = useToggleBlogEditor();
 
   // Filtrar usuários
   const filteredUsers = users.filter(user => {

@@ -18,6 +18,7 @@ interface Business {
   subscription_plan: string;
   views_count: number;
   reviews_count: number;
+  average_rating: number;
 }
 
 interface BusinessShowcaseProps {
@@ -157,7 +158,10 @@ const BusinessShowcase: React.FC<BusinessShowcaseProps> = ({
                   {/* Metrics */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
                     <span>{business.views_count} visualizações</span>
-                    <span>{business.reviews_count} avaliações</span>
+                    <div className="flex items-center space-x-1">
+                      <span>⭐ {Number(business.average_rating || 0).toFixed(1)}</span>
+                      <span>({business.reviews_count})</span>
+                    </div>
                   </div>
                   
                   {/* Visit Link */}

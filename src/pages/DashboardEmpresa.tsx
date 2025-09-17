@@ -559,15 +559,15 @@ export const DashboardEmpresa = () => {
           </div>
         )}
 
-          <Tabs defaultValue="dados" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
-              <TabsTrigger value="imagens">Imagens</TabsTrigger>
-              <TabsTrigger value="areas">Áreas de Atendimento</TabsTrigger>
-              <TabsTrigger value="contatos">Contatos</TabsTrigger>
-              <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
-              <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="dados" className="w-full">
+          <TabsList className="w-full flex gap-2 overflow-x-auto no-scrollbar md:grid md:grid-cols-6">
+            <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
+            <TabsTrigger value="imagens">Imagens</TabsTrigger>
+            <TabsTrigger value="areas">Áreas de Atendimento</TabsTrigger>
+            <TabsTrigger value="contatos">Contatos</TabsTrigger>
+            <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
+            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="dados" className="space-y-6">
             <Card>

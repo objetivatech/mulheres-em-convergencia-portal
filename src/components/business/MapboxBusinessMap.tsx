@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { useBusinessServiceAreas } from '@/hooks/useBusinessServiceAreas';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapboxBusinessMapProps {
   businessId: string;
@@ -106,13 +107,30 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
   };
 
   useEffect(() => {
-    // Check for stored token
-    const storedToken = localStorage.getItem('mapbox_token');
-    if (storedToken) {
-      setMapboxToken(storedToken);
-    } else {
-      setShowTokenInput(true);
-    }
+    const resolveToken = async () => {
+      try {
+        // Try from edge function (Supabase secret)
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        const tokenFromSecret = (data as any)?.token as string | undefined;
+        if (!error && tokenFromSecret && tokenFromSecret.startsWith('pk.')) {
+          setMapboxToken(tokenFromSecret);
+          setShowTokenInput(false);
+          return;
+        }
+      } catch (e) {
+        // ignore and fallback
+      }
+      // Fallback to localStorage or show input
+      const storedToken = localStorage.getItem('mapbox_token');
+      if (storedToken) {
+        setMapboxToken(storedToken);
+        setShowTokenInput(false);
+      } else {
+        setShowTokenInput(true);
+      }
+    };
+
+    resolveToken();
   }, []);
 
   useEffect(() => {

@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       throw categoriesError;
     }
 
-    const baseUrl = 'https://mulhereemconvergeencia.com.br';
+    const baseUrl = 'https://mulheresemconvergencia.com.br';
     const currentDate = new Date().toISOString();
 
     const staticPages = [

@@ -83,12 +83,10 @@ export const useRoles = () => {
     return useMutation({
       mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
         if (!isAdmin) throw new Error('Acesso negado');
-        
         const { error } = await supabase.rpc('add_user_role', {
           user_uuid: userId,
-          new_role: role as any // Conversão temporária até ajustar enum no banco
+          new_role: role as any
         });
-        
         if (error) throw error;
       },
       onSuccess: () => {
@@ -102,12 +100,10 @@ export const useRoles = () => {
     return useMutation({
       mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
         if (!isAdmin) throw new Error('Acesso negado');
-        
         const { error } = await supabase.rpc('remove_user_role', {
           user_uuid: userId,
-          old_role: role as any // Conversão temporária até ajustar enum no banco
+          old_role: role as any
         });
-        
         if (error) throw error;
       },
       onSuccess: () => {
@@ -116,6 +112,39 @@ export const useRoles = () => {
     });
   };
 
+  // Alternar status de admin (coluna is_admin)
+  const useToggleAdmin = () => {
+    return useMutation({
+      mutationFn: async ({ userId, newStatus }: { userId: string; newStatus: boolean }) => {
+        if (!isAdmin) throw new Error('Acesso negado');
+        const { error } = await supabase.rpc('secure_toggle_admin_status', {
+          target_user_id: userId,
+          new_admin_status: newStatus,
+        });
+        if (error) throw error;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['user-profiles'] });
+      },
+    });
+  };
+
+  // Alternar status de editor de blog (coluna can_edit_blog)
+  const useToggleBlogEditor = () => {
+    return useMutation({
+      mutationFn: async ({ userId, newStatus }: { userId: string; newStatus: boolean }) => {
+        if (!isAdmin) throw new Error('Acesso negado');
+        const { error } = await supabase.rpc('secure_toggle_blog_editor', {
+          target_user_id: userId,
+          new_editor_status: newStatus,
+        });
+        if (error) throw error;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['user-profiles'] });
+      },
+    });
+  };
   // Criar novo usuário
   const useCreateUser = () => {
     return useMutation({
@@ -152,8 +181,6 @@ export const useRoles = () => {
       },
     });
   };
-
-  // Atualizar usuário
   const useUpdateUser = () => {
     return useMutation({
       mutationFn: async ({ 
@@ -215,6 +242,8 @@ export const useRoles = () => {
     useUserProfiles,
     useAddRole,
     useRemoveRole,
+    useToggleAdmin,
+    useToggleBlogEditor,
     useCreateUser,
     useUpdateUser,
     useDeleteUser,

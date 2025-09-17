@@ -177,9 +177,9 @@ const DiretorioEmpresa = () => {
 
   useEffect(() => {
     if (business?.id) {
-      // Use the unified rating calculation from database
+      // Use ALL reviews for rating (approved + pending + rejected)
       supabase
-        .rpc('calculate_business_rating_internal', { business_uuid: business.id })
+        .rpc('calculate_business_rating_all', { business_uuid: business.id })
         .then(({ data, error }) => {
           if (!error && data && data.length > 0) {
             setBusinessRating({

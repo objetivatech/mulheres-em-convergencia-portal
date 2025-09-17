@@ -1684,6 +1684,13 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      calculate_business_rating_all: {
+        Args: { business_uuid: string }
+        Returns: {
+          average_rating: number
+          total_reviews: number
+        }[]
+      }
       calculate_business_rating_internal: {
         Args: { business_uuid: string }
         Returns: {
@@ -1811,6 +1818,7 @@ export type Database = {
       get_featured_businesses: {
         Args: { limit_count?: number }
         Returns: {
+          average_rating: number
           category: string
           city: string
           cover_image_url: string
@@ -1941,24 +1949,20 @@ export type Database = {
           category: string
           city: string
           clicks_count: number
-          contacts_count: number
           cover_image_url: string
           created_at: string
           description: string
           featured: boolean
-          gallery_images: string[]
           id: string
           instagram: string
           latitude: number
           logo_url: string
           longitude: number
           name: string
-          opening_hours: Json
           reviews_count: number
           slug: string
           state: string
           subcategory: string
-          subscription_plan: string
           views_count: number
           website: string
         }[]
@@ -1966,6 +1970,7 @@ export type Database = {
       get_random_businesses: {
         Args: { limit_count?: number }
         Returns: {
+          average_rating: number
           category: string
           city: string
           cover_image_url: string
