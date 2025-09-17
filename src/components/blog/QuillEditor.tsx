@@ -90,7 +90,12 @@ export const QuillEditor = ({
   ];
 
   useEffect(() => {
-    setIsLoaded(true);
+    // Add a small delay to ensure proper initialization
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Custom styles for the editor
@@ -103,7 +108,10 @@ export const QuillEditor = ({
     return (
       <div className={`border rounded-md ${className}`} style={editorStyle}>
         <div className="flex items-center justify-center h-full text-muted-foreground">
-          Carregando editor...
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+            <p>Carregando editor rico...</p>
+          </div>
         </div>
       </div>
     );

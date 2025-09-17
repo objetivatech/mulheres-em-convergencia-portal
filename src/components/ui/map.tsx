@@ -39,19 +39,27 @@ const Map: React.FC<MapProps> = ({
   const [mapError, setMapError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch Mapbox token from edge function or fallback
+  // Fetch Mapbox token from edge function or use fallback
   useEffect(() => {
     const getMapboxToken = async () => {
       try {
+        setLoading(true);
+        console.log('Fetching Mapbox token...');
         const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        
         if (!error && data?.token && data.token.startsWith('pk.')) {
+          console.log('Token fetched successfully');
           setMapboxToken(data.token);
+          setMapError(null);
         } else {
+          console.warn('No valid token from edge function, using fallback');
           // Fallback token for development
           setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
+          setMapError('Usando token de demonstração. Funcionalidade limitada.');
         }
       } catch (error) {
         console.error('Error fetching Mapbox token:', error);
+        setMapError('Falha ao carregar token do mapa. Usando fallback.');
         setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
       } finally {
         setLoading(false);
@@ -64,6 +72,7 @@ const Map: React.FC<MapProps> = ({
     if (!mapContainer.current || !mapboxToken) return;
 
     try {
+      console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
       mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
@@ -71,10 +80,16 @@ const Map: React.FC<MapProps> = ({
         style: 'mapbox://styles/mapbox/light-v11',
         center: center,
         zoom: zoom,
+        touchPitch: false, // Disable pitch on touch to reduce violations
+        pitchWithRotate: false, // Disable pitch to improve performance
       });
 
-      // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Add passive navigation controls to reduce event listener violations
+      const navControl = new mapboxgl.NavigationControl({
+        showCompass: false,
+        showZoom: true
+      });
+      map.current.addControl(navControl, 'top-right');
 
       // Add markers for businesses
       businesses.forEach(business => {

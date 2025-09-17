@@ -1,35 +1,42 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, Wand2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, Plus, Eye } from 'lucide-react';
 
-export const PageBuilderLink: React.FC = () => {
+export const PageBuilderLink = () => {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <Wand2 className="h-5 w-5" />
-          <span>Editor de Páginas</span>
+          <Edit className="h-5 w-5" />
+          <span>Page Builder</span>
         </CardTitle>
         <CardDescription>
-          Crie e gerencie páginas personalizadas com editor visual
+          Construtor visual de páginas com componentes drag-and-drop
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">🚧 <strong>Em breve:</strong></p>
-            <ul className="space-y-1 text-xs ml-4">
-              <li>• Editor visual drag-and-drop</li>
-              <li>• Componentes pré-configurados</li>
-              <li>• Templates responsivos</li>
-              <li>• Integração com identidade visual</li>
-            </ul>
+          <p className="text-sm text-muted-foreground">
+            Crie páginas personalizadas usando o editor visual com componentes 
+            pré-configurados como hero sections, texto, botões, imagens e cards.
+          </p>
+          
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link to="/admin/page-builder/new">
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Página
+              </Link>
+            </Button>
+            
+            <Button variant="outline" asChild>
+              <Link to="/admin/pages">
+                <Eye className="w-4 h-4 mr-2" />
+                Ver Páginas
+              </Link>
+            </Button>
           </div>
-          <Button disabled className="w-full">
-            <Plus className="w-4 h-4 mr-2" />
-            Criar Nova Página (Em breve)
-          </Button>
         </div>
       </CardContent>
     </Card>

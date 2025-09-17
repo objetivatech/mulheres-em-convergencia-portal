@@ -75,28 +75,44 @@ const Diretorio = () => {
 
   const fetchBusinesses = async () => {
     try {
+      setLoading(true);
+      
+      // Fetch businesses with pagination for better performance
       const { data, error } = await supabase
         .rpc('get_public_businesses')
         .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // Limit initial load for better performance
 
       if (error) throw error;
       const businessList = data || [];
       setBusinesses(businessList);
 
-      // Fetch boost data for each business
-      const boostPromises = businessList.map(async (business: any) => {
-        const { data: boosts } = await supabase
-          .rpc('get_business_boosts', { business_uuid: business.id });
-        return { businessId: business.id, boosts: boosts || [] };
-      });
-
-      const boostResults = await Promise.all(boostPromises);
+      // Fetch boost data in batches to avoid too many concurrent requests
+      const batchSize = 5;
       const boostMap: {[key: string]: any[]} = {};
-      boostResults.forEach(result => {
-        boostMap[result.businessId] = result.boosts;
-      });
-      setBusinessBoosts(boostMap);
+      
+      for (let i = 0; i < businessList.length; i += batchSize) {
+        const batch = businessList.slice(i, i + batchSize);
+        const boostPromises = batch.map(async (business: any) => {
+          try {
+            const { data: boosts } = await supabase
+              .rpc('get_business_boosts', { business_uuid: business.id });
+            return { businessId: business.id, boosts: boosts || [] };
+          } catch (err) {
+            console.warn(`Failed to fetch boosts for ${business.id}:`, err);
+            return { businessId: business.id, boosts: [] };
+          }
+        });
+
+        const batchResults = await Promise.all(boostPromises);
+        batchResults.forEach(result => {
+          boostMap[result.businessId] = result.boosts;
+        });
+        
+        // Update state incrementally for better UX
+        setBusinessBoosts(prev => ({ ...prev, ...boostMap }));
+      }
     } catch (error) {
       console.error('Erro ao buscar negócios:', error);
     } finally {
