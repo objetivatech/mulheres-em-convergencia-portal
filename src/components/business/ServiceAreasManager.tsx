@@ -15,6 +15,7 @@ interface ServiceAreasManagerProps {
 export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ businessId }) => {
   const [newAreaName, setNewAreaName] = useState('');
   const [newAreaType, setNewAreaType] = useState<'city' | 'neighborhood'>('city');
+  const [newAreaCity, setNewAreaCity] = useState('');
   const [newAreaState, setNewAreaState] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
@@ -29,17 +30,20 @@ export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ busine
 
   const handleAddArea = async () => {
     if (!newAreaName.trim() || !newAreaState) return;
+    if (newAreaType === 'neighborhood' && !newAreaCity.trim()) return;
 
     setIsAdding(true);
     const success = await addServiceArea({
       area_type: newAreaType,
       area_name: newAreaName.trim(),
+      city: newAreaType === 'neighborhood' ? newAreaCity.trim() : undefined,
       state: newAreaState,
     });
 
     if (success) {
       setNewAreaName('');
       setNewAreaType('city');
+      setNewAreaCity('');
       setNewAreaState('');
     }
     setIsAdding(false);
@@ -77,8 +81,11 @@ export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ busine
         <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
           <h4 className="font-medium">Adicionar Nova Área</h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <Select value={newAreaType} onValueChange={(value: 'city' | 'neighborhood') => setNewAreaType(value)}>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <Select value={newAreaType} onValueChange={(value: 'city' | 'neighborhood') => {
+              setNewAreaType(value);
+              setNewAreaCity('');
+            }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -93,6 +100,14 @@ export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ busine
               value={newAreaName}
               onChange={(e) => setNewAreaName(e.target.value)}
             />
+
+            {newAreaType === 'neighborhood' && (
+              <Input
+                placeholder="Cidade do bairro"
+                value={newAreaCity}
+                onChange={(e) => setNewAreaCity(e.target.value)}
+              />
+            )}
 
             <Select value={newAreaState} onValueChange={setNewAreaState}>
               <SelectTrigger>
@@ -109,7 +124,8 @@ export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ busine
 
             <Button 
               onClick={handleAddArea} 
-              disabled={!newAreaName.trim() || !newAreaState || isAdding}
+              disabled={!newAreaName.trim() || !newAreaState || (newAreaType === 'neighborhood' && !newAreaCity.trim()) || isAdding}
+              className={newAreaType === 'neighborhood' ? 'col-span-1' : 'col-span-2'}
             >
               <Plus className="h-4 w-4 mr-2" />
               {isAdding ? 'Adicionando...' : 'Adicionar'}
@@ -131,7 +147,9 @@ export const ServiceAreasManager: React.FC<ServiceAreasManagerProps> = ({ busine
                     </Badge>
                     <div>
                       <div className="font-medium text-sm">{area.area_name}</div>
-                      <div className="text-xs text-muted-foreground">{area.state}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {area.area_type === 'neighborhood' && area.city ? `${area.city}, ${area.state}` : area.state}
+                      </div>
                     </div>
                   </div>
 

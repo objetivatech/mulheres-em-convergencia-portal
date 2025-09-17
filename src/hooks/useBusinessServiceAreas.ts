@@ -6,6 +6,7 @@ interface ServiceArea {
   id: string;
   area_type: 'city' | 'neighborhood';
   area_name: string;
+  city?: string;
   state: string;
   active: boolean;
 }
@@ -13,6 +14,7 @@ interface ServiceArea {
 interface NewServiceArea {
   area_type: 'city' | 'neighborhood';
   area_name: string;
+  city?: string;
   state: string;
 }
 

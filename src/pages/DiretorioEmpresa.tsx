@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import Map from '@/components/ui/map';
+import { MapboxBusinessMap } from '@/components/business/MapboxBusinessMap';
 import ReviewForm from '@/components/ui/review-form';
 import BusinessContactForm from '@/components/business/BusinessContactForm';
 
@@ -173,9 +173,23 @@ const DiretorioEmpresa = () => {
     }
   };
 
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
+  const [businessRating, setBusinessRating] = useState<{average: number; count: number}>({average: 0, count: 0});
+
+  useEffect(() => {
+    if (business?.id) {
+      // Use the unified rating calculation from database
+      supabase
+        .rpc('calculate_business_rating_internal', { business_uuid: business.id })
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            setBusinessRating({
+              average: data[0].average_rating || 0,
+              count: data[0].total_reviews || 0
+            });
+          }
+        });
+    }
+  }, [business?.id]);
 
   const handleReviewSubmitted = () => {
     setShowReviewForm(false);
@@ -296,11 +310,11 @@ const DiretorioEmpresa = () => {
                           </span>
                         </div>
                         
-                        {reviews.length > 0 && (
+                        {businessRating.count > 0 && (
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                             <span className="text-sm font-medium">
-                              {averageRating.toFixed(1)} ({reviews.length} avaliações)
+                              {businessRating.average.toFixed(1)} ({businessRating.count} avaliações)
                             </span>
                           </div>
                         )}
@@ -548,12 +562,14 @@ const DiretorioEmpresa = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">
-                      <Map
-                        businesses={[{
-                          id: business.id,
-                          name: business.name,
-                          latitude: business.latitude,
-                          longitude: business.longitude,
+                <MapboxBusinessMap
+                  businessId={business.id}
+                  businessName={business.name}
+                  businessCity={business.city}
+                  businessState={business.state}
+                  latitude={business.latitude}
+                  longitude={business.longitude}
+                />
                           category: business.category,
                           city: business.city,
                           state: business.state

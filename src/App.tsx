@@ -23,6 +23,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminAyrshare from "./pages/AdminAyrshare";
 import UserManagement from './pages/UserManagement';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
@@ -91,6 +92,11 @@ function AppContent() {
             <AdminAnalytics />
           </ProtectedRoute>
         } />
+        <Route path="/admin/ayrshare" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminAyrshare />
+          </ProtectedRoute>
+        } />
         
         {/* Blog Routes */}
         <Route path="/admin/blog" element={
@@ -146,6 +152,10 @@ function AppContent() {
               <PremiumDashboard />
             </ProtectedRoute>
           } />
+          
+          {/* Public RSS and Sitemap routes */}
+          <Route path="/rss.xml" element={<div />} />
+          <Route path="/sitemap.xml" element={<div />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
