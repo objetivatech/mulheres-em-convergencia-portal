@@ -1053,6 +1053,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pages: {
+        Row: {
+          author_id: string | null
+          content: Json
+          created_at: string
+          id: string
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       premium_features: {
         Row: {
           active: boolean

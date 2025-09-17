@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Grid, List, Filter, Map as MapIcon, Navigation } from 'lucide-react';
+import { Search, MapPin, Grid, List, Filter, Map as MapIcon, Navigation, Building2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -156,9 +156,12 @@ const Diretorio = () => {
     }
   };
 
-  // Auto-solicitar localização ao carregar a página
+  // Auto-solicitar localização ao carregar a página se não houver filtros ativos
   useEffect(() => {
-    getCurrentLocation();
+    // Só pedir localização se não houver filtros específicos aplicados
+    if (!searchTerm && !selectedCategory && !selectedState && !selectedCity) {
+      getCurrentLocation();
+    }
   }, []);
 
   const BusinessCard = ({ business }: { business: Business }) => {
@@ -480,43 +483,159 @@ const Diretorio = () => {
           </div>
         </section>
 
-        {/* Business Listings */}
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-primary"></div>
-              </div>
-            ) : filteredBusinesses.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-xl text-muted-foreground">
-                  Nenhuma empresa encontrada com os filtros selecionados.
-                </p>
-              </div>
-            ) : viewMode === 'map' ? (
-              <Map
-                businesses={filteredBusinesses}
-                center={userLocation || [-51.2177, -30.0346]}
-                zoom={userLocation ? 12 : 10}
-                height="600px"
-                showSearch={true}
-                onBusinessClick={(businessId) => navigate(`/diretorio/${businessId}`)}
-              />
-            ) : (
-              <div className={
-                viewMode === 'grid' 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  : "space-y-4"
-              }>
-                {filteredBusinesses.map(business => 
-                  viewMode === 'grid' 
-                    ? <BusinessCard key={business.id} business={business} />
-                    : <BusinessListItem key={business.id} business={business} />
-                )}
+        {/* Results */}
+        <div className="container mx-auto px-4 py-8">
+          <div className={`grid ${viewMode === 'map' ? 'lg:grid-cols-3 gap-6' : ''}`}>
+            
+            {/* Map Sidebar - appears first on mobile when in map mode */}
+            {viewMode === 'map' && (
+              <div className="lg:col-span-1 lg:order-1 mb-6 lg:mb-0">
+                <div className="sticky top-4">
+                  <div className="bg-white rounded-lg shadow-lg border p-4 mb-4">
+                    <h3 className="font-semibold mb-3">🗺️ Explorar no Mapa</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Veja empresas próximas a você ou explore por região
+                    </p>
+                    {!userLocation && (
+                      <Button 
+                        onClick={getCurrentLocation} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mb-3"
+                      >
+                        <Navigation className="w-4 h-4 mr-2" />
+                        Usar minha localização
+                      </Button>
+                    )}
+                    {userLocation && (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded border mb-3">
+                        ✅ Localização ativa - Mostrando empresas próximas
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Business List in Sidebar */}
+                  <div className="bg-white rounded-lg shadow-lg border max-h-96 overflow-y-auto">
+                    <div className="p-3 border-b bg-muted/30">
+                      <h4 className="font-medium text-sm">
+                        {filteredBusinesses.length} empresas encontradas
+                      </h4>
+                    </div>
+                    <div className="divide-y">
+                      {filteredBusinesses.slice(0, 10).map(business => (
+                        <div 
+                          key={business.id} 
+                          className="p-3 hover:bg-muted/30 cursor-pointer transition-colors"
+                          onClick={() => navigate(`/diretorio/${business.slug}`)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {business.logo_url && (
+                              <img 
+                                src={business.logo_url} 
+                                alt={business.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h5 className="font-medium text-sm truncate">{business.name}</h5>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {business.city}, {business.state}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredBusinesses.length > 10 && (
+                        <div className="p-3 text-center text-xs text-muted-foreground bg-muted/20">
+                          +{filteredBusinesses.length - 10} empresas no mapa
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Main Content */}
+            <div className={`${viewMode === 'map' ? 'lg:col-span-2 lg:order-2' : ''}`}>
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              )}
+
+              {!loading && filteredBusinesses.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <Building2 className="w-12 h-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Nenhuma empresa encontrada</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Tente ajustar os filtros ou termos de busca
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('');
+                      setSelectedState('');
+                      setSelectedCity('');
+                      setUserLocation(null);
+                    }}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
+              )}
+
+              {!loading && filteredBusinesses.length > 0 && (
+                <>
+                  {viewMode === 'grid' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredBusinesses.map(business => (
+                        <BusinessCard key={business.id} business={business} />
+                      ))}
+                    </div>
+                  )}
+
+                  {viewMode === 'list' && (
+                    <div className="space-y-4">
+                      {filteredBusinesses.map(business => (
+                        <BusinessListItem key={business.id} business={business} />
+                      ))}
+                    </div>
+                  )}
+
+                  {viewMode === 'map' && (
+                    <div className="h-[70vh] lg:h-[80vh] rounded-lg overflow-hidden border shadow-lg">
+                      <Map
+                        businesses={filteredBusinesses.map(business => ({
+                          id: business.id,
+                          name: business.name,
+                          latitude: business.latitude,
+                          longitude: business.longitude,
+                          category: business.category,
+                          city: business.city,
+                          state: business.state
+                        }))}
+                        center={userLocation || [-51.2177, -30.0346]}
+                        zoom={userLocation ? 12 : 6}
+                        height="100%"
+                        showSearch={true}
+                        onBusinessClick={(businessId) => {
+                          const business = filteredBusinesses.find(b => b.id === businessId);
+                          if (business) {
+                            navigate(`/diretorio/${business.slug}`);
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
       </div>
     </Layout>
   );
