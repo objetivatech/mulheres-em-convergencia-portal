@@ -3,7 +3,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation, Loader2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapProps {
   businesses?: Array<{
@@ -34,63 +35,107 @@ const Map: React.FC<MapProps> = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchLocation, setSearchLocation] = useState('');
+  const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch Mapbox token from edge function or fallback
   useEffect(() => {
-    if (!mapContainer.current) return;
-
-    // Get Mapbox token from environment or use fallback
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: center,
-      zoom: zoom,
-    });
-
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Add markers for businesses
-    businesses.forEach(business => {
-      if (business.latitude && business.longitude) {
-        const marker = new mapboxgl.Marker({
-          color: 'hsl(337, 49%, 57%)'
-        })
-        .setLngLat([business.longitude, business.latitude])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold">${business.name}</h3>
-                <p class="text-sm text-gray-600">${business.category}</p>
-                <p class="text-xs text-gray-500">${business.city}, ${business.state}</p>
-                ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="mt-2 px-3 py-1 bg-primary text-primary-foreground rounded text-sm">Ver Perfil</button>` : ''}
-              </div>
-            `)
-        )
-        .addTo(map.current!);
-
-        // Handle marker click
-        marker.getElement().addEventListener('click', () => {
-          if (onBusinessClick) {
-            onBusinessClick(business.id);
-          }
-        });
-      }
-    });
-
-    // Global function for popup buttons
-    (window as any).handleBusinessClick = (businessId: string) => {
-      if (onBusinessClick) {
-        onBusinessClick(businessId);
+    const getMapboxToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        if (!error && data?.token && data.token.startsWith('pk.')) {
+          setMapboxToken(data.token);
+        } else {
+          // Fallback token for development
+          setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
+        }
+      } catch (error) {
+        console.error('Error fetching Mapbox token:', error);
+        setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
+      } finally {
+        setLoading(false);
       }
     };
+    getMapboxToken();
+  }, []);
+
+  useEffect(() => {
+    if (!mapContainer.current || !mapboxToken) return;
+
+    try {
+      mapboxgl.accessToken = mapboxToken;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: center,
+        zoom: zoom,
+      });
+
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Add markers for businesses
+      businesses.forEach(business => {
+        if (business.latitude && business.longitude) {
+          const marker = new mapboxgl.Marker({
+            color: '#C75A92'
+          })
+          .setLngLat([business.longitude, business.latitude])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 })
+              .setHTML(`
+                <div class="p-3">
+                  <h3 class="font-semibold text-base mb-1">${business.name}</h3>
+                  <p class="text-sm text-gray-600 mb-1">${business.category}</p>
+                  <p class="text-xs text-gray-500 mb-2">${business.city}, ${business.state}</p>
+                  ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90">Ver Perfil</button>` : ''}
+                </div>
+              `)
+          )
+          .addTo(map.current!);
+
+          // Handle marker click
+          marker.getElement().addEventListener('click', () => {
+            if (onBusinessClick) {
+              onBusinessClick(business.id);
+            }
+          });
+        }
+      });
+
+      // Auto-fit map to show all businesses if available
+      if (businesses.length > 0) {
+        const coordinates = businesses
+          .filter(b => b.latitude && b.longitude)
+          .map(b => [b.longitude!, b.latitude!]);
+        
+        if (coordinates.length > 1) {
+          const bounds = coordinates.reduce((bounds, coord) => {
+            return bounds.extend(coord as [number, number]);
+          }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
+          
+          map.current!.fitBounds(bounds, { padding: 50 });
+        }
+      }
+
+      // Global function for popup buttons
+      (window as any).handleBusinessClick = (businessId: string) => {
+        if (onBusinessClick) {
+          onBusinessClick(businessId);
+        }
+      };
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setMapError('Erro ao carregar o mapa. Verifique sua conexão.');
+    }
 
     return () => {
       map.current?.remove();
     };
-  }, [businesses, center, zoom, onBusinessClick]);
+  }, [businesses, center, zoom, onBusinessClick, mapboxToken]);
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -106,7 +151,7 @@ const Map: React.FC<MapProps> = ({
             });
 
             // Add user location marker
-            new mapboxgl.Marker({ color: 'hsl(217, 91%, 60%)' })
+            new mapboxgl.Marker({ color: '#3b82f6' })
               .setLngLat([longitude, latitude])
               .setPopup(
                 new mapboxgl.Popup({ offset: 25 })
@@ -123,12 +168,11 @@ const Map: React.FC<MapProps> = ({
   };
 
   const searchByLocation = async () => {
-    if (!searchLocation.trim()) return;
+    if (!searchLocation.trim() || !mapboxToken) return;
 
     try {
-      // Simple geocoding simulation - in real app, use Mapbox Geocoding API
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchLocation)}.json?access_token=${mapboxgl.accessToken}&country=BR`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchLocation)}.json?access_token=${mapboxToken}&country=BR`
       );
       
       const data = await response.json();
@@ -142,7 +186,7 @@ const Map: React.FC<MapProps> = ({
             zoom: 12
           });
 
-          new mapboxgl.Marker({ color: 'hsl(159, 75%, 40%)' })
+          new mapboxgl.Marker({ color: '#22c55e' })
             .setLngLat([longitude, latitude])
             .setPopup(
               new mapboxgl.Popup({ offset: 25 })
@@ -156,6 +200,32 @@ const Map: React.FC<MapProps> = ({
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center rounded-lg border bg-muted/50" style={{ height }}>
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Carregando mapa...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (mapError) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center rounded-lg border bg-muted/50" style={{ height }}>
+          <div className="text-center">
+            <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{mapError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {showSearch && (
@@ -167,7 +237,7 @@ const Map: React.FC<MapProps> = ({
               onChange={(e) => setSearchLocation(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && searchByLocation()}
             />
-            <Button onClick={searchByLocation} variant="outline" size="sm">
+            <Button onClick={searchByLocation} variant="outline" size="sm" disabled={!mapboxToken}>
               <MapPin className="w-4 h-4" />
             </Button>
           </div>
@@ -179,7 +249,7 @@ const Map: React.FC<MapProps> = ({
       
       <div 
         ref={mapContainer} 
-        className="w-full rounded-lg shadow-lg"
+        className="w-full rounded-lg shadow-lg border"
         style={{ height }}
       />
     </div>

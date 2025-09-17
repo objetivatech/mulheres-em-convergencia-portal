@@ -424,35 +424,71 @@ export const DashboardEmpresa = () => {
 
         {/* Subscription Status */}
         {userSubscription ? (
-          <Card className={`mb-6 ${userSubscription.status === 'cancelled' ? 'border-orange-200 bg-orange-50' : ''}`}>
+          <Card className={`mb-6 border-l-4 ${
+            userSubscription.status === 'active' ? 'border-l-green-500 bg-green-50/50' : 
+            userSubscription.status === 'cancelled' ? 'border-l-orange-500 bg-orange-50/50' : 
+            'border-l-red-500 bg-red-50/50'
+          }`}>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Building2 className="h-5 w-5" />
-                <span>Plano Atual: {userSubscription.subscription_plans?.display_name}</span>
-              </CardTitle>
-              <CardDescription className={userSubscription.status === 'cancelled' ? 'text-orange-700' : ''}>
-                {userSubscription.status === 'active' && 'Status: Ativo'}
-                {userSubscription.status === 'cancelled' && (
-                  <>
-                    Status: Cancelado • Válido até {new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}
-                    <br />
-                    <span className="text-sm text-orange-600">
-                      Seu perfil permanecerá ativo por 31 dias após o cancelamento
-                    </span>
-                  </>
+                <span>Plano: {userSubscription.subscription_plans?.display_name}</span>
+                {userSubscription.status === 'active' && (
+                  <div className="flex items-center gap-1 text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Ativo
+                  </div>
                 )}
-                {userSubscription.expires_at && userSubscription.status === 'active' && ` • Expira em ${new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}`}
+                {userSubscription.status === 'cancelled' && (
+                  <div className="flex items-center gap-1 text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    Cancelado - Ainda Válido
+                  </div>
+                )}
+              </CardTitle>
+              <CardDescription>
+                {userSubscription.status === 'active' && (
+                  <div className="space-y-1">
+                    <p className="text-green-700">✅ Seu perfil está publicado no diretório</p>
+                    {userSubscription.expires_at && (
+                      <p className="text-sm">Próxima renovação: {new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}</p>
+                    )}
+                  </div>
+                )}
+                {userSubscription.status === 'cancelled' && (
+                  <div className="space-y-2">
+                    <p className="text-orange-700 font-medium">
+                      🟡 Plano cancelado, mas ainda válido até {new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}
+                    </p>
+                    <div className="text-sm text-orange-600 bg-orange-100 p-3 rounded border border-orange-200">
+                      <div className="font-medium mb-1">📋 O que isso significa:</div>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Seu perfil permanece ativo no diretório por 31 dias</li>
+                        <li>• Você pode continuar recebendo contatos e avaliações</li>
+                        <li>• Para renovar, clique em "Reativar Plano"</li>
+                      </ul>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Após {new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')}, seu perfil será removido do diretório
+                    </div>
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">
-                  Ciclo: {userSubscription.billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}
-                </span>
+                <div className="text-sm text-muted-foreground">
+                  <div>Ciclo: {userSubscription.billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}</div>
+                  {userSubscription.status === 'cancelled' && (
+                    <div className="text-orange-600 font-medium mt-1">
+                      Dias restantes: {Math.max(0, Math.ceil((new Date(userSubscription.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+                    </div>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <Button variant="outline" asChild>
                     <a href="/planos">
-                      {userSubscription.status === 'cancelled' ? 'Reativar Plano' : 'Alterar Plano'}
+                      {userSubscription.status === 'cancelled' ? '🔄 Reativar Plano' : 'Alterar Plano'}
                     </a>
                   </Button>
                   {userSubscription.status === 'active' && (

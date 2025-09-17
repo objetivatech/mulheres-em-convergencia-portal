@@ -137,13 +137,17 @@ const Diretorio = () => {
     return matchesSearch && matchesCategory && matchesState && matchesCity && matchesProximity;
   });
 
-  // Obter localização do usuário
+  // Obter localização do usuário e ativar modo mapa
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation([longitude, latitude]);
+          // Auto-ativar modo mapa quando localização for obtida
+          if (viewMode !== 'map') {
+            setViewMode('map');
+          }
         },
         (error) => {
           console.error('Erro ao obter localização:', error);
@@ -151,6 +155,11 @@ const Diretorio = () => {
       );
     }
   };
+
+  // Auto-solicitar localização ao carregar a página
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
 
   const BusinessCard = ({ business }: { business: Business }) => {
     const boosts = businessBoosts[business.id] || [];
