@@ -532,6 +532,7 @@ export type Database = {
           area_name: string
           area_type: string
           business_id: string
+          city: string | null
           created_at: string
           id: string
           state: string
@@ -542,6 +543,7 @@ export type Database = {
           area_name: string
           area_type: string
           business_id: string
+          city?: string | null
           created_at?: string
           id?: string
           state: string
@@ -552,6 +554,7 @@ export type Database = {
           area_name?: string
           area_type?: string
           business_id?: string
+          city?: string | null
           created_at?: string
           id?: string
           state?: string
@@ -1950,10 +1953,12 @@ export type Database = {
           logo_url: string
           longitude: number
           name: string
+          opening_hours: Json
           reviews_count: number
           slug: string
           state: string
           subcategory: string
+          subscription_plan: string
           views_count: number
           website: string
         }[]
