@@ -560,13 +560,13 @@ export const DashboardEmpresa = () => {
         )}
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="w-full flex gap-2 overflow-x-auto no-scrollbar md:grid md:grid-cols-6">
-            <TabsTrigger value="dados">Dados da Empresa</TabsTrigger>
-            <TabsTrigger value="imagens">Imagens</TabsTrigger>
-            <TabsTrigger value="areas">Áreas de Atendimento</TabsTrigger>
-            <TabsTrigger value="contatos">Contatos</TabsTrigger>
-            <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
-            <TabsTrigger value="avaliacoes">Avaliações</TabsTrigger>
+          <TabsList className="w-full flex gap-1 overflow-x-auto scrollbar-hide md:grid md:grid-cols-6 p-1">
+            <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Dados da Empresa</TabsTrigger>
+            <TabsTrigger value="imagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Imagens</TabsTrigger>
+            <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Áreas de Atendimento</TabsTrigger>
+            <TabsTrigger value="contatos" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Contatos</TabsTrigger>
+            <TabsTrigger value="mensagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Mensagens</TabsTrigger>
+            <TabsTrigger value="avaliacoes" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Avaliações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dados" className="space-y-6">

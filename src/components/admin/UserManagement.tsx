@@ -120,6 +120,38 @@ export const UserManagement = () => {
     }
   };
 
+  const handleToggleAdmin = async (userId: string, currentStatus: boolean, userName: string) => {
+    try {
+      await toggleAdminMutation.mutateAsync({ userId, newStatus: !currentStatus });
+      toast({
+        title: currentStatus ? 'Admin removido' : 'Admin concedido',
+        description: `${userName} agora ${!currentStatus ? 'é' : 'não é'} administrador.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível alterar status de admin.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleToggleBlogEditor = async (userId: string, currentStatus: boolean, userName: string) => {
+    try {
+      await toggleBlogEditorMutation.mutateAsync({ userId, newStatus: !currentStatus });
+      toast({
+        title: currentStatus ? 'Editor Blog removido' : 'Editor Blog concedido',
+        description: `${userName} agora ${!currentStatus ? 'pode' : 'não pode'} editar blog.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível alterar status de editor de blog.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -240,37 +272,72 @@ export const UserManagement = () => {
                         <div className="text-sm text-muted-foreground">{user.email}</div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles.map((role) => {
-                          const IconComp = roleIcons[role as UserRole] ?? Users;
-                          const label = roleLabels[role as UserRole] ?? role;
-                          const colorClass = roleColors[role as UserRole] ?? '';
-                          return (
-                            <Badge key={role} className={colorClass || undefined} variant={colorClass ? 'default' : 'outline'}>
-                              <IconComp className="h-3 w-3 mr-1" />
-                              {label}
-                            </Badge>
-                          );
-                        })}
-                        {user.roles.length === 0 && (
-                          <Badge variant="outline">Nenhum role</Badge>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex flex-wrap gap-1">
+                         {/* System Roles */}
+                         {user.is_admin && (
+                           <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                             <Shield className="h-3 w-3 mr-1" />
+                             Admin
+                           </Badge>
+                         )}
+                         {user.can_edit_blog && (
+                           <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                             <Edit3 className="h-3 w-3 mr-1" />
+                             Editor Blog
+                           </Badge>
+                         )}
+                         
+                         {/* Custom Roles */}
+                         {user.roles.map((role) => {
+                           const IconComp = roleIcons[role as UserRole] ?? Users;
+                           const label = roleLabels[role as UserRole] ?? role;
+                           const colorClass = roleColors[role as UserRole] ?? '';
+                           return (
+                             <Badge key={role} className={colorClass || undefined} variant={colorClass ? 'default' : 'outline'}>
+                               <IconComp className="h-3 w-3 mr-1" />
+                               {label}
+                             </Badge>
+                           );
+                         })}
+                         {user.roles.length === 0 && !user.is_admin && !user.can_edit_blog && (
+                           <Badge variant="outline">Nenhum role</Badge>
+                         )}
+                       </div>
+                     </TableCell>
                     <TableCell>
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
+                     <TableCell>
+                       <div className="flex flex-wrap gap-2">
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleEditUser(user)}
+                         >
+                           <Edit className="h-4 w-4 mr-1" />
+                           Editar
+                         </Button>
+
+                         {/* Admin Toggle */}
+                         <Button
+                           variant={user.is_admin ? "destructive" : "default"}
+                           size="sm"
+                           onClick={() => handleToggleAdmin(user.id, user.is_admin, user.full_name || user.email)}
+                         >
+                           <Shield className="h-4 w-4 mr-1" />
+                           {user.is_admin ? 'Remover Admin' : 'Tornar Admin'}
+                         </Button>
+
+                         {/* Blog Editor Toggle */}
+                         <Button
+                           variant={user.can_edit_blog ? "secondary" : "outline"}
+                           size="sm"
+                           onClick={() => handleToggleBlogEditor(user.id, user.can_edit_blog, user.full_name || user.email)}
+                         >
+                           <Edit3 className="h-4 w-4 mr-1" />
+                           {user.can_edit_blog ? 'Remover Editor' : 'Tornar Editor'}
+                         </Button>
                         
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
