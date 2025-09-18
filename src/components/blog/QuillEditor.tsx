@@ -122,8 +122,13 @@ export const QuillEditor = ({
       <ReactQuill
         ref={quillRef}
         theme="snow"
-        value={value}
-        onChange={onChange}
+        value={value || ''}
+        onChange={(content) => {
+          // Prevent onChange from firing with empty content on initial load
+          if (content !== '<p><br></p>' || value) {
+            onChange(content);
+          }
+        }}
         placeholder={placeholder}
         modules={modules}
         formats={formats}

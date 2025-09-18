@@ -27,6 +27,9 @@ import UserManagement from './pages/UserManagement';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
+import PagesManagement from './pages/admin/PagesManagement';
+import PageBuilderEditor from './pages/admin/PageBuilder';
+import PublicPage from './pages/PublicPage';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -121,6 +124,23 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
+        {/* Page Builder Routes */}
+        <Route path="/admin/pages" element={
+          <ProtectedRoute requireAdmin={true}>
+            <PagesManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/page-builder/new" element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageBuilderEditor />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/page-builder/:id" element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageBuilderEditor />
+          </ProtectedRoute>
+        } />
+        
         {/* Dashboard Routes */}
         <Route path="/dashboard/:type" element={
           <RoleProtectedRoute>
@@ -157,6 +177,9 @@ function AppContent() {
           {/* Public RSS and Sitemap routes */}
           <Route path="/rss.xml" element={<RssHandler />} />
           <Route path="/sitemap.xml" element={<SitemapHandler />} />
+          
+          {/* Public Page Routes */}
+          <Route path="/page/:slug" element={<PublicPage />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
