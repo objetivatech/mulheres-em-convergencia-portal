@@ -222,6 +222,7 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
     if (mapboxToken && !loading && !geocodingProgress && mapContainer.current) {
       initializeMap(mapboxToken);
     }
+  }, [mapboxToken, loading, geocodingProgress]);
 
   // Update service area markers when geocodedAreas change
   useEffect(() => {
