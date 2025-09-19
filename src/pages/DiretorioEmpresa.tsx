@@ -555,25 +555,23 @@ const DiretorioEmpresa = () => {
               )}
 
               {/* Map */}
-              {business.latitude && business.longitude && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Localização</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64">
-                      <MapboxBusinessMap
-                        businessId={business.id}
-                        businessName={business.name}
-                        businessCity={business.city}
-                        businessState={business.state}
-                        latitude={business.latitude}
-                        longitude={business.longitude}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Localização</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <MapboxBusinessMap
+                      businessId={business.id}
+                      businessName={business.name}
+                      businessCity={business.city}
+                      businessState={business.state}
+                      latitude={business.latitude}
+                      longitude={business.longitude}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Opening Hours */}
               {business.opening_hours && (

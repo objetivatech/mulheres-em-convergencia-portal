@@ -72,7 +72,7 @@ type BlogPostFormData = z.infer<typeof blogPostSchema>;
 export default function BlogEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isEditing = id !== 'new';
+  const isEditing = Boolean(id);
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState('');

@@ -46,6 +46,14 @@ const Admin = () => {
       comingSoon: false
     },
     {
+      title: 'Page Builder',
+      description: 'Criar páginas personalizadas com blocos',
+      icon: Wand2,
+      available: isAdmin,
+      href: '/admin/pages',
+      comingSoon: false
+    },
+    {
       title: 'Mensagens de Contato',
       description: 'Visualizar e responder mensagens recebidas',
       icon: Mail,
