@@ -64,31 +64,45 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
           .addTo(map.current);
       }
 
-      // Add service area markers (simplified representation)
-      // Note: In a production app, you'd geocode these locations for exact coordinates
+      // Add service area markers around business location
       if (serviceAreas.length > 0) {
-        serviceAreas.forEach((area) => {
-          // Create a simple text marker for service areas without specific coordinates
+        const baseLat = latitude || -15.7942;
+        const baseLng = longitude || -47.8826;
+        
+        // Create bounds to fit all service areas
+        const bounds = new mapboxgl.default.LngLatBounds();
+        bounds.extend([baseLng, baseLat]);
+        
+        serviceAreas.forEach((area, index) => {
+          // Create distinct positions for each service area in a circular pattern
+          const angleStep = (2 * Math.PI) / serviceAreas.length;
+          const angle = angleStep * index;
+          const radius = 0.02; // Approximately 2km radius
+          
+          const areaLng = baseLng + (radius * Math.cos(angle));
+          const areaLat = baseLat + (radius * Math.sin(angle));
+          
+          // Extend bounds to include this service area
+          bounds.extend([areaLng, areaLat]);
+          
+          // Create service area marker
           const el = document.createElement('div');
           el.className = 'service-area-marker';
           el.style.cssText = `
             background: #9191C0;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
           `;
-          
-          // Position relative to business location or default center
-          const baseLat = latitude || -15.7942;
-          const baseLng = longitude || -47.8826;
           
           new mapboxgl.default.Marker({ 
             element: el,
             anchor: 'center'
           })
-            .setLngLat([baseLng, baseLat])
+            .setLngLat([areaLng, areaLat])
             .setPopup(
               new mapboxgl.default.Popup({ offset: 15 })
                 .setHTML(`
@@ -102,6 +116,14 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
             )
             .addTo(map.current);
         });
+        
+        // Fit map to show all service areas with padding
+        if (serviceAreas.length > 1) {
+          map.current.fitBounds(bounds, { 
+            padding: 50,
+            maxZoom: 12
+          });
+        }
       }
 
     } catch (error) {
