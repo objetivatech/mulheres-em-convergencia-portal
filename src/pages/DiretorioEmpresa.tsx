@@ -560,7 +560,7 @@ const DiretorioEmpresa = () => {
                   <CardTitle>Localização</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="h-64 relative overflow-hidden rounded-b-lg">
+                  <div className="min-h-64 relative overflow-hidden rounded-b-lg">
                     <MapboxBusinessMap
                       businessId={business.id}
                       businessName={business.name}
