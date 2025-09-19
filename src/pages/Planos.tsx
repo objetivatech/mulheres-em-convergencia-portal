@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Star, Zap, Crown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import CustomerInfoDialog, { CustomerFormData, UserProfileData } from '@/components/subscriptions/CustomerInfoDialog';
+import { usePageBuilder } from '@/hooks/usePageBuilder';
+import { PageRenderer } from '@/components/page-builder/PageRenderer';
 
 type SubscriptionPlan = {
   id: string;
@@ -34,6 +36,7 @@ type UserSubscription = {
 const Planos: React.FC = () => {
   const { user, signUp } = useAuth();
   const { toast } = useToast();
+  const { pageContent, loading: pageLoading } = usePageBuilder('planos');
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
@@ -235,6 +238,19 @@ const Planos: React.FC = () => {
             <p className="mt-4 text-muted-foreground">Carregando planos...</p>
           </div>
         </div>
+      </Layout>
+    );
+  }
+
+  // Se existe conteúdo do Page Builder publicado, usa ele
+  if (pageContent && !pageLoading) {
+    return (
+      <Layout>
+        <Helmet>
+          <title>{pageContent.title} | Mulheres em Convergência</title>
+          <meta name="description" content="Escolha o plano ideal para o seu negócio no Diretório de Associadas" />
+        </Helmet>
+        <PageRenderer data={pageContent.content} />
       </Layout>
     );
   }

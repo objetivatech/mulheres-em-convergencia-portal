@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,8 +10,11 @@ import { Mail, MapPin, Phone, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { usePageBuilder } from '@/hooks/usePageBuilder';
+import { PageRenderer } from '@/components/page-builder/PageRenderer';
 
 const Contato = () => {
+  const { pageContent, loading: pageLoading } = usePageBuilder('contato');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hp, setHp] = useState('');
   const [formTs] = useState(() => Date.now());
@@ -60,6 +63,20 @@ const Contato = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Se existe conteúdo do Page Builder publicado, usa ele
+  if (pageContent && !pageLoading) {
+    return (
+      <Layout>
+        <Helmet>
+          <title>{pageContent.title} | Mulheres em Convergência</title>
+          <meta name="description" content="Entre em contato conosco. Estamos aqui para ouvir você e responder suas dúvidas sobre o movimento Mulheres em Convergência." />
+          <link rel="canonical" href={`${PRODUCTION_DOMAIN}/contato`} />
+        </Helmet>
+        <PageRenderer data={pageContent.content} />
+      </Layout>
+    );
+  }
 
   return (
     <>

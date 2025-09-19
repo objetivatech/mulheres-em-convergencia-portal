@@ -1,10 +1,30 @@
+import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from "@/components/layout/Layout";
 import { Timeline } from '@/components/timeline/Timeline';
 import { CheckCircle, Users, Target, Heart } from "lucide-react";
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { usePageBuilder } from '@/hooks/usePageBuilder';
+import { PageRenderer } from '@/components/page-builder/PageRenderer';
 
 const Sobre = () => {
+  const { pageContent, loading } = usePageBuilder('sobre');
+
+  // Se existe conteúdo do Page Builder publicado, usa ele
+  if (pageContent && !loading) {
+    return (
+      <Layout>
+        <Helmet>
+          <title>{pageContent.title} | Mulheres em Convergência</title>
+          <meta name="description" content="Conheça nossa missão de empoderar mulheres empreendedoras através da educação, comunidade e oportunidades de crescimento." />
+          <link rel="canonical" href={`${PRODUCTION_DOMAIN}/sobre`} />
+        </Helmet>
+        <PageRenderer data={pageContent.content} />
+      </Layout>
+    );
+  }
+
+  // Senão, mostra a página estática original
   return (
     <>
       <Helmet>
