@@ -555,12 +555,12 @@ const DiretorioEmpresa = () => {
               )}
 
               {/* Map */}
-              <Card>
+              <Card className="relative">
                 <CardHeader>
                   <CardTitle>Localização</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="h-64">
+                <CardContent className="p-0">
+                  <div className="h-64 relative overflow-hidden rounded-b-lg">
                     <MapboxBusinessMap
                       businessId={business.id}
                       businessName={business.name}

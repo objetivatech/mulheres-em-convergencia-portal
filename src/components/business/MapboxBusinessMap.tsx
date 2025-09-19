@@ -265,8 +265,7 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
           </div>
         )}
 
-        {/* Mapa */}
-        <div className="h-64 rounded-lg overflow-hidden border">
+        <div className="h-64 rounded-lg overflow-hidden border relative">
           <div ref={mapContainer} className="w-full h-full" />
         </div>
 
