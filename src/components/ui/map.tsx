@@ -34,6 +34,7 @@ const Map: React.FC<MapProps> = ({
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchLocation, setSearchLocation] = useState('');
   const [mapboxToken, setMapboxToken] = useState<string>('');
@@ -46,21 +47,17 @@ const Map: React.FC<MapProps> = ({
     const getMapboxToken = async () => {
       try {
         setLoading(true);
-        console.log('Fetching Mapbox token...');
         const { data, error } = await supabase.functions.invoke('get-mapbox-token');
         
         if (!error && data?.token && data.token.startsWith('pk.')) {
-          console.log('Token fetched successfully');
           setMapboxToken(data.token);
           setMapError(null);
         } else {
-          console.warn('No valid token from edge function, using fallback');
           // Fallback token for development
           setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
           setMapError('Usando token de demonstração. Funcionalidade limitada.');
         }
       } catch (error) {
-        console.error('Error fetching Mapbox token:', error);
         setMapError('Falha ao carregar token do mapa. Usando fallback.');
         setMapboxToken('pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw');
       } finally {
@@ -75,9 +72,14 @@ const Map: React.FC<MapProps> = ({
 
     const init = async () => {
       try {
-        console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
+        if (map.current) return;
         const mapboxgl = await import('mapbox-gl');
         mapboxgl.default.accessToken = mapboxToken;
+
+        // Ensure empty container before initializing
+        if (mapContainer.current && mapContainer.current.childNodes.length > 0) {
+          mapContainer.current.innerHTML = '';
+        }
         
         map.current = new mapboxgl.default.Map({
           container: mapContainer.current!,
@@ -91,7 +93,6 @@ const Map: React.FC<MapProps> = ({
         // Wait for map to load before proceeding
         map.current.on('load', () => {
           setMapInitialized(true);
-          console.log('Map fully loaded');
         });
 
         const navControl = new mapboxgl.default.NavigationControl({
@@ -100,51 +101,9 @@ const Map: React.FC<MapProps> = ({
         });
         map.current.addControl(navControl, 'top-right');
 
-        // Add markers for businesses
-        businesses.forEach(business => {
-          if (business.latitude && business.longitude) {
-            const marker = new mapboxgl.default.Marker({ color: '#C75A92' })
-              .setLngLat([business.longitude, business.latitude])
-              .setPopup(
-                new mapboxgl.default.Popup({ offset: 25 })
-                  .setHTML(`
-                    <div class="p-3">
-                      <h3 class="font-semibold text-base mb-1">${business.name}</h3>
-                      <p class="text-sm text-gray-600 mb-1">${business.category}</p>
-                      <p class="text-xs text-gray-500 mb-2">${business.city}, ${business.state}</p>
-                      ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90">Ver Perfil</button>` : ''}
-                    </div>
-                  `)
-              )
-              .addTo(map.current!);
-
-            // Handle marker click
-            marker.getElement().addEventListener('click', () => {
-              if (onBusinessClick) {
-                onBusinessClick(business.id);
-              }
-            });
-          }
-        });
-
-        // Auto-fit map to show all businesses if available
-        const coordinates = businesses
-          .filter(b => b.latitude && b.longitude)
-          .map(b => [b.longitude!, b.latitude!] as [number, number]);
-        
-        if (coordinates.length > 1) {
-          const bounds = coordinates.reduce((bounds, coord) => {
-            return bounds.extend(coord);
-          }, new mapboxgl.default.LngLatBounds(coordinates[0], coordinates[0]));
-          
-          map.current!.fitBounds(bounds, { padding: 50 });
-        }
-
         // Global function for popup buttons
         (window as any).handleBusinessClick = (businessId: string) => {
-          if (onBusinessClick) {
-            onBusinessClick(businessId);
-          }
+          onBusinessClick?.(businessId);
         };
 
       } catch (error) {
@@ -163,9 +122,12 @@ const Map: React.FC<MapProps> = ({
           (window as any).handleBusinessClick = undefined;
         }
         
-        // Only remove map if it was properly initialized
-        if (map.current && mapInitialized) {
-          console.log('Removing map...');
+        // Remove markers and map instance
+        if (map.current) {
+          try {
+            markersRef.current.forEach((m) => m.remove());
+          } catch {}
+          markersRef.current = [];
           map.current.remove();
           map.current = null;
         }
@@ -177,7 +139,52 @@ const Map: React.FC<MapProps> = ({
         setMapInitialized(false);
       }
     };
-  }, [businesses, center, zoom, onBusinessClick, mapboxToken]);
+  }, [mapboxToken]);
+
+  // Update markers when businesses change
+  useEffect(() => {
+    if (!map.current || !mapInitialized) return;
+
+    (async () => {
+      try {
+        const mapboxgl = await import('mapbox-gl');
+        // Clear previous markers
+        markersRef.current.forEach((m) => m.remove());
+        markersRef.current = [];
+
+        businesses.forEach((business) => {
+          if (business.latitude && business.longitude) {
+            const marker = new mapboxgl.default.Marker({ color: '#C75A92' })
+              .setLngLat([business.longitude, business.latitude])
+              .setPopup(
+                new mapboxgl.default.Popup({ offset: 25 }).setHTML(`
+                  <div class=\"p-3\">
+                    <h3 class=\"font-semibold text-base mb-1\">${business.name}</h3>
+                    <p class=\"text-sm text-gray-600 mb-1\">${business.category}</p>
+                    <p class=\"text-xs text-gray-500 mb-2\">${business.city}, ${business.state}</p>
+                    ${onBusinessClick ? `<button onclick=\"window.handleBusinessClick('${business.id}')\" class=\"w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90\">Ver Perfil</button>` : ''}
+                  </div>
+                `)
+              )
+              .addTo(map.current!);
+            markersRef.current.push(marker);
+          }
+        });
+
+        const coordinates = businesses
+          .filter((b) => b.latitude && b.longitude)
+          .map((b) => [b.longitude!, b.latitude!] as [number, number]);
+
+        if (coordinates.length > 1) {
+          const bounds = coordinates.reduce((bounds, coord) => {
+            return bounds.extend(coord);
+          }, new mapboxgl.default.LngLatBounds(coordinates[0], coordinates[0]));
+
+          map.current!.fitBounds(bounds, { padding: 50 });
+        }
+      } catch {}
+    })();
+  }, [businesses, mapInitialized, onBusinessClick]);
 
   const getCurrentLocation = async () => {
     if (navigator.geolocation) {

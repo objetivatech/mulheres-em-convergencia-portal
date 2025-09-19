@@ -190,7 +190,7 @@ export default function BlogDashboard() {
                     </TableCell>
                     <TableCell>{post.views_count}</TableCell>
                     <TableCell>
-                      {new Date(post.created_at).toLocaleDateString('pt-BR')}
+                      {(post.published_at ? new Date(post.published_at) : new Date(post.created_at)).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
