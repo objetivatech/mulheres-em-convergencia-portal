@@ -39,12 +39,15 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
       // Set access token
       mapboxgl.default.accessToken = token;
 
-      // Initialize map
+      // Initialize map - center on Brazil if no coordinates
+      const defaultCenter: [number, number] = [-47.8826, -15.7942]; // Center of Brazil
+      const centerCoords: [number, number] = (latitude && longitude) ? [longitude, latitude] : defaultCenter;
+      
       map.current = new mapboxgl.default.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [longitude || -46.6333, latitude || -23.5505], // Default to São Paulo
-        zoom: latitude && longitude ? 14 : 10,
+        center: centerCoords,
+        zoom: (latitude && longitude) ? 14 : 4,
       });
 
       // Add navigation controls
@@ -61,31 +64,45 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
           .addTo(map.current);
       }
 
-      // Add service area markers/circles
-      serviceAreas.forEach((area, index) => {
-        // For demonstration, add markers for service areas
-        // In a real implementation, you'd geocode the area names
-        const offsetLat = (latitude || -23.5505) + (Math.random() - 0.5) * 0.02;
-        const offsetLng = (longitude || -46.6333) + (Math.random() - 0.5) * 0.02;
-
-        new mapboxgl.default.Marker({ 
-          color: area.area_type === 'city' ? '#9191C0' : '#ADBBDD',
-          scale: 0.7 
-        })
-          .setLngLat([offsetLng, offsetLat])
-          .setPopup(
-            new mapboxgl.default.Popup({ offset: 15 })
-              .setHTML(`
-                <div>
-                  <strong>${area.area_name}</strong>
-                  <br>
-                  <small>${area.area_type === 'city' ? 'Cidade' : 'Bairro'}</small>
-                  ${area.city ? `<br><small>${area.city}, ${area.state}</small>` : `<br><small>${area.state}</small>`}
-                </div>
-              `)
-          )
-          .addTo(map.current);
-      });
+      // Add service area markers (simplified representation)
+      // Note: In a production app, you'd geocode these locations for exact coordinates
+      if (serviceAreas.length > 0) {
+        serviceAreas.forEach((area) => {
+          // Create a simple text marker for service areas without specific coordinates
+          const el = document.createElement('div');
+          el.className = 'service-area-marker';
+          el.style.cssText = `
+            background: #9191C0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          `;
+          
+          // Position relative to business location or default center
+          const baseLat = latitude || -15.7942;
+          const baseLng = longitude || -47.8826;
+          
+          new mapboxgl.default.Marker({ 
+            element: el,
+            anchor: 'center'
+          })
+            .setLngLat([baseLng, baseLat])
+            .setPopup(
+              new mapboxgl.default.Popup({ offset: 15 })
+                .setHTML(`
+                  <div style="min-width: 150px;">
+                    <strong>${area.area_name}</strong>
+                    <br>
+                    <small>${area.area_type === 'city' ? 'Cidade' : 'Bairro'}</small>
+                    ${area.city ? `<br><small>${area.city}, ${area.state}</small>` : `<br><small>${area.state}</small>`}
+                  </div>
+                `)
+            )
+            .addTo(map.current);
+        });
+      }
 
     } catch (error) {
       console.error('Error initializing Mapbox:', error);
