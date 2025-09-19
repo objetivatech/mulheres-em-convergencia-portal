@@ -39,6 +39,7 @@ const Map: React.FC<MapProps> = ({
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const [mapError, setMapError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   // Fetch Mapbox token from edge function or use fallback
   useEffect(() => {
@@ -85,6 +86,12 @@ const Map: React.FC<MapProps> = ({
           zoom: zoom,
           touchPitch: false,
           pitchWithRotate: false,
+        });
+
+        // Wait for map to load before proceeding
+        map.current.on('load', () => {
+          setMapInitialized(true);
+          console.log('Map fully loaded');
         });
 
         const navControl = new mapboxgl.default.NavigationControl({
@@ -143,14 +150,32 @@ const Map: React.FC<MapProps> = ({
       } catch (error) {
         console.error('Error initializing map:', error);
         setMapError('Erro ao carregar o mapa. Verifique sua conexão.');
+        setMapInitialized(false);
       }
     };
 
     init();
 
     return () => {
-      map.current?.remove();
-      (window as any).handleBusinessClick = undefined;
+      try {
+        // Clean up global function
+        if (typeof window !== 'undefined') {
+          (window as any).handleBusinessClick = undefined;
+        }
+        
+        // Only remove map if it was properly initialized
+        if (map.current && mapInitialized) {
+          console.log('Removing map...');
+          map.current.remove();
+          map.current = null;
+        }
+        setMapInitialized(false);
+      } catch (error) {
+        console.warn('Error during map cleanup:', error);
+        // Force reset the map reference even if cleanup fails
+        map.current = null;
+        setMapInitialized(false);
+      }
     };
   }, [businesses, center, zoom, onBusinessClick, mapboxToken]);
 
@@ -161,21 +186,25 @@ const Map: React.FC<MapProps> = ({
           const { latitude, longitude } = position.coords;
           setUserLocation([longitude, latitude]);
 
-          if (map.current) {
-            const mapboxgl = await import('mapbox-gl');
-            map.current.flyTo({
-              center: [longitude, latitude],
-              zoom: 14
-            });
+          if (map.current && mapInitialized) {
+            try {
+              const mapboxgl = await import('mapbox-gl');
+              map.current.flyTo({
+                center: [longitude, latitude],
+                zoom: 14
+              });
 
-            // Add user location marker
-            new mapboxgl.default.Marker({ color: '#3b82f6' })
-              .setLngLat([longitude, latitude])
-              .setPopup(
-                new mapboxgl.default.Popup({ offset: 25 })
-                  .setHTML('<div class="p-2"><p class="font-semibold">Sua localização</p></div>')
-              )
-              .addTo(map.current);
+              // Add user location marker
+              new mapboxgl.default.Marker({ color: '#3b82f6' })
+                .setLngLat([longitude, latitude])
+                .setPopup(
+                  new mapboxgl.default.Popup({ offset: 25 })
+                    .setHTML('<div class="p-2"><p class="font-semibold">Sua localização</p></div>')
+                )
+                .addTo(map.current);
+            } catch (error) {
+              console.error('Error adding user location marker:', error);
+            }
           }
         },
         (error) => {
@@ -198,20 +227,24 @@ const Map: React.FC<MapProps> = ({
       if (data.features && data.features.length > 0) {
         const [longitude, latitude] = data.features[0].center;
         
-        if (map.current) {
-          const mapboxgl = await import('mapbox-gl');
-          map.current.flyTo({
-            center: [longitude, latitude],
-            zoom: 12
-          });
+        if (map.current && mapInitialized) {
+          try {
+            const mapboxgl = await import('mapbox-gl');
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 12
+            });
 
-          new mapboxgl.default.Marker({ color: '#22c55e' })
-            .setLngLat([longitude, latitude])
-            .setPopup(
-              new mapboxgl.default.Popup({ offset: 25 })
-                .setHTML(`<div class="p-2"><p class="font-semibold">${data.features[0].place_name}</p></div>`)
-            )
-            .addTo(map.current);
+            new mapboxgl.default.Marker({ color: '#22c55e' })
+              .setLngLat([longitude, latitude])
+              .setPopup(
+                new mapboxgl.default.Popup({ offset: 25 })
+                  .setHTML(`<div class="p-2"><p class="font-semibold">${data.features[0].place_name}</p></div>`)
+              )
+              .addTo(map.current);
+          } catch (error) {
+            console.error('Error adding search location marker:', error);
+          }
         }
       }
     } catch (error) {
