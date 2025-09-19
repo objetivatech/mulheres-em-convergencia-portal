@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { useBusinessServiceAreas } from '@/hooks/useBusinessServiceAreas';
+import { useGeocoding } from '@/hooks/useGeocoding';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MapboxBusinessMapProps {
@@ -27,7 +28,40 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const [mapError, setMapError] = useState<string | null>(null);
   const [showTokenInput, setShowTokenInput] = useState(false);
+  const [geocodedAreas, setGeocodedAreas] = useState<any[]>([]);
+  const [geocodingProgress, setGeocodingProgress] = useState(false);
   const { serviceAreas, loading } = useBusinessServiceAreas(businessId);
+  const { geocodeLocation } = useGeocoding();
+
+  // Geocodificar áreas de atendimento
+  useEffect(() => {
+    if (!serviceAreas.length || geocodingProgress) return;
+    
+    const geocodeAreas = async () => {
+      setGeocodingProgress(true);
+      const geocoded = [];
+      
+      for (const area of serviceAreas) {
+        try {
+          const location = await geocodeLocation(area.area_name, area.state);
+          if (location) {
+            geocoded.push({
+              ...area,
+              latitude: location.latitude,
+              longitude: location.longitude
+            });
+          }
+        } catch (error) {
+          console.warn(`Erro ao geocodificar ${area.area_name}:`, error);
+        }
+      }
+      
+      setGeocodedAreas(geocoded);
+      setGeocodingProgress(false);
+    };
+    
+    geocodeAreas();
+  }, [serviceAreas, geocodeLocation, geocodingProgress]);
 
   const initializeMap = async (token: string) => {
     if (!mapContainer.current || map.current) return;
@@ -39,19 +73,36 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
       // Set access token
       mapboxgl.default.accessToken = token;
 
-      // Initialize map - center on Brazil if no coordinates
-      const defaultCenter: [number, number] = [-47.8826, -15.7942]; // Center of Brazil
-      const centerCoords: [number, number] = (latitude && longitude) ? [longitude, latitude] : defaultCenter;
+      // Determinar centro do mapa
+      let centerCoords: [number, number];
+      let zoomLevel: number;
+      
+      if (latitude && longitude) {
+        centerCoords = [longitude, latitude];
+        zoomLevel = 12;
+      } else if (geocodedAreas.length > 0) {
+        // Usar a primeira área geocodificada como centro
+        centerCoords = [geocodedAreas[0].longitude, geocodedAreas[0].latitude];
+        zoomLevel = 10;
+      } else {
+        // Fallback para centro do RS
+        centerCoords = [-51.2177, -30.0346]; // Porto Alegre, RS
+        zoomLevel = 8;
+      }
       
       map.current = new mapboxgl.default.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
         center: centerCoords,
-        zoom: (latitude && longitude) ? 14 : 4,
+        zoom: zoomLevel,
       });
 
       // Add navigation controls
       map.current.addControl(new mapboxgl.default.NavigationControl());
+
+      // Create bounds for fitting map
+      const bounds = new mapboxgl.default.LngLatBounds();
+      let hasValidCoords = false;
 
       // Add business location marker if coordinates available
       if (latitude && longitude) {
@@ -59,71 +110,76 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
           .setLngLat([longitude, latitude])
           .setPopup(
             new mapboxgl.default.Popup({ offset: 25 })
-              .setHTML(`<h3>${businessName}</h3><p>${businessCity}, ${businessState}</p>`)
+              .setHTML(`
+                <div style="min-width: 180px;">
+                  <h3 style="margin: 0 0 8px 0; color: #C75A92;">${businessName}</h3>
+                  <p style="margin: 0; color: #666; font-size: 14px;">${businessCity}, ${businessState}</p>
+                </div>
+              `)
           )
           .addTo(map.current);
+        
+        bounds.extend([longitude, latitude]);
+        hasValidCoords = true;
       }
 
-      // Add service area markers around business location
-      if (serviceAreas.length > 0) {
-        const baseLat = latitude || -15.7942;
-        const baseLng = longitude || -47.8826;
-        
-        // Create bounds to fit all service areas
-        const bounds = new mapboxgl.default.LngLatBounds();
-        bounds.extend([baseLng, baseLat]);
-        
-        serviceAreas.forEach((area, index) => {
-          // Create distinct positions for each service area in a circular pattern
-          const angleStep = (2 * Math.PI) / serviceAreas.length;
-          const angle = angleStep * index;
-          const radius = 0.02; // Approximately 2km radius
-          
-          const areaLng = baseLng + (radius * Math.cos(angle));
-          const areaLat = baseLat + (radius * Math.sin(angle));
-          
-          // Extend bounds to include this service area
-          bounds.extend([areaLng, areaLat]);
-          
-          // Create service area marker
-          const el = document.createElement('div');
-          el.className = 'service-area-marker';
-          el.style.cssText = `
-            background: #9191C0;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            cursor: pointer;
-          `;
-          
-          new mapboxgl.default.Marker({ 
-            element: el,
-            anchor: 'center'
-          })
-            .setLngLat([areaLng, areaLat])
-            .setPopup(
-              new mapboxgl.default.Popup({ offset: 15 })
-                .setHTML(`
-                  <div style="min-width: 150px;">
-                    <strong>${area.area_name}</strong>
-                    <br>
-                    <small>${area.area_type === 'city' ? 'Cidade' : 'Bairro'}</small>
-                    ${area.city ? `<br><small>${area.city}, ${area.state}</small>` : `<br><small>${area.state}</small>`}
-                  </div>
-                `)
-            )
-            .addTo(map.current);
+      // Add geocoded service area markers
+      if (geocodedAreas.length > 0) {
+        geocodedAreas.forEach((area) => {
+          if (area.latitude && area.longitude) {
+            // Create service area marker
+            const el = document.createElement('div');
+            el.className = 'service-area-marker';
+            el.style.cssText = `
+              background: #9191C0;
+              width: 16px;
+              height: 16px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+              cursor: pointer;
+              transition: all 0.2s ease;
+            `;
+            
+            // Add hover effect
+            el.addEventListener('mouseenter', () => {
+              el.style.transform = 'scale(1.2)';
+            });
+            el.addEventListener('mouseleave', () => {
+              el.style.transform = 'scale(1)';
+            });
+            
+            new mapboxgl.default.Marker({ 
+              element: el,
+              anchor: 'center'
+            })
+              .setLngLat([area.longitude, area.latitude])
+              .setPopup(
+                new mapboxgl.default.Popup({ offset: 15 })
+                  .setHTML(`
+                    <div style="min-width: 150px;">
+                      <strong style="color: #9191C0;">${area.area_name}</strong>
+                      <br>
+                      <small style="color: #666;">${area.area_type === 'city' ? 'Cidade' : 'Bairro'}</small>
+                      ${area.city ? `<br><small style="color: #888;">${area.city}, ${area.state}</small>` : `<br><small style="color: #888;">${area.state}</small>`}
+                    </div>
+                  `)
+              )
+              .addTo(map.current);
+            
+            bounds.extend([area.longitude, area.latitude]);
+            hasValidCoords = true;
+          }
         });
-        
-        // Fit map to show all service areas with padding
-        if (serviceAreas.length > 1) {
-          map.current.fitBounds(bounds, { 
-            padding: 50,
-            maxZoom: 12
-          });
-        }
+      }
+      
+      // Fit map bounds if we have valid coordinates
+      if (hasValidCoords) {
+        // Add padding and limit zoom level
+        map.current.fitBounds(bounds, { 
+          padding: { top: 50, bottom: 50, left: 50, right: 50 },
+          maxZoom: 14
+        });
       }
 
     } catch (error) {
@@ -173,12 +229,12 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
   }, []);
 
   useEffect(() => {
-    if (mapboxToken && !loading) {
+    if (mapboxToken && !loading && !geocodingProgress) {
       initializeMap(mapboxToken);
     }
-  }, [mapboxToken, serviceAreas, loading]);
+  }, [mapboxToken, geocodedAreas, loading, geocodingProgress]);
 
-  if (loading) {
+  if (loading || geocodingProgress) {
     return (
       <Card>
         <CardHeader>
@@ -189,7 +245,12 @@ export const MapboxBusinessMap: React.FC<MapboxBusinessMapProps> = ({
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                {geocodingProgress ? 'Localizando áreas de atendimento...' : 'Carregando mapa...'}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
