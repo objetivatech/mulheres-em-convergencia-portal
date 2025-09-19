@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+// mapbox-gl is dynamically imported
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Navigation, Loader2, AlertCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MapProps {
@@ -32,7 +33,7 @@ const Map: React.FC<MapProps> = ({
   onBusinessClick
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<any>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchLocation, setSearchLocation] = useState('');
   const [mapboxToken, setMapboxToken] = useState<string>('');
@@ -71,105 +72,107 @@ const Map: React.FC<MapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
 
-    try {
-      console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
-      mapboxgl.accessToken = mapboxToken;
-      
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: center,
-        zoom: zoom,
-        touchPitch: false, // Disable pitch on touch to reduce violations
-        pitchWithRotate: false, // Disable pitch to improve performance
-      });
+    const init = async () => {
+      try {
+        console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
+        const mapboxgl = await import('mapbox-gl');
+        mapboxgl.default.accessToken = mapboxToken;
+        
+        map.current = new mapboxgl.default.Map({
+          container: mapContainer.current!,
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: center as [number, number],
+          zoom: zoom,
+          touchPitch: false,
+          pitchWithRotate: false,
+        });
 
-      // Add passive navigation controls to reduce event listener violations
-      const navControl = new mapboxgl.NavigationControl({
-        showCompass: false,
-        showZoom: true
-      });
-      map.current.addControl(navControl, 'top-right');
+        const navControl = new mapboxgl.default.NavigationControl({
+          showCompass: false,
+          showZoom: true
+        });
+        map.current.addControl(navControl, 'top-right');
 
-      // Add markers for businesses
-      businesses.forEach(business => {
-        if (business.latitude && business.longitude) {
-          const marker = new mapboxgl.Marker({
-            color: '#C75A92'
-          })
-          .setLngLat([business.longitude, business.latitude])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div class="p-3">
-                  <h3 class="font-semibold text-base mb-1">${business.name}</h3>
-                  <p class="text-sm text-gray-600 mb-1">${business.category}</p>
-                  <p class="text-xs text-gray-500 mb-2">${business.city}, ${business.state}</p>
-                  ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90">Ver Perfil</button>` : ''}
-                </div>
-              `)
-          )
-          .addTo(map.current!);
+        // Add markers for businesses
+        businesses.forEach(business => {
+          if (business.latitude && business.longitude) {
+            const marker = new mapboxgl.default.Marker({ color: '#C75A92' })
+              .setLngLat([business.longitude, business.latitude])
+              .setPopup(
+                new mapboxgl.default.Popup({ offset: 25 })
+                  .setHTML(`
+                    <div class="p-3">
+                      <h3 class="font-semibold text-base mb-1">${business.name}</h3>
+                      <p class="text-sm text-gray-600 mb-1">${business.category}</p>
+                      <p class="text-xs text-gray-500 mb-2">${business.city}, ${business.state}</p>
+                      ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90">Ver Perfil</button>` : ''}
+                    </div>
+                  `)
+              )
+              .addTo(map.current!);
 
-          // Handle marker click
-          marker.getElement().addEventListener('click', () => {
-            if (onBusinessClick) {
-              onBusinessClick(business.id);
-            }
-          });
-        }
-      });
+            // Handle marker click
+            marker.getElement().addEventListener('click', () => {
+              if (onBusinessClick) {
+                onBusinessClick(business.id);
+              }
+            });
+          }
+        });
 
-      // Auto-fit map to show all businesses if available
-      if (businesses.length > 0) {
+        // Auto-fit map to show all businesses if available
         const coordinates = businesses
           .filter(b => b.latitude && b.longitude)
-          .map(b => [b.longitude!, b.latitude!]);
+          .map(b => [b.longitude!, b.latitude!] as [number, number]);
         
         if (coordinates.length > 1) {
           const bounds = coordinates.reduce((bounds, coord) => {
-            return bounds.extend(coord as [number, number]);
-          }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
+            return bounds.extend(coord);
+          }, new mapboxgl.default.LngLatBounds(coordinates[0], coordinates[0]));
           
           map.current!.fitBounds(bounds, { padding: 50 });
         }
+
+        // Global function for popup buttons
+        (window as any).handleBusinessClick = (businessId: string) => {
+          if (onBusinessClick) {
+            onBusinessClick(businessId);
+          }
+        };
+
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        setMapError('Erro ao carregar o mapa. Verifique sua conexão.');
       }
+    };
 
-      // Global function for popup buttons
-      (window as any).handleBusinessClick = (businessId: string) => {
-        if (onBusinessClick) {
-          onBusinessClick(businessId);
-        }
-      };
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      setMapError('Erro ao carregar o mapa. Verifique sua conexão.');
-    }
+    init();
 
     return () => {
       map.current?.remove();
+      (window as any).handleBusinessClick = undefined;
     };
   }, [businesses, center, zoom, onBusinessClick, mapboxToken]);
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation([longitude, latitude]);
-          
+
           if (map.current) {
+            const mapboxgl = await import('mapbox-gl');
             map.current.flyTo({
               center: [longitude, latitude],
               zoom: 14
             });
 
             // Add user location marker
-            new mapboxgl.Marker({ color: '#3b82f6' })
+            new mapboxgl.default.Marker({ color: '#3b82f6' })
               .setLngLat([longitude, latitude])
               .setPopup(
-                new mapboxgl.Popup({ offset: 25 })
+                new mapboxgl.default.Popup({ offset: 25 })
                   .setHTML('<div class="p-2"><p class="font-semibold">Sua localização</p></div>')
               )
               .addTo(map.current);
@@ -196,15 +199,16 @@ const Map: React.FC<MapProps> = ({
         const [longitude, latitude] = data.features[0].center;
         
         if (map.current) {
+          const mapboxgl = await import('mapbox-gl');
           map.current.flyTo({
             center: [longitude, latitude],
             zoom: 12
           });
 
-          new mapboxgl.Marker({ color: '#22c55e' })
+          new mapboxgl.default.Marker({ color: '#22c55e' })
             .setLngLat([longitude, latitude])
             .setPopup(
-              new mapboxgl.Popup({ offset: 25 })
+              new mapboxgl.default.Popup({ offset: 25 })
                 .setHTML(`<div class="p-2"><p class="font-semibold">${data.features[0].place_name}</p></div>`)
             )
             .addTo(map.current);
@@ -252,13 +256,23 @@ const Map: React.FC<MapProps> = ({
               onChange={(e) => setSearchLocation(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && searchByLocation()}
             />
-            <Button onClick={searchByLocation} variant="outline" size="sm" disabled={!mapboxToken}>
-              <MapPin className="w-4 h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={searchByLocation} variant="outline" size="sm" disabled={!mapboxToken} aria-label="Buscar localização">
+                  <MapPin className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Buscar localização</TooltipContent>
+            </Tooltip>
           </div>
-          <Button onClick={getCurrentLocation} variant="outline" size="sm">
-            <Navigation className="w-4 h-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={getCurrentLocation} variant="outline" size="sm" aria-label="Usar minha localização">
+                <Navigation className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Usar minha localização</TooltipContent>
+          </Tooltip>
         </div>
       )}
       

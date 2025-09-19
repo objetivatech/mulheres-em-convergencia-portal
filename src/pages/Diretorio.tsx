@@ -623,7 +623,7 @@ const Diretorio = () => {
                   )}
 
                   {viewMode === 'map' && (
-                    <div className="h-[70vh] lg:h-[80vh] rounded-lg overflow-hidden border shadow-lg">
+                    <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
                       <Map
                         businesses={filteredBusinesses.map(business => ({
                           id: business.id,
