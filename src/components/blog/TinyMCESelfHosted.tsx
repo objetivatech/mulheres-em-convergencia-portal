@@ -30,7 +30,7 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
     // Load TinyMCE script dynamically
     if (!window.tinymce) {
       const script = document.createElement('script');
-      script.src = '/tinymce_8.1.2/js/tinymce/tinymce.min.js';
+      script.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
       script.onload = () => initTinyMCE();
       document.head.appendChild(script);
     } else {
