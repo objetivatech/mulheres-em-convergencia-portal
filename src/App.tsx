@@ -156,12 +156,17 @@ function AppContent() {
         } />
         
         {/* Dashboard Routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/dashboard/:type" element={
           <RoleProtectedRoute>
             <Dashboard />
           </RoleProtectedRoute>
         } />
-          <Route path="/dashboard/empresa" element={
+          <Route path="/dashboard-empresa" element={
             <ProtectedRoute>
               <DashboardEmpresa />
             </ProtectedRoute>

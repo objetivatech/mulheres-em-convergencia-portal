@@ -28,6 +28,31 @@ export const useSiteSettings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fallback navigation - links essenciais do site
+  const fallbackNavigation: NavigationMenu[] = [
+    { label: 'Início', href: '/', active: true },
+    { label: 'Diretório', href: '/diretorio', active: true },
+    { label: 'Convergindo', href: '/convergindo', active: true },
+    { label: 'Sobre', href: '/sobre', active: true },
+    { label: 'Contato', href: '/contato', active: true },
+  ];
+
+  // Default settings fallback
+  const fallbackSettings: SiteSettings = {
+    site_title: 'Mulheres em Convergência',
+    site_description: 'Portal de empreendedorismo feminino e negócios',
+    contact_info: {
+      email: 'contato@mulhereseconvergencia.com.br',
+      phone: '',
+    },
+    social_links: {
+      instagram: '',
+      facebook: '',
+      linkedin: '',
+    },
+    footer_text: 'Mulheres em Convergência - Todos os direitos reservados',
+  };
+
   useEffect(() => {
     fetchSettings();
     fetchNavigation();
@@ -40,23 +65,32 @@ export const useSiteSettings = () => {
         .select('setting_key, setting_value')
         .in('setting_key', ['site_title', 'site_description', 'contact_info', 'social_links', 'footer_text']);
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Erro ao carregar configurações, usando fallback:', error);
+        setSettings(fallbackSettings);
+        return;
+      }
 
-      const settingsObject: any = {};
+      const settingsObject: any = { ...fallbackSettings };
       data?.forEach(item => {
         try {
-          settingsObject[item.setting_key] = typeof item.setting_value === 'string' 
-            ? JSON.parse(item.setting_value) 
-            : item.setting_value;
+          // Tenta fazer o parse do JSON se for string
+          if (typeof item.setting_value === 'string' && item.setting_value.startsWith('{')) {
+            settingsObject[item.setting_key] = JSON.parse(item.setting_value);
+          } else {
+            settingsObject[item.setting_key] = item.setting_value;
+          }
         } catch (e) {
-          settingsObject[item.setting_key] = item.setting_value;
+          console.warn(`Erro ao fazer parse de ${item.setting_key}:`, e);
+          // Mantém o valor fallback se houver erro no parse
         }
       });
 
       setSettings(settingsObject as SiteSettings);
     } catch (err) {
-      console.error('Erro ao carregar configurações:', err);
-      setError('Erro ao carregar configurações do site');
+      console.warn('Erro ao carregar configurações, usando fallback:', err);
+      setSettings(fallbackSettings);
+      setError('Usando configurações padrão');
     }
   };
 
@@ -69,16 +103,28 @@ export const useSiteSettings = () => {
         .eq('active', true)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Erro ao carregar navegação, usando fallback:', error);
+        setNavigation(fallbackNavigation);
+        return;
+      }
 
-      const menuItems = Array.isArray(data?.menu_items) 
-        ? (data.menu_items as unknown as NavigationMenu[])
-        : [];
+      let menuItems: NavigationMenu[] = [];
+      
+      if (Array.isArray(data?.menu_items)) {
+        menuItems = (data.menu_items as unknown as NavigationMenu[]).filter(item => item.active);
+      }
+      
+      // Se não há itens válidos, usa fallback
+      if (menuItems.length === 0) {
+        menuItems = fallbackNavigation;
+      }
         
-      setNavigation(menuItems.filter(item => item.active));
+      setNavigation(menuItems);
     } catch (err) {
-      console.error('Erro ao carregar navegação:', err);
-      setError('Erro ao carregar menu de navegação');
+      console.warn('Erro ao carregar navegação, usando fallback:', err);
+      setNavigation(fallbackNavigation);
+      setError('Usando navegação padrão');
     } finally {
       setLoading(false);
     }

@@ -57,11 +57,21 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   const [mapZoom, setMapZoom] = useState(zoom);
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   // Filtrar negócios com coordenadas válidas
   const validBusinesses = businesses.filter(
     business => business.latitude && business.longitude
   );
+
+  // Se houver erro crítico, mostrar mensagem
+  if (mapError) {
+    return (
+      <div className="p-4 text-center bg-muted rounded-lg" style={{ height }}>
+        <p className="text-muted-foreground">Erro ao carregar mapa: {mapError}</p>
+      </div>
+    );
+  }
 
   // Ícone customizado para negócios
   const businessIcon = new L.Icon({
@@ -175,63 +185,73 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
       )}
       
       <div style={{ height }} className="rounded-lg overflow-hidden border">
-        <MapContainer
-          center={mapCenter}
-          zoom={mapZoom}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-        >
-          <MapController center={mapCenter} zoom={mapZoom} />
-          
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          {/* Marker para localização do usuário */}
-          {userLocation && (
-            <Marker position={userLocation} icon={userIcon}>
-              <Popup>
-                <div className="text-sm">
-                  <strong>Sua localização</strong>
-                </div>
-              </Popup>
-            </Marker>
-          )}
-          
-          {/* Markers para negócios */}
-          {validBusinesses.map((business) => (
-            <Marker
-              key={business.id}
-              position={[business.latitude!, business.longitude!]}
-              icon={businessIcon}
-            >
-              <Popup>
-                <div className="space-y-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{business.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {business.category}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      <MapPin className="inline h-3 w-3 mr-1" />
-                      {business.city}, {business.state}
-                    </p>
+        {validBusinesses.length === 0 ? (
+          <div className="flex items-center justify-center h-full bg-muted/30">
+            <p className="text-muted-foreground">Nenhum negócio com localização encontrado</p>
+          </div>
+        ) : (
+          <MapContainer
+            center={mapCenter}
+            zoom={mapZoom}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+            whenReady={() => {
+              // Log do mapa criado para debug
+              console.log('Mapa Leaflet criado com sucesso');
+            }}
+          >
+            <MapController center={mapCenter} zoom={mapZoom} />
+            
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* Marker para localização do usuário */}
+            {userLocation && (
+              <Marker position={userLocation} icon={userIcon}>
+                <Popup>
+                  <div className="text-sm">
+                    <strong>Sua localização</strong>
                   </div>
-                  {onBusinessClick && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => onBusinessClick(business.id)}
-                      className="text-xs"
-                    >
-                      Ver Perfil
-                    </Button>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+                </Popup>
+              </Marker>
+            )}
+            
+            {/* Markers para negócios */}
+            {validBusinesses.map((business) => (
+              <Marker
+                key={business.id}
+                position={[business.latitude!, business.longitude!]}
+                icon={businessIcon}
+              >
+                <Popup>
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-semibold text-sm">{business.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {business.category}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <MapPin className="inline h-3 w-3 mr-1" />
+                        {business.city}, {business.state}
+                      </p>
+                    </div>
+                    {onBusinessClick && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => onBusinessClick(business.id)}
+                        className="text-xs"
+                      >
+                        Ver Perfil
+                      </Button>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        )}
       </div>
       
       <div className="text-xs text-muted-foreground text-center">

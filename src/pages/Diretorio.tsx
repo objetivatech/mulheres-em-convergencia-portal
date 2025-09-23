@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
-import { DirectoryLeafletMap } from '@/components/maps/DirectoryLeafletMap';
+import { SafeLeafletMap } from '@/components/SafeLeafletMap';
 import FeaturedBadge from '@/components/premium/FeaturedBadge';
 
 interface Business {
@@ -76,15 +76,22 @@ const Diretorio = () => {
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
+      console.log('Iniciando busca de negócios...');
       
       // Fetch businesses with pagination for better performance
+      console.log('Chamando RPC get_public_businesses...');
       const { data, error } = await supabase
         .rpc('get_public_businesses')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50); // Limit initial load for better performance
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na RPC get_public_businesses:', error);
+        throw error;
+      }
+      
+      console.log('Negócios carregados:', data?.length || 0);
       const businessList = data || [];
       setBusinesses(businessList);
 
@@ -113,11 +120,13 @@ const Diretorio = () => {
         // Update state incrementally for better UX
         setBusinessBoosts(prev => ({ ...prev, ...boostMap }));
       }
-    } catch (error) {
-      console.error('Erro ao buscar negócios:', error);
-    } finally {
-      setLoading(false);
-    }
+      } catch (error) {
+        console.error('Erro ao buscar negócios:', error);
+        // Mostrar mensagem de erro mais amigável
+        setBusinesses([]);
+      } finally {
+        setLoading(false);
+      }
   };
 
   // Função para calcular distância entre dois pontos
@@ -624,7 +633,7 @@ const Diretorio = () => {
 
                   {viewMode === 'map' && (
                     <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
-                      <DirectoryLeafletMap
+                      <SafeLeafletMap
                         businesses={filteredBusinesses.map(business => ({
                           id: business.id,
                           name: business.name,
