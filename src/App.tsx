@@ -29,6 +29,8 @@ import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
 import PagesManagement from './pages/admin/PagesManagement';
 import PageBuilderEditor from './pages/admin/PageBuilder';
+import SiteSettings from './pages/admin/SiteSettings';
+import NavigationSettings from './pages/admin/NavigationSettings';
 import PublicPage from './pages/PublicPage';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
@@ -138,6 +140,18 @@ function AppContent() {
         <Route path="/admin/page-builder/:id" element={
           <ProtectedRoute requireAdmin={true}>
             <PageBuilderEditor />
+          </ProtectedRoute>
+        } />
+        
+        {/* Site Management Routes */}
+        <Route path="/admin/site-settings" element={
+          <ProtectedRoute requireAdmin={true}>
+            <SiteSettings />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/navigation" element={
+          <ProtectedRoute requireAdmin={true}>
+            <NavigationSettings />
           </ProtectedRoute>
         } />
         

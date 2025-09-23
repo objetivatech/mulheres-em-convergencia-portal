@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import { MapboxBusinessMap } from '@/components/business/MapboxBusinessMap';
+import { BusinessLeafletMap } from '@/components/maps/BusinessLeafletMap';
 import ReviewForm from '@/components/ui/review-form';
 import BusinessContactForm from '@/components/business/BusinessContactForm';
 
@@ -561,7 +561,7 @@ const DiretorioEmpresa = () => {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="min-h-64 relative overflow-hidden rounded-b-lg">
-                    <MapboxBusinessMap
+                    <BusinessLeafletMap
                       businessId={business.id}
                       businessName={business.name}
                       businessCity={business.city}

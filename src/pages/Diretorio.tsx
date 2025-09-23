@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
-import Map from '@/components/ui/map';
+import { DirectoryLeafletMap } from '@/components/maps/DirectoryLeafletMap';
 import FeaturedBadge from '@/components/premium/FeaturedBadge';
 
 interface Business {
@@ -624,7 +624,7 @@ const Diretorio = () => {
 
                   {viewMode === 'map' && (
                     <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
-                      <Map
+                      <DirectoryLeafletMap
                         businesses={filteredBusinesses.map(business => ({
                           id: business.id,
                           name: business.name,
