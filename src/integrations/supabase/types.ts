@@ -969,6 +969,36 @@ export type Database = {
         }
         Relationships: []
       }
+      navigation_menus: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          menu_items: Json
+          menu_key: string
+          menu_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          menu_items?: Json
+          menu_key: string
+          menu_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          menu_items?: Json
+          menu_key?: string
+          menu_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           active: boolean | null
@@ -1260,6 +1290,39 @@ export type Database = {
           key?: string
           updated_at?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          setting_key: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string
         }
         Relationships: []
       }

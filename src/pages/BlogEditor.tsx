@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import Layout from '@/components/layout/Layout';
-import { TrumbowygEditor } from '@/components/blog/TrumbowygEditor';
+import { TinyMCESelfHosted } from '@/components/blog/TinyMCESelfHosted';
 import { ImageUploader } from '@/components/blog/ImageUploader';
 import { 
   useBlogPost, 
@@ -349,12 +349,12 @@ export default function BlogEditor() {
                     <FormItem>
                       <FormLabel>Conteúdo</FormLabel>
                       <FormControl>
-                    <TrumbowygEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      height={500}
-                      placeholder="Digite o conteúdo do seu post..."
-                    />
+                     <TinyMCESelfHosted
+                       value={field.value}
+                       onChange={field.onChange}
+                       height={500}
+                       placeholder="Digite o conteúdo do seu post..."
+                     />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
