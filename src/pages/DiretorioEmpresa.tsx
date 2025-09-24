@@ -108,17 +108,24 @@ const DiretorioEmpresa = () => {
 
       const business = businessData[0];
 
-      setBusiness(business);
+      // Normalize coordinates to numbers for map rendering
+      const normalizedBusiness = {
+        ...business,
+        latitude: business.latitude ? parseFloat(business.latitude as any) : null,
+        longitude: business.longitude ? parseFloat(business.longitude as any) : null,
+      };
+
+      setBusiness(normalizedBusiness);
       
       // Incrementar visualizações usando RPC
       await supabase.rpc('update_business_analytics', { 
-        business_uuid: business.id, 
+        business_uuid: normalizedBusiness.id, 
         metric_name: 'views' 
       });
 
       // Buscar contatos (podem ser restritos por plano)
       const { data: contactsData, error: contactsError } = await supabase
-        .rpc('get_business_contacts', { p_business_id: business.id });
+        .rpc('get_business_contacts', { p_business_id: normalizedBusiness.id });
 
       if (!contactsError && contactsData && contactsData.length > 0) {
         setContacts(contactsData[0]);
@@ -127,7 +134,7 @@ const DiretorioEmpresa = () => {
       // Buscar avaliações
       const { data: reviewsData, error: reviewsError } = await supabase
         .rpc('get_public_business_reviews', { 
-          business_uuid: business.id,
+          business_uuid: normalizedBusiness.id,
           limit_count: 10,
           offset_count: 0
         });
@@ -138,8 +145,8 @@ const DiretorioEmpresa = () => {
 
     } catch (error) {
       console.error('Erro ao buscar detalhes da empresa:', error);
-      setLoading(false);
-      // Não navegar automaticamente em caso de erro, mostrar mensagem de erro
+      // Show friendly error message instead of blank page
+      setBusiness(null);
     } finally {
       setLoading(false);
     }

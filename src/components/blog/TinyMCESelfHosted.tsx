@@ -50,7 +50,7 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
     window.tinymce.init({
       selector: `#${editorId}`,
       height: height,
-      language: 'pt_BR',
+      license_key: 'gpl',
       plugins: [
         'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
         'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',

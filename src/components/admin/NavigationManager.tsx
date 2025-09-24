@@ -71,7 +71,7 @@ export const NavigationManager: React.FC = () => {
           .from('navigation_menus')
           .update({
             menu_name: menu.menu_name,
-            menu_items: JSON.stringify(menu.menu_items),
+            menu_items: menu.menu_items as any,
             active: menu.active,
             updated_at: new Date().toISOString()
           })

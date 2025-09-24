@@ -82,8 +82,6 @@ const Diretorio = () => {
       console.log('Chamando RPC get_public_businesses...');
       const { data, error } = await supabase
         .rpc('get_public_businesses')
-        .order('featured', { ascending: false })
-        .order('created_at', { ascending: false })
         .limit(50); // Limit initial load for better performance
 
       if (error) {
@@ -92,7 +90,24 @@ const Diretorio = () => {
       }
       
       console.log('Negócios carregados:', data?.length || 0);
-      const businessList = data || [];
+      let businessList = data || [];
+      
+      // Client-side sorting to avoid PostgREST ordering issues
+      businessList = businessList.sort((a: any, b: any) => {
+        // Featured first
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        // Then by creation date (newer first)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      
+      // Normalize coordinates to numbers for map rendering
+      businessList = businessList.map((business: any) => ({
+        ...business,
+        latitude: business.latitude ? parseFloat(business.latitude) : null,
+        longitude: business.longitude ? parseFloat(business.longitude) : null,
+      }));
+      
       setBusinesses(businessList);
 
       // Fetch boost data in batches to avoid too many concurrent requests

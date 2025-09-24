@@ -113,6 +113,16 @@ export const useSiteSettings = () => {
       
       if (Array.isArray(data?.menu_items)) {
         menuItems = (data.menu_items as unknown as NavigationMenu[]).filter(item => item.active);
+      } else if (typeof data?.menu_items === 'string') {
+        // Handle JSON string format (fallback compatibility)
+        try {
+          const parsedItems = JSON.parse(data.menu_items);
+          if (Array.isArray(parsedItems)) {
+            menuItems = parsedItems.filter(item => item.active);
+          }
+        } catch (e) {
+          console.warn('Erro ao fazer parse dos itens do menu:', e);
+        }
       }
       
       // Se não há itens válidos, usa fallback

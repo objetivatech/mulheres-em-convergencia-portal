@@ -30,7 +30,7 @@ export function Header() {
             <Link to="/" className="flex items-center">
               <LogoComponent 
                 variant="horizontal" 
-                size="sm" 
+                size="md" 
               />
             </Link>
           </div>
@@ -41,7 +41,7 @@ export function Header() {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
+                className={`text-base font-medium transition-colors hover:text-primary ${
                   isActive(item.href)
                     ? 'text-primary'
                     : 'text-muted-foreground'
@@ -62,7 +62,7 @@ export function Header() {
                     {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-background border z-50">
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -73,6 +73,15 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/admin">Administração</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/pages">Gerenciar Páginas</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/navigation">Cabeçalho e Menus</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/site-settings">Configurações do Site</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
