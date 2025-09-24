@@ -27,7 +27,7 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
   const editorId = 'tinymce-editor-' + Math.random().toString(36).substr(2, 9);
 
   useEffect(() => {
-    // Load TinyMCE script dynamically
+    // Load TinyMCE script dynamically  
     if (!window.tinymce) {
       const script = document.createElement('script');
       script.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
@@ -43,15 +43,6 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (window.tinymce && window.tinymce.get(editorId)) {
-      const editor = window.tinymce.get(editorId);
-      if (editor.getContent() !== value) {
-        editor.setContent(value || '');
-      }
-    }
-  }, [value, editorId]);
 
   const initTinyMCE = () => {
     if (!window.tinymce) return;
@@ -86,6 +77,20 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
         editor.on('change keyup', () => {
           const content = editor.getContent();
           onChange(content);
+        });
+      },
+      init_instance_callback: (editor: any) => {
+        // Set initial content when editor is ready
+        if (value && value !== editor.getContent()) {
+          editor.setContent(value);
+        }
+        
+        // Set up value change listener
+        editor.on('SetContent', () => {
+          const currentContent = editor.getContent();
+          if (currentContent !== value) {
+            onChange(currentContent);
+          }
         });
       },
       images_upload_handler: async (blobInfo: any) => {
@@ -123,6 +128,17 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
       theme: 'silver'
     });
   };
+
+  // Update editor content when value prop changes (after initialization)
+  useEffect(() => {
+    if (window.tinymce && window.tinymce.get(editorId)) {
+      const editor = window.tinymce.get(editorId);
+      const currentContent = editor.getContent();
+      if (currentContent !== value) {
+        editor.setContent(value || '');
+      }
+    }
+  }, [value, editorId]);
 
   return (
     <div className={`tinymce-container ${className}`}>

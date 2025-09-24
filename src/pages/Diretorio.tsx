@@ -631,7 +631,7 @@ const Diretorio = () => {
                     </div>
                   )}
 
-                  {viewMode === 'map' && (
+                  {viewMode === 'map' && filteredBusinesses.length > 0 && (
                     <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
                       <SafeLeafletMap
                         businesses={filteredBusinesses.map(business => ({
@@ -654,6 +654,18 @@ const Diretorio = () => {
                           }
                         }}
                       />
+                    </div>
+                  )}
+
+                  {viewMode === 'map' && filteredBusinesses.length === 0 && !loading && (
+                    <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg border shadow-lg flex items-center justify-center bg-muted/10">
+                      <div className="text-center">
+                        <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Nenhuma empresa no mapa</h3>
+                        <p className="text-muted-foreground">
+                          Tente ajustar os filtros para ver empresas no mapa
+                        </p>
+                      </div>
                     </div>
                   )}
                 </>

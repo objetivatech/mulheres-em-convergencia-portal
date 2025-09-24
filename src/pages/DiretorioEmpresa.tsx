@@ -86,11 +86,22 @@ const DiretorioEmpresa = () => {
 
   const fetchBusinessBySlug = async (businessSlug: string) => {
     try {
+      console.log('Buscando empresa por slug:', businessSlug);
+      
       // Buscar empresa por slug usando RPC
       const { data: businessData, error: businessError } = await supabase
         .rpc('get_public_business_by_slug', { p_slug: businessSlug });
 
-      if (businessError || !businessData || businessData.length === 0) {
+      console.log('Resultado da busca:', { businessData, businessError });
+
+      if (businessError) {
+        console.error('Erro ao buscar empresa:', businessError);
+        navigate('/diretorio');
+        return;
+      }
+
+      if (!businessData || businessData.length === 0) {
+        console.warn('Nenhuma empresa encontrada para o slug:', businessSlug);
         navigate('/diretorio');
         return;
       }
@@ -127,7 +138,8 @@ const DiretorioEmpresa = () => {
 
     } catch (error) {
       console.error('Erro ao buscar detalhes da empresa:', error);
-      navigate('/diretorio');
+      setLoading(false);
+      // Não navegar automaticamente em caso de erro, mostrar mensagem de erro
     } finally {
       setLoading(false);
     }
@@ -209,12 +221,15 @@ const DiretorioEmpresa = () => {
     );
   }
 
-  if (!business) {
+  if (!loading && !business) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Empresa não encontrada</h1>
+            <p className="text-muted-foreground mb-4">
+              A empresa que você está procurando não foi encontrada ou não está mais ativa.
+            </p>
             <Button onClick={() => navigate('/diretorio')}>
               Voltar ao Diretório
             </Button>
