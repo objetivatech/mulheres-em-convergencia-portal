@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BusinessLeafletMap } from '@/components/maps/BusinessLeafletMap';
 import ReviewForm from '@/components/ui/review-form';
 import BusinessContactForm from '@/components/business/BusinessContactForm';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface BusinessDetails {
   id: string;
@@ -248,21 +249,22 @@ const DiretorioEmpresa = () => {
 
   return (
     <Layout>
-      <Helmet>
-        <title>{business.name} | Diretório de Associadas</title>
-        <meta 
-          name="description" 
-          content={business.description?.substring(0, 160) || `${business.name} - ${business.category}`}
-        />
-        <meta name="keywords" content={`${business.name}, ${business.category}, ${business.city}, ${business.state}`} />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content={`${business.name} | Mulheres em Convergência`} />
-        <meta property="og:description" content={business.description?.substring(0, 160)} />
-        {business.cover_image_url && (
-          <meta property="og:image" content={business.cover_image_url} />
-        )}
-      </Helmet>
+      <ErrorBoundary>
+        <Helmet>
+          <title>{business?.name || 'Empresa'} | Diretório de Associadas</title>
+          <meta 
+            name="description" 
+            content={business?.description?.substring(0, 160) || `${business?.name || 'Empresa'} - ${business?.category || 'Diretório'}`}
+          />
+          <meta name="keywords" content={`${business?.name || ''}, ${business?.category || ''}, ${business?.city || ''}, ${business?.state || ''}`} />
+          
+          {/* Open Graph */}
+          <meta property="og:title" content={`${business?.name || 'Empresa'} | Mulheres em Convergência`} />
+          <meta property="og:description" content={business?.description?.substring(0, 160) || ''} />
+          {business?.cover_image_url && (
+            <meta property="og:image" content={business.cover_image_url} />
+          )}
+        </Helmet>
 
       <div className="min-h-screen bg-background">
         {/* Header com botão voltar */}
@@ -332,11 +334,11 @@ const DiretorioEmpresa = () => {
                           </span>
                         </div>
                         
-                        {businessRating.count > 0 && (
+                        {businessRating && businessRating.count > 0 && (
                           <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                             <span className="text-sm font-medium">
-                              {businessRating.average.toFixed(1)} ({businessRating.count} avaliações)
+                              {typeof businessRating.average === 'number' ? businessRating.average.toFixed(1) : '0.0'} ({businessRating.count} avaliações)
                             </span>
                           </div>
                         )}
@@ -372,7 +374,7 @@ const DiretorioEmpresa = () => {
               )}
 
               {/* Gallery */}
-              {business.gallery_images && business.gallery_images.length > 0 && (
+              {business?.gallery_images && Array.isArray(business.gallery_images) && business.gallery_images.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Galeria</CardTitle>
@@ -436,7 +438,7 @@ const DiretorioEmpresa = () => {
                   </CardContent>
                 )}
                 
-                {reviews.length > 0 && (
+                {Array.isArray(reviews) && reviews.length > 0 && (
                   <CardContent className={showReviewForm ? "border-t pt-6" : ""}>
                     <div className="space-y-4">
                       {reviews.map(review => (
@@ -643,6 +645,7 @@ const DiretorioEmpresa = () => {
           </div>
         </div>
       </div>
+      </ErrorBoundary>
     </Layout>
   );
 };
