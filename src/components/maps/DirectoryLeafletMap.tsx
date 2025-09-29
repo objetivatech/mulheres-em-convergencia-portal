@@ -47,12 +47,15 @@ const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ c
 
 export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   businesses,
-  center = [-15.7942, -47.8822], // Centro do Brasil
-  zoom = 5,
+  center = [-30.0346, -51.2177], // Centro do RS
+  zoom = 10,
   height = '400px',
   showSearch = false,
   onBusinessClick
 }) => {
+  // Validar altura: se vier percentual, usar fallback
+  const safeHeight = height.includes('%') ? '60vh' : height;
+  
   const [mapCenter, setMapCenter] = useState<[number, number]>(center);
   const [mapZoom, setMapZoom] = useState(zoom);
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,7 +64,7 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
 
   // Filtrar negócios com coordenadas válidas
   const validBusinesses = businesses.filter(
-    business => business.latitude && business.longitude
+    business => Number.isFinite(business.latitude) && Number.isFinite(business.longitude)
   );
 
   // Se houver erro crítico, mostrar mensagem
@@ -184,7 +187,7 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
         </div>
       )}
       
-      <div style={{ height }} className="rounded-lg overflow-hidden border">
+      <div style={{ height: safeHeight }} className="rounded-lg overflow-hidden border">
         {validBusinesses.length === 0 ? (
           <div className="flex items-center justify-center h-full bg-muted/30">
             <p className="text-muted-foreground">Nenhum negócio com localização encontrado</p>

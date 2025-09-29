@@ -55,11 +55,18 @@ export const BusinessLeafletMap: React.FC<BusinessLeafletMapProps> = ({
       const geocoded = [];
       for (const area of serviceAreas) {
         try {
-          const coords = await geocodeLocation(`${area.area_name}, ${area.state}`, 'Brasil');
-          if (coords && Array.isArray(coords) && coords.length === 2) {
+          let locationQuery = area.area_name;
+          
+          // Se for bairro e tiver cidade, melhorar precisão
+          if (area.area_type === 'neighborhood' && area.city) {
+            locationQuery = `${area.area_name} - ${area.city}`;
+          }
+          
+          const coords = await geocodeLocation(locationQuery, area.state);
+          if (coords && coords.latitude && coords.longitude) {
             geocoded.push({
               name: area.area_name,
-              coordinates: [coords[0], coords[1]] as [number, number]
+              coordinates: [coords.latitude, coords.longitude] as [number, number]
             });
           }
         } catch (error) {
@@ -79,10 +86,10 @@ export const BusinessLeafletMap: React.FC<BusinessLeafletMapProps> = ({
       setMapZoom(13);
     } else if (businessCity && businessState) {
       // Geocodificar a cidade do negócio
-      geocodeLocation(`${businessCity}, ${businessState}`, 'Brasil')
+      geocodeLocation(businessCity, businessState)
         .then(coords => {
-          if (coords && Array.isArray(coords) && coords.length === 2) {
-            setMapCenter([coords[0], coords[1]] as [number, number]);
+          if (coords && coords.latitude && coords.longitude) {
+            setMapCenter([coords.latitude, coords.longitude]);
             setMapZoom(11);
           }
         })

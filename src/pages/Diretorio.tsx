@@ -183,7 +183,7 @@ const Diretorio = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setUserLocation([longitude, latitude]);
+          setUserLocation([latitude, longitude]);
           // Auto-ativar modo mapa quando localização for obtida
           if (viewMode !== 'map') {
             setViewMode('map');
@@ -646,7 +646,7 @@ const Diretorio = () => {
                     </div>
                   )}
 
-                  {viewMode === 'map' && filteredBusinesses.length > 0 && (
+                  {viewMode === 'map' && (
                     <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
                       <SafeLeafletMap
                         businesses={filteredBusinesses.map(business => ({
@@ -658,9 +658,9 @@ const Diretorio = () => {
                           city: business.city,
                           state: business.state
                         }))}
-                        center={userLocation || [-51.2177, -30.0346]}
-                        zoom={userLocation ? 12 : 6}
-                        height="100%"
+                        center={userLocation || [-30.0346, -51.2177]}
+                        zoom={userLocation ? 12 : 10}
+                        height="60vh"
                         showSearch={true}
                         onBusinessClick={(businessId) => {
                           const business = filteredBusinesses.find(b => b.id === businessId);
