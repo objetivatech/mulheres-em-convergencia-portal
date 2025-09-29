@@ -590,8 +590,8 @@ const DiretorioEmpresa = () => {
                       businessName={business.name}
                       businessCity={business.city}
                       businessState={business.state}
-                      latitude={business.latitude}
-                      longitude={business.longitude}
+                      latitude={typeof business.latitude === 'number' ? business.latitude : undefined}
+                      longitude={typeof business.longitude === 'number' ? business.longitude : undefined}
                     />
                   </div>
                 </CardContent>

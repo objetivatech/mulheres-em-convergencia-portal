@@ -3,9 +3,14 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
 
-const DirectoryLeafletMap = React.lazy(() => import('./maps/DirectoryLeafletMap').then(module => ({
-  default: module.DirectoryLeafletMap
-})));
+const DirectoryLeafletMap = React.lazy(() =>
+  import('./maps/DirectoryLeafletMap')
+    .then(module => ({ default: module.DirectoryLeafletMap }))
+    .catch((e) => {
+      console.error('Falha ao carregar DirectoryLeafletMap', e);
+      throw e;
+    })
+);
 
 interface SafeLeafletMapProps {
   businesses: Array<{

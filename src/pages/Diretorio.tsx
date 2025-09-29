@@ -168,7 +168,7 @@ const Diretorio = () => {
     let matchesProximity = true;
     if (userLocation && business.latitude && business.longitude) {
       const distance = calculateDistance(
-        userLocation[1], userLocation[0],
+        userLocation[0], userLocation[1],
         business.latitude, business.longitude
       );
       matchesProximity = distance <= nearbyRadius;
@@ -628,63 +628,51 @@ const Diretorio = () => {
                 </div>
               )}
 
-              {!loading && filteredBusinesses.length > 0 && (
-                <>
-                  {viewMode === 'grid' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredBusinesses.map(business => (
-                        <BusinessCard key={business.id} business={business} />
-                      ))}
-                    </div>
-                  )}
+{viewMode === 'map' && (
+  <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
+    <SafeLeafletMap
+      businesses={filteredBusinesses.map(business => ({
+        id: business.id,
+        name: business.name,
+        latitude: business.latitude,
+        longitude: business.longitude,
+        category: business.category,
+        city: business.city,
+        state: business.state
+      }))}
+      center={userLocation || [-30.0346, -51.2177]}
+      zoom={userLocation ? 12 : 10}
+      height="60vh"
+      showSearch={true}
+      onBusinessClick={(businessId) => {
+        const business = filteredBusinesses.find(b => b.id === businessId);
+        if (business) {
+          navigate(`/diretorio/${business.slug}`);
+        }
+      }}
+    />
+  </div>
+)}
 
-                  {viewMode === 'list' && (
-                    <div className="space-y-4">
-                      {filteredBusinesses.map(business => (
-                        <BusinessListItem key={business.id} business={business} />
-                      ))}
-                    </div>
-                  )}
+{viewMode !== 'map' && !loading && filteredBusinesses.length > 0 && (
+  <>
+    {viewMode === 'grid' && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBusinesses.map(business => (
+          <BusinessCard key={business.id} business={business} />
+        ))}
+      </div>
+    )}
 
-                  {viewMode === 'map' && (
-                    <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg overflow-hidden border shadow-lg">
-                      <SafeLeafletMap
-                        businesses={filteredBusinesses.map(business => ({
-                          id: business.id,
-                          name: business.name,
-                          latitude: business.latitude,
-                          longitude: business.longitude,
-                          category: business.category,
-                          city: business.city,
-                          state: business.state
-                        }))}
-                        center={userLocation || [-30.0346, -51.2177]}
-                        zoom={userLocation ? 12 : 10}
-                        height="60vh"
-                        showSearch={true}
-                        onBusinessClick={(businessId) => {
-                          const business = filteredBusinesses.find(b => b.id === businessId);
-                          if (business) {
-                            navigate(`/diretorio/${business.slug}`);
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {viewMode === 'map' && filteredBusinesses.length === 0 && !loading && (
-                    <div className="min-h-[60vh] lg:min-h-[70vh] rounded-lg border shadow-lg flex items-center justify-center bg-muted/10">
-                      <div className="text-center">
-                        <MapIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">Nenhuma empresa no mapa</h3>
-                        <p className="text-muted-foreground">
-                          Tente ajustar os filtros para ver empresas no mapa
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+    {viewMode === 'list' && (
+      <div className="space-y-4">
+        {filteredBusinesses.map(business => (
+          <BusinessListItem key={business.id} business={business} />
+        ))}
+      </div>
+    )}
+  </>
+)}
             </div>
           </div>
         </div>
