@@ -1,16 +1,8 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
-
-const DirectoryLeafletMap = React.lazy(() =>
-  import('./maps/DirectoryLeafletMap')
-    .then(module => ({ default: module.DirectoryLeafletMap }))
-    .catch((e) => {
-      console.error('Falha ao carregar DirectoryLeafletMap', e);
-      throw e;
-    })
-);
+import { DirectoryLeafletMap } from './maps/DirectoryLeafletMap';
 
 interface SafeLeafletMapProps {
   businesses: Array<{
@@ -43,9 +35,7 @@ const MapFallback = ({ height }: { height?: string }) => (
 export const SafeLeafletMap: React.FC<SafeLeafletMapProps> = (props) => {
   return (
     <ErrorBoundary fallback={<MapFallback height={props.height} />}>
-      <Suspense fallback={<MapFallback height={props.height} />}>
-        <DirectoryLeafletMap {...props} />
-      </Suspense>
+      <DirectoryLeafletMap {...props} />
     </ErrorBoundary>
   );
 };
