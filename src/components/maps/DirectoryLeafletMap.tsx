@@ -1,21 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import * as L from 'leaflet';
+import L from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Navigation, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import 'leaflet/dist/leaflet.css';
-
-// Fix para ícones padrão do Leaflet (com guarda)
-if ((L as any).Icon?.Default && typeof (L as any).Icon.Default.mergeOptions === 'function') {
-  delete ((L as any).Icon.Default.prototype as any)._getIconUrl;
-  (L as any).Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  });
-}
 
 interface Business {
   id: string;
@@ -169,7 +159,7 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
               placeholder="Buscar cidade ou endereço..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchByLocation()}
+              onKeyDown={(e) => e.key === 'Enter' && searchByLocation()}
             />
           </div>
           <Button 
