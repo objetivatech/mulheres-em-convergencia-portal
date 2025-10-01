@@ -640,7 +640,7 @@ const Diretorio = () => {
         city: business.city,
         state: business.state
       }))}
-      center={userLocation || [-30.0346, -51.2177]}
+      center={userLocation ? [userLocation[1], userLocation[0]] : [-51.2177, -30.0346]}
       zoom={userLocation ? 12 : 10}
       height="60vh"
       showSearch={true}

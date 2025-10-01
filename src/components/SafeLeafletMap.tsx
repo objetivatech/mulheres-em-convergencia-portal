@@ -2,7 +2,7 @@ import React from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
-import { DirectoryLeafletMap } from './maps/DirectoryLeafletMap';
+import Map from '@/components/ui/map';
 
 interface SafeLeafletMapProps {
   businesses: Array<{
@@ -35,7 +35,7 @@ const MapFallback = ({ height }: { height?: string }) => (
 export const SafeLeafletMap: React.FC<SafeLeafletMapProps> = (props) => {
   return (
     <ErrorBoundary fallback={<MapFallback height={props.height} />}>
-      <DirectoryLeafletMap {...props} />
+      <Map {...props} />
     </ErrorBoundary>
   );
 };
