@@ -12,3 +12,7 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Sitemaps
+Sitemap: https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap
+Sitemap: https://mulheresemconvergencia.com.br/sitemap.xml

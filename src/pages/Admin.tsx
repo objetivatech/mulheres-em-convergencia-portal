@@ -254,15 +254,15 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/rss.xml`, '_blank')}
-                        >
+                          onClick={() => window.open('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss', '_blank')}
+                         >
                           Visualizar RSS
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/rss.xml`)}
-                        >
+                          onClick={() => navigator.clipboard.writeText('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss')}
+                         >
                           Copiar URL
                         </Button>
                       </div>
@@ -277,15 +277,15 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/sitemap.xml`, '_blank')}
-                        >
+                          onClick={() => window.open('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap', '_blank')}
+                         >
                           Visualizar Sitemap
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/sitemap.xml`)}
-                        >
+                          onClick={() => navigator.clipboard.writeText('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap')}
+                         >
                           Copiar URL
                         </Button>
                       </div>
