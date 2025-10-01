@@ -254,15 +254,15 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss', '_blank')}
-                         >
+                          onClick={() => window.open('/rss.xml', '_blank')}
+                        >
                           Visualizar RSS
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss')}
-                         >
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/rss.xml`)}
+                        >
                           Copiar URL
                         </Button>
                       </div>
@@ -277,15 +277,15 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap', '_blank')}
-                         >
+                          onClick={() => window.open('/sitemap.xml', '_blank')}
+                        >
                           Visualizar Sitemap
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText('https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap')}
-                         >
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/sitemap.xml`)}
+                        >
                           Copiar URL
                         </Button>
                       </div>
