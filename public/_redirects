@@ -1,0 +1,3 @@
+# Redirect RSS and Sitemap to Edge Functions
+/rss.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss 200
+/sitemap.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap 200

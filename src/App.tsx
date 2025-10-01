@@ -36,8 +36,6 @@ import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
-import { RssHandler } from "@/components/rss/RssHandler";
-import { SitemapHandler } from "@/components/sitemap/SitemapHandler";
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -192,10 +190,6 @@ function AppContent() {
               <PremiumDashboard />
             </ProtectedRoute>
           } />
-          
-          {/* Public RSS and Sitemap routes */}
-          <Route path="/rss.xml" element={<RssHandler />} />
-          <Route path="/sitemap.xml" element={<SitemapHandler />} />
           
           {/* Public Page Routes */}
           <Route path="/page/:slug" element={<PublicPage />} />
