@@ -27,11 +27,27 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
   const editorId = 'tinymce-editor-' + Math.random().toString(36).substr(2, 9);
 
   useEffect(() => {
-    // Load TinyMCE script dynamically  
+    // Load TinyMCE script dynamically with CDN fallback
     if (!window.tinymce) {
       const script = document.createElement('script');
-      script.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
+      
+      // Try CDN first for reliability
+      script.src = 'https://cdn.jsdelivr.net/npm/tinymce@8.1.2/tinymce.min.js';
+      
       script.onload = () => initTinyMCE();
+      
+      // Fallback to self-hosted if CDN fails
+      script.onerror = () => {
+        console.warn('CDN TinyMCE failed, trying self-hosted...');
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
+        fallbackScript.onload = () => initTinyMCE();
+        fallbackScript.onerror = () => {
+          console.error('TinyMCE failed to load from all sources');
+        };
+        document.head.appendChild(fallbackScript);
+      };
+      
       document.head.appendChild(script);
     } else {
       initTinyMCE();

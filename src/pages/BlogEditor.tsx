@@ -349,7 +349,8 @@ export default function BlogEditor() {
                     <FormItem>
                       <FormLabel>Conteúdo</FormLabel>
                       <FormControl>
-                     <TinyMCESelfHosted
+                      <TinyMCESelfHosted
+                       key={id || 'new'}
                        value={field.value}
                        onChange={field.onChange}
                        height={500}
