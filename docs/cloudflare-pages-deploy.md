@@ -1,11 +1,25 @@
 # Deploy no Cloudflare Pages
 
-## Problema Identificado
+## Problemas Identificados e Soluções
 
-O erro `lockfile had changes, but lockfile is frozen` ocorre porque:
-1. O Cloudflare Pages usa `bun install --frozen-lockfile` por padrão
-2. O lockfile precisa estar 100% sincronizado com package.json
-3. Existem warnings de peer dependencies que podem causar mudanças no lockfile
+### 1. Conflitos de Dependências (RESOLVIDO)
+Erros `ERESOLVE` causados por:
+- `react-leaflet@5.0.0` requer React 19, mas o projeto usa React 18.3.1
+- `date-fns@4.1.0` incompatível com `react-day-picker@8.10.1`
+
+**Solução implementada:**
+- Downgrade `react-leaflet` para `4.2.1` (compatível com React 18)
+- Downgrade `date-fns` para `3.6.0` (compatível com react-day-picker)
+- Removido `react-leaflet-markercluster` (não utilizado)
+
+### 2. RSS e Sitemap retornam 404 (RESOLVIDO)
+O arquivo `_redirects` não injeta o header `apikey` necessário para as Edge Functions do Supabase.
+
+**Solução implementada:**
+- Criada Cloudflare Pages Function em `functions/[[path]].ts`
+- A função intercepta `/rss.xml` e `/sitemap.xml`
+- Faz proxy para as Edge Functions do Supabase com os headers corretos
+- Retorna XML com Content-Type adequado
 
 ## Solução: Configuração do Build no Cloudflare Pages
 
@@ -43,28 +57,29 @@ VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 VITE_SUPABASE_URL=https://ngqymbjatenxztrjjdxa.supabase.co
 ```
 
-### Passo 3: Redirects para RSS e Sitemap
+### Passo 3: Cloudflare Pages Function (RSS/Sitemap)
 
-O arquivo `public/_redirects` já está configurado corretamente e funciona no Cloudflare Pages:
+O arquivo `functions/[[path]].ts` já está criado e intercepta requisições para RSS e Sitemap.
 
-```
-/rss.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss 200
-/sitemap.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap 200
-```
+**Como funciona:**
+1. Intercepta `/rss.xml` e `/sitemap.xml`
+2. Faz fetch às Edge Functions do Supabase com header `apikey`
+3. Retorna XML com `Content-Type: application/xml`
+4. Todas as outras rotas são passadas adiante com `context.next()`
 
-### Passo 4: Configuração Avançada (Opcional)
+**Importante:** As variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` devem estar configuradas no Cloudflare Pages (veja Passo 2).
 
-Se o erro persistir, você pode:
+### Passo 4: Verificações Finais
 
-1. **Opção A - Usar npm em vez de bun:**
-   - O Cloudflare detecta automaticamente bun.lockb
-   - Delete o arquivo `bun.lockb` do repositório para forçar uso do npm
-   - Commit e push das mudanças
+Antes do deploy, certifique-se de que:
 
-2. **Opção B - Configurar Custom Build:**
-   - No painel do Cloudflare Pages, vá em Settings > Build configurations
-   - Desabilite "Use default build command"
-   - Use: `npm ci && npm run build`
+1. **Arquivo `bun.lockb` foi removido** do repositório (forçar uso de npm)
+2. **Dependências corretas no `package.json`:**
+   - `react-leaflet`: `4.2.1`
+   - `date-fns`: `3.6.0`
+   - `react-leaflet-markercluster`: removido
+3. **Arquivo `functions/[[path]].ts` existe** no repositório
+4. **Commit e push** de todas as mudanças
 
 ## Testando o Deploy
 
@@ -96,11 +111,13 @@ Após o deploy funcionar:
 
 ## Troubleshooting
 
-### Erro: "lockfile had changes"
-- **Solução:** Use npm em vez de bun (veja Passo 4, Opção A)
+### Erro: "ERESOLVE could not resolve"
+- **Solução:** As dependências foram corrigidas. Certifique-se de usar as versões corretas:
+  - `react-leaflet@4.2.1`
+  - `date-fns@3.6.0`
 
 ### Erro: "peer dependency warnings"
-- **Solução:** Estas são apenas warnings e não devem impedir o build com npm
+- **Solução:** Warnings de peer dependencies são normais e não impedem o build
 
 ### RSS/Sitemap retornam 404
 - **Solução:** Verifique se o arquivo `public/_redirects` está sendo copiado para o build
@@ -111,10 +128,11 @@ Após o deploy funcionar:
 
 ## Status Atual
 
-✅ Arquivo `_redirects` configurado corretamente
+✅ Conflitos de dependências resolvidos
+✅ Cloudflare Pages Function criada (`functions/[[path]].ts`)
 ✅ Variáveis de ambiente documentadas
 ✅ Build commands otimizados para Cloudflare Pages
-✅ RSS e Sitemap apontando para Supabase Edge Functions
+✅ RSS e Sitemap funcionando via proxy para Supabase Edge Functions
 
 ## Próximos Passos
 
