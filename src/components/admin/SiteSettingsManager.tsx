@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Save, Settings } from 'lucide-react';
+import { Loader2, Save, Settings, Plus, X } from 'lucide-react';
 
 interface SiteSetting {
   id: string;
@@ -64,6 +64,43 @@ export const SiteSettingsManager: React.FC = () => {
       ...prev,
       [key]: value
     }));
+  };
+
+  const addSocialNetwork = () => {
+    const newKey = prompt('Nome da rede social (ex: tiktok, youtube, twitter):');
+    if (!newKey || !newKey.trim()) return;
+
+    const sanitizedKey = newKey.toLowerCase().trim().replace(/\s+/g, '_');
+    
+    if (formData.social_links && formData.social_links[sanitizedKey] !== undefined) {
+      toast.error('Esta rede social já existe');
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      social_links: {
+        ...prev.social_links,
+        [sanitizedKey]: ''
+      }
+    }));
+    
+    toast.success(`${newKey} adicionado com sucesso!`);
+  };
+
+  const removeSocialNetwork = (key: string) => {
+    if (!confirm(`Tem certeza que deseja remover ${key}?`)) return;
+    
+    setFormData(prev => {
+      const newSocialLinks = { ...prev.social_links };
+      delete newSocialLinks[key];
+      return {
+        ...prev,
+        social_links: newSocialLinks
+      };
+    });
+    
+    toast.success(`${key} removido com sucesso!`);
   };
 
   const handleSave = async () => {
@@ -140,49 +177,52 @@ export const SiteSettingsManager: React.FC = () => {
         );
       } else if (setting.setting_key === 'social_links') {
         return (
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor={`${setting.setting_key}_instagram`}>Instagram</Label>
-              <Input
-                id={`${setting.setting_key}_instagram`}
-                type="url"
-                value={value.instagram || ''}
-                onChange={(e) => handleInputChange(
-                  setting.setting_key,
-                  { ...value, instagram: e.target.value },
-                  setting.setting_type
-                )}
-                placeholder="https://instagram.com/usuario"
-              />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base">Redes Sociais</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSocialNetwork}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Rede
+              </Button>
             </div>
-            <div>
-              <Label htmlFor={`${setting.setting_key}_facebook`}>Facebook</Label>
-              <Input
-                id={`${setting.setting_key}_facebook`}
-                type="url"
-                value={value.facebook || ''}
-                onChange={(e) => handleInputChange(
-                  setting.setting_key,
-                  { ...value, facebook: e.target.value },
-                  setting.setting_type
-                )}
-                placeholder="https://facebook.com/pagina"
-              />
+            <div className="space-y-3">
+              {Object.entries(value || {}).map(([key, url]) => (
+                <div key={key} className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <Label className="capitalize">{key.replace(/_/g, ' ')}</Label>
+                    <Input
+                      type="url"
+                      value={(url as string) || ''}
+                      onChange={(e) => handleInputChange(
+                        setting.setting_key,
+                        { ...value, [key]: e.target.value },
+                        setting.setting_type
+                      )}
+                      placeholder={`https://${key}.com/...`}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSocialNetwork(key)}
+                    className="mb-0.5"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
-            <div>
-              <Label htmlFor={`${setting.setting_key}_linkedin`}>LinkedIn</Label>
-              <Input
-                id={`${setting.setting_key}_linkedin`}
-                type="url"
-                value={value.linkedin || ''}
-                onChange={(e) => handleInputChange(
-                  setting.setting_key,
-                  { ...value, linkedin: e.target.value },
-                  setting.setting_type
-                )}
-                placeholder="https://linkedin.com/company/empresa"
-              />
-            </div>
+            {(!value || Object.keys(value).length === 0) && (
+              <div className="text-center py-4 text-muted-foreground text-sm">
+                Nenhuma rede social configurada. Clique em "Adicionar Rede" para começar.
+              </div>
+            )}
           </div>
         );
       }

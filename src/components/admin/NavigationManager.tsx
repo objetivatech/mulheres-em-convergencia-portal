@@ -7,6 +7,23 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Loader2, Save, Plus, Trash2, Menu, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface MenuItem {
   label: string;
@@ -29,6 +46,69 @@ interface NavigationMenu {
   menu_items: MenuItem[];
   active: boolean;
 }
+
+interface SortableItemProps {
+  id: number;
+  item: MenuItem;
+  menuId: string;
+  index: number;
+  onUpdate: (updates: Partial<MenuItem>) => void;
+  onRemove: () => void;
+}
+
+const SortableItem: React.FC<SortableItemProps> = ({ id, item, onUpdate, onRemove }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center space-x-2 p-3 border rounded-lg bg-card"
+    >
+      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+      
+      <div className="flex-1 grid grid-cols-2 gap-2">
+        <Input
+          value={item.label}
+          onChange={(e) => onUpdate({ label: e.target.value })}
+          placeholder="Rótulo"
+        />
+        <Input
+          value={item.href}
+          onChange={(e) => onUpdate({ href: e.target.value })}
+          placeholder="URL"
+        />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Switch
+          checked={item.active}
+          onCheckedChange={(checked) => onUpdate({ active: checked })}
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onRemove}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export const NavigationManager: React.FC = () => {
   const [menus, setMenus] = useState<NavigationMenu[]>([]);
@@ -129,6 +209,31 @@ export const NavigationManager: React.FC = () => {
     updateMenu(menuId, { menu_items: newItems });
   };
 
+  const handleDragEnd = (menuId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const menu = menus.find(m => m.id === menuId);
+    if (!menu) return;
+
+    const oldIndex = menu.menu_items.findIndex((_, idx) => idx === active.id);
+    const newIndex = menu.menu_items.findIndex((_, idx) => idx === over.id);
+    
+    updateMenu(menuId, {
+      menu_items: arrayMove(menu.menu_items, oldIndex, newIndex)
+    });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -214,45 +319,30 @@ export const NavigationManager: React.FC = () => {
                   </Button>
                 </div>
 
-                <div className="space-y-2">
-                  {menu.menu_items.map((item, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center space-x-2 p-3 border rounded-lg"
-                    >
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      
-                      <div className="flex-1 grid grid-cols-2 gap-2">
-                        <Input
-                          value={item.label}
-                          onChange={(e) => updateMenuItem(menu.id, index, { label: e.target.value })}
-                          placeholder="Rótulo"
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => handleDragEnd(menu.id, event)}
+                >
+                  <SortableContext
+                    items={menu.menu_items.map((_, idx) => idx)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {menu.menu_items.map((item, index) => (
+                        <SortableItem
+                          key={index}
+                          id={index}
+                          item={item}
+                          menuId={menu.id}
+                          index={index}
+                          onUpdate={(updates) => updateMenuItem(menu.id, index, updates)}
+                          onRemove={() => removeMenuItem(menu.id, index)}
                         />
-                        <Input
-                          value={item.href}
-                          onChange={(e) => updateMenuItem(menu.id, index, { href: e.target.value })}
-                          placeholder="URL"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={item.active}
-                          onCheckedChange={(checked) => 
-                            updateMenuItem(menu.id, index, { active: checked })
-                          }
-                        />
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeMenuItem(menu.id, index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
 
                 {menu.menu_items.length === 0 && (
                   <div className="text-center py-4 text-muted-foreground">
