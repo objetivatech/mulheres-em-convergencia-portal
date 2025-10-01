@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+// react-leaflet será carregado dinamicamente
 import L from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,16 +26,7 @@ interface DirectoryLeafletMapProps {
   onBusinessClick?: (businessId: string) => void;
 }
 
-// Componente para centralizar o mapa
-const MapController: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
-  
-  return null;
-};
+// Removido MapController (uso substituído por key no MapContainer)
 
 export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   businesses,
@@ -52,7 +43,17 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   const [mapZoom, setMapZoom] = useState(zoom);
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+const [mapError, setMapError] = useState<string | null>(null);
+  // Carregamento dinâmico do react-leaflet
+  const [RL, setRL] = useState<any>(null);
+  useEffect(() => {
+    import('react-leaflet')
+      .then((mod) => setRL(mod))
+      .catch((err) => {
+        console.error('Falha ao carregar react-leaflet:', err);
+        setMapError('Falha ao carregar biblioteca de mapa');
+      });
+  }, []);
 
   // Filtrar negócios com coordenadas válidas
   const validBusinesses = businesses.filter(
@@ -180,66 +181,71 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
       )}
       
       <div style={{ height: safeHeight }} className="rounded-lg overflow-hidden border relative">
-        <MapContainer
-          center={mapCenter}
-          zoom={mapZoom}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-          whenReady={() => {
-            console.log('Mapa Leaflet criado:', { validBusinesses: validBusinesses.length, center: mapCenter, zoom: mapZoom });
-          }}
-        >
-          <MapController center={mapCenter} zoom={mapZoom} />
-          
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          {/* Marker para localização do usuário */}
-          {userLocation && (
-            <Marker position={userLocation} icon={userIcon}>
-              <Popup>
-                <div className="text-sm">
-                  <strong>Sua localização</strong>
-                </div>
-              </Popup>
-            </Marker>
-          )}
-          
-          {/* Markers para negócios */}
-          {validBusinesses.map((business) => (
-            <Marker
-              key={business.id}
-              position={[business.latitude!, business.longitude!]}
-              icon={businessIcon}
-            >
-              <Popup>
-                <div className="space-y-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{business.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {business.category}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      <MapPin className="inline h-3 w-3 mr-1" />
-                      {business.city}, {business.state}
-                    </p>
+{RL ? (
+          <RL.MapContainer
+            key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
+            center={mapCenter}
+            zoom={mapZoom}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+            whenReady={() => {
+              console.log('Mapa Leaflet criado:', { validBusinesses: validBusinesses.length, center: mapCenter, zoom: mapZoom });
+            }}
+          >
+            <RL.TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* Marker para localização do usuário */}
+            {userLocation && (
+              <RL.Marker position={userLocation} icon={userIcon}>
+                <RL.Popup>
+                  <div className="text-sm">
+                    <strong>Sua localização</strong>
                   </div>
-                  {onBusinessClick && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => onBusinessClick(business.id)}
-                      className="text-xs"
-                    >
-                      Ver Perfil
-                    </Button>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+                </RL.Popup>
+              </RL.Marker>
+            )}
+            
+            {/* Markers para negócios */}
+            {validBusinesses.map((business) => (
+              <RL.Marker
+                key={business.id}
+                position={[business.latitude!, business.longitude!]}
+                icon={businessIcon}
+              >
+                <RL.Popup>
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-semibold text-sm">{business.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {business.category}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <MapPin className="inline h-3 w-3 mr-1" />
+                        {business.city}, {business.state}
+                      </p>
+                    </div>
+                    {onBusinessClick && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => onBusinessClick(business.id)}
+                        className="text-xs"
+                      >
+                        Ver Perfil
+                      </Button>
+                    )}
+                  </div>
+                </RL.Popup>
+              </RL.Marker>
+            ))}
+          </RL.MapContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+            Carregando mapa...
+          </div>
+        )}
         
         {/* Overlay message quando não há negócios */}
         {validBusinesses.length === 0 && (
