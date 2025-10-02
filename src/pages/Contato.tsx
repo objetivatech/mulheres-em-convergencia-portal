@@ -12,13 +12,26 @@ import { toast } from 'sonner';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { getSocialIcon } from '@/lib/socialIconMap';
 
 const Contato = () => {
   const { pageContent, loading: pageLoading } = usePageBuilder('contato');
+  const { settings } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hp, setHp] = useState('');
   const [formTs] = useState(() => Date.now());
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Processa links de redes sociais das configurações
+  const socialLinks = settings?.social_links 
+    ? Object.entries(settings.social_links)
+        .filter(([_, url]) => url && url.trim() !== '')
+        .map(([network, url]) => ({
+          name: network.charAt(0).toUpperCase() + network.slice(1),
+          url: url as string,
+        }))
+    : [];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -225,6 +238,31 @@ const Contato = () => {
                         </p>
                       </div>
                     </div>
+
+                    {/* Redes Sociais */}
+                    {socialLinks.length > 0 && (
+                      <div className="pt-4 border-t border-border">
+                        <h3 className="font-semibold text-foreground mb-3">Redes Sociais</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {socialLinks.map((social) => {
+                            const Icon = getSocialIcon(social.name);
+                            return (
+                              <a
+                                key={social.name}
+                                href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10 hover:border-primary/30 transition-all duration-200 text-muted-foreground hover:text-primary"
+                                aria-label={`Visite nosso ${social.name}`}
+                              >
+                                <Icon size={18} />
+                                <span className="text-sm font-medium">{social.name}</span>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
