@@ -27,25 +27,41 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
   const editorId = 'tinymce-editor-' + Math.random().toString(36).substr(2, 9);
 
   useEffect(() => {
-    // Load TinyMCE script dynamically with CDN fallback
+    let timeoutId: NodeJS.Timeout | null = null;
+    let cdnFailed = false;
+
+    // Load TinyMCE script dynamically with CDN first, then self-hosted fallback
     if (!window.tinymce) {
       const script = document.createElement('script');
       
-      // Try CDN first for reliability
+      // Try CDN first for reliability and speed
       script.src = 'https://cdn.jsdelivr.net/npm/tinymce@8.1.2/tinymce.min.js';
       
-      script.onload = () => initTinyMCE();
+      // Set timeout to fallback if CDN is slow
+      timeoutId = setTimeout(() => {
+        if (!window.tinymce && !cdnFailed) {
+          console.warn('CDN TinyMCE timeout, trying self-hosted...');
+          cdnFailed = true;
+          loadSelfHosted();
+        }
+      }, 5000);
+      
+      script.onload = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (!cdnFailed) {
+          console.log('TinyMCE loaded from CDN');
+          initTinyMCE();
+        }
+      };
       
       // Fallback to self-hosted if CDN fails
       script.onerror = () => {
-        console.warn('CDN TinyMCE failed, trying self-hosted...');
-        const fallbackScript = document.createElement('script');
-        fallbackScript.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
-        fallbackScript.onload = () => initTinyMCE();
-        fallbackScript.onerror = () => {
-          console.error('TinyMCE failed to load from all sources');
-        };
-        document.head.appendChild(fallbackScript);
+        if (timeoutId) clearTimeout(timeoutId);
+        if (!cdnFailed) {
+          console.warn('CDN TinyMCE failed, trying self-hosted...');
+          cdnFailed = true;
+          loadSelfHosted();
+        }
       };
       
       document.head.appendChild(script);
@@ -53,7 +69,25 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
       initTinyMCE();
     }
 
+    function loadSelfHosted() {
+      const fallbackScript = document.createElement('script');
+      fallbackScript.src = '/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js';
+      fallbackScript.onload = () => {
+        console.log('TinyMCE loaded from self-hosted');
+        // Set base_url for self-hosted plugins/skins resolution
+        if (window.tinymce) {
+          window.tinymce.baseURL = '/tinymce_8.1.2/tinymce';
+        }
+        initTinyMCE();
+      };
+      fallbackScript.onerror = () => {
+        console.error('TinyMCE failed to load from all sources');
+      };
+      document.head.appendChild(fallbackScript);
+    }
+
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       if (window.tinymce) {
         window.tinymce.remove(`#${editorId}`);
       }
@@ -96,6 +130,7 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
         });
       },
       init_instance_callback: (editor: any) => {
+        console.log('TinyMCE initialized successfully');
         // Set initial content when editor is ready
         if (value && value !== editor.getContent()) {
           editor.setContent(value);
@@ -138,10 +173,7 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
       branding: false,
       resize: true,
       statusbar: true,
-      elementpath: false,
-      content_css: false,
-      skin: false,
-      theme: 'silver'
+      elementpath: false
     });
   };
 

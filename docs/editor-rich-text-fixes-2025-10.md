@@ -28,10 +28,13 @@
 - Script retornava 404 e editor nunca inicializava
 
 **Solução:**
-- **Estratégia de carregamento com fallback em cascata**:
+- **Estratégia de carregamento com fallback em cascata + timeout**:
   1. **CDN primeiro** (jsDelivr): `https://cdn.jsdelivr.net/npm/tinymce@8.1.2/tinymce.min.js`
-  2. **Self-hosted fallback**: `/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js` (se CDN falhar)
+     - Timeout de **5 segundos** para não travar se CDN estiver lento
+  2. **Self-hosted fallback**: `/tinymce_8.1.2/tinymce/js/tinymce/tinymce.min.js` (se CDN falhar ou timeout)
+     - Configura `tinymce.baseURL = '/tinymce_8.1.2/tinymce'` para resolver plugins/skins
   3. **Textarea visível**: Já estava presente como último recurso
+- **Correção crítica de UI**: Removido `skin: false` e `theme: 'silver'` que causavam UI invisível em TinyMCE 8
 
 **Vantagens da abordagem CDN-first:**
 - ✅ Funciona imediatamente sem assets locais
@@ -39,6 +42,7 @@
 - ✅ Plugins carregam automaticamente do CDN
 - ✅ Compatível com Cloudflare Pages (sem restrições a CDNs externos)
 - ✅ Fallback local mantém redundância
+- ✅ Timeout garante que não trava se CDN estiver lento
 
 ### 3. Conteúdo Não Sincronizava em Posts Existentes
 **Sintoma:** Ao editar post existente, editor ficava vazio ou com conteúdo desatualizado
@@ -65,10 +69,12 @@ resolve: {
 ```
 
 ### src/components/blog/TinyMCESelfHosted.tsx
-- Carregamento CDN-first com fallback self-hosted
-- Mantém `skin: false` e `content_css: false` para reduzir dependências
+- Carregamento CDN-first com timeout de 5s e fallback self-hosted
+- **Removido** `skin: false` e `theme: 'silver'` (causavam UI invisível)
+- Configura `tinymce.baseURL` quando usa self-hosted para resolver plugins/skins
 - Upload de imagens via Supabase (`blog-images` bucket)
 - Sincronização bidirecional de conteúdo (prop → editor e editor → onChange)
+- Logs de debug para rastrear origem do carregamento (CDN vs self-hosted)
 
 ### src/pages/BlogEditor.tsx
 ```tsx
@@ -130,14 +136,23 @@ Se quiser usar 100% self-hosted (sem CDN):
 - Verificar permissões de upload (RLS policies)
 - Hook `useImageUpload` deve ter configuração correta de Storage
 
+### Dependências Removidas (Limpeza)
+- `@tinymce/tinymce-react` (não usado)
+- `react-quill` (não usado)
+- `react-trumbowyg` (não usado)
+
+Isso reduz o bundle size e elimina potenciais conflitos de versão.
+
 ## Status Final
 
 ✅ **React runtime estável** (dedupe configurado)  
-✅ **TinyMCE carrega via CDN** com fallback self-hosted  
+✅ **TinyMCE carrega via CDN** com fallback self-hosted e timeout  
+✅ **UI do editor visível** (skin padrão oxide carregando corretamente)  
 ✅ **Editor funcional** para criar e editar posts  
 ✅ **Conteúdo sincronizado** corretamente em edição  
 ✅ **Upload de imagens** integrado  
 ✅ **Compatível com Cloudflare Pages**  
+✅ **Dependências não utilizadas removidas**
 
 ## Testes Realizados
 
