@@ -145,6 +145,31 @@ serve(async (req) => {
           userId: subscription.user_id
         });
 
+        // Check if user has complimentary businesses - don't process payment for them
+        const { data: complimentaryBusinesses } = await supabaseClient
+          .from('businesses')
+          .select('id, name')
+          .eq('owner_id', subscription.user_id)
+          .eq('is_complimentary', true);
+
+        if (complimentaryBusinesses && complimentaryBusinesses.length > 0) {
+          logStep('User has complimentary businesses - skipping payment processing', {
+            userId: subscription.user_id,
+            complimentaryCount: complimentaryBusinesses.length
+          });
+          
+          await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
+          
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: "Payment skipped - user has complimentary businesses",
+            complimentaryBusinesses: complimentaryBusinesses.length
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+
         // Só atualizar se não estiver ativo
         if (subscription.status !== "active") {
           // Update subscription status to active

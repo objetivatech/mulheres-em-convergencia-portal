@@ -422,8 +422,40 @@ export const DashboardEmpresa = () => {
           </p>
         </div>
 
-        {/* Subscription Status */}
-        {userSubscription ? (
+        {/* Complimentary Status - Top Priority */}
+        {business?.is_complimentary ? (
+          <Card className="mb-6 border-l-4 border-l-purple-500 bg-purple-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Building2 className="h-5 w-5 text-purple-600" />
+                <span>Acesso Cortesia (Gratuito)</span>
+                <div className="flex items-center gap-1 text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  Cortesia Ativa
+                </div>
+              </CardTitle>
+              <CardDescription>
+                <div className="space-y-2">
+                  <p className="text-purple-700 font-medium">
+                    🎁 Seu negócio tem acesso cortesia permanente
+                  </p>
+                  <div className="text-sm text-purple-600 bg-purple-100 p-3 rounded border border-purple-200">
+                    <div className="font-medium mb-1">✨ Benefícios da Cortesia:</div>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Perfil permanentemente ativo no diretório</li>
+                      <li>• Sem cobranças ou renovações necessárias</li>
+                      <li>• Todos os recursos do plano básico incluídos</li>
+                      <li>• Visibilidade garantida para clientes</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💜 Este acesso foi oferecido pela administração como reconhecimento especial
+                  </p>
+                </div>
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : userSubscription ? (
           <Card className={`mb-6 border-l-4 ${
             userSubscription.status === 'active' ? 'border-l-green-500 bg-green-50/50' : 
             userSubscription.status === 'cancelled' ? 'border-l-orange-500 bg-orange-50/50' : 

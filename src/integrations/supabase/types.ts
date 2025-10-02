@@ -841,6 +841,47 @@ export type Database = {
           },
         ]
       }
+      complimentary_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          business_id: string
+          created_at: string | null
+          id: string
+          new_value: boolean
+          notes: string | null
+          previous_value: boolean
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          business_id: string
+          created_at?: string | null
+          id?: string
+          new_value: boolean
+          notes?: string | null
+          previous_value: boolean
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          new_value?: boolean
+          notes?: string | null
+          previous_value?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complimentary_audit_log_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           admin_notes: string | null
@@ -1677,6 +1718,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           auto_renew: boolean | null
@@ -1774,6 +1839,13 @@ export type Database = {
           user_uuid: string
         }
         Returns: undefined
+      }
+      add_user_role_secure: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: boolean
       }
       calculate_business_rating: {
         Args: { business_uuid: string }
@@ -2108,6 +2180,13 @@ export type Database = {
           id: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_blog_post_views: {
         Args: { p_slug: string }
         Returns: boolean
@@ -2155,6 +2234,13 @@ export type Database = {
           user_uuid: string
         }
         Returns: undefined
+      }
+      remove_user_role_secure: {
+        Args: {
+          old_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: boolean
       }
       renew_business_subscription: {
         Args: { business_uuid: string }
@@ -2255,6 +2341,13 @@ export type Database = {
       }
     }
     Enums: {
+      app_role:
+        | "admin"
+        | "blog_editor"
+        | "business_owner"
+        | "subscriber"
+        | "ambassador"
+        | "author"
       business_category:
         | "alimentacao"
         | "beleza"
@@ -2417,6 +2510,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "admin",
+        "blog_editor",
+        "business_owner",
+        "subscriber",
+        "ambassador",
+        "author",
+      ],
       business_category: [
         "alimentacao",
         "beleza",
