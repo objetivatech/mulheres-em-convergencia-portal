@@ -10,7 +10,8 @@ import { useRoles, UserRole, UserProfile } from '@/hooks/useRoles';
 import { useToast } from '@/hooks/use-toast';
 import { AddUserDialog } from './AddUserDialog';
 import { EditUserDialog } from './EditUserDialog';
-import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2 } from 'lucide-react';
+import { ComplimentaryBusinessManager } from './ComplimentaryBusinessManager';
+import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift } from 'lucide-react';
 
 const roleIcons: Record<UserRole, any> = {
   admin: Shield,
@@ -48,6 +49,8 @@ export const UserManagement = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [managingBusinessUser, setManagingBusinessUser] = useState<UserProfile | null>(null);
+  const [showBusinessManager, setShowBusinessManager] = useState(false);
   
   const { useUserProfiles, useAddRole, useRemoveRole, useDeleteUser, useToggleAdmin, useToggleBlogEditor } = useRoles();
   const { toast } = useToast();
@@ -150,6 +153,11 @@ export const UserManagement = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleManageBusinesses = (user: UserProfile) => {
+    setManagingBusinessUser(user);
+    setShowBusinessManager(true);
   };
 
   if (isLoading) {
@@ -339,13 +347,23 @@ export const UserManagement = () => {
                            {user.can_edit_blog ? 'Remover Editor' : 'Tornar Editor'}
                          </Button>
                         
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <UserPlus className="h-4 w-4 mr-1" />
-                              Gerenciar Roles
-                            </Button>
-                          </AlertDialogTrigger>
+                         {/* Manage Businesses Button */}
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleManageBusinesses(user)}
+                         >
+                           <Gift className="h-4 w-4 mr-1" />
+                           Gerenciar Negócios
+                         </Button>
+
+                         <AlertDialog>
+                           <AlertDialogTrigger asChild>
+                             <Button variant="outline" size="sm">
+                               <UserPlus className="h-4 w-4 mr-1" />
+                               Gerenciar Roles
+                             </Button>
+                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Gerenciar Roles - {user.full_name || user.email}</AlertDialogTitle>
@@ -449,6 +467,29 @@ export const UserManagement = () => {
           }
         }}
       />
+
+      {/* Business Manager Dialog */}
+      <AlertDialog open={showBusinessManager} onOpenChange={setShowBusinessManager}>
+        <AlertDialogContent className="max-w-4xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gerenciar Negócios e Cortesias</AlertDialogTitle>
+            <AlertDialogDescription>
+              Configure o acesso gratuito (cortesia) aos negócios de {managingBusinessUser?.full_name || managingBusinessUser?.email}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {managingBusinessUser && (
+            <ComplimentaryBusinessManager 
+              userId={managingBusinessUser.id} 
+              userName={managingBusinessUser.full_name || managingBusinessUser.email}
+            />
+          )}
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel>Fechar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

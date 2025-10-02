@@ -644,6 +644,7 @@ export type Database = {
           grace_period_end: string | null
           id: string
           instagram: string | null
+          is_complimentary: boolean
           last_payment_date: string | null
           latitude: number | null
           logo_url: string | null
@@ -685,6 +686,7 @@ export type Database = {
           grace_period_end?: string | null
           id?: string
           instagram?: string | null
+          is_complimentary?: boolean
           last_payment_date?: string | null
           latitude?: number | null
           logo_url?: string | null
@@ -726,6 +728,7 @@ export type Database = {
           grace_period_end?: string | null
           id?: string
           instagram?: string | null
+          is_complimentary?: boolean
           last_payment_date?: string | null
           latitude?: number | null
           logo_url?: string | null
@@ -2107,6 +2110,10 @@ export type Database = {
       }
       increment_blog_post_views: {
         Args: { p_slug: string }
+        Returns: boolean
+      }
+      is_business_active: {
+        Args: { business_uuid: string }
         Returns: boolean
       }
       is_user_author: {
