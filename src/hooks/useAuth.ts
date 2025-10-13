@@ -11,9 +11,10 @@ interface AuthContextType {
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  isAdmin: boolean;
-  canEditBlog: boolean;
-  hasBusiness: boolean;
+  // null = not yet checked, false = checked and not admin, true = is admin
+  isAdmin: boolean | null;
+  canEditBlog: boolean | null;
+  hasBusiness: boolean | null;
   requestPasswordReset: (email: string) => Promise<{ error: any }>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
 }
@@ -32,9 +33,10 @@ export const useAuthProvider = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [canEditBlog, setCanEditBlog] = useState(false);
-  const [hasBusiness, setHasBusiness] = useState(false);
+  // Use null for permission states to distinguish "not checked" from "checked and false"
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [canEditBlog, setCanEditBlog] = useState<boolean | null>(null);
+  const [hasBusiness, setHasBusiness] = useState<boolean | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,7 +56,8 @@ export const useAuthProvider = () => {
 
         // Check user permissions when session changes
         if (session?.user) {
-          setTimeout(async () => {
+          // Execute immediately without setTimeout to prevent race condition
+          (async () => {
             try {
               const { data: adminStatus } = await supabase.rpc('get_current_user_admin_status');
               const { data: blogEditStatus } = await supabase.rpc('get_current_user_blog_edit_status');
@@ -67,8 +70,12 @@ export const useAuthProvider = () => {
               setHasBusiness(businessStatus || false);
             } catch (error) {
               console.error('Error checking user permissions:', error);
+              // On error, default to no permissions for security
+              setIsAdmin(false);
+              setCanEditBlog(false);
+              setHasBusiness(false);
             }
-          }, 0);
+          })();
         } else {
           setIsAdmin(false);
           setCanEditBlog(false);
