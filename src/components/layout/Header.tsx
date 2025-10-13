@@ -35,7 +35,7 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Navigation Menu */}
+          {/* Desktop Navigation Menu */}
           <nav className="hidden md:flex items-center space-x-6">
             {navigation.map((item) => (
               <Link
@@ -52,8 +52,16 @@ export function Header() {
             ))}
           </nav>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          {/* Right side: Mobile Menu Button + User Menu */}
+          <div className="flex items-center space-x-2">
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden p-2 hover:bg-accent rounded-md transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -120,6 +128,28 @@ export function Header() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <nav className="md:hidden py-4 border-t border-border animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col space-y-3">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-3 py-2 text-base font-medium rounded-md transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   );
