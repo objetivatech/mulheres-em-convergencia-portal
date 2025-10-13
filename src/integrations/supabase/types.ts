@@ -2357,7 +2357,6 @@ export type Database = {
           journey_stage: string
           metadata: Json
           stage_completed: boolean
-          updated_at: string
           user_id: string
         }[]
       }
