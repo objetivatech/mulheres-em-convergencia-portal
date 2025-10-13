@@ -179,7 +179,7 @@ export const DashboardEmpresa = () => {
           )
         `)
         .eq('user_id', user.id)
-        .in('status', ['active', 'cancelled'])
+        .in('status', ['active', 'cancelled', 'pending'])
         .order('created_at', { ascending: false })
         .maybeSingle();
 
@@ -314,7 +314,11 @@ export const DashboardEmpresa = () => {
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
         owner_id: user?.id,
-        subscription_active: !!userSubscription && userSubscription.status === 'active', // Only active if has subscription
+        subscription_active: (business?.is_complimentary === true) ||
+          (!!userSubscription && (
+            userSubscription.status === 'active' ||
+            (userSubscription.status === 'cancelled' && userSubscription.expires_at && new Date(userSubscription.expires_at) > new Date())
+          )), // Active if complimentary, active, or cancelled but not expired
         requires_subscription: true
       };
 
