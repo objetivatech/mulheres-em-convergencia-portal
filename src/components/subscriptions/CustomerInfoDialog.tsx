@@ -159,15 +159,28 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
   const validateCpf = async (cpf: string) => {
     if (!cpf || cpf.length < 11) return;
     
+    // Validar formato do CPF
+    const cpfNumbers = cpf.replace(/\D/g, '');
+    if (cpfNumbers.length !== 11) {
+      setCpfExists('CPF inválido: deve ter 11 dígitos');
+      return;
+    }
+
+    // Validar CPF repetido (111.111.111-11, etc)
+    if (/^(\d)\1{10}$/.test(cpfNumbers)) {
+      setCpfExists('CPF inválido: dígitos repetidos');
+      return;
+    }
+    
     const { data } = await supabase.rpc('get_user_by_cpf', { cpf_input: cpf });
     if (data && data.length > 0 && data[0].id !== user?.id) {
       setExistingUserData(data[0]);
       if (user) {
-        // For logged-in users, just show warning
-        setCpfExists(`CPF já cadastrado para ${data[0].full_name}`);
+        // For logged-in users, BLOCK submission
+        setCpfExists(`⛔ CPF já cadastrado para ${data[0].full_name}. Use outro CPF ou faça login na conta existente.`);
       } else {
-        // For non-logged users, offer to merge data
-        setCpfExists(`CPF já cadastrado para ${data[0].full_name}. Clique para mesclar dados.`);
+        // For non-logged users, offer login
+        setCpfExists(`CPF já cadastrado para ${data[0].full_name}. Por favor, faça login na conta existente.`);
       }
     } else {
       setCpfExists(null);
@@ -266,15 +279,16 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
   };
 
   const handleSubmit = async (values: CustomerFormData) => {
-    // Check for CPF conflicts if user is logged in
-    if (user && cpfExists && existingUserData) {
-      return; // Block submission if CPF belongs to another user
-    }
-
-    // For non-logged users with existing CPF, offer merge option
-    if (!user && cpfExists && existingUserData) {
-      setShowMergeDialog(true);
-      return;
+    // BLOQUEIO TOTAL: Se CPF existe para outro usuário, não permitir
+    if (cpfExists && existingUserData) {
+      toast({
+        title: 'CPF já cadastrado',
+        description: user 
+          ? 'Este CPF pertence a outro usuário. Use um CPF diferente ou entre em contato com o suporte.'
+          : 'Este CPF já está cadastrado. Por favor, faça login na conta existente.',
+        variant: 'destructive',
+      });
+      return; // Block submission completely
     }
 
     // Prepare signup data if user is not logged in

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -36,6 +37,7 @@ type UserSubscription = {
 const Planos: React.FC = () => {
   const { user, signUp } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { pageContent, loading: pageLoading } = usePageBuilder('planos');
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
@@ -187,7 +189,15 @@ const Planos: React.FC = () => {
           title: 'Redirecionando para pagamento',
           description: 'Você será redirecionado para completar o pagamento.',
         });
-        window.open(data.checkout_url, '_blank');
+        // Redirecionar para a URL do checkout ou página de confirmação
+        window.location.href = data.checkout_url;
+      } else if (data?.subscriptionId) {
+        // Se não gerou checkout (pode ser cortesia ou erro), ir para confirmação
+        toast({
+          title: 'Assinatura criada',
+          description: 'Redirecionando para confirmação...',
+        });
+        setTimeout(() => navigate('/confirmacao-pagamento'), 1000);
       } else {
         toast({ 
           title: 'Atenção', 

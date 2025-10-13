@@ -18,6 +18,7 @@ interface Business {
   subscription_renewal_date: string | null;
   is_complimentary: boolean;
   created_at: string;
+  owner_id?: string;
 }
 
 interface ComplimentaryBusinessManagerProps {
@@ -35,7 +36,7 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
     queryFn: async () => {
       const { data, error } = await supabase
         .from('businesses')
-        .select('id, name, category, subscription_active, subscription_renewal_date, is_complimentary, created_at')
+        .select('id, name, category, subscription_active, subscription_renewal_date, is_complimentary, created_at, owner_id')
         .eq('owner_id', userId)
         .order('created_at', { ascending: false });
 
@@ -47,6 +48,10 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
   // Mutation para alternar status de cortesia
   const toggleComplimentaryMutation = useMutation({
     mutationFn: async ({ businessId, newStatus }: { businessId: string; newStatus: boolean }) => {
+      const business = businesses.find(b => b.id === businessId);
+      if (!business) throw new Error('Negócio não encontrado');
+
+      // Atualizar status de cortesia
       const { error } = await supabase
         .from('businesses')
         .update({ 
@@ -57,6 +62,34 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
         .eq('id', businessId);
 
       if (error) throw error;
+
+      // Se ATIVOU cortesia, cancelar assinatura ativa do usuário (se existir)
+      if (newStatus && business.owner_id) {
+        const { data: activeSubscription } = await supabase
+          .from('user_subscriptions')
+          .select('id, external_subscription_id')
+          .eq('user_id', business.owner_id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (activeSubscription?.external_subscription_id) {
+          // Cancelar no banco (edge function subscription-management cuida do ASAAS)
+          const { error: cancelError } = await supabase.functions.invoke(
+            'subscription-management',
+            {
+              body: {
+                action: 'cancel',
+                subscriptionId: activeSubscription.id,
+              },
+            }
+          );
+
+          if (cancelError) {
+            console.error('Erro ao cancelar assinatura:', cancelError);
+            // Não bloquear a cortesia mesmo se falhar
+          }
+        }
+      }
     },
     onSuccess: (_, { businessId, newStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['user-businesses', userId] });

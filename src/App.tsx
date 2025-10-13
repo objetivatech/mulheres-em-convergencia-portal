@@ -36,6 +36,7 @@ import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
+import ConfirmacaoPagamento from './pages/ConfirmacaoPagamento';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -185,6 +186,11 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/planos" element={<Planos />} />
+          <Route path="/confirmacao-pagamento" element={
+            <ProtectedRoute>
+              <ConfirmacaoPagamento />
+            </ProtectedRoute>
+          } />
           <Route path="/premium" element={
             <ProtectedRoute>
               <PremiumDashboard />
