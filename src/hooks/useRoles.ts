@@ -2,14 +2,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+// Roles alinhados com app_role enum do banco de dados
 export type UserRole = 
   | 'admin' 
-  | 'associada' 
-  | 'cliente_loja' 
-  | 'assinante_newsletter' 
-  | 'embaixadora' 
-  | 'membro_comunidade' 
-  | 'autor';
+  | 'blog_editor'
+  | 'business_owner'    // Associada/Dona de Negócio
+  | 'customer'          // Cliente da Loja
+  | 'subscriber'        // Assinante Newsletter
+  | 'ambassador'        // Embaixadora
+  | 'community_member'  // Membro da Comunidade
+  | 'author';           // Autor
 
 export type UserType = 'individual' | 'business' | 'community';
 export type SubscriptionType = 'newsletter' | 'loja' | 'comunidade' | 'negocio' | 'embaixadora';
@@ -47,16 +49,20 @@ export const useRoles = () => {
     switch (dashboardType) {
       case 'admin':
         return hasRole('admin');
+      case 'business':
       case 'associada':
-        return hasRole('associada') || hasRole('admin');
+        return hasRole('business_owner') || hasRole('admin');
+      case 'customer':
       case 'cliente':
-        return hasRole('cliente_loja') || hasRole('admin');
+        return hasRole('customer') || hasRole('admin');
+      case 'ambassador':
       case 'embaixadora':
-        return hasRole('embaixadora') || hasRole('admin');
+        return hasRole('ambassador') || hasRole('admin');
+      case 'community':
       case 'comunidade':
-        return hasRole('membro_comunidade') || hasRole('admin');
+        return hasRole('community_member') || hasRole('admin');
       case 'blog':
-        return hasRole('autor') || hasRole('admin');
+        return hasRole('author') || hasRole('blog_editor') || hasRole('admin');
       default:
         return false;
     }
@@ -78,14 +84,14 @@ export const useRoles = () => {
     });
   };
 
-  // Adicionar role a usuário
+  // Adicionar role a usuário (usando função segura)
   const useAddRole = () => {
     return useMutation({
       mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
         if (!isAdmin) throw new Error('Acesso negado');
-        const { error } = await supabase.rpc('add_user_role', {
-          user_uuid: userId,
-          new_role: role as any
+        const { error } = await supabase.rpc('add_user_role_secure', {
+          target_user_id: userId,
+          new_role: role
         });
         if (error) throw error;
       },
@@ -95,14 +101,14 @@ export const useRoles = () => {
     });
   };
 
-  // Remover role de usuário
+  // Remover role de usuário (usando função segura)
   const useRemoveRole = () => {
     return useMutation({
       mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
         if (!isAdmin) throw new Error('Acesso negado');
-        const { error } = await supabase.rpc('remove_user_role', {
-          user_uuid: userId,
-          old_role: role as any
+        const { error } = await supabase.rpc('remove_user_role_secure', {
+          target_user_id: userId,
+          old_role: role
         });
         if (error) throw error;
       },
@@ -220,15 +226,19 @@ export const useRoles = () => {
     });
   };
 
-  // Remover usuário
+  // Remover usuário (via Edge Function com service_role)
   const useDeleteUser = () => {
     return useMutation({
       mutationFn: async (userId: string) => {
         if (!isAdmin) throw new Error('Acesso negado');
         
-        // Deletar usuário via auth (isso deletará automaticamente o perfil devido ao cascade)
-        const { error } = await supabase.auth.admin.deleteUser(userId);
+        // Chamar Edge Function com privilégios de service_role
+        const { data, error } = await supabase.functions.invoke('delete-user', {
+          body: { userId }
+        });
+        
         if (error) throw error;
+        if (!data?.success) throw new Error(data?.error || 'Erro ao deletar usuário');
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['user-profiles'] });

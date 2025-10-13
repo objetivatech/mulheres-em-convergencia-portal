@@ -16,32 +16,35 @@ import { Link } from 'react-router-dom';
 
 const roleIcons: Record<UserRole, any> = {
   admin: Shield,
-  associada: Store,
-  cliente_loja: User,
-  assinante_newsletter: Mail,
-  embaixadora: Crown,
-  membro_comunidade: Users,
-  autor: Edit3,
+  blog_editor: Edit3,
+  business_owner: Store,
+  customer: User,
+  subscriber: Mail,
+  ambassador: Crown,
+  community_member: Users,
+  author: Edit3,
 };
 
 const roleLabels: Record<UserRole, string> = {
   admin: 'Administrador',
-  associada: 'Associada',
-  cliente_loja: 'Cliente da Loja',
-  assinante_newsletter: 'Assinante Newsletter',
-  embaixadora: 'Embaixadora',
-  membro_comunidade: 'Membro da Comunidade',
-  autor: 'Autor',
+  blog_editor: 'Editor de Blog',
+  business_owner: 'Associada',
+  customer: 'Cliente da Loja',
+  subscriber: 'Assinante Newsletter',
+  ambassador: 'Embaixadora',
+  community_member: 'Membro da Comunidade',
+  author: 'Autor',
 };
 
 const roleColors: Record<UserRole, string> = {
   admin: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  associada: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  cliente_loja: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  assinante_newsletter: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  embaixadora: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  membro_comunidade: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-  autor: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  blog_editor: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  business_owner: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  customer: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  subscriber: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  ambassador: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  community_member: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  author: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
 };
 
 export const UserManagement = () => {
@@ -254,7 +257,7 @@ export const UserManagement = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">
-                  {users.filter(u => u.roles.includes('associada')).length}
+                  {users.filter(u => u.roles.includes('business_owner')).length}
                 </div>
                 <div className="text-sm text-muted-foreground">Associadas</div>
               </CardContent>
@@ -262,7 +265,7 @@ export const UserManagement = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">
-                  {users.filter(u => u.roles.includes('embaixadora')).length}
+                  {users.filter(u => u.roles.includes('ambassador')).length}
                 </div>
                 <div className="text-sm text-muted-foreground">Embaixadoras</div>
               </CardContent>
@@ -291,21 +294,6 @@ export const UserManagement = () => {
                     </TableCell>
                      <TableCell>
                        <div className="flex flex-wrap gap-1">
-                         {/* System Roles */}
-                         {user.is_admin && (
-                           <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                             <Shield className="h-3 w-3 mr-1" />
-                             Admin
-                           </Badge>
-                         )}
-                         {user.can_edit_blog && (
-                           <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                             <Edit3 className="h-3 w-3 mr-1" />
-                             Editor Blog
-                           </Badge>
-                         )}
-                         
-                         {/* Custom Roles */}
                          {user.roles.map((role) => {
                            const IconComp = roleIcons[role as UserRole] ?? Users;
                            const label = roleLabels[role as UserRole] ?? role;
@@ -317,7 +305,7 @@ export const UserManagement = () => {
                              </Badge>
                            );
                          })}
-                         {user.roles.length === 0 && !user.is_admin && !user.can_edit_blog && (
+                         {user.roles.length === 0 && (
                            <Badge variant="outline">Nenhum role</Badge>
                          )}
                        </div>
@@ -336,40 +324,10 @@ export const UserManagement = () => {
                            Editar
                          </Button>
 
-                         {/* Admin Toggle */}
-                         <Button
-                           variant={user.is_admin ? "destructive" : "default"}
-                           size="sm"
-                           onClick={() => handleToggleAdmin(user.id, user.is_admin, user.full_name || user.email)}
-                         >
-                           <Shield className="h-4 w-4 mr-1" />
-                           {user.is_admin ? 'Remover Admin' : 'Tornar Admin'}
-                         </Button>
-
-                         {/* Blog Editor Toggle */}
-                         <Button
-                           variant={user.can_edit_blog ? "secondary" : "outline"}
-                           size="sm"
-                           onClick={() => handleToggleBlogEditor(user.id, user.can_edit_blog, user.full_name || user.email)}
-                         >
-                           <Edit3 className="h-4 w-4 mr-1" />
-                           {user.can_edit_blog ? 'Remover Editor' : 'Tornar Editor'}
-                         </Button>
-                        
-                         {/* Manage Businesses Button */}
-                         <Button
-                           variant="outline"
-                           size="sm"
-                           onClick={() => handleManageBusinesses(user)}
-                         >
-                           <Gift className="h-4 w-4 mr-1" />
-                           Gerenciar Negócios
-                         </Button>
-
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
                              <Button variant="outline" size="sm">
-                               <UserPlus className="h-4 w-4 mr-1" />
+                               <Shield className="h-4 w-4 mr-1" />
                                Gerenciar Roles
                              </Button>
                            </AlertDialogTrigger>

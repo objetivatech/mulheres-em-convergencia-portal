@@ -12,22 +12,24 @@ import { CpfUserForm } from '@/components/cpf/CpfUserForm';
 
 const roleIcons: Record<UserRole, any> = {
   admin: Shield,
-  associada: Store,
-  cliente_loja: User,
-  assinante_newsletter: Mail,
-  embaixadora: Crown,
-  membro_comunidade: Users,
-  autor: Edit3,
+  blog_editor: Edit3,
+  business_owner: Store,
+  customer: User,
+  subscriber: Mail,
+  ambassador: Crown,
+  community_member: Users,
+  author: Edit3,
 };
 
 const roleLabels: Record<UserRole, string> = {
   admin: 'Administrador',
-  associada: 'Associada',
-  cliente_loja: 'Cliente da Loja',
-  assinante_newsletter: 'Assinante Newsletter',
-  embaixadora: 'Embaixadora',
-  membro_comunidade: 'Membro da Comunidade',
-  autor: 'Autor',
+  blog_editor: 'Editor de Blog',
+  business_owner: 'Associada',
+  customer: 'Cliente da Loja',
+  subscriber: 'Assinante Newsletter',
+  ambassador: 'Embaixadora',
+  community_member: 'Membro da Comunidade',
+  author: 'Autor',
 };
 
 interface AddUserDialogProps {

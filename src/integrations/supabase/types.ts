@@ -2410,15 +2410,11 @@ export type Database = {
       get_profiles_admin_safe: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
-          can_edit_blog: boolean
           created_at: string
           email: string
           full_name: string
           id: string
-          is_admin: boolean
-          newsletter_subscribed: boolean
-          roles: Database["public"]["Enums"]["user_role"][]
-          subscription_types: Database["public"]["Enums"]["subscription_type"][]
+          roles: Database["public"]["Enums"]["app_role"][]
         }[]
       }
       get_public_business_by_id: {
@@ -2741,6 +2737,8 @@ export type Database = {
         | "subscriber"
         | "ambassador"
         | "author"
+        | "customer"
+        | "community_member"
       business_category:
         | "alimentacao"
         | "beleza"
@@ -2910,6 +2908,8 @@ export const Constants = {
         "subscriber",
         "ambassador",
         "author",
+        "customer",
+        "community_member",
       ],
       business_category: [
         "alimentacao",

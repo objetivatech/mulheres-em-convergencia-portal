@@ -80,7 +80,7 @@ export const UserDashboard = () => {
       setUserSubscription(subscription);
 
       // Load business profile if user is an associate
-      if (hasRole('associada')) {
+      if (hasRole('business_owner')) {
         const { data: business } = await supabase
           .from('businesses')
           .select('id, name, subscription_active, views_count, clicks_count, contacts_count')
@@ -133,7 +133,7 @@ export const UserDashboard = () => {
   });
 
   // Business management (for associates)
-  if (hasRole('associada')) {
+  if (hasRole('business_owner')) {
     modules.push({
       category: 'Negócios',
       items: [
@@ -167,7 +167,7 @@ export const UserDashboard = () => {
   }
 
   // Client features
-  if (hasRole('cliente_loja')) {
+  if (hasRole('customer')) {
     modules.push({
       category: 'Loja',
       items: [
@@ -190,7 +190,7 @@ export const UserDashboard = () => {
   }
 
   // Ambassador features
-  if (hasRole('embaixadora')) {
+  if (hasRole('ambassador')) {
     modules.push({
       category: 'Embaixadora',
       items: [
@@ -213,7 +213,7 @@ export const UserDashboard = () => {
   }
 
   // Community features
-  if (hasRole('membro_comunidade')) {
+  if (hasRole('community_member')) {
     modules.push({
       category: 'Comunidade',
       items: [
@@ -236,7 +236,7 @@ export const UserDashboard = () => {
   }
 
   // Blog features
-  if (hasRole('autor')) {
+  if (hasRole('author')) {
     modules.push({
       category: 'Blog',
       items: [
