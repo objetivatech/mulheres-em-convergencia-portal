@@ -11,8 +11,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[ASAAS-WEBHOOK] ${step}${detailsStr}`);
 };
 
-// ✅ SEGURANÇA: Função para validar assinatura do webhook (a ser implementada)
-// TODO: Configurar ASAAS_WEBHOOK_TOKEN no Supabase e implementar validação
+// ✅ SEGURANÇA: Validação de assinatura do webhook
 const validateWebhookSignature = async (supabaseClient: any, req: Request, body: any) => {
   // Por enquanto, apenas registra a tentativa
   const signature = req.headers.get('asaas-access-token') || req.headers.get('x-webhook-token');
@@ -25,20 +24,40 @@ const validateWebhookSignature = async (supabaseClient: any, req: Request, body:
         signature_header: signature ? 'asaas-access-token' : 'none',
         signature_value: signature,
         request_body: JSON.stringify(body).substring(0, 1000), // Limitar tamanho
-        validated: false, // Por enquanto sempre false até implementar validação real
-        validation_error: 'Signature validation not yet implemented'
+        validated: signature ? null : false,
+        validation_error: signature ? null : 'No signature provided'
       });
   } catch (error) {
     logStep('Failed to log webhook signature', { error });
   }
   
-  // TODO: Quando ASAAS_WEBHOOK_TOKEN estiver configurado, descomentar:
-  // const webhookToken = Deno.env.get('ASAAS_WEBHOOK_TOKEN');
-  // if (!webhookToken || signature !== webhookToken) {
-  //   throw new Error('Invalid webhook signature');
-  // }
+  // Validar assinatura do webhook
+  const webhookToken = Deno.env.get('ASAAS_WEBHOOK_TOKEN');
+  if (!webhookToken) {
+    throw new Error('ASAAS_WEBHOOK_TOKEN not configured');
+  }
   
-  return true; // Por enquanto aceita todos
+  if (signature !== webhookToken) {
+    await supabaseClient
+      .from('webhook_signatures')
+      .update({ 
+        validated: false,
+        validation_error: 'Invalid signature - token mismatch'
+      })
+      .eq('signature_value', signature);
+    throw new Error('Invalid webhook signature');
+  }
+  
+  // Marcar como validado
+  await supabaseClient
+    .from('webhook_signatures')
+    .update({ 
+      validated: true,
+      validation_error: null
+    })
+    .eq('signature_value', signature);
+  
+  return true;
 };
 
 // Função para verificar se evento já foi processado (idempotência)
