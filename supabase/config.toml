@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.notify-new-user]
 verify_jwt = false
+
+[functions.send-journey-reminder]
+verify_jwt = true

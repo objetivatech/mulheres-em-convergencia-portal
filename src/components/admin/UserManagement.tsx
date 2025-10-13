@@ -11,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { AddUserDialog } from './AddUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { ComplimentaryBusinessManager } from './ComplimentaryBusinessManager';
-import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift } from 'lucide-react';
+import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const roleIcons: Record<UserRole, any> = {
   admin: Shield,
@@ -190,10 +191,18 @@ export const UserManagement = () => {
               <Users className="h-5 w-5" />
               <span>Gestão de Usuários</span>
             </div>
-            <Button onClick={() => setShowAddDialog(true)}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Adicionar Usuário
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link to="/admin/user-journey">
+                <Button variant="outline">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Jornada do Cliente
+                </Button>
+              </Link>
+              <Button onClick={() => setShowAddDialog(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Adicionar Usuário
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
             Gerencie usuários, roles e permissões do portal

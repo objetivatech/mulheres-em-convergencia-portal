@@ -24,6 +24,7 @@ import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminAyrshare from "./pages/AdminAyrshare";
 import UserManagement from './pages/UserManagement';
+import UserJourney from './pages/UserJourney';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
@@ -90,6 +91,11 @@ function AppContent() {
         <Route path="/admin/users" element={
           <ProtectedRoute requireAdmin={true}>
             <UserManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/user-journey" element={
+          <ProtectedRoute requireAdmin={true}>
+            <UserJourney />
           </ProtectedRoute>
         } />
         <Route path="/admin/analytics" element={

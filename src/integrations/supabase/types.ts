@@ -1711,6 +1711,39 @@ export type Database = {
           },
         ]
       }
+      user_journey_tracking: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          journey_stage: string
+          metadata: Json | null
+          stage_completed: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          journey_stage: string
+          metadata?: Json | null
+          stage_completed?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          journey_stage?: string
+          metadata?: Json | null
+          stage_completed?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_permissions: {
         Row: {
           active: boolean | null
@@ -2133,6 +2166,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_journey_funnel_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avg_hours_in_stage: number
+          completion_rate: number
+          stage: string
+          user_count: number
+        }[]
+      }
       get_pending_business_reviews: {
         Args: { business_uuid: string }
         Returns: {
@@ -2305,6 +2347,20 @@ export type Database = {
           id: string
         }[]
       }
+      get_users_by_journey_stage: {
+        Args: { p_limit?: number; p_offset?: number; p_stage?: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          hours_in_stage: number
+          journey_stage: string
+          metadata: Json
+          stage_completed: boolean
+          updated_at: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2410,6 +2466,10 @@ export type Database = {
           metric_name: string
         }
         Returns: undefined
+      }
+      update_user_journey_stage: {
+        Args: { p_metadata?: Json; p_new_stage: string; p_user_id: string }
+        Returns: string
       }
       upsert_user_address_safe: {
         Args: {
