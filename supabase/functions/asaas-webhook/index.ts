@@ -11,6 +11,36 @@ const logStep = (step: string, details?: any) => {
   console.log(`[ASAAS-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// ✅ SEGURANÇA: Função para validar assinatura do webhook (a ser implementada)
+// TODO: Configurar ASAAS_WEBHOOK_TOKEN no Supabase e implementar validação
+const validateWebhookSignature = async (supabaseClient: any, req: Request, body: any) => {
+  // Por enquanto, apenas registra a tentativa
+  const signature = req.headers.get('asaas-access-token') || req.headers.get('x-webhook-token');
+  
+  try {
+    await supabaseClient
+      .from('webhook_signatures')
+      .insert({
+        webhook_provider: 'asaas',
+        signature_header: signature ? 'asaas-access-token' : 'none',
+        signature_value: signature,
+        request_body: JSON.stringify(body).substring(0, 1000), // Limitar tamanho
+        validated: false, // Por enquanto sempre false até implementar validação real
+        validation_error: 'Signature validation not yet implemented'
+      });
+  } catch (error) {
+    logStep('Failed to log webhook signature', { error });
+  }
+  
+  // TODO: Quando ASAAS_WEBHOOK_TOKEN estiver configurado, descomentar:
+  // const webhookToken = Deno.env.get('ASAAS_WEBHOOK_TOKEN');
+  // if (!webhookToken || signature !== webhookToken) {
+  //   throw new Error('Invalid webhook signature');
+  // }
+  
+  return true; // Por enquanto aceita todos
+};
+
 // Função para verificar se evento já foi processado (idempotência)
 const isEventProcessed = async (supabaseClient: any, eventId: string, paymentId: string) => {
   const { data } = await supabaseClient
@@ -45,9 +75,6 @@ serve(async (req) => {
   try {
     logStep("Webhook received", { method: req.method, url: req.url });
 
-    // ASAAS usa validação por IP (já configurado no Supabase)
-    // Removida validação X-Webhook-Token conforme documentação oficial
-
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -55,6 +82,10 @@ serve(async (req) => {
     );
 
     const webhookData = await req.json();
+    
+    // ✅ SEGURANÇA: Validar assinatura do webhook (registra tentativa)
+    await validateWebhookSignature(supabaseClient, req, webhookData);
+    
     logStep("Webhook data received", { 
       event: webhookData.event, 
       paymentId: webhookData.payment?.id,

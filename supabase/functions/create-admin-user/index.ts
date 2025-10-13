@@ -58,14 +58,15 @@ serve(async (req) => {
       )
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userData.user.id)
-      .single()
+    // ✅ CORRIGIDO: Usar has_role() seguro em vez de profiles.is_admin
+    const { data: isAdmin, error: roleError } = await supabaseAdmin
+      .rpc('has_role', {
+        _user_id: userData.user.id,
+        _role: 'admin'
+      })
 
-    if (profileError || !profile?.is_admin) {
+    if (roleError || !isAdmin) {
+      console.error('Role check error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Admin privileges required' }),
         { 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,22 @@ interface CreateSubscriptionRequest {
   plan_id: string;
   billing_cycle: 'monthly' | 'yearly' | '6-monthly';
 }
+
+// ✅ SEGURANÇA: Schema de validação Zod
+const customerSchema = z.object({
+  name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
+  email: z.string().email("Email inválido").max(255, "Email muito longo"),
+  cpfCnpj: z.string().regex(/^\d{11}$|^\d{14}$/, "CPF/CNPJ inválido").optional(),
+  phone: z.string().regex(/^\d{10,11}$/, "Telefone inválido"),
+  address: z.string().trim().min(5, "Endereço muito curto").max(200, "Endereço muito longo"),
+  addressNumber: z.string().max(10, "Número muito longo"),
+  complement: z.string().max(100).optional(),
+  neighborhood: z.string().max(100).optional(),
+  city: z.string().trim().min(2).max(100),
+  state: z.string().length(2, "Estado deve ter 2 caracteres"),
+  postalCode: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
+  province: z.string().trim().max(100).optional()
+});
 
 // Helper logging function
 const logStep = (step: string, details?: any) => {
@@ -63,6 +80,30 @@ serve(async (req) => {
     const { plan_id, billing_cycle } = body as CreateSubscriptionRequest & { payment_method?: 'PIX' | 'BOLETO' | 'CREDIT_CARD'; customer?: any };
     const payment_method: 'PIX' | 'BOLETO' | 'CREDIT_CARD' = body.payment_method ?? 'PIX';
     const customerInput = body.customer ?? null;
+    
+    // ✅ SEGURANÇA: Validar dados do cliente com Zod
+    if (customerInput) {
+      try {
+        const validatedCustomer = customerSchema.parse(customerInput);
+        // Substituir customerInput pelos dados validados e sanitizados
+        Object.assign(customerInput, validatedCustomer);
+        logStep("Customer data validated successfully");
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+          logStep("Validation error", { errors: errorMessages });
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Dados inválidos: ${errorMessages}` 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          );
+        }
+        throw error;
+      }
+    }
+    
     logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
     // Get user profile if user is authenticated
