@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.get-mapbox-token]
 verify_jwt = false
+
+[functions.notify-new-user]
+verify_jwt = false
