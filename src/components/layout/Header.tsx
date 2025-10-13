@@ -16,7 +16,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, signOut, isAdmin, canEditBlog } = useAuth();
+  const { user, signOut, isAdmin, canEditBlog, hasBusiness } = useAuth();
   const location = useLocation();
   const { navigation, settings } = useSiteSettings();
 
@@ -62,32 +62,47 @@ export function Header() {
                     {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border z-50">
+                <DropdownMenuContent align="end" className="bg-background border z-50 w-56">
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  
+                  {/* Painel Principal */}
                   <DropdownMenuItem asChild>
-                    <Link to="/meu-dashboard">Meu Dashboard</Link>
+                    <Link to="/meu-dashboard" className="flex items-center">
+                      <span>🏠 Meu Painel</span>
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard-empresa">Dashboard Empresa</Link>
-                  </DropdownMenuItem>
-                  {isAdmin && (
+
+                  {/* Meus Acessos - Condicionais por Role */}
+                  {hasBusiness && (
                     <>
                       <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs text-muted-foreground">
+                        Meus Acessos
+                      </DropdownMenuLabel>
                       <DropdownMenuItem asChild>
-                        <Link to="/admin">Administração</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/pages">Gerenciar Páginas</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/navigation">Cabeçalho e Menus</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin/site-settings">Configurações do Site</Link>
+                        <Link to="/dashboard-empresa" className="flex items-center">
+                          <span>💼 Dashboard Empresa</span>
+                        </Link>
                       </DropdownMenuItem>
                     </>
                   )}
+
+                  {/* Administração - Apenas para Admins */}
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs text-muted-foreground">
+                        Administração
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center font-medium">
+                          <span>🛡️ Painel Admin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />

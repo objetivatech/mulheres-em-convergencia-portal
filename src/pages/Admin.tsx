@@ -28,67 +28,109 @@ const Admin = () => {
     return <Navigate to="/" replace />;
   }
 
-  const adminModules = [
+  // Organização por categorias
+  const adminCategories = [
     {
-      title: 'Gestão de Usuários',
-      description: 'Gerenciar usuários, permissões e perfis',
-      icon: Users,
-      available: isAdmin,
-      href: '/admin/users',
-      comingSoon: false
+      name: '📊 GERENCIAMENTO',
+      description: 'Gestão de usuários, negócios e comunicação',
+      modules: [
+        {
+          title: 'Gestão de Usuários',
+          description: 'Gerenciar usuários, permissões e perfis',
+          icon: Users,
+          available: isAdmin,
+          href: '/admin/users',
+          comingSoon: false
+        },
+        {
+          title: 'Jornada do Cliente',
+          description: 'Acompanhar e otimizar a jornada dos usuários',
+          icon: BarChart3,
+          available: isAdmin,
+          href: '/admin/user-journey',
+          comingSoon: false
+        },
+        {
+          title: 'Newsletter',
+          description: 'Gerenciar inscritos da newsletter',
+          icon: Mail,
+          available: isAdmin,
+          comingSoon: true
+        }
+      ]
     },
     {
-      title: 'Editor de Blog',
-      description: 'Criar e editar posts do blog Convergindo',
-      icon: FileText,
-      available: isAdmin || canEditBlog,
-      href: '/admin/blog',
-      comingSoon: false
+      name: '📝 CONTEÚDO',
+      description: 'Criação e edição de conteúdo do portal',
+      modules: [
+        {
+          title: 'Editor de Blog',
+          description: 'Criar e editar posts do blog Convergindo',
+          icon: FileText,
+          available: isAdmin || canEditBlog,
+          href: '/admin/blog',
+          comingSoon: false
+        },
+        {
+          title: 'Page Builder',
+          description: 'Criar páginas personalizadas com blocos',
+          icon: Wand2,
+          available: isAdmin,
+          href: '/admin/pages',
+          comingSoon: false
+        },
+        {
+          title: 'Mensagens de Contato',
+          description: 'Visualizar e responder mensagens recebidas',
+          icon: Mail,
+          available: isAdmin,
+          comingSoon: true
+        }
+      ]
     },
     {
-      title: 'Page Builder',
-      description: 'Criar páginas personalizadas com blocos',
-      icon: Wand2,
-      available: isAdmin,
-      href: '/admin/pages',
-      comingSoon: false
+      name: '🎛️ CONFIGURAÇÃO DO SITE',
+      description: 'Configurações gerais e integrações',
+      modules: [
+        {
+          title: 'Navegação e Menus',
+          description: 'Gerenciar menus e estrutura de navegação',
+          icon: Settings,
+          available: isAdmin,
+          href: '/admin/navigation',
+          comingSoon: false
+        },
+        {
+          title: 'Configurações Gerais',
+          description: 'Configurações do site e SEO',
+          icon: Settings,
+          available: isAdmin,
+          href: '/admin/site-settings',
+          comingSoon: false
+        },
+        {
+          title: 'Integrações',
+          description: 'Ayrshare e outras integrações',
+          icon: Settings,
+          available: isAdmin,
+          href: '/admin/ayrshare',
+          comingSoon: false
+        }
+      ]
     },
     {
-      title: 'Mensagens de Contato',
-      description: 'Visualizar e responder mensagens recebidas',
-      icon: Mail,
-      available: isAdmin,
-      comingSoon: true
-    },
-    {
-      title: 'Newsletter',
-      description: 'Gerenciar inscritos da newsletter',
-      icon: Settings,
-      available: isAdmin,
-      comingSoon: true
-    },
-    {
-      title: 'Analytics',
-      description: 'Estatísticas de acesso e engajamento',
-      icon: BarChart3,
-      available: isAdmin,
-      href: '/admin/analytics',
-      comingSoon: false
-    },
-    {
-      title: 'Teste AYRSHARE',
-      description: 'Interface para testar integração com redes sociais',
-      icon: Settings,
-      available: isAdmin,
-      href: '/admin/ayrshare',
-      comingSoon: false
-    },
-    {
-      title: 'Configurações',
-      description: 'Configurações gerais do sistema',
-      icon: Settings,
-      available: isAdmin,
-      comingSoon: true
+      name: '📈 ANALYTICS',
+      description: 'Estatísticas e relatórios',
+      modules: [
+        {
+          title: 'Analytics Geral',
+          description: 'Estatísticas de acesso e engajamento',
+          icon: BarChart3,
+          available: isAdmin,
+          href: '/admin/analytics',
+          comingSoon: false
+        }
+      ]
     }
   ];
 
@@ -157,46 +199,56 @@ const Admin = () => {
               </CardContent>
             </Card>
 
-            {/* Módulos Administrativos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {adminModules.map((module) => {
-                const Icon = module.icon;
-                return (
-                  <Card 
-                    key={module.title} 
-                    className={`transition-all hover:shadow-lg ${!module.available ? 'opacity-50' : ''}`}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">{module.title}</CardTitle>
-                          {module.comingSoon && (
-                            <Badge variant="outline" className="text-xs">
-                              Em Breve
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <CardDescription className="mt-2">
-                        {module.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button 
-                        variant={module.available ? "default" : "secondary"}
-                        className="w-full"
-                        disabled={!module.available || module.comingSoon}
-                        onClick={() => module.href && navigate(module.href)}
-                      >
-                        {module.comingSoon ? 'Em Desenvolvimento' : 'Acessar'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+            {/* Módulos Administrativos - Organizados por Categoria */}
+            <div className="space-y-8">
+              {adminCategories.map((category) => (
+                <div key={category.name}>
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold mb-1">{category.name}</h2>
+                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {category.modules.map((module) => {
+                      const Icon = module.icon;
+                      return (
+                        <Card 
+                          key={module.title} 
+                          className={`transition-all hover:shadow-lg ${!module.available ? 'opacity-50' : ''}`}
+                        >
+                          <CardHeader>
+                            <div className="flex items-center space-x-3">
+                              <div className="p-2 bg-primary/10 rounded-lg">
+                                <Icon className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg">{module.title}</CardTitle>
+                                {module.comingSoon && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Em Breve
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <CardDescription className="mt-2">
+                              {module.description}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <Button 
+                              variant={module.available ? "default" : "secondary"}
+                              className="w-full"
+                              disabled={!module.available || module.comingSoon}
+                              onClick={() => module.href && navigate(module.href)}
+                            >
+                              {module.comingSoon ? 'Em Desenvolvimento' : 'Acessar'}
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Informações Importantes */}
