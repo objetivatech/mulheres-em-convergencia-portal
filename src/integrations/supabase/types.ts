@@ -1006,6 +1006,188 @@ export type Database = {
           },
         ]
       }
+      email_ab_variants: {
+        Row: {
+          created_at: string | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          subject: string
+          template_id: string | null
+          text_content: string | null
+          traffic_percentage: number | null
+          updated_at: string | null
+          variant_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          subject: string
+          template_id?: string | null
+          text_content?: string | null
+          traffic_percentage?: number | null
+          updated_at?: string | null
+          variant_name: string
+        }
+        Update: {
+          created_at?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          subject?: string
+          template_id?: string | null
+          text_content?: string | null
+          traffic_percentage?: number | null
+          updated_at?: string | null
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ab_variants_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sends: {
+        Row: {
+          clicked_at: string | null
+          converted_at: string | null
+          id: string
+          journey_stage: string
+          metadata: Json | null
+          opened_at: string | null
+          sent_at: string | null
+          subject: string
+          template_id: string | null
+          user_id: string | null
+          variant_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          converted_at?: string | null
+          id?: string
+          journey_stage: string
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          subject: string
+          template_id?: string | null
+          user_id?: string | null
+          variant_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          converted_at?: string | null
+          id?: string
+          journey_stage?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          subject?: string
+          template_id?: string | null
+          user_id?: string | null
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "email_ab_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          journey_stage: string
+          name: string
+          subject: string
+          text_content: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          journey_stage: string
+          name: string
+          subject: string
+          text_content?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          journey_stage?: string
+          name?: string
+          subject?: string
+          text_content?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      journey_analytics_daily: {
+        Row: {
+          avg_time_in_stage_hours: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          journey_stage: string
+          users_abandoned: number | null
+          users_completed: number | null
+          users_entered: number | null
+        }
+        Insert: {
+          avg_time_in_stage_hours?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          journey_stage: string
+          users_abandoned?: number | null
+          users_completed?: number | null
+          users_entered?: number | null
+        }
+        Update: {
+          avg_time_in_stage_hours?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          journey_stage?: string
+          users_abandoned?: number | null
+          users_completed?: number | null
+          users_entered?: number | null
+        }
+        Relationships: []
+      }
       mailrelay_sync_log: {
         Row: {
           created_at: string | null
@@ -2068,6 +2250,21 @@ export type Database = {
         Args: { business_id: string; business_name: string }
         Returns: string
       }
+      get_ab_test_metrics: {
+        Args: { p_days?: number; p_template_id?: string }
+        Returns: {
+          click_rate: number
+          conversion_rate: number
+          open_rate: number
+          template_name: string
+          total_clicks: number
+          total_conversions: number
+          total_opens: number
+          total_sends: number
+          variant_id: string
+          variant_name: string
+        }[]
+      }
       get_admin_business_analytics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2095,6 +2292,18 @@ export type Database = {
           total_businesses: number
           total_subscriptions: number
           total_users: number
+        }[]
+      }
+      get_advanced_journey_analytics: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: {
+          avg_time_hours: number
+          conversion_rate: number
+          date: string
+          journey_stage: string
+          users_abandoned: number
+          users_completed: number
+          users_entered: number
         }[]
       }
       get_ambassador_by_referral: {
