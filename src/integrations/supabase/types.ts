@@ -968,6 +968,44 @@ export type Database = {
           },
         ]
       }
+      cpf_access_log: {
+        Row: {
+          accessed_at: string | null
+          accessed_by: string | null
+          action: string
+          id: string
+          ip_address: string | null
+          profile_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          accessed_by?: string | null
+          action: string
+          id?: string
+          ip_address?: string | null
+          profile_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          accessed_by?: string | null
+          action?: string
+          id?: string
+          ip_address?: string | null
+          profile_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cpf_access_log_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mailrelay_sync_log: {
         Row: {
           created_at: string | null
@@ -1828,9 +1866,88 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_signatures: {
+        Row: {
+          created_at: string | null
+          id: string
+          request_body: string | null
+          signature_header: string
+          signature_value: string | null
+          validated: boolean | null
+          validation_error: string | null
+          webhook_provider: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          request_body?: string | null
+          signature_header: string
+          signature_value?: string | null
+          validated?: boolean | null
+          validation_error?: string | null
+          webhook_provider: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          request_body?: string | null
+          signature_header?: string
+          signature_value?: string | null
+          validated?: boolean | null
+          validation_error?: string | null
+          webhook_provider?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      public_business_reviews: {
+        Row: {
+          business_id: string | null
+          comment: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string | null
+          rating: number | null
+          reviewer_name: string | null
+          status: string | null
+          title: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          business_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+          status?: string | null
+          title?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          business_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string | null
+          rating?: number | null
+          reviewer_name?: string | null
+          status?: string | null
+          title?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_user_role: {
@@ -1873,6 +1990,14 @@ export type Database = {
       cleanup_old_activity_logs: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      cpf_exists: {
+        Args: { cpf_to_check: string }
+        Returns: boolean
       }
       create_business_credits_account: {
         Args: { business_uuid: string }
