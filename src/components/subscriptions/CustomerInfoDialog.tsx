@@ -107,22 +107,27 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     },
   });
 
-  // Pre-fill form with user profile data and smart suggestions when dialog opens
+  // Pre-fill form with user profile data and smart suggestions WHEN dialog opens (once per open)
+  const prefilledRef = React.useRef(false)
   useEffect(() => {
-    if (open && user) {
-      const updates: Partial<CustomerFormData> = {};
-      
-      // Fill from user profile
-      if (userProfile?.full_name) updates.name = userProfile.full_name;
-      if (userProfile?.cpf) updates.cpfCnpj = userProfile.cpf;
-      if (userProfile?.phone) updates.phone = userProfile.phone;
-      if (userProfile?.city) updates.city = userProfile.city;
-      if (userProfile?.state) updates.state = userProfile.state;
-      
-      // Auto-fill primary data from smart form filler
-      const smartValues = autoFillPrimary();
-      
-      // Reset form with combined values
+    if (!open) {
+      prefilledRef.current = false
+      return
+    }
+
+    if (prefilledRef.current) return
+
+    if (user) {
+      const updates: Partial<CustomerFormData> = {}
+
+      if (userProfile?.full_name) updates.name = userProfile.full_name
+      if (userProfile?.cpf) updates.cpfCnpj = userProfile.cpf
+      if (userProfile?.phone) updates.phone = userProfile.phone
+      if (userProfile?.city) updates.city = userProfile.city
+      if (userProfile?.state) updates.state = userProfile.state
+
+      const smartValues = autoFillPrimary()
+
       form.reset({
         name: updates.name || '',
         cpfCnpj: updates.cpfCnpj || '',
@@ -134,9 +139,11 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
         province: smartValues.province || '',
         city: smartValues.city || updates.city || '',
         state: smartValues.state || updates.state || '',
-      });
-    } else if (open && !user) {
-      // Reset form for non-logged users
+        email: '',
+        password: '',
+        confirmPassword: '',
+      })
+    } else {
       form.reset({
         name: '',
         cpfCnpj: '',
@@ -151,9 +158,11 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
         email: '',
         password: '',
         confirmPassword: '',
-      });
+      })
     }
-  }, [open, user, userProfile, form, autoFillPrimary]);
+
+    prefilledRef.current = true
+  }, [open, user, userProfile])
 
   // CPF validation and duplicate check with merge option
   const validateCpf = async (cpf: string) => {
