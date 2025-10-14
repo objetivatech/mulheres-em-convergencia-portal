@@ -4,6 +4,7 @@ import Layout from "@/components/layout/Layout";
 import Hero from "@/components/home/Hero";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
 import BusinessShowcase from "@/components/home/BusinessShowcase";
+import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
 
@@ -41,9 +42,14 @@ const Index = () => {
       
       <Hero />
       
+      <PartnersCarousel 
+        title="Apoiadoras do Movimento"
+        subtitle="Empresas que acreditam no empreendedorismo feminino"
+      />
+      
       <BusinessShowcase
         title="Empreendedoras Destaque"
-        subtitle="Conheça as empreendedoras dos planos intermediário e master"
+        subtitle="Conheça as empreendedoras dos planos Intermediário e Impulso"
         featured={true}
         className="bg-tertiary/10"
       />

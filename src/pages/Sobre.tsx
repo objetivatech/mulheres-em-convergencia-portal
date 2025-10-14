@@ -2,6 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from "@/components/layout/Layout";
 import { Timeline } from '@/components/timeline/Timeline';
+import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
 import { CheckCircle, Users, Target, Heart } from "lucide-react";
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
@@ -154,6 +155,13 @@ const Sobre = () => {
           </div>
         </div>
       </section>
+
+      {/* Parceiros e Apoiadores */}
+      <PartnersCarousel 
+        title="Parceiros e Apoiadores"
+        subtitle="Conheça quem caminha conosco nessa jornada"
+        className="bg-tertiary/10"
+      />
       </Layout>
     </>
   );
