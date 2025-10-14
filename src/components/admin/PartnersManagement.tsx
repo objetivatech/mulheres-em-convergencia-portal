@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { ImageUploader } from '@/components/blog/ImageUploader';
 import {
   Dialog,
   DialogContent,
@@ -451,20 +452,16 @@ export const PartnersManagement = () => {
             </div>
 
             <div>
-              <Label htmlFor="logo_url">URL do Logo *</Label>
-              <Input
-                id="logo_url"
+              <Label>Logo do Parceiro *</Label>
+              <ImageUploader
                 value={formData.logo_url}
-                onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                placeholder="https://..."
+                onChange={(url) => setFormData({ ...formData, logo_url: url })}
+                bucket="partner-logos"
+                label="Clique para enviar logo (PNG/JPG, máx 5MB)"
               />
-              {formData.logo_url && (
-                <img
-                  src={formData.logo_url}
-                  alt="Preview"
-                  className="mt-2 w-32 h-32 object-contain border rounded"
-                />
-              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Recomendado: 200x200px a 400x400px, PNG com fundo transparente
+              </p>
             </div>
 
             <div>
