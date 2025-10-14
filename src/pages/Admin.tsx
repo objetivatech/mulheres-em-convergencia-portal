@@ -115,6 +115,14 @@ const Admin = () => {
           available: isAdmin,
           href: '/admin/ayrshare',
           comingSoon: false
+        },
+        {
+          title: 'Parceiros e Apoiadores',
+          description: 'Gerenciar logos de parceiros exibidos no site',
+          icon: Users,
+          available: isAdmin,
+          href: '/admin/parceiros',
+          comingSoon: false
         }
       ]
     },

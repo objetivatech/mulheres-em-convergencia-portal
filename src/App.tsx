@@ -23,6 +23,7 @@ import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminAyrshare from "./pages/AdminAyrshare";
+import AdminPartners from "./pages/AdminPartners";
 import UserManagement from './pages/UserManagement';
 import UserJourney from './pages/UserJourney';
 import BlogDashboard from './pages/BlogDashboard';
@@ -106,6 +107,11 @@ function AppContent() {
         <Route path="/admin/ayrshare" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminAyrshare />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/parceiros" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminPartners />
           </ProtectedRoute>
         } />
         
