@@ -103,7 +103,7 @@ const Contato = () => {
       </Helmet>
 
       <Layout>
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 overflow-x-hidden">
           <div className="max-w-4xl mx-auto">
             <header className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
@@ -287,7 +287,7 @@ const Contato = () => {
             </div>
 
             {/* Google Maps - Full Width */}
-            <Card className="mt-8">
+            <Card className="mt-8 max-w-full overflow-hidden">
               <CardHeader>
                 <CardTitle>Nossa Localização</CardTitle>
                 <CardDescription>
@@ -295,12 +295,13 @@ const Contato = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="rounded-lg overflow-hidden">
+                <div className="w-full rounded-lg overflow-hidden">
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27584.66431858135!2d-51.125!3d-29.9894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951979f77ad91f07%3A0x2b238ad9b4be1c95!2sAlvorada%2C%20RS!5e0!3m2!1spt!2sbr!4v1694727600000!5m2!1spt!2sbr"
                     width="100%"
                     height="400"
-                    style={{ border: 0 }}
+                    className="w-full"
+                    style={{ border: 0, maxWidth: '100%' }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
