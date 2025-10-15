@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.send-journey-reminder]
 verify_jwt = true
+
+[functions.cleanup-complimentary-subscriptions]
+verify_jwt = true
