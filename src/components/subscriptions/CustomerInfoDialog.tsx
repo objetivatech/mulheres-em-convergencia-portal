@@ -473,7 +473,12 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                      Telefone
                      {userProfile?.phone && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                    </FormLabel>
-                   <FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl>
+                   <FormControl>
+                     <Input placeholder="(00) 00000-0000" {...field} />
+                   </FormControl>
+                   <p className="text-xs text-muted-foreground mt-1">
+                     Com DDD (10-11 dígitos)
+                   </p>
                    <FormMessage />
                    {/* Smart contact selector for logged users */}
                    {user && hasPhoneContacts() && !editingContact && (
@@ -599,17 +604,27 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               )}
             />
 
-             <FormField
-               control={form.control}
-               name="state"
-               render={({ field }) => (
-                 <FormItem>
-                   <FormLabel className="flex items-center gap-2">
-                     Estado (UF)
-                     {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
-                   </FormLabel>
-                   <FormControl><Input placeholder="RS" {...field} /></FormControl>
-                   <FormMessage />
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    Estado (UF)
+                    {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
+                  </FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="RS" 
+                      {...field}
+                      onChange={(e) => {
+                        const normalized = e.target.value.toUpperCase().slice(0, 2);
+                        field.onChange(normalized);
+                      }}
+                      maxLength={2}
+                    />
+                  </FormControl>
+                  <FormMessage />
                  </FormItem>
                )}
              />

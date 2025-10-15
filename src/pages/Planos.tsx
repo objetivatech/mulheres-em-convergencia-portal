@@ -114,6 +114,28 @@ const Planos: React.FC = () => {
     }
   };
 
+  // Helper functions for data normalization
+  const normalizeDigits = (value: string | undefined): string => {
+    return value?.replace(/\D/g, '') || '';
+  };
+
+  const formatCep = (value: string | undefined): string => {
+    const digits = normalizeDigits(value);
+    return digits.length === 8 ? digits.replace(/(\d{5})(\d{3})/, '$1-$2') : digits;
+  };
+
+  const normalizeCustomerData = (customer?: CustomerFormData) => {
+    if (!customer) return undefined;
+
+    return {
+      ...customer,
+      cpfCnpj: normalizeDigits(customer.cpfCnpj),
+      phone: normalizeDigits(customer.phone),
+      state: (customer.state || '').toUpperCase().slice(0, 2),
+      postalCode: formatCep(customer.postalCode),
+    };
+  };
+
   const handleSubscribe = async (
     planId: string,
     billingCycle: 'monthly' | 'yearly' | '6-monthly',
@@ -159,14 +181,31 @@ const Planos: React.FC = () => {
     setProcessingPlan(planId);
 
     try {
+      // Normalize customer data before sending
+      const normalizedCustomer = normalizeCustomerData(customer);
+
+      // Validate normalized phone (10-11 digits)
+      if (normalizedCustomer && normalizedCustomer.phone) {
+        const phoneDigits = normalizedCustomer.phone.length;
+        if (phoneDigits < 10 || phoneDigits > 11) {
+          toast({
+            title: 'Dados inválidos',
+            description: 'Telefone deve ter 10 ou 11 dígitos (com DDD).',
+            variant: 'destructive',
+          });
+          setProcessingPlan(null);
+          return;
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: {
           plan_id: planId,
           billing_cycle: billingCycle,
           payment_method: 'PIX',
           customer: {
-            ...customer,
-            email: signupData?.email || customer?.email,
+            ...normalizedCustomer,
+            email: signupData?.email || normalizedCustomer?.email,
           },
         },
       });
@@ -207,6 +246,27 @@ const Planos: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Erro ao criar assinatura:', error);
+      
+      // Check for complimentary account error
+      if (error?.message?.includes('cortesia') || error?.message?.includes('complimentary')) {
+        toast({
+          title: 'Conta com cortesia ativa',
+          description: 'Sua empresa está com cortesia ativa; não é necessário assinar agora.',
+          variant: 'default',
+        });
+        return;
+      }
+
+      // Check for 400 validation errors
+      if (error?.message?.includes('400') || error?.message?.includes('inválid')) {
+        toast({
+          title: 'Dados inválidos',
+          description: 'Verifique: Telefone apenas com números (10-11 dígitos com DDD), UF com 2 letras (ex.: RS), CEP no formato 12345-678.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const message = error?.message || 'Não foi possível processar a assinatura';
       toast({ title: 'Erro', description: message, variant: 'destructive' });
     } finally {
