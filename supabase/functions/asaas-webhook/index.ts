@@ -203,17 +203,55 @@ serve(async (req) => {
           .eq('is_complimentary', true);
 
         if (complimentaryBusinesses && complimentaryBusinesses.length > 0) {
-          logStep('User has complimentary businesses - skipping payment processing', {
+          logStep('User has complimentary businesses - cancelling active subscription', {
             userId: subscription.user_id,
             complimentaryCount: complimentaryBusinesses.length
           });
+          
+          // ✅ NOVO: Cancelar assinatura ativa se existir
+          const { data: activeSubscription } = await supabaseClient
+            .from('user_subscriptions')
+            .select('id, external_subscription_id')
+            .eq('user_id', subscription.user_id)
+            .eq('status', 'active')
+            .maybeSingle();
+
+          if (activeSubscription) {
+            // Invocar subscription-management para cancelar
+            try {
+              const authHeader = req.headers.get('authorization');
+              await supabaseClient.functions.invoke('subscription-management', {
+                body: {
+                  action: 'cancel',
+                  subscriptionId: activeSubscription.id
+                },
+                headers: authHeader ? { Authorization: authHeader } : {}
+              });
+
+              logStep('Active subscription cancelled for complimentary business', {
+                userId: subscription.user_id,
+                subscriptionId: activeSubscription.id
+              });
+            } catch (cancelError) {
+              logStep('Error cancelling subscription via edge function', { error: cancelError });
+              // Fallback: cancelar localmente
+              await supabaseClient
+                .from('user_subscriptions')
+                .update({ 
+                  status: 'cancelled',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', activeSubscription.id);
+            }
+          }
           
           await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
           
           return new Response(JSON.stringify({ 
             success: true, 
-            message: "Payment skipped - user has complimentary businesses",
-            complimentaryBusinesses: complimentaryBusinesses.length
+            message: "Payment skipped and subscription cancelled - user has complimentary businesses",
+            complimentaryBusinesses: complimentaryBusinesses.length,
+            subscriptionCancelled: !!activeSubscription
           }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,

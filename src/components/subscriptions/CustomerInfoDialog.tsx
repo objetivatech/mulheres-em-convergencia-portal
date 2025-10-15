@@ -70,6 +70,8 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const [existingUserData, setExistingUserData] = useState<any>(null);
   const [showAddressDialog, setShowAddressDialog] = useState(false);
+  const [editingContact, setEditingContact] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
   
   const { useUserByCpf, useUserContacts, useUserAddresses, cpfUtils } = useCpfSystem();
   
@@ -171,15 +173,30 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     // Validar formato do CPF
     const cpfNumbers = cpf.replace(/\D/g, '');
     if (cpfNumbers.length !== 11) {
-      setCpfExists('CPF inválido: deve ter 11 dígitos');
+      // ✅ CORREÇÃO: Apenas alerta, não bloqueia submit
+      form.setError('cpfCnpj', { 
+        type: 'manual', 
+        message: 'CPF deve ter 11 dígitos' 
+      });
+      setCpfExists(null); // Não bloquear botão
+      setExistingUserData(null);
       return;
     }
 
     // Validar CPF repetido (111.111.111-11, etc)
     if (/^(\d)\1{10}$/.test(cpfNumbers)) {
-      setCpfExists('CPF inválido: dígitos repetidos');
+      // ✅ CORREÇÃO: Apenas alerta, não bloqueia submit
+      form.setError('cpfCnpj', { 
+        type: 'manual', 
+        message: 'CPF não pode ter dígitos repetidos' 
+      });
+      setCpfExists(null); // Não bloquear botão
+      setExistingUserData(null);
       return;
     }
+    
+    // Limpar erros se passou nas validações de formato
+    form.clearErrors('cpfCnpj');
     
     const { data } = await supabase.rpc('get_user_by_cpf', { cpf_input: cpf });
     if (data && data.length > 0 && data[0].id !== user?.id) {
@@ -413,23 +430,34 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                         validateCpf(formatted);
                       }}
                     />
-                  </FormControl>
-                   {cpfExists && (
-                     <div className="text-sm text-destructive">
-                       {cpfExists}
-                       {!user && existingUserData ? (
-                         <Button 
-                           variant="link" 
-                           size="sm" 
-                           className="p-0 h-auto text-destructive underline ml-1"
-                           onClick={() => setShowMergeDialog(true)}
-                         >
-                           Mesclar dados
-                         </Button>
-                       ) : (
-                         <a href="/auth" className="underline ml-1">Faça login na conta existente</a>
+                   </FormControl>
+                   {cpfExists && existingUserData && (
+                     <div className="text-sm p-3 rounded-md bg-destructive/10 border border-destructive/30 mt-2">
+                       <p className="font-medium text-destructive mb-2">{cpfExists}</p>
+                       {!user && (
+                         <div className="flex gap-2 flex-wrap">
+                           <Button 
+                             variant="outline" 
+                             size="sm"
+                             asChild
+                             className="h-8"
+                           >
+                             <a href="/auth">Fazer Login</a>
+                           </Button>
+                           <Button 
+                             variant="link" 
+                             size="sm" 
+                             className="p-0 h-8 text-destructive"
+                             onClick={() => setShowMergeDialog(true)}
+                           >
+                             Ou mesclar dados →
+                           </Button>
+                         </div>
                        )}
                      </div>
+                   )}
+                   {cpfExists && !existingUserData && (
+                     <p className="text-sm text-muted-foreground mt-1">{cpfExists}</p>
                    )}
                   <FormMessage />
                 </FormItem>
@@ -448,13 +476,34 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                    <FormControl><Input placeholder="(00) 00000-0000" {...field} /></FormControl>
                    <FormMessage />
                    {/* Smart contact selector for logged users */}
-                   {user && hasPhoneContacts() && (
-                     <ContactSelector
-                       contacts={getContactSuggestions('phone')}
-                       onSelect={handleContactSelect}
-                       type="phone"
-                       className="mt-2"
-                     />
+                   {user && hasPhoneContacts() && !editingContact && (
+                     <div className="mt-2 space-y-2">
+                       <ContactSelector
+                         contacts={getContactSuggestions('phone')}
+                         onSelect={handleContactSelect}
+                         type="phone"
+                       />
+                       <Button
+                         type="button"
+                         variant="link"
+                         size="sm"
+                         className="p-0 h-auto text-xs text-primary"
+                         onClick={() => setEditingContact(true)}
+                       >
+                         + Usar novo telefone
+                       </Button>
+                     </div>
+                   )}
+                   {user && editingContact && (
+                     <Button
+                       type="button"
+                       variant="link"
+                       size="sm"
+                       className="p-0 h-auto text-xs mt-1"
+                       onClick={() => setEditingContact(false)}
+                     >
+                       ← Voltar aos telefones cadastrados
+                     </Button>
                    )}
                  </FormItem>
                )}
@@ -568,14 +617,55 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               {/* Smart address selector for logged users */}
               {user && (
                 <div className="md:col-span-2">
-                  {hasAddresses() ? (
-                    <AddressSelector
-                      addresses={getAddressSuggestions()}
-                      onSelect={handleAddressSelect}
-                      onNewAddress={handleNewAddress}
-                      title="Usar endereço cadastrado"
-                      className="mt-4"
-                    />
+                  {hasAddresses() && !editingAddress ? (
+                    <div className="space-y-2 mt-4">
+                      <AddressSelector
+                        addresses={getAddressSuggestions()}
+                        onSelect={handleAddressSelect}
+                        onNewAddress={handleNewAddress}
+                        title="Usar endereço cadastrado"
+                      />
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        className="p-0 h-auto text-xs text-primary"
+                        onClick={() => {
+                          setEditingAddress(true);
+                          // Limpar campos de endereço para nova entrada
+                          form.setValue('address', '');
+                          form.setValue('addressNumber', '');
+                          form.setValue('complement', '');
+                          form.setValue('province', '');
+                          form.setValue('city', '');
+                          form.setValue('state', '');
+                          form.setValue('postalCode', '');
+                        }}
+                      >
+                        + Usar novo endereço
+                      </Button>
+                    </div>
+                  ) : hasAddresses() && editingAddress ? (
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      className="p-0 h-auto text-xs mt-1"
+                      onClick={() => {
+                        setEditingAddress(false);
+                        // Restaurar endereço primário
+                        const values = autoFillPrimary();
+                        if (values.address) form.setValue('address', values.address);
+                        if (values.addressNumber) form.setValue('addressNumber', values.addressNumber);
+                        if (values.complement) form.setValue('complement', values.complement);
+                        if (values.province) form.setValue('province', values.province);
+                        if (values.city) form.setValue('city', values.city);
+                        if (values.state) form.setValue('state', values.state);
+                        if (values.postalCode) form.setValue('postalCode', values.postalCode);
+                      }}
+                    >
+                      ← Voltar aos endereços cadastrados
+                    </Button>
                   ) : (
                     <div className="mt-4 p-4 border border-dashed rounded-lg text-center">
                       <p className="text-sm text-muted-foreground mb-2">
@@ -598,7 +688,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
               <Button 
                 type="submit" 
-                disabled={loading || !!cpfExists}
+                disabled={loading || (!!cpfExists && !!existingUserData)}
               >
                 {loading ? 'Processando...' : !user ? 'Criar Conta e Assinar' : 'Continuar'}
               </Button>

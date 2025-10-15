@@ -115,15 +115,38 @@ serve(async (req) => {
     }
 
     if (action === "cancel") {
-      // Cancelar assinatura no ASAAS
+      // 1. Cancelar assinatura no ASAAS se existir
       if (subscription.external_subscription_id) {
         try {
-          await asaasFetch(`/subscriptions/${subscription.external_subscription_id}`, {
-            method: "DELETE"
-          });
-          logStep("ASAAS subscription cancelled", { 
-            externalId: subscription.external_subscription_id 
-          });
+          const asaasApiKey = Deno.env.get("ASAAS_API_KEY");
+          if (!asaasApiKey) {
+            logStep("WARNING: ASAAS API key not configured");
+          } else {
+            const baseUrl = asaasApiKey.includes("_test_") 
+              ? "https://sandbox.asaas.com/api/v3" 
+              : "https://api.asaas.com/v3";
+
+            const response = await fetch(`${baseUrl}/subscriptions/${subscription.external_subscription_id}`, {
+              method: "DELETE",
+              headers: {
+                "access_token": asaasApiKey,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (response.ok) {
+              logStep("ASAAS subscription cancelled successfully", { 
+                externalId: subscription.external_subscription_id,
+                baseUrl 
+              });
+            } else {
+              const errorText = await response.text();
+              logStep("ASAAS cancellation failed but continuing", { 
+                status: response.status,
+                error: errorText.substring(0, 200)
+              });
+            }
+          }
         } catch (error) {
           logStep("Error cancelling ASAAS subscription", { error });
           // Continue mesmo se falhar no ASAAS - atualize localmente

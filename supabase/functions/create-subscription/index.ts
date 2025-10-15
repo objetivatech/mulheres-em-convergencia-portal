@@ -106,6 +106,35 @@ serve(async (req) => {
     
     logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
 
+    // ✅ NOVO: Verificar se usuário já tem negócios cortesia
+    if (user) {
+      const { data: complimentaryBusinesses } = await supabaseServiceClient
+        .from('businesses')
+        .select('id, name')
+        .eq('owner_id', user.id)
+        .eq('is_complimentary', true);
+
+      if (complimentaryBusinesses && complimentaryBusinesses.length > 0) {
+        const businessNames = complimentaryBusinesses.map(b => b.name).join(', ');
+        logStep('User has complimentary businesses - blocking subscription', {
+          userId: user.id,
+          businesses: businessNames
+        });
+
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Seus negócios (${businessNames}) já estão liberados como cortesia e não requerem assinatura. Entre em contato com o suporte se precisar de mais negócios.`,
+            complimentary: true
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+            status: 400 
+          }
+        );
+      }
+    }
+
     // Get user profile if user is authenticated
     let profile = null;
     if (user) {
