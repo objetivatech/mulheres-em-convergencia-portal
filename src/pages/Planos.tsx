@@ -12,6 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import CustomerInfoDialog, { CustomerFormData, UserProfileData } from '@/components/subscriptions/CustomerInfoDialog';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { FAQSection } from '@/components/subscriptions/FAQSection';
 
 type SubscriptionPlan = {
   id: string;
@@ -214,12 +215,19 @@ const Planos: React.FC = () => {
 
       // Handle ASAAS errors returned as 400 status
       if (data?.asaas_errors && data.asaas_errors.length > 0) {
-        const errorMessages = data.asaas_errors.map((err: any) => err.description || err.message).join('; ');
+        const errorMessages = data.asaas_errors.map((err: any) => {
+          const field = err.code || err.field || 'Desconhecido';
+          const msg = err.description || err.message || 'Erro desconhecido';
+          return `• ${field}: ${msg}`;
+        }).join('\n');
+        
         toast({
-          title: 'Erro nos dados',
+          title: '❌ Erro de validação do ASAAS',
           description: errorMessages,
           variant: 'destructive',
+          duration: 10000,
         });
+        // ✅ NÃO fecha diálogo, permite correção
         return;
       }
 
@@ -228,7 +236,7 @@ const Planos: React.FC = () => {
           title: 'Redirecionando para pagamento',
           description: 'Você será redirecionado para completar o pagamento.',
         });
-        // Redirecionar para a URL do checkout ou página de confirmação
+        setDialogOpen(false); // ✅ Fecha APENAS aqui
         window.location.href = data.checkout_url;
       } else if (data?.subscriptionId) {
         // Se não gerou checkout (pode ser cortesia ou erro), ir para confirmação
@@ -236,6 +244,7 @@ const Planos: React.FC = () => {
           title: 'Assinatura criada',
           description: 'Redirecionando para confirmação...',
         });
+        setDialogOpen(false); // ✅ Fecha APENAS aqui
         setTimeout(() => navigate('/confirmacao-pagamento'), 1000);
       } else {
         toast({ 
@@ -260,10 +269,12 @@ const Planos: React.FC = () => {
       // Check for 400 validation errors
       if (error?.message?.includes('400') || error?.message?.includes('inválid')) {
         toast({
-          title: 'Dados inválidos',
-          description: 'Verifique: Telefone apenas com números (10-11 dígitos com DDD), UF com 2 letras (ex.: RS), CEP no formato 12345-678.',
+          title: '⚠️ Corrija os seguintes campos:',
+          description: error?.message || 'Telefone: apenas números (10-11 dígitos com DDD). UF: 2 letras maiúsculas. CEP: formato 12345-678.',
           variant: 'destructive',
+          duration: 8000, // Mais tempo para ler
         });
+        // ✅ NÃO retorna, deixa diálogo aberto
         return;
       }
 
@@ -461,16 +472,8 @@ const Planos: React.FC = () => {
           ))}
         </div>
 
-        {/* FAQ ou informações adicionais */}
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-bold mb-4">Dúvidas sobre os planos?</h2>
-          <p className="text-muted-foreground mb-4">
-            Entre em contato conosco e tire todas as suas dúvidas sobre nossos planos de assinatura.
-          </p>
-          <Button variant="outline" asChild>
-            <a href="/contato">Falar Conosco</a>
-          </Button>
-        </div>
+        {/* FAQ Section */}
+        <FAQSection />
       </div>
 
       <CustomerInfoDialog
@@ -594,8 +597,10 @@ const Planos: React.FC = () => {
               }
             }
             
-            // Close dialog on success
-            setDialogOpen(false);
+            // ✅ Diálogo fecha automaticamente dentro de handleSubscribe quando redireciona
+          } catch (error) {
+            // Erro já é tratado por handleSubscribe com toast
+            // NÃO fecha o diálogo aqui
           } finally {
             setDialogLoading(false);
           }

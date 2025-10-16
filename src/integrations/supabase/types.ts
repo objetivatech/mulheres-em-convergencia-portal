@@ -1152,6 +1152,39 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_items: {
+        Row: {
+          active: boolean
+          answer: string
+          category: string
+          created_at: string | null
+          display_order: number
+          id: string
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          answer: string
+          category: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          answer?: string
+          category?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       journey_analytics_daily: {
         Row: {
           avg_time_in_stage_hours: number | null

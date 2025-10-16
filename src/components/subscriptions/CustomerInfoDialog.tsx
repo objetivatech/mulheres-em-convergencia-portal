@@ -374,6 +374,9 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                     <FormItem>
                       <FormLabel>Senha *</FormLabel>
                       <FormControl><Input type="password" placeholder="Mínimo 6 caracteres" {...field} /></FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        ℹ️ Use letras, números e símbolos para maior segurança
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -418,6 +421,9 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     CPF/CNPJ
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (formato: 000.000.000-00)
+                    </span>
                     {userProfile?.cpf && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                   </FormLabel>
                   <FormControl>
@@ -477,7 +483,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                      <Input placeholder="(00) 00000-0000" {...field} />
                    </FormControl>
                    <p className="text-xs text-muted-foreground mt-1">
-                     Com DDD (10-11 dígitos)
+                     📞 Com DDD (10-11 dígitos). Exemplo: (51) 99999-9999
                    </p>
                    <FormMessage />
                    {/* Smart contact selector for logged users */}
@@ -520,6 +526,9 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>CEP</FormLabel>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    📮 Formato: 12345-678 (busca automática de endereço)
+                  </p>
                   <FormControl>
                     <Input 
                       placeholder="00000-000" 
@@ -611,17 +620,18 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     Estado (UF)
+                    <span className="text-xs text-muted-foreground font-normal">(ex.: RS, SP)</span>
                     {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                   </FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="RS" 
                       {...field}
+                      maxLength={2}
                       onChange={(e) => {
                         const normalized = e.target.value.toUpperCase().slice(0, 2);
                         field.onChange(normalized);
                       }}
-                      maxLength={2}
                     />
                   </FormControl>
                   <FormMessage />
@@ -704,6 +714,14 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               <Button 
                 type="submit" 
                 disabled={loading || (!!cpfExists && !!existingUserData)}
+                onClick={() => {
+                  console.log('[DEBUG] Botão Continuar', {
+                    loading,
+                    cpfExists,
+                    hasExistingUserData: !!existingUserData,
+                    disabled: loading || (!!cpfExists && !!existingUserData)
+                  });
+                }}
               >
                 {loading ? 'Processando...' : !user ? 'Criar Conta e Assinar' : 'Continuar'}
               </Button>
