@@ -51,13 +51,37 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
     is_primary: false
   });
   const [cepLoading, setCepLoading] = useState(false);
+  const [isFirstAddress, setIsFirstAddress] = useState(false);
+
+  // Check if this is the user's first address
+  useEffect(() => {
+    const checkFirstAddress = async () => {
+      if (!user || address) return; // Skip if editing existing address
+      
+      try {
+        const { count, error } = await supabase
+          .from('user_addresses')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        setIsFirstAddress(count === 0);
+      } catch (error) {
+        console.error('Error checking address count:', error);
+      }
+    };
+
+    if (open) {
+      checkFirstAddress();
+    }
+  }, [user, address, open]);
 
   useEffect(() => {
     if (address) {
       setFormData(address);
     } else {
       setFormData({
-        address_type: 'residential',
+        address_type: isFirstAddress ? 'billing' : 'residential',
         street: '',
         number: '',
         complement: '',
@@ -65,10 +89,10 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
         city: '',
         state: '',
         postal_code: '',
-        is_primary: false
+        is_primary: isFirstAddress // Auto-set primary for first address
       });
     }
-  }, [address, open]);
+  }, [address, open, isFirstAddress]);
 
   const handleCepChange = async (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
@@ -198,7 +222,11 @@ export const AddressFormDialog: React.FC<AddressFormDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{address ? 'Editar Endereço' : 'Adicionar Endereço'}</DialogTitle>
           <DialogDescription>
-            Preencha os dados do seu endereço
+            {isFirstAddress ? (
+              <>Preencha os dados do seu endereço. <strong>Este será seu endereço principal.</strong></>
+            ) : (
+              'Preencha os dados do seu endereço'
+            )}
           </DialogDescription>
         </DialogHeader>
 

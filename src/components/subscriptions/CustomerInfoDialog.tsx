@@ -85,6 +85,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     selectContact,
     getFormValues,
     autoFillPrimary,
+    getAddresses,
   } = useSmartFormFiller();
   
   // Refetch addresses when new one is added
@@ -292,16 +293,37 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     setShowAddressDialog(true);
   };
 
-  const handleAddressSuccess = () => {
-    refetchAddresses();
+  const handleAddressSuccess = async () => {
     setShowAddressDialog(false);
-    // Auto-select the newly created address if it becomes primary
-    setTimeout(() => {
-      const values = autoFillPrimary();
-      Object.entries(values).forEach(([key, value]) => {
-        if (value) form.setValue(key as keyof CustomerFormData, value as string);
-      });
-    }, 100);
+    
+    // Refetch addresses and auto-fill form immediately
+    const { data: updatedAddresses } = await refetchAddresses();
+    
+    if (updatedAddresses && updatedAddresses.length > 0) {
+      // Get the most recent address (or primary if exists)
+      const primaryAddr = updatedAddresses.find(a => a.is_primary);
+      const newestAddr = primaryAddr || updatedAddresses[updatedAddresses.length - 1];
+      
+      if (newestAddr) {
+        // Fill form immediately with the new address
+        form.setValue('address', newestAddr.street);
+        form.setValue('addressNumber', newestAddr.number || '');
+        form.setValue('complement', newestAddr.complement || '');
+        form.setValue('province', newestAddr.neighborhood || '');
+        form.setValue('city', newestAddr.city);
+        form.setValue('state', newestAddr.state);
+        form.setValue('postalCode', newestAddr.postal_code || '');
+        
+        // Select it in the smart selector if available
+        selectAddress(newestAddr.id);
+        
+        toast({
+          title: 'Endereço adicionado',
+          description: 'Os campos foram preenchidos automaticamente.',
+          duration: 3000,
+        });
+      }
+    }
   };
 
   const handleSubmit = async (values: CustomerFormData) => {
@@ -313,6 +335,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
           ? 'Este CPF pertence a outro usuário. Use um CPF diferente ou entre em contato com o suporte.'
           : 'Este CPF já está cadastrado. Por favor, faça login na conta existente.',
         variant: 'destructive',
+        duration: 8000,
       });
       return; // Block submission completely
     }
@@ -713,13 +736,14 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
               <Button 
                 type="submit" 
-                disabled={loading || (!!cpfExists && !!existingUserData)}
+                disabled={loading}
                 onClick={() => {
-                  console.log('[DEBUG] Botão Continuar', {
+                  console.log('🔍 Estado do botão Continuar:', {
                     loading,
                     cpfExists,
-                    hasExistingUserData: !!existingUserData,
-                    disabled: loading || (!!cpfExists && !!existingUserData)
+                    existingUserData: !!existingUserData,
+                    user: !!user,
+                    formValues: form.getValues(),
                   });
                 }}
               >

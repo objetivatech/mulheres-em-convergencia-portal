@@ -266,13 +266,23 @@ const Planos: React.FC = () => {
         return;
       }
 
-      // Check for 400 validation errors
-      if (error?.message?.includes('400') || error?.message?.includes('inválid')) {
+      // Check for 400 validation errors or missing fields
+      if (error?.message?.includes('400') || error?.message?.includes('inválid') || error?.message?.includes('obrigatórios')) {
+        // Try to parse specific missing fields
+        let description = error?.message || 'Verifique os campos obrigatórios.';
+        
+        if (error?.message?.includes('obrigatórios não informados:')) {
+          const missingFields = error.message.split('obrigatórios não informados:')[1]?.trim();
+          description = `📋 Complete os campos: ${missingFields}\n\nDica: Telefone (10-11 dígitos com DDD), UF (2 letras), CEP (formato 12345-678).`;
+        } else {
+          description = 'Telefone: apenas números (10-11 dígitos com DDD). UF: 2 letras maiúsculas. CEP: formato 12345-678.';
+        }
+        
         toast({
           title: '⚠️ Corrija os seguintes campos:',
-          description: error?.message || 'Telefone: apenas números (10-11 dígitos com DDD). UF: 2 letras maiúsculas. CEP: formato 12345-678.',
+          description,
           variant: 'destructive',
-          duration: 8000, // Mais tempo para ler
+          duration: 10000,
         });
         // ✅ NÃO retorna, deixa diálogo aberto
         return;

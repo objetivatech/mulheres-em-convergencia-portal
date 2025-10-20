@@ -180,6 +180,7 @@ export const useSmartFormFiller = () => {
     getAddressSuggestions,
     selectAddress,
     getPrimaryAddress,
+    getAddresses: () => addresses || [],
     
     // Contact functions
     hasContacts,
