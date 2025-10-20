@@ -223,15 +223,22 @@ const Planos: React.FC = () => {
         }
       }
 
+      const customerPayload = {
+        ...normalizedCustomer,
+        name: normalizedCustomer?.name || userProfile?.full_name,
+        cpfCnpj: normalizedCustomer?.cpfCnpj || normalizeDigits(userProfile?.cpf || ''),
+        email: signupData?.email || normalizedCustomer?.email || userProfile?.email,
+        phone: normalizedCustomer?.phone || normalizeDigits(userProfile?.phone || ''),
+        city: normalizedCustomer?.city || userProfile?.city,
+        state: normalizedCustomer?.state || (userProfile?.state || '').toUpperCase().slice(0, 2),
+      };
+
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: {
           plan_id: planId,
           billing_cycle: billingCycle,
           payment_method: 'PIX',
-          customer: {
-            ...normalizedCustomer,
-            email: signupData?.email || normalizedCustomer?.email,
-          },
+          customer: customerPayload,
         },
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
@@ -280,11 +287,32 @@ const Planos: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Erro ao criar assinatura:', error);
-      
-      const errMsg = String(error?.message || '');
-      const status = (error?.status || error?.context?.status || error?.cause?.status) as number | undefined;
 
-      // Auth/session errors: keep dialog open and guide the user
+      // Tenta extrair detalhes do erro retornado pela Edge Function
+      let status = (error?.status || error?.context?.status || error?.cause?.status) as number | undefined;
+      let backendDetails = '';
+      let backendJson: any = null;
+
+      if (error?.context) {
+        try {
+          const ctx = error.context as Response;
+          if (typeof (ctx as any).json === 'function') {
+            backendJson = await (ctx as any).json();
+            backendDetails = backendJson?.error || backendJson?.message || backendJson?.details || JSON.stringify(backendJson);
+          } else if (typeof (ctx as any).text === 'function') {
+            backendDetails = await (ctx as any).text();
+          } else if ((ctx as any).body) {
+            backendDetails = String((ctx as any).body);
+          }
+          status = status || (ctx as any).status;
+        } catch (_) {
+          // ignore parsing errors
+        }
+      }
+
+      const errMsg = String(error?.message || backendDetails || '');
+
+      // Auth/session errors
       if (status === 401 || status === 403 || /jwt|token|unauthor/i.test(errMsg)) {
         toast({
           title: 'Sessão expirada',
@@ -293,9 +321,9 @@ const Planos: React.FC = () => {
         });
         return;
       }
-      
-      // Check for complimentary account error
-      if (error?.message?.includes('cortesia') || error?.message?.includes('complimentary')) {
+
+      // Conta com cortesia ativa
+      if (/cortesia|complimentary/i.test(errMsg + ' ' + backendDetails)) {
         toast({
           title: 'Conta com cortesia ativa',
           description: 'Sua empresa está com cortesia ativa; não é necessário assinar agora.',
@@ -304,29 +332,46 @@ const Planos: React.FC = () => {
         return;
       }
 
-      // Check for 400 validation errors or missing fields
-      if (error?.message?.includes('400') || error?.message?.includes('inválid') || error?.message?.includes('obrigatórios')) {
-        // Try to parse specific missing fields
-        let description = error?.message || 'Verifique os campos obrigatórios.';
-        
-        if (error?.message?.includes('obrigatórios não informados:')) {
-          const missingFields = error.message.split('obrigatórios não informados:')[1]?.trim();
-          description = `📋 Complete os campos: ${missingFields}\n\nDica: Telefone (10-11 dígitos com DDD), UF (2 letras), CEP (formato 12345-678).`;
-        } else {
-          description = 'Telefone: apenas números (10-11 dígitos com DDD). UF: 2 letras maiúsculas. CEP: formato 12345-678.';
-        }
-        
+      // Erros de validação do ASAAS vindos como erro da função
+      if (backendJson?.asaas_errors?.length) {
+        const errorMessages = backendJson.asaas_errors.map((err: any) => {
+          const field = err.code || err.field || 'Desconhecido';
+          const msg = err.description || err.message || 'Erro desconhecido';
+          return `• ${field}: ${msg}`;
+        }).join('\n');
+
+        toast({
+          title: '❌ Erro de validação do ASAAS',
+          description: errorMessages,
+          variant: 'destructive',
+          duration: 10000,
+        });
+        return;
+      }
+
+      // Campos obrigatórios ausentes estruturados
+      if (backendJson?.missing_fields?.length) {
+        toast({
+          title: '⚠️ Campos obrigatórios ausentes',
+          description: `Complete: ${backendJson.missing_fields.join(', ')}`,
+          variant: 'destructive',
+          duration: 10000,
+        });
+        return;
+      }
+
+      if (status === 400 || /inválid|invalid|obrigatórios|missing/i.test(errMsg + ' ' + backendDetails)) {
+        const description = backendDetails || errMsg || 'Verifique os campos obrigatórios.';
         toast({
           title: '⚠️ Corrija os seguintes campos:',
           description,
           variant: 'destructive',
           duration: 10000,
         });
-        // ✅ NÃO retorna, deixa diálogo aberto
         return;
       }
 
-      const message = error?.message || 'Não foi possível processar a assinatura';
+      const message = backendDetails || errMsg || 'Não foi possível processar a assinatura';
       toast({ title: 'Erro', description: message, variant: 'destructive' });
     } finally {
       setProcessingPlan(null);
