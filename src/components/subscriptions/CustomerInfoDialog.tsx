@@ -33,9 +33,9 @@ const customerSchema = z.object({
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {
-  // If email is provided, password and confirmPassword are required
-  if (data.email) {
-    return data.password && data.confirmPassword && data.password === data.confirmPassword;
+  // Only validate email/password if email has actual content (not empty string)
+  if (data.email && data.email.trim().length > 0) {
+    return data.password && data.password.length >= 6 && data.confirmPassword && data.password === data.confirmPassword;
   }
   return true;
 }, {
@@ -142,9 +142,9 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
         province: smartValues.province || '',
         city: smartValues.city || updates.city || '',
         state: smartValues.state || updates.state || '',
-        email: '',
-        password: '',
-        confirmPassword: '',
+        email: undefined,
+        password: undefined,
+        confirmPassword: undefined,
       })
     } else {
       form.reset({
