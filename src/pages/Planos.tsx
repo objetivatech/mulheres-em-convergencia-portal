@@ -199,6 +199,30 @@ const Planos: React.FC = () => {
         }
       }
 
+      // Ensure valid session token for authenticated users
+      let accessToken: string | undefined = undefined;
+      if (user) {
+        try {
+          const { data: { session: current } } = await supabase.auth.getSession();
+          accessToken = current?.access_token;
+          if (!accessToken) {
+            const { data: { session: refreshed } } = await supabase.auth.refreshSession();
+            accessToken = refreshed?.access_token;
+          }
+          if (!accessToken) {
+            toast({
+              title: 'Sessão expirada',
+              description: 'Faça login novamente para continuar.',
+              variant: 'destructive',
+            });
+            setProcessingPlan(null);
+            return;
+          }
+        } catch (e) {
+          console.error('Erro ao validar sessão:', e);
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: {
           plan_id: planId,
@@ -209,6 +233,7 @@ const Planos: React.FC = () => {
             email: signupData?.email || normalizedCustomer?.email,
           },
         },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
 
       if (error) throw error;
@@ -255,6 +280,19 @@ const Planos: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Erro ao criar assinatura:', error);
+      
+      const errMsg = String(error?.message || '');
+      const status = (error?.status || error?.context?.status || error?.cause?.status) as number | undefined;
+
+      // Auth/session errors: keep dialog open and guide the user
+      if (status === 401 || status === 403 || /jwt|token|unauthor/i.test(errMsg)) {
+        toast({
+          title: 'Sessão expirada',
+          description: 'Faça login novamente para continuar com a assinatura.',
+          variant: 'destructive',
+        });
+        return;
+      }
       
       // Check for complimentary account error
       if (error?.message?.includes('cortesia') || error?.message?.includes('complimentary')) {
