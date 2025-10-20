@@ -305,6 +305,11 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
       const newestAddr = primaryAddr || updatedAddresses[updatedAddresses.length - 1];
       
       if (newestAddr) {
+        // Format CEP with mask
+        const formattedCep = newestAddr.postal_code 
+          ? newestAddr.postal_code.replace(/(\d{5})(\d{3})/, '$1-$2')
+          : '';
+        
         // Fill form immediately with the new address
         form.setValue('address', newestAddr.street);
         form.setValue('addressNumber', newestAddr.number || '');
@@ -312,7 +317,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
         form.setValue('province', newestAddr.neighborhood || '');
         form.setValue('city', newestAddr.city);
         form.setValue('state', newestAddr.state);
-        form.setValue('postalCode', newestAddr.postal_code || '');
+        form.setValue('postalCode', formattedCep);
         
         // Select it in the smart selector if available
         selectAddress(newestAddr.id);
@@ -354,6 +359,47 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
     await onSubmit(values, signupData);
   };
 
+  // Error handler for validation failures
+  const handleValidationError = (errors: any) => {
+    console.log('🚨 Erros de validação:', errors);
+    
+    // Get first 3 errors
+    const errorList = Object.keys(errors).slice(0, 3).map(key => {
+      const fieldNames: Record<string, string> = {
+        name: 'Nome',
+        cpfCnpj: 'CPF/CNPJ',
+        phone: 'Telefone',
+        postalCode: 'CEP',
+        address: 'Endereço',
+        addressNumber: 'Número',
+        province: 'Bairro',
+        city: 'Cidade',
+        state: 'UF',
+        email: 'Email',
+        password: 'Senha',
+        confirmPassword: 'Confirmar Senha',
+      };
+      return fieldNames[key] || key;
+    });
+
+    toast({
+      title: '⚠️ Corrija os campos obrigatórios',
+      description: `Verifique: ${errorList.join(', ')}`,
+      variant: 'destructive',
+      duration: 10000,
+    });
+
+    // Focus on first error field
+    const firstErrorField = Object.keys(errors)[0];
+    if (firstErrorField) {
+      const element = document.getElementsByName(firstErrorField)[0];
+      if (element) {
+        element.focus();
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -373,7 +419,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+          <form onSubmit={form.handleSubmit(handleSubmit, handleValidationError)} className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
             
             {/* Signup fields for non-authenticated users */}
             {!user && (
@@ -428,7 +474,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel className="flex items-center gap-2">
-                    Nome completo
+                    Nome completo *
                     {userProfile?.full_name && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                   </FormLabel>
                   <FormControl><Input placeholder="Seu nome" {...field} /></FormControl>
@@ -443,7 +489,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    CPF/CNPJ
+                    CPF/CNPJ *
                     <span className="text-xs text-muted-foreground font-normal">
                       (formato: 000.000.000-00)
                     </span>
@@ -499,7 +545,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                render={({ field }) => (
                  <FormItem>
                    <FormLabel className="flex items-center gap-2">
-                     Telefone
+                     Telefone *
                      {userProfile?.phone && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                    </FormLabel>
                    <FormControl>
@@ -548,7 +594,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="postalCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CEP</FormLabel>
+                  <FormLabel>CEP *</FormLabel>
                   <p className="text-xs text-muted-foreground mb-1">
                     📮 Formato: 12345-678 (busca automática de endereço)
                   </p>
@@ -576,7 +622,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel className="flex items-center gap-2">
-                    Endereço
+                    Endereço *
                     {addressLoading && <span className="text-xs text-muted-foreground">Carregando...</span>}
                   </FormLabel>
                   <FormControl><Input placeholder="Rua, Avenida..." {...field} /></FormControl>
@@ -590,7 +636,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="addressNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Número</FormLabel>
+                  <FormLabel>Número *</FormLabel>
                   <FormControl><Input placeholder="123" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -614,7 +660,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               name="province"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bairro</FormLabel>
+                  <FormLabel>Bairro *</FormLabel>
                   <FormControl><Input placeholder="Bairro" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -627,7 +673,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    Cidade
+                    Cidade *
                     {userProfile?.city && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                   </FormLabel>
                   <FormControl><Input placeholder="Cidade" {...field} /></FormControl>
@@ -642,7 +688,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    Estado (UF)
+                    Estado (UF) *
                     <span className="text-xs text-muted-foreground font-normal">(ex.: RS, SP)</span>
                     {userProfile?.state && <Badge variant="secondary" className="text-xs">Preenchido</Badge>}
                   </FormLabel>

@@ -119,7 +119,10 @@ export const useSmartFormFiller = () => {
         values.province = address.neighborhood || '';
         values.city = address.city;
         values.state = address.state;
-        values.postalCode = address.postal_code || '';
+        // Format CEP with mask
+        values.postalCode = address.postal_code 
+          ? address.postal_code.replace(/(\d{5})(\d{3})/, '$1-$2')
+          : '';
       }
     }
     
@@ -157,7 +160,10 @@ export const useSmartFormFiller = () => {
       values.province = primaryAddress.neighborhood || '';
       values.city = primaryAddress.city;
       values.state = primaryAddress.state;
-      values.postalCode = primaryAddress.postal_code || '';
+      // Format CEP with mask
+      values.postalCode = primaryAddress.postal_code 
+        ? primaryAddress.postal_code.replace(/(\d{5})(\d{3})/, '$1-$2')
+        : '';
       selectAddress(primaryAddress.id);
     }
     
