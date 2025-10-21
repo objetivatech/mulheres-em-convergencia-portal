@@ -324,6 +324,15 @@ export const UserManagement = () => {
                            Editar
                          </Button>
 
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleManageBusinesses(user)}
+                         >
+                           <Gift className="h-4 w-4 mr-1" />
+                           Gerenciar Negócios
+                         </Button>
+
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
                              <Button variant="outline" size="sm">

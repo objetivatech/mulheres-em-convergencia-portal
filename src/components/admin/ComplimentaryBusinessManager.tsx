@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Store, Gift, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { AddBusinessDialog } from './AddBusinessDialog';
+import { Store, Gift, Calendar, CheckCircle, XCircle, Plus } from 'lucide-react';
 
 interface Business {
   id: string;
@@ -29,6 +30,7 @@ interface ComplimentaryBusinessManagerProps {
 export const ComplimentaryBusinessManager = ({ userId, userName }: ComplimentaryBusinessManagerProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showAddBusinessDialog, setShowAddBusinessDialog] = useState(false);
 
   // Buscar negócios do usuário
   const { data: businesses = [], isLoading } = useQuery({
@@ -130,31 +132,60 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
 
   if (businesses.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Store className="h-5 w-5" />
-            Negócios de {userName}
-          </CardTitle>
-          <CardDescription>
-            Este usuário ainda não possui negócios cadastrados
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="h-5 w-5" />
+              Negócios de {userName}
+            </CardTitle>
+            <CardDescription>
+              Este usuário ainda não possui negócios cadastrados
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => setShowAddBusinessDialog(true)}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Negócio
+            </Button>
+          </CardContent>
+        </Card>
+        <AddBusinessDialog
+          userId={userId}
+          userName={userName}
+          open={showAddBusinessDialog}
+          onOpenChange={setShowAddBusinessDialog}
+        />
+      </>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Store className="h-5 w-5" />
-          Negócios de {userName}
-        </CardTitle>
-        <CardDescription>
-          Gerencie o acesso gratuito (cortesia) aos negócios deste usuário
-        </CardDescription>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Store className="h-5 w-5" />
+                Negócios de {userName}
+              </CardTitle>
+              <CardDescription>
+                Gerencie o acesso gratuito (cortesia) aos negócios deste usuário
+              </CardDescription>
+            </div>
+            <Button
+              onClick={() => setShowAddBusinessDialog(true)}
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Negócio
+            </Button>
+          </div>
+        </CardHeader>
       <CardContent className="space-y-4">
         {businesses.map((business) => (
           <div
@@ -277,6 +308,13 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
           </p>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+      <AddBusinessDialog
+        userId={userId}
+        userName={userName}
+        open={showAddBusinessDialog}
+        onOpenChange={setShowAddBusinessDialog}
+      />
+    </>
   );
 };
