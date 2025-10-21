@@ -248,7 +248,19 @@ export default function BlogEditor() {
           </div>
           
           <div className="flex space-x-2">
-            {form.watch('status') === 'published' && permissions?.canPublish ? (
+            {/* Botão Salvar Rascunho - sempre disponível */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
+              disabled={createBlogPost.isPending || updateBlogPost.isPending}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {permissions?.isAuthor ? 'Enviar para Revisão' : 'Salvar Rascunho'}
+            </Button>
+            
+            {/* Botão Publicar - apenas para quem tem permissão */}
+            {permissions?.canPublish && (
               <Button
                 type="button"
                 onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'published' }))()}
@@ -256,28 +268,6 @@ export default function BlogEditor() {
               >
                 <Send className="w-4 h-4 mr-2" />
                 Publicar
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
-                disabled={createBlogPost.isPending || updateBlogPost.isPending}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {permissions?.isAuthor ? 'Enviar para Revisão' : 'Salvar Rascunho'}
-              </Button>
-            )}
-            
-            {form.watch('status') === 'draft' && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
-                disabled={createBlogPost.isPending || updateBlogPost.isPending}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Rascunho
               </Button>
             )}
           </div>

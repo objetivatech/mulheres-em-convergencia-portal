@@ -65,8 +65,31 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
 
       if (error) throw error;
 
-      // Se ATIVOU cortesia, cancelar assinatura ativa do usuário (se existir)
+      // Se ATIVOU cortesia, atribuir role business_owner ao usuário
       if (newStatus && business.owner_id) {
+        // Verificar se o usuário já tem a role business_owner
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', business.owner_id)
+          .eq('role', 'business_owner')
+          .maybeSingle();
+
+        // Se não tiver, adicionar a role
+        if (!userRoles) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: business.owner_id,
+              role: 'business_owner'
+            });
+
+          if (roleError) {
+            console.error('Erro ao atribuir role business_owner:', roleError);
+          }
+        }
+
+        // Cancelar assinatura ativa do usuário (se existir)
         const { data: activeSubscription } = await supabase
           .from('user_subscriptions')
           .select('id, external_subscription_id')

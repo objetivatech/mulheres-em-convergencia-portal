@@ -98,6 +98,32 @@ export const AddBusinessDialog = ({ userId, userName, open, onOpenChange }: AddB
         .single();
 
       if (error) throw error;
+
+      // Se o negócio é cortesia, atribuir role business_owner ao usuário
+      if (data.isComplimentary) {
+        // Verificar se o usuário já tem a role business_owner
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('role', 'business_owner')
+          .maybeSingle();
+
+        // Se não tiver, adicionar a role
+        if (!userRoles) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: userId,
+              role: 'business_owner'
+            });
+
+          if (roleError) {
+            console.error('Erro ao atribuir role business_owner:', roleError);
+          }
+        }
+      }
+
       return business;
     },
     onSuccess: (business) => {

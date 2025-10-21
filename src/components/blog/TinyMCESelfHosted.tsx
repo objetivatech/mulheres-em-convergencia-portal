@@ -76,12 +76,16 @@ export const TinyMCESelfHosted: React.FC<TinyMCESelfHostedProps> = ({
         console.log('TinyMCE loaded from self-hosted');
         // Set base_url for self-hosted plugins/skins resolution
         if (window.tinymce) {
-          window.tinymce.baseURL = '/tinymce_8.1.2/tinymce';
+          window.tinymce.baseURL = '/tinymce_8.1.2/tinymce/js/tinymce';
         }
         initTinyMCE();
       };
       fallbackScript.onerror = () => {
         console.error('TinyMCE failed to load from all sources');
+        // Show error message to user
+        if (editorRef.current) {
+          editorRef.current.placeholder = 'Erro ao carregar editor. Por favor, recarregue a página.';
+        }
       };
       document.head.appendChild(fallbackScript);
     }

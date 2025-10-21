@@ -90,7 +90,7 @@ export function Header() {
                       </DropdownMenuLabel>
                       <DropdownMenuItem asChild>
                         <Link to="/dashboard-empresa" className="flex items-center">
-                          <span>💼 Dashboard Empresa</span>
+                          <span>💼 Painel Empresa</span>
                         </Link>
                       </DropdownMenuItem>
                     </>

@@ -73,7 +73,7 @@ export default function BlogDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-nexa text-foreground">Blog Dashboard</h1>
+            <h1 className="text-3xl font-nexa text-foreground">Painel do Blog</h1>
             <p className="text-muted-foreground mt-2">
               Gerencie seus posts, categorias e conteúdo do blog
             </p>

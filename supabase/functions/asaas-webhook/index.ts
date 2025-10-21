@@ -351,6 +351,24 @@ serve(async (req) => {
           })
           .eq("owner_id", localSub.user_id);
 
+        // Atribuir role business_owner ao usuário
+        const { data: existingRole } = await supabaseClient
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', localSub.user_id)
+          .eq('role', 'business_owner')
+          .maybeSingle();
+
+        if (!existingRole) {
+          await supabaseClient
+            .from('user_roles')
+            .insert({
+              user_id: localSub.user_id,
+              role: 'business_owner'
+            });
+          logStep("Role business_owner assigned", { userId: localSub.user_id });
+        }
+
         logStep("Subscription activated", { subscriptionId: localSub.id });
       }
     }

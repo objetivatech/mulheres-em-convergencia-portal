@@ -171,7 +171,7 @@ export default function ConfirmacaoPagamento() {
                   variant="outline"
                   onClick={() => navigate('/dashboard-empresa')}
                 >
-                  Ir para Dashboard
+                  Ir para Painel
                 </Button>
                 {subscription?.status === 'pending' && (
                   <Button
