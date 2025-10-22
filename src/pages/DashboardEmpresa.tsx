@@ -427,15 +427,9 @@ export const DashboardEmpresa = () => {
     }
   };
 
-  const handleGalleryUpload = async (url: string | null) => {
+  const handleGalleryUpload = (url: string | null) => {
     if (url && !galleryImages.includes(url)) {
-      const newGalleryImages = [...galleryImages, url];
-      setGalleryImages(newGalleryImages);
-      
-      // Salvar automaticamente no banco de dados
-      if (business?.id) {
-        await saveImages(business.logo_url || logoUrl, business.cover_image_url || coverUrl, newGalleryImages);
-      }
+      setGalleryImages([...galleryImages, url]);
     }
   };
   
@@ -910,26 +904,36 @@ export const DashboardEmpresa = () => {
                   />
                   
                   {galleryImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {galleryImages.map((url, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={url}
-                            alt={`Galeria ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeGalleryImage(url)}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {galleryImages.map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={url}
+                              alt={`Galeria ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeGalleryImage(url)}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => saveImages(logoUrl, coverUrl, galleryImages)}
+                        disabled={!business?.id}
+                        className="w-full"
+                      >
+                        Salvar Galeria ({galleryImages.length} {galleryImages.length === 1 ? 'imagem' : 'imagens'})
+                      </Button>
+                    </>
                   )}
                 </div>
               </CardContent>
