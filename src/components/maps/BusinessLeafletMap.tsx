@@ -29,7 +29,7 @@ export const BusinessLeafletMap: React.FC<BusinessLeafletMapProps> = ({
     latitude || -15.7942,
     longitude || -47.8822
   ]);
-  const [mapZoom, setMapZoom] = useState(latitude && longitude ? 13 : 5);
+  const [mapZoom, setMapZoom] = useState(latitude && longitude ? 12 : 5);
 
   // Buscar áreas de atendimento
   const { serviceAreas = [], loading: areasLoading } = useBusinessServiceAreas(businessId);
@@ -74,10 +74,11 @@ export const BusinessLeafletMap: React.FC<BusinessLeafletMapProps> = ({
   // Definir centro e zoom baseado na localização do negócio
   useEffect(() => {
     if (latitude && longitude) {
+      // Centralizar no endereço do negócio
       setMapCenter([latitude, longitude]);
-      setMapZoom(13);
+      setMapZoom(12);
     } else if (businessCity && businessState) {
-      // Geocodificar a cidade do negócio
+      // Geocodificar a cidade do negócio se não tiver coordenadas exatas
       geocodeLocation(businessCity, businessState)
         .then(coords => {
           if (coords && coords.latitude && coords.longitude) {

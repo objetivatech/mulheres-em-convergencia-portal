@@ -71,6 +71,20 @@ const Diretorio = () => {
 
   useEffect(() => {
     fetchBusinesses();
+    // Tentar obter localização do usuário automaticamente ao carregar
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([latitude, longitude]);
+          console.log('Localização do usuário obtida:', { latitude, longitude });
+        },
+        (error) => {
+          console.log('Não foi possível obter localização automaticamente:', error.message);
+          // Não mostrar erro ao usuário, apenas usar localização padrão
+        }
+      );
+    }
   }, []);
 
   const fetchBusinesses = async () => {
@@ -641,7 +655,7 @@ const Diretorio = () => {
         state: business.state
       }))}
       center={userLocation ? [userLocation[0], userLocation[1]] : [-30.0346, -51.2177]}
-      zoom={userLocation ? 12 : 10}
+      zoom={userLocation ? 11 : 10}
       height="60vh"
       showSearch={true}
       onBusinessClick={(businessId) => {

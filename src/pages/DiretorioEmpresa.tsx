@@ -494,6 +494,12 @@ const DiretorioEmpresa = () => {
                   <CardTitle>Informações de Contato</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {!contacts?.phone && !contacts?.whatsapp && !contacts?.email && !contacts?.website && !contacts?.instagram && (
+                    <p className="text-sm text-muted-foreground">
+                      Entre em contato pelo formulário abaixo.
+                    </p>
+                  )}
+                  
                   {contacts?.phone && (
                     <Button
                       variant="outline"

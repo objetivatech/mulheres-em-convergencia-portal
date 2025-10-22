@@ -427,9 +427,51 @@ export const DashboardEmpresa = () => {
     }
   };
 
-  const handleGalleryUpload = (url: string | null) => {
+  const handleGalleryUpload = async (url: string | null) => {
     if (url && !galleryImages.includes(url)) {
-      setGalleryImages([...galleryImages, url]);
+      const newGalleryImages = [...galleryImages, url];
+      setGalleryImages(newGalleryImages);
+      
+      // Salvar automaticamente no banco de dados
+      if (business?.id) {
+        await saveImages(business.logo_url || logoUrl, business.cover_image_url || coverUrl, newGalleryImages);
+      }
+    }
+  };
+  
+  const saveImages = async (logo: string | null, cover: string | null, gallery: string[]) => {
+    if (!business?.id) {
+      toast({
+        title: 'Aviso',
+        description: 'Salve os dados da empresa primeiro antes de adicionar imagens.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('businesses')
+        .update({
+          logo_url: logo || null,
+          cover_image_url: cover || null,
+          gallery_images: gallery.length > 0 ? gallery : null
+        })
+        .eq('id', business.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Imagens salvas com sucesso!'
+      });
+    } catch (error: any) {
+      console.error('Erro ao salvar imagens:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar imagens',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -803,13 +845,23 @@ export const DashboardEmpresa = () => {
                     Imagem quadrada, recomendado 300x300px
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <ImageUploader
                     value={logoUrl}
                     onChange={setLogoUrl}
                     bucket="business-logos"
                     label="Carregar Logo"
                   />
+                  {logoUrl && (
+                    <Button
+                      type="button"
+                      onClick={() => saveImages(logoUrl, coverUrl, galleryImages)}
+                      disabled={!business?.id}
+                      className="w-full"
+                    >
+                      Salvar Logo
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -820,13 +872,23 @@ export const DashboardEmpresa = () => {
                     Imagem panorâmica, recomendado 1200x400px
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <ImageUploader
                     value={coverUrl}
                     onChange={setCoverUrl}
                     bucket="business-covers"
                     label="Carregar Capa"
                   />
+                  {coverUrl && (
+                    <Button
+                      type="button"
+                      onClick={() => saveImages(logoUrl, coverUrl, galleryImages)}
+                      disabled={!business?.id}
+                      className="w-full"
+                    >
+                      Salvar Capa
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
