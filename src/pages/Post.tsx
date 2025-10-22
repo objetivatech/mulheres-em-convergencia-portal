@@ -236,16 +236,35 @@ const Post = () => {
         <meta property="og:description" content={post.seo_description || post.excerpt} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://mulheresemconvergencia.com.br/convergindo/${post.slug}`} />
-        {post.featured_image_url && (
-          <meta property="og:image" content={post.featured_image_url} />
+        <meta property="og:site_name" content="Mulheres em Converg\u00eancia" />
+        {post.featured_image_url ? (
+          <>
+            <meta property="og:image" content={post.featured_image_url} />
+            <meta property="og:image:secure_url" content={post.featured_image_url} />
+            <meta property="og:image:type" content="image/jpeg" />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+            <meta property="og:image:alt" content={post.title} />
+          </>
+        ) : (
+          <>
+            <meta property="og:image" content="https://mulheresemconvergencia.com.br/og-default.jpg" />
+            <meta property="og:image:secure_url" content="https://mulheresemconvergencia.com.br/og-default.jpg" />
+          </>
         )}
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@mulheresemconvergencia" />
         <meta name="twitter:title" content={post.seo_title || post.title} />
         <meta name="twitter:description" content={post.seo_description || post.excerpt} />
-        {post.featured_image_url && (
-          <meta name="twitter:image" content={post.featured_image_url} />
+        {post.featured_image_url ? (
+          <>
+            <meta name="twitter:image" content={post.featured_image_url} />
+            <meta name="twitter:image:alt" content={post.title} />
+          </>
+        ) : (
+          <meta name="twitter:image" content="https://mulheresemconvergencia.com.br/og-default.jpg" />
         )}
         
         {/* Article specific */}
@@ -366,6 +385,16 @@ const Post = () => {
                 <Share2 className="h-4 w-4 mr-2" />
                 Compartilhar
               </Button>
+            </div>
+
+            {/* Social Share Buttons (Top) */}
+            <div className="mb-8 pb-8 border-b border-border">
+              <ShareButtons
+                title={post.title}
+                url={`https://mulheresemconvergencia.com.br/convergindo/${post.slug}`}
+                description={post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 160)}
+                imageUrl={post.featured_image_url}
+              />
             </div>
 
             {/* Featured Image */}

@@ -17,6 +17,14 @@ interface MapProps {
     city: string;
     state: string;
   }>;
+  serviceAreas?: Array<{
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+    radius: number;
+    type: string;
+  }>;
   center?: [number, number];
   zoom?: number;
   height?: string;
@@ -26,6 +34,7 @@ interface MapProps {
 
 const Map: React.FC<MapProps> = ({
   businesses = [],
+  serviceAreas = [],
   center = [-51.2177, -30.0346], // Porto Alegre, RS
   zoom = 10,
   height = '400px',
@@ -152,22 +161,102 @@ const Map: React.FC<MapProps> = ({
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
 
+        // Add markers for businesses (pins)
         businesses.forEach((business) => {
           if (business.latitude && business.longitude) {
             const marker = new mapboxgl.default.Marker({ color: '#C75A92' })
               .setLngLat([business.longitude, business.latitude])
               .setPopup(
                 new mapboxgl.default.Popup({ offset: 25 }).setHTML(`
-                  <div class=\"p-3\">
-                    <h3 class=\"font-semibold text-base mb-1\">${business.name}</h3>
-                    <p class=\"text-sm text-gray-600 mb-1\">${business.category}</p>
-                    <p class=\"text-xs text-gray-500 mb-2\">${business.city}, ${business.state}</p>
-                    ${onBusinessClick ? `<button onclick=\"window.handleBusinessClick('${business.id}')\" class=\"w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90\">Ver Perfil</button>` : ''}
+                  <div class="p-3">
+                    <h3 class="font-semibold text-base mb-1">${business.name}</h3>
+                    <p class="text-sm text-gray-600 mb-1">${business.category}</p>
+                    <p class="text-xs text-gray-500 mb-2">${business.city}, ${business.state}</p>
+                    ${onBusinessClick ? `<button onclick="window.handleBusinessClick('${business.id}')" class="w-full px-3 py-1 bg-primary text-white rounded text-sm hover:bg-primary/90">Ver Perfil</button>` : ''}
                   </div>
                 `)
               )
               .addTo(map.current!);
             markersRef.current.push(marker);
+          }
+        });
+        
+        // Add circles for service areas (polygons)
+        serviceAreas.forEach((area) => {
+          // Criar um círculo usando um polígono
+          const center = [area.longitude, area.latitude];
+          const radiusInKm = area.radius / 1000;
+          const points = 64;
+          const coords = [];
+          
+          for (let i = 0; i < points; i++) {
+            const angle = (i / points) * 2 * Math.PI;
+            const dx = radiusInKm * Math.cos(angle) / 111.32; // 1 grau ≈ 111.32 km
+            const dy = radiusInKm * Math.sin(angle) / (111.32 * Math.cos(area.latitude * Math.PI / 180));
+            coords.push([center[0] + dx, center[1] + dy]);
+          }
+          coords.push(coords[0]); // Fechar o polígono
+          
+          // Adicionar source e layer se não existir
+          const sourceId = `service-area-${area.id}`;
+          if (!map.current.getSource(sourceId)) {
+            map.current.addSource(sourceId, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [coords]
+                },
+                properties: {
+                  name: area.name,
+                  type: area.type
+                }
+              }
+            });
+            
+            // Adicionar camada de preenchimento
+            map.current.addLayer({
+              id: `${sourceId}-fill`,
+              type: 'fill',
+              source: sourceId,
+              paint: {
+                'fill-color': '#10b981',
+                'fill-opacity': 0.2
+              }
+            });
+            
+            // Adicionar camada de borda
+            map.current.addLayer({
+              id: `${sourceId}-outline`,
+              type: 'line',
+              source: sourceId,
+              paint: {
+                'line-color': '#10b981',
+                'line-width': 2
+              }
+            });
+            
+            // Adicionar popup ao clicar
+            map.current.on('click', `${sourceId}-fill`, () => {
+              new mapboxgl.default.Popup()
+                .setLngLat(center as [number, number])
+                .setHTML(`
+                  <div class="p-2">
+                    <h4 class="font-semibold text-sm">${area.name}</h4>
+                    <p class="text-xs text-gray-500">\u00c1rea de Atendimento (raio de ${radiusInKm}km)</p>
+                  </div>
+                `)
+                .addTo(map.current);
+            });
+            
+            // Cursor pointer ao passar o mouse
+            map.current.on('mouseenter', `${sourceId}-fill`, () => {
+              map.current.getCanvas().style.cursor = 'pointer';
+            });
+            map.current.on('mouseleave', `${sourceId}-fill`, () => {
+              map.current.getCanvas().style.cursor = '';
+            });
           }
         });
 
@@ -184,7 +273,21 @@ const Map: React.FC<MapProps> = ({
         }
       } catch {}
     })();
-  }, [businesses, mapInitialized, onBusinessClick]);
+    
+    // Cleanup function para remover layers e sources
+    return () => {
+      if (map.current && mapInitialized) {
+        serviceAreas.forEach((area) => {
+          const sourceId = `service-area-${area.id}`;
+          try {
+            if (map.current.getLayer(`${sourceId}-fill`)) map.current.removeLayer(`${sourceId}-fill`);
+            if (map.current.getLayer(`${sourceId}-outline`)) map.current.removeLayer(`${sourceId}-outline`);
+            if (map.current.getSource(sourceId)) map.current.removeSource(sourceId);
+          } catch {}
+        });
+      }
+    };
+  }, [businesses, serviceAreas, mapInitialized, onBusinessClick]);
 
   const getCurrentLocation = async () => {
     if (navigator.geolocation) {

@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
 
     // Generate RSS XML
     const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" 
+     xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>Mulheres em Convergência - Blog Convergindo</title>
     <description>Portal dedicado ao empoderamento e conexão de mulheres empreendedoras</description>
@@ -88,17 +91,28 @@ Deno.serve(async (req) => {
       const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
       const cleanContent = post.content?.replace(/<[^>]*>/g, '') || '';
       
+      // Prepare content with featured image
+      let fullContent = '';
+      if (post.featured_image_url) {
+        fullContent = `<p><img src="${post.featured_image_url}" alt="${post.title}" style="max-width: 100%; height: auto;" /></p>`;
+      }
+      fullContent += post.content || '';
+      
       return `
     <item>
       <title><![CDATA[${post.title}]]></title>
       <description><![CDATA[${cleanExcerpt || cleanContent.substring(0, 300) + '...'}]]></description>
-      <content:encoded><![CDATA[${post.content || ''}]]></content:encoded>
+      <content:encoded><![CDATA[${fullContent}]]></content:encoded>
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
       <author>contato@mulheresemconvergencia.com.br (${author})</author>
       <category><![CDATA[${category}]]></category>
-      ${post.featured_image_url ? `<enclosure url="${post.featured_image_url}" type="image/jpeg" />` : ''}
+      ${post.featured_image_url ? `
+      <enclosure url="${post.featured_image_url}" type="image/jpeg" length="0" />
+      <media:content url="${post.featured_image_url}" medium="image" type="image/jpeg">
+        <media:title>${post.title}</media:title>
+      </media:content>` : ''}
     </item>`;
     }).join('')}
   </channel>

@@ -63,31 +63,28 @@ export const BusinessMapboxMap: React.FC<BusinessMapboxMapProps> = ({
     geocodeAreas();
   }, [serviceAreas, geocodeLocation]);
 
-  // Combinar o negócio principal com as áreas de atendimento para o mapa
-  const allMarkers = [
-    // Negócio principal
-    {
-      id: businessId,
-      name: businessName,
-      latitude,
-      longitude,
-      category: 'Localização principal',
-      city: businessCity || '',
-      state: businessState || ''
-    },
-    // Áreas de atendimento geocodificadas
-    ...geocodedAreas
-      .filter(area => area.latitude && area.longitude)
-      .map(area => ({
-        id: area.id,
-        name: area.name,
-        latitude: area.latitude,
-        longitude: area.longitude,
-        category: area.type === 'city' ? 'Cidade atendida' : 'Bairro atendido',
-        city: area.name,
-        state: businessState || ''
-      }))
-  ];
+  // Negócio principal
+  const mainBusiness = latitude && longitude ? [{
+    id: businessId,
+    name: businessName,
+    latitude,
+    longitude,
+    category: 'Localização principal',
+    city: businessCity || '',
+    state: businessState || ''
+  }] : [];
+  
+  // Áreas de atendimento como polígonos/círculos
+  const serviceAreaCircles = geocodedAreas
+    .filter(area => area.latitude && area.longitude)
+    .map(area => ({
+      id: area.id,
+      name: area.name,
+      latitude: area.latitude!,
+      longitude: area.longitude!,
+      radius: 5000, // 5km
+      type: area.type
+    }));
 
   const hasCoords = typeof latitude === 'number' && typeof longitude === 'number';
   const center = hasCoords ? ([longitude as number, latitude as number] as [number, number]) : undefined;
@@ -136,7 +133,8 @@ export const BusinessMapboxMap: React.FC<BusinessMapboxMapProps> = ({
 
       {/* Mapa */}
       <Map
-        businesses={allMarkers}
+        businesses={mainBusiness}
+        serviceAreas={serviceAreaCircles}
         center={center}
         zoom={hasCoords ? 12 : 10}
         height={height}

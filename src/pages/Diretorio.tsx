@@ -81,9 +81,17 @@ const Diretorio = () => {
         },
         (error) => {
           console.log('Não foi possível obter localização automaticamente:', error.message);
-          // Não mostrar erro ao usuário, apenas usar localização padrão
+          // Usar localização padrão (centro do Brasil - Brasília)
+          setUserLocation([-15.7942, -47.8822]);
+        },
+        {
+          timeout: 5000, // Timeout de 5 segundos
+          enableHighAccuracy: false // Mais rápido
         }
       );
+    } else {
+      // Se o navegador não suporta geolocalização, usar localização padrão
+      setUserLocation([-15.7942, -47.8822]);
     }
   }, []);
 
@@ -654,8 +662,8 @@ const Diretorio = () => {
         city: business.city,
         state: business.state
       }))}
-      center={userLocation ? [userLocation[0], userLocation[1]] : [-30.0346, -51.2177]}
-      zoom={userLocation ? 11 : 10}
+      center={userLocation ? [userLocation[0], userLocation[1]] : [-15.7942, -47.8822]}
+      zoom={userLocation ? 11 : 5}
       height="60vh"
       showSearch={true}
       onBusinessClick={(businessId) => {
