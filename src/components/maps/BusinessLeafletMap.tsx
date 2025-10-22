@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -177,22 +177,28 @@ export const BusinessLeafletMap: React.FC<BusinessLeafletMapProps> = ({
             </Marker>
           )}
           
-          {/* Markers das áreas de atendimento */}
+          {/* Círculos das áreas de atendimento */}
           {geocodedAreas.map((area, index) => (
-            <Marker
+            <Circle
               key={index}
-              position={area.coordinates}
-              icon={serviceAreaIcon}
+              center={area.coordinates}
+              radius={5000} // 5km de raio
+              pathOptions={{
+                color: '#10b981', // verde
+                fillColor: '#10b981',
+                fillOpacity: 0.2,
+                weight: 2
+              }}
             >
               <Popup>
                 <div className="space-y-1">
                   <h4 className="font-semibold text-sm">{area.name}</h4>
                   <p className="text-xs text-muted-foreground">
-                    Área de Atendimento
+                    Área de Atendimento (raio de 5km)
                   </p>
                 </div>
               </Popup>
-            </Marker>
+            </Circle>
           ))}
         </MapContainer>
       </div>

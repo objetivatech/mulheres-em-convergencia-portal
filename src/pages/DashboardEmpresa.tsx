@@ -16,6 +16,7 @@ import BusinessReviewModeration from '@/components/business/BusinessReviewModera
 import { ServiceAreasManager } from '@/components/business/ServiceAreasManager';
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
+import { useGeocoding } from '@/hooks/useGeocoding';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -89,6 +90,7 @@ const categoryLabels = {
 export const DashboardEmpresa = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { geocodeLocation } = useGeocoding();
   const [business, setBusiness] = useState<any>(null);
   const [userSubscription, setUserSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -139,6 +141,14 @@ export const DashboardEmpresa = () => {
       }
 
       if (data) {
+        // Debug: Log dos dados carregados do banco
+        console.log('Dados do negócio carregados do banco:', {
+          logo_url: data.logo_url,
+          cover_image_url: data.cover_image_url,
+          gallery_images: data.gallery_images,
+          gallery_count: data.gallery_images?.length || 0
+        });
+        
         setBusiness(data);
         setLogoUrl(data.logo_url || '');
         setCoverUrl(data.cover_image_url || '');
@@ -275,6 +285,27 @@ export const DashboardEmpresa = () => {
   const onSubmit = async (data: BusinessFormData) => {
     setSaving(true);
     try {
+      // Debug: Log das imagens antes de salvar
+      console.log('Salvando negócio com imagens:', {
+        logoUrl,
+        coverUrl,
+        galleryImages,
+        galleryCount: galleryImages.length
+      });
+      
+      // Geocodificar endereço para obter latitude e longitude
+      let latitude = business?.latitude;
+      let longitude = business?.longitude;
+      
+      if (data.city && data.state) {
+        const geocoded = await geocodeLocation(data.city, data.state);
+        if (geocoded) {
+          latitude = geocoded.latitude;
+          longitude = geocoded.longitude;
+          console.log('Endereço geocodificado:', { city: data.city, state: data.state, latitude, longitude });
+        }
+      }
+      
       // Garantir que os campos obrigatórios estão presentes
       if (!data.category || !data.name) {
         toast({
@@ -310,6 +341,8 @@ export const DashboardEmpresa = () => {
         city: data.city,
         state: data.state,
         postal_code: data.postal_code || null,
+        latitude: latitude || null,
+        longitude: longitude || null,
         logo_url: logoUrl || null,
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
@@ -369,6 +402,9 @@ export const DashboardEmpresa = () => {
         });
       }
 
+      // Debug: Confirmar o que foi salvo
+      console.log('Negócio salvo com sucesso. Dados salvos:', businessData);
+      
       toast({
         title: 'Sucesso',
         description: business ? 'Empresa atualizada com sucesso!' : userSubscription?.status === 'active'
