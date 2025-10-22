@@ -65,7 +65,7 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
 
       if (error) throw error;
 
-      // Se ATIVOU cortesia, atribuir role business_owner ao usuário
+      // Se ATIVOU cortesia
       if (newStatus && business.owner_id) {
         // Verificar se o usuário já tem a role business_owner
         const { data: userRoles } = await supabase
@@ -89,30 +89,102 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
           }
         }
 
-        // Cancelar assinatura ativa do usuário (se existir)
-        const { data: activeSubscription } = await supabase
+        // Cancelar assinaturas ativas ou pendentes do usuário
+        const { data: subscriptions } = await supabase
           .from('user_subscriptions')
-          .select('id, external_subscription_id')
+          .select('id, external_subscription_id, external_payment_id, status')
           .eq('user_id', business.owner_id)
-          .eq('status', 'active')
-          .maybeSingle();
+          .in('status', ['active', 'pending']);
 
-        if (activeSubscription?.external_subscription_id) {
-          // Cancelar no banco (edge function subscription-management cuida do ASAAS)
-          const { error: cancelError } = await supabase.functions.invoke(
-            'subscription-management',
-            {
-              body: {
-                action: 'cancel',
-                subscriptionId: activeSubscription.id,
-              },
+        if (subscriptions && subscriptions.length > 0) {
+          for (const subscription of subscriptions) {
+            // Cancelar assinatura no banco (edge function cuida do ASAAS)
+            if (subscription.external_subscription_id) {
+              const { error: cancelError } = await supabase.functions.invoke(
+                'subscription-management',
+                {
+                  body: {
+                    action: 'cancel',
+                    subscriptionId: subscription.id,
+                  },
+                }
+              );
+
+              if (cancelError) {
+                console.error('Erro ao cancelar assinatura:', cancelError);
+              }
             }
-          );
-
-          if (cancelError) {
-            console.error('Erro ao cancelar assinatura:', cancelError);
-            // Não bloquear a cortesia mesmo se falhar
+            
+            // Se tiver cobrança pendente no Asaas, cancelar também
+            if (subscription.external_payment_id && subscription.status === 'pending') {
+              try {
+                await supabase.functions.invoke('cancel-asaas-payment', {
+                  body: {
+                    paymentId: subscription.external_payment_id
+                  }
+                });
+              } catch (error) {
+                console.error('Erro ao cancelar cobrança no Asaas:', error);
+              }
+            }
+            
+            // Atualizar status para cancelled
+            await supabase
+              .from('user_subscriptions')
+              .update({ status: 'cancelled' })
+              .eq('id', subscription.id);
           }
+        }
+      }
+      
+      // Se DESATIVOU cortesia, criar plano básico automaticamente
+      if (!newStatus && business.owner_id) {
+        // Buscar plano "Básico" com ciclo "monthly"
+        const { data: basicPlan } = await supabase
+          .from('subscription_plans')
+          .select('id, price_monthly, display_name')
+          .eq('name', 'basic')
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        if (basicPlan) {
+          // Buscar perfil do usuário para obter email
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', business.owner_id)
+            .single();
+          
+          if (profile?.email) {
+            // Criar assinatura via edge function create-subscription
+            try {
+              const { data: subscriptionData, error: subError } = await supabase.functions.invoke(
+                'create-subscription',
+                {
+                  body: {
+                    userId: business.owner_id,
+                    planId: basicPlan.id,
+                    billingCycle: 'monthly',
+                    email: profile.email,
+                    autoActivate: false // Não ativar automaticamente, aguardar pagamento
+                  }
+                }
+              );
+              
+              if (subError) {
+                console.error('Erro ao criar assinatura básica:', subError);
+                throw new Error('Falha ao criar assinatura básica');
+              }
+              
+              console.log('Assinatura básica criada com sucesso:', subscriptionData);
+            } catch (error) {
+              console.error('Erro ao criar assinatura ao desativar cortesia:', error);
+              throw error;
+            }
+          }
+        } else {
+          console.error('Plano Básico não encontrado');
+          throw new Error('Plano Básico não disponível');
         }
       }
     },
