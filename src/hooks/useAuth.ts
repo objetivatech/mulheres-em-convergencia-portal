@@ -125,35 +125,64 @@ export const useAuthProvider = () => {
 
   const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => {
     try {
-      const redirectUrl = `https://mulheresemconvergencia.com.br/`;
-      
-      const { error } = await supabase.auth.signUp({
+      // Create user with auto-confirm disabled
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
             cpf: cpf,
           },
           captchaToken,
+          emailRedirectTo: undefined, // Disable automatic email
         },
       });
 
-      if (error) {
+      if (authError) {
         toast({
           title: "Erro no cadastro",
-          description: error.message,
+          description: authError.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Cadastro realizado!",
-          description: "Verifique seu email para confirmar a conta.",
-        });
+        return { error: authError };
       }
+
+      if (!authData.user) {
+        const error = new Error('Falha ao criar usuário');
+        toast({
+          title: "Erro no cadastro",
+          description: "Falha ao criar usuário. Tente novamente.",
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      // Send confirmation email via MailRelay
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            user_id: authData.user.id,
+            email: email,
+            full_name: fullName || ''
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          // Don't fail signup if email fails
+        }
+      } catch (emailError) {
+        console.error('Error invoking send-confirmation-email:', emailError);
+        // Don't fail signup if email fails
+      }
+
+      toast({
+        title: "Cadastro realizado!",
+        description: "Verifique seu email para confirmar a conta. O link expira em 24 horas.",
+      });
       
-      return { error };
+      return { error: null };
     } catch (error) {
       return { error };
     }
@@ -161,21 +190,21 @@ export const useAuthProvider = () => {
 
   const requestPasswordReset = async (email: string) => {
     try {
-      const redirectTo = `https://mulheresemconvergencia.com.br/reset-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
+      // Use MailRelay edge function instead of Supabase Auth
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
       });
 
       if (error) {
         toast({
           title: "Erro ao enviar link",
-          description: error.message,
+          description: error.message || "Falha ao enviar email de recuperação.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Verifique seu email",
-          description: "Enviamos um link para redefinir sua senha.",
+          description: "Se o email existir em nossa base, você receberá instruções para redefinir sua senha.",
         });
       }
       return { error };

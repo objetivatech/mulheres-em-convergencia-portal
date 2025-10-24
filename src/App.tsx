@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ConfirmEmail from "./pages/ConfirmEmail";
+import ResetPasswordWithToken from "./pages/ResetPasswordWithToken";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -75,6 +77,8 @@ function AppContent() {
         <Route path="/" element={<Index />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} />
+        <Route path="/reset-password" element={<ResetPasswordWithToken />} />
         <Route path="/diretorio" element={<Diretorio />} />
         <Route path="/diretorio/:slug" element={<DiretorioEmpresa />} />
         <Route path="/convergindo" element={<Convergindo />} />

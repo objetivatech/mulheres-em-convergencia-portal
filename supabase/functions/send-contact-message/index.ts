@@ -151,14 +151,77 @@ serve(async (req) => {
       Message: ${message}
     `);
 
-    // For now, we'll just log and mark as processed
-    // To send emails, you would need to set up a service like Resend
-    const emailSent = false; // Change to true when email service is configured
+    // Send email notification to admins via MailRelay
+    let emailSent = false;
+    try {
+      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
+      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
+      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM');
+
+      if (mailrelayApiKey && mailrelayHost && adminEmailFrom) {
+        // Get list of admins
+        const { data: admins } = await supabase
+          .from('user_roles')
+          .select('profiles!inner(email, full_name)')
+          .eq('role', 'admin');
+
+        if (admins && admins.length > 0) {
+          // Prepare email content
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #C75A92;">Nova Mensagem de Contato</h2>
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>De:</strong> ${name}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0;"><strong>Assunto:</strong> ${subject}</p>
+                <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+              </div>
+              <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <h3 style="color: #333; margin-top: 0;">Mensagem:</h3>
+                <p style="white-space: pre-wrap; color: #555;">${message}</p>
+              </div>
+              <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-radius: 8px;">
+                <p style="margin: 0; color: #92400e;">💡 <strong>Ação necessária:</strong> Responda para ${email}</p>
+              </div>
+            </div>
+          `;
+
+          // Send to all admins
+          const emailPromises = admins.map(async (admin: any) => {
+            const mailrelayPayload = {
+              function: "sendMail",
+              apiKey: mailrelayApiKey,
+              from: adminEmailFrom,
+              from_name: "Mulheres em Convergência - Contato",
+              to: admin.profiles.email,
+              subject: `Nova Mensagem de Contato: ${subject}`,
+              html: emailHtml,
+              reply_to: email
+            };
+
+            const response = await fetch(`https://${mailrelayHost}/api/v1/send`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(mailrelayPayload)
+            });
+
+            return response.ok;
+          });
+
+          const results = await Promise.all(emailPromises);
+          emailSent = results.some(r => r);
+          console.log(`Emails sent to admins: ${results.filter(r => r).length}/${results.length}`);
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending notification email:', emailError);
+      // Don't fail the request if email fails
+    }
     
     // Update message status
     await supabase
       .from('contact_messages')
-      .update({ status: 'processed' })
+      .update({ status: emailSent ? 'processed' : 'new' })
       .eq('id', messageData.id);
 
     // Always return success for message saving
