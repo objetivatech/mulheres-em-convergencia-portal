@@ -217,8 +217,8 @@ const AdminContactMessages = () => {
       archived: { label: 'Arquivada', variant: 'outline' as const, icon: Mail },
     };
 
-    const config = statusConfig[status];
-    const Icon = config.icon;
+    const config = statusConfig[status] || statusConfig.new;
+    const Icon = config?.icon || AlertCircle;
 
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">

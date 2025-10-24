@@ -217,7 +217,7 @@ const Admin = () => {
                     <p className="text-sm text-muted-foreground">{category.description}</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {category.modules.map((module) => {
+                    {category.modules.filter(m => m.icon).map((module) => {
                       const Icon = module.icon;
                       return (
                         <Card 
