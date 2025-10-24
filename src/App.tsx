@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/components/auth/AuthProvider";
@@ -75,18 +75,27 @@ function AppContent() {
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
+        {/* Rotas Públicas */}
         <Route path="/" element={<Index />} />
         <Route path="/sobre" element={<Sobre />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/confirm-email" element={<ConfirmEmail />} />
-        <Route path="/reset-password" element={<ResetPasswordWithToken />} />
+        <Route path="/entrar" element={<Auth />} />
+        <Route path="/confirmar-email" element={<ConfirmEmail />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordWithToken />} />
+        <Route path="/esqueci-senha" element={<ForgotPassword />} />
+        <Route path="/contato" element={<Contato />} />
         <Route path="/diretorio" element={<Diretorio />} />
         <Route path="/diretorio/:slug" element={<DiretorioEmpresa />} />
         <Route path="/convergindo" element={<Convergindo />} />
         <Route path="/convergindo/:slug" element={<Post />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/contato" element={<Contato />} />
+        <Route path="/planos" element={<Planos />} />
+        <Route path="/pagina/:slug" element={<PublicPage />} />
+        
+        {/* Redirects de Compatibilidade (URLs antigas) */}
+        <Route path="/auth" element={<Navigate to="/entrar" replace />} />
+        <Route path="/confirm-email" element={<Navigate to="/confirmar-email" replace />} />
+        <Route path="/reset-password" element={<Navigate to="/redefinir-senha" replace />} />
+        <Route path="/forgot-password" element={<Navigate to="/esqueci-senha" replace />} />
+        <Route path="/page/:slug" element={<Navigate to="/pagina/:slug" replace />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={
@@ -94,21 +103,26 @@ function AppContent() {
             <Admin />
           </ProtectedRoute>
         } />
-        <Route path="/admin/users" element={
+        <Route path="/admin/usuarios" element={
           <ProtectedRoute requireAdmin={true}>
             <UserManagement />
           </ProtectedRoute>
         } />
-        <Route path="/admin/user-journey" element={
+        <Route path="/admin/jornada-usuario" element={
           <ProtectedRoute requireAdmin={true}>
             <UserJourney />
           </ProtectedRoute>
         } />
-        <Route path="/admin/analytics" element={
+        <Route path="/admin/analiticas" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminAnalytics />
           </ProtectedRoute>
         } />
+        
+        {/* Redirects Admin (Compatibilidade) */}
+        <Route path="/admin/users" element={<Navigate to="/admin/usuarios" replace />} />
+        <Route path="/admin/user-journey" element={<Navigate to="/admin/jornada-usuario" replace />} />
+        <Route path="/admin/analytics" element={<Navigate to="/admin/analiticas" replace />} />
         <Route path="/admin/ayrshare" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminAyrshare />
@@ -119,11 +133,12 @@ function AppContent() {
             <AdminPartners />
           </ProtectedRoute>
         } />
-        <Route path="/admin/contact-messages" element={
+        <Route path="/admin/mensagens-contato" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminContactMessages />
           </ProtectedRoute>
         } />
+        <Route path="/admin/contact-messages" element={<Navigate to="/admin/mensagens-contato" replace />} />
         
         {/* Blog Routes */}
         <Route path="/admin/blog" element={
@@ -147,56 +162,71 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
-        {/* Page Builder Routes */}
-        <Route path="/admin/pages" element={
+        {/* Rotas do Construtor de Páginas */}
+        <Route path="/admin/paginas" element={
           <ProtectedRoute requireAdmin={true}>
             <PagesManagement />
           </ProtectedRoute>
         } />
-        <Route path="/admin/page-builder/new" element={
+        <Route path="/admin/construtor-paginas/novo" element={
           <ProtectedRoute requireAdmin={true}>
             <PageBuilderEditor />
           </ProtectedRoute>
         } />
-        <Route path="/admin/page-builder/:id" element={
+        <Route path="/admin/construtor-paginas/:id" element={
           <ProtectedRoute requireAdmin={true}>
             <PageBuilderEditor />
           </ProtectedRoute>
         } />
         
-        {/* Site Management Routes */}
-        <Route path="/admin/site-settings" element={
+        {/* Redirects Page Builder */}
+        <Route path="/admin/pages" element={<Navigate to="/admin/paginas" replace />} />
+        <Route path="/admin/page-builder/new" element={<Navigate to="/admin/construtor-paginas/novo" replace />} />
+        <Route path="/admin/page-builder/:id" element={<Navigate to="/admin/construtor-paginas/:id" replace />} />
+        
+        {/* Rotas de Gerenciamento do Site */}
+        <Route path="/admin/configuracoes-site" element={
           <ProtectedRoute requireAdmin={true}>
             <SiteSettings />
           </ProtectedRoute>
         } />
-        <Route path="/admin/navigation" element={
+        <Route path="/admin/navegacao" element={
           <ProtectedRoute requireAdmin={true}>
             <NavigationSettings />
           </ProtectedRoute>
         } />
         
-        {/* Dashboard Routes */}
-        <Route path="/dashboard" element={
+        {/* Redirects Site Management */}
+        <Route path="/admin/site-settings" element={<Navigate to="/admin/configuracoes-site" replace />} />
+        <Route path="/admin/navigation" element={<Navigate to="/admin/navegacao" replace />} />
+        
+        {/* Rotas de Painel do Usuário */}
+        <Route path="/painel" element={
           <ProtectedRoute>
             <UserDashboard />
           </ProtectedRoute>
         } />
-        <Route path="/dashboard/:type" element={
+        <Route path="/painel/:tipo" element={
           <RoleProtectedRoute>
             <Dashboard />
           </RoleProtectedRoute>
         } />
-          <Route path="/dashboard-empresa" element={
-            <ProtectedRoute>
-              <DashboardEmpresa />
-            </ProtectedRoute>
-          } />
-          <Route path="/meu-dashboard" element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          } />
+        <Route path="/painel-empresa" element={
+          <ProtectedRoute>
+            <DashboardEmpresa />
+          </ProtectedRoute>
+        } />
+        <Route path="/meu-painel" element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Redirects de Compatibilidade (Dashboard) */}
+        <Route path="/dashboard" element={<Navigate to="/painel" replace />} />
+        <Route path="/dashboard/:type" element={<Navigate to="/painel/:type" replace />} />
+        <Route path="/dashboard-empresa" element={<Navigate to="/painel-empresa" replace />} />
+        <Route path="/meu-dashboard" element={<Navigate to="/meu-painel" replace />} />
           <Route path="/configuracoes/conta" element={
             <ProtectedRoute>
               <ConfiguracoesContaPage />
@@ -207,20 +237,16 @@ function AppContent() {
               <DadosPessoaisPage />
             </ProtectedRoute>
           } />
-          <Route path="/planos" element={<Planos />} />
-          <Route path="/confirmacao-pagamento" element={
-            <ProtectedRoute>
-              <ConfirmacaoPagamento />
-            </ProtectedRoute>
-          } />
-          <Route path="/premium" element={
-            <ProtectedRoute>
-              <PremiumDashboard />
-            </ProtectedRoute>
-          } />
-          
-          {/* Public Page Routes */}
-          <Route path="/page/:slug" element={<PublicPage />} />
+        <Route path="/confirmacao-pagamento" element={
+          <ProtectedRoute>
+            <ConfirmacaoPagamento />
+          </ProtectedRoute>
+        } />
+        <Route path="/premium" element={
+          <ProtectedRoute>
+            <PremiumDashboard />
+          </ProtectedRoute>
+        } />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
