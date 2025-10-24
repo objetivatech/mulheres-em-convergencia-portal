@@ -159,11 +159,19 @@ serve(async (req) => {
       const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM');
 
       if (mailrelayApiKey && mailrelayHost && adminEmailFrom) {
+        console.log('[SEND-CONTACT-MESSAGE] MailRelay configured, fetching admins...');
+        
         // Get list of admins
-        const { data: admins } = await supabase
+        const { data: admins, error: adminsError } = await supabase
           .from('user_roles')
           .select('profiles!inner(email, full_name)')
           .eq('role', 'admin');
+
+        if (adminsError) {
+          console.error('[SEND-CONTACT-MESSAGE] Error fetching admins:', adminsError);
+        }
+
+        console.log(`[SEND-CONTACT-MESSAGE] Found ${admins?.length || 0} admins`);
 
         if (admins && admins.length > 0) {
           // Prepare email content
@@ -207,6 +215,8 @@ serve(async (req) => {
               }
             };
 
+            console.log(`[SEND-CONTACT-MESSAGE] Sending email to admin: ${admin.profiles.email}`);
+
             const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
               method: 'POST',
               headers: { 
@@ -216,13 +226,28 @@ serve(async (req) => {
               body: JSON.stringify(mailrelayPayload)
             });
 
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`[SEND-CONTACT-MESSAGE] MailRelay error for ${admin.profiles.email}:`, errorText);
+            } else {
+              console.log(`[SEND-CONTACT-MESSAGE] Email sent successfully to ${admin.profiles.email}`);
+            }
+
             return response.ok;
           });
 
           const results = await Promise.all(emailPromises);
           emailSent = results.some(r => r);
-          console.log(`Emails sent to admins: ${results.filter(r => r).length}/${results.length}`);
+          console.log(`[SEND-CONTACT-MESSAGE] Emails sent to admins: ${results.filter(r => r).length}/${results.length}`);
+        } else {
+          console.warn('[SEND-CONTACT-MESSAGE] No admins found to send email notification');
         }
+      } else {
+        console.warn('[SEND-CONTACT-MESSAGE] MailRelay not configured:', {
+          hasApiKey: !!mailrelayApiKey,
+          hasHost: !!mailrelayHost,
+          hasFrom: !!adminEmailFrom
+        });
       }
     } catch (emailError) {
       console.error('Error sending notification email:', emailError);
