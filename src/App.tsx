@@ -26,6 +26,7 @@ import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminAyrshare from "./pages/AdminAyrshare";
 import AdminPartners from "./pages/AdminPartners";
+import AdminContactMessages from "./pages/AdminContactMessages";
 import UserManagement from './pages/UserManagement';
 import UserJourney from './pages/UserJourney';
 import BlogDashboard from './pages/BlogDashboard';
@@ -116,6 +117,11 @@ function AppContent() {
         <Route path="/admin/parceiros" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminPartners />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/contact-messages" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminContactMessages />
           </ProtectedRoute>
         } />
         

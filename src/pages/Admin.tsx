@@ -84,7 +84,8 @@ const Admin = () => {
           description: 'Visualizar e responder mensagens recebidas',
           icon: Mail,
           available: isAdmin,
-          comingSoon: true
+          href: '/admin/contact-messages',
+          comingSoon: false
         }
       ]
     },
