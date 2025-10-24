@@ -144,7 +144,17 @@ Deno.serve(async (req) => {
       body: JSON.stringify(mailrelayPayload),
     });
 
-    const mailrelayResult = await mailrelayResponse.json();
+    // Check if response is JSON before parsing
+    const contentType = mailrelayResponse.headers.get('content-type');
+    let mailrelayResult: any;
+    
+    if (contentType && contentType.includes('application/json')) {
+      mailrelayResult = await mailrelayResponse.json();
+    } else {
+      const textResponse = await mailrelayResponse.text();
+      console.error('[SEND-PASSWORD-RESET] MailRelay returned non-JSON response:', textResponse.substring(0, 200));
+      throw new Error(`MailRelay API error: Invalid response format. Check MAILRELAY_HOST and MAILRELAY_API_KEY configuration.`);
+    }
 
     if (!mailrelayResponse.ok) {
       console.error('[SEND-PASSWORD-RESET] MailRelay error:', mailrelayResult);
