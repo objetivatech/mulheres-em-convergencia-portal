@@ -164,19 +164,30 @@ Deno.serve(async (req) => {
         `;
 
         const mailrelayPayload = {
-          function: "sendMail",
-          apiKey: mailrelayApiKey,
-          from: adminEmailFrom,
-          from_name: "Mulheres em Convergência",
-          to: ownerEmail,
-          subject: `Nova mensagem para ${business.name}: ${body.subject}`,
-          html: emailHtml,
-          reply_to: body.sender_email
+          "from": {
+            "email": adminEmailFrom,
+            "name": "Mulheres em Convergência"
+          },
+          "to": [
+            {
+              "email": ownerEmail,
+              "name": ownerName
+            }
+          ],
+          "subject": `Nova mensagem para ${business.name}: ${body.subject}`,
+          "html_part": emailHtml,
+          "reply_to": {
+            "email": body.sender_email,
+            "name": body.sender_name
+          }
         };
 
-        const response = await fetch(`https://${mailrelayHost}/api/v1/send`, {
+        const response = await fetch(`https://${mailrelayHost}/send_emails`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-AUTH-TOKEN': mailrelayApiKey
+          },
           body: JSON.stringify(mailrelayPayload)
         });
 

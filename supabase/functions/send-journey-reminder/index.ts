@@ -53,31 +53,39 @@ serve(async (req) => {
     console.log('Processing reminder for user:', payload.user_id);
 
     // Enviar email via MailRelay
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        ${payload.message.split('\n').map(line => `<p>${line}</p>`).join('')}
+        
+        <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 30px 0;" />
+        
+        <p style="font-size: 12px; color: #6B7280; text-align: center;">
+          Mulheres em Convergência<br />
+          Esta mensagem foi enviada por um administrador do portal.
+        </p>
+      </div>
+    `;
+
     const mailrelayPayload = {
-      function: "sendMail",
-      apiKey: mailrelayApiKey,
-      from: adminEmailFrom,
-      from_name: "Mulheres em Convergência",
-      to: payload.user_email,
-      subject: payload.subject,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          ${payload.message.split('\n').map(line => `<p>${line}</p>`).join('')}
-          
-          <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 30px 0;" />
-          
-          <p style="font-size: 12px; color: #6B7280; text-align: center;">
-            Mulheres em Convergência<br />
-            Esta mensagem foi enviada por um administrador do portal.
-          </p>
-        </div>
-      `,
+      "from": {
+        "email": adminEmailFrom,
+        "name": "Mulheres em Convergência"
+      },
+      "to": [
+        {
+          "email": payload.user_email,
+          "name": payload.user_email
+        }
+      ],
+      "subject": payload.subject,
+      "html_part": emailHtml
     };
 
-    const response = await fetch(`https://${mailrelayHost}/api/v1/send`, {
+    const response = await fetch(`https://${mailrelayHost}/send_emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-AUTH-TOKEN': mailrelayApiKey,
       },
       body: JSON.stringify(mailrelayPayload),
     });

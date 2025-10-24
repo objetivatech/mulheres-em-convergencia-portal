@@ -189,19 +189,30 @@ serve(async (req) => {
           // Send to all admins
           const emailPromises = admins.map(async (admin: any) => {
             const mailrelayPayload = {
-              function: "sendMail",
-              apiKey: mailrelayApiKey,
-              from: adminEmailFrom,
-              from_name: "Mulheres em Convergência - Contato",
-              to: admin.profiles.email,
-              subject: `Nova Mensagem de Contato: ${subject}`,
-              html: emailHtml,
-              reply_to: email
+              "from": {
+                "email": adminEmailFrom,
+                "name": "Mulheres em Convergência - Contato"
+              },
+              "to": [
+                {
+                  "email": admin.profiles.email,
+                  "name": admin.profiles.full_name || admin.profiles.email
+                }
+              ],
+              "subject": `Nova Mensagem de Contato: ${subject}`,
+              "html_part": emailHtml,
+              "reply_to": {
+                "email": email,
+                "name": name
+              }
             };
 
-            const response = await fetch(`https://${mailrelayHost}/api/v1/send`, {
+            const response = await fetch(`https://${mailrelayHost}/send_emails`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'X-AUTH-TOKEN': mailrelayApiKey
+              },
               body: JSON.stringify(mailrelayPayload)
             });
 
