@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     // Build confirmation URL
-    const confirmationUrl = `https://mulheresemconvergencia.com.br/confirm-email?token=${token}`;
+    const confirmationUrl = `https://mulheresemconvergencia.com.br/confirmar-email?token=${token}`;
 
     // HTML Email Template (based on 01_confirmar_cadastro.html)
     const emailHtml = `<!DOCTYPE html>

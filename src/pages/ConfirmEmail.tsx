@@ -41,7 +41,7 @@ const ConfirmEmail = () => {
           
           // Redirect to login after 3 seconds
           setTimeout(() => {
-            navigate('/auth');
+            navigate('/entrar');
           }, 3000);
         } else {
           setStatus('error');

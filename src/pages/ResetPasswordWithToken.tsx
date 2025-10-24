@@ -90,7 +90,7 @@ const ResetPasswordWithToken = () => {
         
         // Redirect to login after 2 seconds
         setTimeout(() => {
-          navigate('/auth');
+          navigate('/entrar');
         }, 2000);
       } else {
         const errorCode = data?.code;

@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     }
 
     // Build reset URL
-    const resetUrl = `https://mulheresemconvergencia.com.br/reset-password?token=${token}`;
+    const resetUrl = `https://mulheresemconvergencia.com.br/redefinir-senha?token=${token}`;
 
     // Get user's full name from metadata
     const fullName = user.user_metadata?.full_name || '';
