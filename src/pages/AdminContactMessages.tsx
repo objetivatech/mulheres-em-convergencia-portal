@@ -194,18 +194,42 @@ const AdminContactMessages = () => {
     setShowReplyDialog(true);
   };
 
-  // Send reply via email client
-  const sendReply = () => {
+  // Send reply via MailRelay
+  const sendReply = async () => {
     if (!selectedMessage) return;
 
-    const subject = `Re: ${selectedMessage.subject}`;
-    const body = encodeURIComponent(replyText);
-    const mailtoLink = `mailto:${selectedMessage.email}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    try {
+      setIsSubmitting(true);
 
-    window.open(mailtoLink, '_blank');
-    updateStatus(selectedMessage.id, 'replied');
-    setShowReplyDialog(false);
-    toast.success('Cliente de email aberto. Envie a mensagem por lá.');
+      const { data, error } = await supabase.functions.invoke('reply-contact-message', {
+        body: {
+          message_id: selectedMessage.id,
+          reply_text: replyText,
+        }
+      });
+
+      if (error) {
+        console.error('Error sending reply:', error);
+        toast.error('Erro ao enviar resposta. Tente novamente.');
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('Resposta enviada com sucesso!');
+        setShowReplyDialog(false);
+        setReplyText('');
+        setSelectedMessage(null);
+        // Refresh messages list
+        fetchMessages();
+      } else {
+        toast.error(data?.error || 'Falha ao enviar resposta.');
+      }
+    } catch (error: any) {
+      console.error('Unexpected error:', error);
+      toast.error('Erro ao processar resposta. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Get status badge
