@@ -106,7 +106,7 @@ serve(async (req) => {
           "html_part": emailBody
         };
 
-        const response = await fetch(`https://${mailrelayHost}/send_emails`, {
+        const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

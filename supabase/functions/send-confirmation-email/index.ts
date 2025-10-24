@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
 
     console.log(`[SEND-CONFIRMATION-EMAIL] Sending email to: ${email}`);
 
-    const mailrelayResponse = await fetch(`https://${mailrelayHost}/send_emails`, {
+    const mailrelayResponse = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
