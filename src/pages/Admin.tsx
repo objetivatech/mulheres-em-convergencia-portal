@@ -39,7 +39,7 @@ const Admin = () => {
           description: 'Gerenciar usuários, permissões e perfis',
           icon: Users,
           available: isAdmin,
-          href: '/admin/users',
+          href: '/admin/usuarios',
           comingSoon: false
         },
         {
@@ -47,7 +47,7 @@ const Admin = () => {
           description: 'Acompanhar e otimizar a jornada dos usuários',
           icon: BarChart3,
           available: isAdmin,
-          href: '/admin/user-journey',
+          href: '/admin/jornada-usuario',
           comingSoon: false
         },
         {
@@ -76,7 +76,7 @@ const Admin = () => {
           description: 'Criar páginas personalizadas com blocos',
           icon: Wand2,
           available: isAdmin,
-          href: '/admin/pages',
+          href: '/admin/paginas',
           comingSoon: false
         },
         {
@@ -84,7 +84,7 @@ const Admin = () => {
           description: 'Visualizar e responder mensagens recebidas',
           icon: Mail,
           available: isAdmin,
-          href: '/admin/contact-messages',
+          href: '/admin/mensagens-contato',
           comingSoon: false
         }
       ]
@@ -98,7 +98,7 @@ const Admin = () => {
           description: 'Gerenciar menus e estrutura de navegação',
           icon: Settings,
           available: isAdmin,
-          href: '/admin/navigation',
+          href: '/admin/navegacao',
           comingSoon: false
         },
         {
@@ -106,7 +106,7 @@ const Admin = () => {
           description: 'Configurações do site e SEO',
           icon: Settings,
           available: isAdmin,
-          href: '/admin/site-settings',
+          href: '/admin/configuracoes-site',
           comingSoon: false
         },
         {

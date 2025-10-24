@@ -517,7 +517,7 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                              asChild
                              className="h-8"
                            >
-                             <a href="/auth">Fazer Login</a>
+                             <a href="/entrar">Fazer Login</a>
                            </Button>
                            <Button 
                              variant="link" 

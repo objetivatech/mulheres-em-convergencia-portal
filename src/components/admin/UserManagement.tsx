@@ -195,7 +195,7 @@ export const UserManagement = () => {
               <span>Gestão de Usuários</span>
             </div>
             <div className="flex items-center gap-2">
-              <Link to="/admin/user-journey">
+              <Link to="/admin/jornada-usuario">
                 <Button variant="outline">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Jornada do Cliente

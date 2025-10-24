@@ -28,7 +28,7 @@ export const RoleProtectedRoute = ({
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/entrar" replace />;
   }
 
   // Verificar roles específicos

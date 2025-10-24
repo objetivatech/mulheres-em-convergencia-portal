@@ -89,7 +89,7 @@ export function Header() {
                         Meus Acessos
                       </DropdownMenuLabel>
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard-empresa" className="flex items-center">
+                        <Link to="/painel-empresa" className="flex items-center">
                           <span>💼 Painel Empresa</span>
                         </Link>
                       </DropdownMenuItem>
@@ -119,7 +119,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth">
+              <Link to="/entrar">
                 <Button variant="outline" size="sm">
                   <User className="h-4 w-4 mr-2" />
                   Entrar

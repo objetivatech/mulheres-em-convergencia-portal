@@ -32,7 +32,7 @@ const REMINDER_TEMPLATES = {
   },
   complete_payment: {
     subject: 'Finalize seu pagamento - Mulheres em Convergência',
-    message: 'Olá {name},\n\nVocê está a um passo de ativar sua assinatura! Finalize seu pagamento para começar a aproveitar todos os benefícios.\n\nAcesse: https://mulheresemconvergencia.com.br/dashboard\n\nPrecisa de ajuda? Entre em contato conosco!'
+    message: 'Olá {name},\n\nVocê está a um passo de ativar sua assinatura! Finalize seu pagamento para começar a aproveitar todos os benefícios.\n\nAcesse: https://mulheresemconvergencia.com.br/painel\n\nPrecisa de ajuda? Entre em contato conosco!'
   },
   custom: {
     subject: '',

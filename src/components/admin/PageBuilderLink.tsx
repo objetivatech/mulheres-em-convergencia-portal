@@ -24,14 +24,14 @@ export const PageBuilderLink = () => {
           
           <div className="flex gap-2">
             <Button asChild>
-              <Link to="/admin/page-builder/new">
+              <Link to="/admin/construtor-paginas/novo">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Página
               </Link>
             </Button>
             
             <Button variant="outline" asChild>
-              <Link to="/admin/pages">
+              <Link to="/admin/paginas">
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Páginas
               </Link>
