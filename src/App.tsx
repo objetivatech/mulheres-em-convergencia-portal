@@ -49,6 +49,7 @@ import DadosPessoaisPage from '@/pages/DadosPessoaisPage';
 import { ProfileCompletionModal } from '@/components/auth/ProfileCompletionModal';
 import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
+import AdminRegistrations from '@/pages/AdminRegistrations';
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ function AppContent() {
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
+        <Route path="/admin/cadastros" element={<AdminRegistrations />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
