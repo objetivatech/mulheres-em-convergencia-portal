@@ -56,8 +56,8 @@ const Index = () => {
       />
       
       <PartnersCarousel 
-        title="Apoiadoras do Movimento"
-        subtitle="Empresas que acreditam no empreendedorismo feminino"
+        title="Quem está conosco?"
+        subtitle="Empresas que acreditam no empreendedorismo feminino e no impacto social"
       />
       
       <FeaturedPosts />
