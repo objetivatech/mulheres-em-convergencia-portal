@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
@@ -15,7 +14,6 @@ import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
 import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
 import { ServiceAreasManager } from '@/components/business/ServiceAreasManager';
-import { RequestCommunityDialog } from '@/components/business/RequestCommunityDialog';
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { useGeocoding } from '@/hooks/useGeocoding';
@@ -46,7 +44,6 @@ const businessSchema = z.object({
     'marketing'
   ] as const),
   subcategory: z.string().optional(),
-  community_id: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   whatsapp: z.string().optional(),
@@ -56,18 +53,6 @@ const businessSchema = z.object({
   city: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres'),
   state: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),
   postal_code: z.string().optional(),
-});
-const { data: communities } = useQuery({
-  queryKey: ['communities-active'],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('communities')
-      .select('id, name')
-      .eq('active', true)
-      .order('name');
-    if (error) throw error;
-    return data;
-  },
 });
 
 type BusinessFormData = z.infer<typeof businessSchema>;
@@ -116,7 +101,6 @@ export const DashboardEmpresa = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
-  const [showRequestCommunityDialog, setShowRequestCommunityDialog] = useState(false);
 
   // Use business analytics hook for real metrics
   const { percentageChanges, loading: analyticsLoading } = useBusinessAnalytics(business?.id);
@@ -348,7 +332,6 @@ export const DashboardEmpresa = () => {
         description: data.description,
         category: data.category,
         subcategory: data.subcategory || null,
-        community_id: data.community_id && data.community_id !== 'none' ? data.community_id : null,
         phone: data.phone || null,
         email: data.email || null,
         whatsapp: data.whatsapp || null,
@@ -778,38 +761,6 @@ export const DashboardEmpresa = () => {
                         </p>
                       )}
                     </div>
-
-                    <div>
-                      <Label htmlFor="community_id">Comunidade/Coletivo</Label>
-                      <Select
-                        value={watch('community_id') || ''}
-                        onValueChange={(value) => {
-                          if (value === 'request_new') {
-                            setShowRequestCommunityDialog(true);
-                          } else {
-                            setValue('community_id', value || undefined);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma comunidade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Nenhum</SelectItem>
-                          {communities?.map((community: any) => (
-                            <SelectItem key={community.id} value={community.id}>
-                              {community.name}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="request_new">
-                            ✨ Não Consta na Lista - Solicitar Nova
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Selecione a comunidade ou coletivo ao qual seu negócio está vinculado
-                      </p>
-                    </div>
                   </div>
 
                   <div>
@@ -1117,12 +1068,6 @@ export const DashboardEmpresa = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <RequestCommunityDialog
-        open={showRequestCommunityDialog}
-        onOpenChange={setShowRequestCommunityDialog}
-        businessId={business?.id}
-      />
     </Layout>
   );
 };

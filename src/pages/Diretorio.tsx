@@ -18,8 +18,6 @@ interface Business {
   description: string;
   category: string;
   subcategory: string;
-  community_id?: string;
-  community_name?: string;
   city: string;
   state: string;
   latitude?: number;
@@ -287,11 +285,6 @@ const Diretorio = () => {
             {business.subcategory}
           </Badge>
         )}
-        {business.community_name && (
-          <Badge variant="default" className="ml-1 mb-2 bg-purple-100 text-purple-700 hover:bg-purple-200">
-            {business.community_name}
-          </Badge>
-        )}
         
         <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
           {business.description}
@@ -363,11 +356,6 @@ const Diretorio = () => {
                 {business.subcategory && (
                   <Badge variant="outline" className="text-xs">
                     {business.subcategory}
-                  </Badge>
-                )}
-                {business.community_name && (
-                  <Badge variant="default" className="text-xs bg-purple-100 text-purple-700 hover:bg-purple-200">
-                    {business.community_name}
                   </Badge>
                 )}
               </div>
