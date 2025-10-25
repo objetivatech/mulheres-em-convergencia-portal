@@ -19,7 +19,7 @@ const AdminRegistrations = () => {
   }
 
   if (!user || !isAdmin) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/entrar" replace />;
   }
 
   return (
