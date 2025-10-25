@@ -118,13 +118,13 @@ const Admin = () => {
           comingSoon: false
         },
         {
-          title: 'Parceiros e Apoiadores',
-          description: 'Gerenciar logos de parceiros exibidos no site',
+          title: 'Cadastros Diversos',
+          description: 'Parceiros, apoiadores e comunidades',
+          href: '/admin/cadastros',
           icon: Users,
-          available: isAdmin,
-          href: '/admin/parceiros',
-          comingSoon: false
-        }
+          category: 'settings',
+          comingSoon: false,
+        },
       ]
     },
     {
