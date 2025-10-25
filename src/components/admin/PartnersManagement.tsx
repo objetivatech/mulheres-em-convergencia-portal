@@ -260,7 +260,7 @@ export const PartnersManagement = () => {
         logo_url: '',
         website_url: '',
         description: '',
-        partnership_type: 'Parceiro',
+        partnership_type: 'partner',
         start_date: '',
         contact_email: '',
         instagram: '',
@@ -477,12 +477,17 @@ export const PartnersManagement = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="partnership_type">Tipo de Parceria</Label>
-                <Input
+                <select
                   id="partnership_type"
                   value={formData.partnership_type}
                   onChange={(e) => setFormData({ ...formData, partnership_type: e.target.value })}
-                  placeholder="Parceiro, Apoiador, Patrocinador..."
-                />
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="partner">Parceiro</option>
+                  <option value="sponsor">Patrocinador</option>
+                  <option value="supporter">Apoiador</option>
+                  <option value="collaborator">Colaborador</option>
+                </select>
               </div>
 
               <div>
