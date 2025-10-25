@@ -42,11 +42,6 @@ const Index = () => {
       
       <Hero />
       
-      <PartnersCarousel 
-        title="Apoiadoras do Movimento"
-        subtitle="Empresas que acreditam no empreendedorismo feminino"
-      />
-      
       <BusinessShowcase
         title="Empreendedoras Destaque"
         subtitle="Conheça as empreendedoras dos planos Intermediário e Impulso"
@@ -58,6 +53,11 @@ const Index = () => {
         title="Nossos Negócios"
         subtitle="Descubra a diversidade de empreendimentos em nossa rede"
         featured={false}
+      />
+      
+      <PartnersCarousel 
+        title="Apoiadoras do Movimento"
+        subtitle="Empresas que acreditam no empreendedorismo feminino"
       />
       
       <FeaturedPosts />
