@@ -31,6 +31,8 @@ interface BusinessDetails {
   description: string;
   category: string;
   subcategory: string;
+  community_id?: string;
+  community_name?: string;
   city: string;
   state: string;
   latitude: number;
@@ -351,6 +353,11 @@ const DiretorioEmpresa = () => {
                         {business.subcategory && (
                           <Badge variant="outline">
                             {business.subcategory}
+                          </Badge>
+                        )}
+                        {business.community_name && (
+                          <Badge variant="default" className="bg-purple-100 text-purple-700 hover:bg-purple-200">
+                            {business.community_name}
                           </Badge>
                         )}
                       </div>
