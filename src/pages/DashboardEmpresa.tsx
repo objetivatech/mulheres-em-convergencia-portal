@@ -54,6 +54,18 @@ const businessSchema = z.object({
   state: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),
   postal_code: z.string().optional(),
 });
+const { data: communities } = useQuery({
+  queryKey: ['communities-active'],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from('communities')
+      .select('id, name')
+      .eq('active', true)
+      .order('name');
+    if (error) throw error;
+    return data;
+  },
+});
 
 type BusinessFormData = z.infer<typeof businessSchema>;
 
