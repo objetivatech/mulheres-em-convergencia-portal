@@ -90,11 +90,6 @@ function AppContent() {
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
-        <Route path="/admin/cadastros" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminRegistrations />
-          </ProtectedRoute>
-        } />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
@@ -145,6 +140,11 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin/contact-messages" element={<Navigate to="/admin/mensagens-contato" replace />} />
+        <Route path="/admin/cadastros" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminRegistrations />
+          </ProtectedRoute>
+        } />
         
         {/* Blog Routes */}
         <Route path="/admin/blog" element={
