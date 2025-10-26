@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PartnersManagement } from '@/components/admin/PartnersManagement';
 import { CommunitiesManagement } from '@/components/admin/CommunitiesManagement';
+import { CategoriesManagement } from '@/components/admin/CategoriesManagement';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminPartners = () => {
@@ -41,13 +42,18 @@ const AdminPartners = () => {
             </div>
 
             <Tabs defaultValue="partners" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsList className="grid w-full grid-cols-3 max-w-2xl">
                 <TabsTrigger value="partners">Parceiros</TabsTrigger>
+                <TabsTrigger value="categories">Categorias</TabsTrigger>
                 <TabsTrigger value="communities">Comunidades</TabsTrigger>
               </TabsList>
 
               <TabsContent value="partners" className="mt-6">
                 <PartnersManagement />
+              </TabsContent>
+
+              <TabsContent value="categories" className="mt-6">
+                <CategoriesManagement />
               </TabsContent>
 
               <TabsContent value="communities" className="mt-6">
