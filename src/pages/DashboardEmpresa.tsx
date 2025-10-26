@@ -790,14 +790,14 @@ export const DashboardEmpresa = () => {
                     <div>
                       <Label htmlFor="community">Comunidade/Coletivo</Label>
                       <Select
-                        value={selectedCommunityId || ''}
-                        onValueChange={(value) => setSelectedCommunityId(value || null)}
+                        value={selectedCommunityId || 'none'}
+                        onValueChange={(value) => setSelectedCommunityId(value === 'none' ? null : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma comunidade (opcional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Nenhuma</SelectItem>
+                          <SelectItem value="none">Nenhuma</SelectItem>
                           {communities.map((community) => (
                             <SelectItem key={community.id} value={community.id}>
                               {community.name}
