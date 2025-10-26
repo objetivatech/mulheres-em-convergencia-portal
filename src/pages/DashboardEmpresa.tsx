@@ -101,6 +101,8 @@ export const DashboardEmpresa = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [communities, setCommunities] = useState<Array<{id: string, name: string}>>([]);
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
 
   // Use business analytics hook for real metrics
   const { percentageChanges, loading: analyticsLoading } = useBusinessAnalytics(business?.id);
@@ -119,6 +121,7 @@ export const DashboardEmpresa = () => {
     if (user) {
       fetchBusiness();
       fetchUserSubscription();
+      fetchCommunities(); // Carrega comunidades disponíveis
     }
   }, [user]);
 
@@ -153,6 +156,7 @@ export const DashboardEmpresa = () => {
         setLogoUrl(data.logo_url || '');
         setCoverUrl(data.cover_image_url || '');
         setGalleryImages(data.gallery_images || []);
+        setSelectedCommunityId(data.community_id || null);
         
         // Preencher formulário
         Object.keys(data).forEach(key => {
@@ -197,6 +201,26 @@ export const DashboardEmpresa = () => {
       setUserSubscription(data);
     } catch (error) {
       console.error('Erro ao carregar assinatura:', error);
+    }
+  };
+
+  const fetchCommunities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('communities')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+
+      if (error) {
+        console.error('Erro ao carregar comunidades:', error);
+        return;
+      }
+      
+      setCommunities(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar comunidades:', error);
+      // Não quebra a página se falhar
     }
   };
 
@@ -346,6 +370,7 @@ export const DashboardEmpresa = () => {
         logo_url: logoUrl || null,
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
+        community_id: selectedCommunityId,
         owner_id: user?.id,
         subscription_active: (business?.is_complimentary === true) ||
           (!!userSubscription && (
@@ -760,6 +785,29 @@ export const DashboardEmpresa = () => {
                           {errors.category.message}
                         </p>
                       )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="community">Comunidade/Coletivo</Label>
+                      <Select
+                        value={selectedCommunityId || ''}
+                        onValueChange={(value) => setSelectedCommunityId(value || null)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma comunidade (opcional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Nenhuma</SelectItem>
+                          {communities.map((community) => (
+                            <SelectItem key={community.id} value={community.id}>
+                              {community.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Vincule seu negócio a uma comunidade ou coletivo
+                      </p>
                     </div>
                   </div>
 
