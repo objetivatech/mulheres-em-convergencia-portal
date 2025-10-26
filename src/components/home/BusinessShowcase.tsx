@@ -10,6 +10,7 @@ interface Business {
   name: string;
   description: string;
   category: string;
+  community_name?: string;
   city: string;
   state: string;
   logo_url: string;
@@ -138,9 +139,16 @@ const BusinessShowcase: React.FC<BusinessShowcaseProps> = ({
                   </h3>
                   
                   {/* Category */}
-                  <Badge variant="outline" className="w-fit mb-2 text-xs">
-                    {business.category}
-                  </Badge>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    <Badge variant="outline" className="w-fit text-xs">
+                      {business.category}
+                    </Badge>
+                    {business.community_name && (
+                      <Badge variant="default" className="w-fit text-xs bg-purple-600 hover:bg-purple-700">
+                        {business.community_name}
+                      </Badge>
+                    )}
+                  </div>
                   
                   {/* Description */}
                   {business.description && (
