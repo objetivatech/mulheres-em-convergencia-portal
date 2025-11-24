@@ -2934,6 +2934,7 @@ export type Database = {
         }
         Returns: Json
       }
+      sync_business_category_id: { Args: never; Returns: undefined }
       sync_existing_user_journeys: {
         Args: never
         Returns: {

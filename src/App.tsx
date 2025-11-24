@@ -15,6 +15,7 @@ import Diretorio from "./pages/Diretorio";
 import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import Planos from './pages/Planos';
 import Comunidade from './pages/Comunidade';
+import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
 import NotFound from "./pages/NotFound";
 import Favicon from "@/components/layout/Favicon";
@@ -88,6 +89,8 @@ function AppContent() {
         <Route path="/contato" element={<Contato />} />
         <Route path="/diretorio" element={<Diretorio />} />
         <Route path="/diretorio/:slug" element={<DiretorioEmpresa />} />
+        <Route path="/comunidades" element={<Comunidades />} />
+        <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/convergindo" element={<Convergindo />} />
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/planos" element={<Planos />} />

@@ -32,6 +32,7 @@ export const useSiteSettings = () => {
   const fallbackNavigation: NavigationMenu[] = [
     { label: 'Início', href: '/', active: true },
     { label: 'Diretório', href: '/diretorio', active: true },
+    { label: 'Comunidades', href: '/comunidades', active: true },
     { label: 'Convergindo', href: '/convergindo', active: true },
     { label: 'Sobre', href: '/sobre', active: true },
     { label: 'Contato', href: '/contato', active: true },
