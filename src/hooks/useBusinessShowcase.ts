@@ -27,7 +27,7 @@ export const useRandomBusinesses = (limit: number = 5) => {
         throw error;
       }
       
-      return data || [];
+      return (data || []).map(b => ({ ...b, views_count: 0, reviews_count: 0 }));
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
@@ -45,7 +45,7 @@ export const useFeaturedBusinesses = (limit: number = 5) => {
         throw error;
       }
       
-      return data || [];
+      return (data || []).map(b => ({ ...b, views_count: 0, reviews_count: 0 }));
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,

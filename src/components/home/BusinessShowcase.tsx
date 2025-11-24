@@ -49,7 +49,12 @@ const BusinessShowcase: React.FC<BusinessShowcaseProps> = ({
           return;
         }
         
-        setBusinesses((data || []).map(b => ({ ...b, average_rating: 0 })));
+        setBusinesses((data || []).map(b => ({ 
+          ...b, 
+          average_rating: 0,
+          views_count: 0,
+          reviews_count: 0
+        })));
       } catch (error) {
         console.error('Error fetching businesses:', error);
       } finally {

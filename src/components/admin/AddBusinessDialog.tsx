@@ -82,7 +82,7 @@ export const AddBusinessDialog = ({ userId, userName, open, onOpenChange }: AddB
         .from('businesses')
         .insert({
           name: data.name,
-          category: data.category,
+          category: data.category as any, // Usando categoria enum temporariamente
           description: data.description || null,
           city: data.city || null,
           state: data.state || null,

@@ -92,7 +92,7 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
         // Cancelar assinaturas ativas ou pendentes do usuário
         const { data: subscriptions } = await supabase
           .from('user_subscriptions')
-          .select('id, external_subscription_id, external_payment_id, status')
+          .select('id, external_subscription_id, status')
           .eq('user_id', business.owner_id)
           .in('status', ['active', 'pending']);
 
@@ -112,19 +112,6 @@ export const ComplimentaryBusinessManager = ({ userId, userName }: Complimentary
 
               if (cancelError) {
                 console.error('Erro ao cancelar assinatura:', cancelError);
-              }
-            }
-            
-            // Se tiver cobrança pendente no Asaas, cancelar também
-            if (subscription.external_payment_id && subscription.status === 'pending') {
-              try {
-                await supabase.functions.invoke('cancel-asaas-payment', {
-                  body: {
-                    paymentId: subscription.external_payment_id
-                  }
-                });
-              } catch (error) {
-                console.error('Erro ao cancelar cobrança no Asaas:', error);
               }
             }
             

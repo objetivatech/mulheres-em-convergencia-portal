@@ -82,8 +82,8 @@ const AdminContactMessages = () => {
 
       if (error) throw error;
 
-      setMessages(data || []);
-      setFilteredMessages(data || []);
+      setMessages((data || []) as ContactMessage[]);
+      setFilteredMessages((data || []) as ContactMessage[]);
     } catch (error: any) {
       console.error('Error loading messages:', error);
       toast.error('Erro ao carregar mensagens');
@@ -199,7 +199,7 @@ const AdminContactMessages = () => {
     if (!selectedMessage) return;
 
     try {
-      setIsSubmitting(true);
+      setSending(true);
 
       const { data, error } = await supabase.functions.invoke('reply-contact-message', {
         body: {
@@ -220,7 +220,7 @@ const AdminContactMessages = () => {
         setReplyText('');
         setSelectedMessage(null);
         // Refresh messages list
-        fetchMessages();
+        loadMessages();
       } else {
         toast.error(data?.error || 'Falha ao enviar resposta.');
       }
@@ -228,7 +228,7 @@ const AdminContactMessages = () => {
       console.error('Unexpected error:', error);
       toast.error('Erro ao processar resposta. Tente novamente.');
     } finally {
-      setIsSubmitting(false);
+      setSending(false);
     }
   };
 
