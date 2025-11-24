@@ -44,10 +44,12 @@ const Diretorio = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [selectedCommunity, setSelectedCommunity] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [nearbyRadius, setNearbyRadius] = useState(50); // km
+  const [communities, setCommunities] = useState<Array<{id: string, name: string}>>([]);
 
   // Categorias disponíveis
   const categories = [
@@ -72,6 +74,7 @@ const Diretorio = () => {
 
   useEffect(() => {
     fetchBusinesses();
+    fetchCommunities();
     // Tentar obter localização do usuário automaticamente ao carregar
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -95,6 +98,21 @@ const Diretorio = () => {
       setUserLocation([-15.7942, -47.8822]);
     }
   }, []);
+
+  const fetchCommunities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('communities')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+
+      if (error) throw error;
+      setCommunities(data || []);
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+    }
+  };
 
   const fetchBusinesses = async () => {
     try {
@@ -186,6 +204,7 @@ const Diretorio = () => {
     const matchesCategory = !selectedCategory || selectedCategory === 'all' || business.category === selectedCategory;
     const matchesState = !selectedState || selectedState === 'all' || business.state === selectedState;
     const matchesCity = !selectedCity || business.city.toLowerCase().includes(selectedCity.toLowerCase());
+    const matchesCommunity = !selectedCommunity || selectedCommunity === 'all' || business.community_name === selectedCommunity;
 
     // Filtro por proximidade se localização do usuário disponível
     let matchesProximity = true;
@@ -197,7 +216,7 @@ const Diretorio = () => {
       matchesProximity = distance <= nearbyRadius;
     }
 
-    return matchesSearch && matchesCategory && matchesState && matchesCity && matchesProximity;
+    return matchesSearch && matchesCategory && matchesState && matchesCity && matchesCommunity && matchesProximity;
   });
 
   // Obter localização do usuário e ativar modo mapa
@@ -461,6 +480,20 @@ const Diretorio = () => {
                       {categories.map(category => (
                         <SelectItem key={category} value={category}>
                           {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
+                    <SelectTrigger className="w-44">
+                      <SelectValue placeholder="Comunidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas</SelectItem>
+                      {communities.map(community => (
+                        <SelectItem key={community.id} value={community.name}>
+                          {community.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -124,6 +124,14 @@ const Admin = () => {
           available: isAdmin,
           href: '/admin/parceiros',
           comingSoon: false
+        },
+        {
+          title: 'Comunidades e Coletivos',
+          description: 'Gerenciar comunidades e aprovar solicitações',
+          icon: Users,
+          available: isAdmin,
+          href: '/admin/comunidades',
+          comingSoon: false
         }
       ]
     },

@@ -21,7 +21,7 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           success: boolean
@@ -35,7 +35,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           success?: boolean
@@ -49,7 +49,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           success?: boolean
@@ -632,8 +632,10 @@ export type Database = {
           address: string | null
           boost_score: number | null
           category: Database["public"]["Enums"]["business_category"]
+          category_id: string | null
           city: string | null
           clicks_count: number | null
+          community_id: string | null
           contacts_count: number | null
           cover_image_url: string | null
           created_at: string | null
@@ -674,8 +676,10 @@ export type Database = {
           address?: string | null
           boost_score?: number | null
           category: Database["public"]["Enums"]["business_category"]
+          category_id?: string | null
           city?: string | null
           clicks_count?: number | null
+          community_id?: string | null
           contacts_count?: number | null
           cover_image_url?: string | null
           created_at?: string | null
@@ -716,8 +720,10 @@ export type Database = {
           address?: string | null
           boost_score?: number | null
           category?: Database["public"]["Enums"]["business_category"]
+          category_id?: string | null
           city?: string | null
           clicks_count?: number | null
+          community_id?: string | null
           contacts_count?: number | null
           cover_image_url?: string | null
           created_at?: string | null
@@ -756,6 +762,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "businesses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "businesses_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "businesses_owner_id_fkey"
             columns: ["owner_id"]
             isOneToOne: false
@@ -763,6 +783,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      communities: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       community_group_members: {
         Row: {
@@ -837,6 +911,53 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_requests: {
+        Row: {
+          admin_notes: string | null
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          requested_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          requested_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          requested_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -1052,6 +1173,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_confirmation_tokens: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       email_sends: {
         Row: {
@@ -1410,6 +1561,84 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      partners: {
+        Row: {
+          active: boolean
+          contact_email: string | null
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          logo_url: string
+          name: string
+          partnership_type: string
+          social_links: Json | null
+          start_date: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          contact_email?: string | null
+          created_at?: string
+          description: string
+          display_order?: number
+          id?: string
+          logo_url: string
+          name: string
+          partnership_type: string
+          social_links?: Json | null
+          start_date?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          contact_email?: string | null
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          logo_url?: string
+          name?: string
+          partnership_type?: string
+          social_links?: Json | null
+          start_date?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      password_reset_tokens: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          token: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1793,7 +2022,7 @@ export type Database = {
           activity_type: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           user_agent: string | null
           user_id: string
@@ -1803,7 +2032,7 @@ export type Database = {
           activity_type: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id: string
@@ -1813,7 +2042,7 @@ export type Database = {
           activity_type?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           user_agent?: string | null
           user_id?: string
@@ -2212,6 +2441,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      approve_community_request: {
+        Args: { admin_notes?: string; request_id: string }
+        Returns: Json
+      }
       calculate_business_rating: {
         Args: { business_uuid: string }
         Returns: {
@@ -2235,18 +2468,10 @@ export type Database = {
           total_reviews: number
         }[]
       }
-      cleanup_old_activity_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cpf_exists: {
-        Args: { cpf_to_check: string }
-        Returns: boolean
-      }
+      cleanup_expired_email_tokens: { Args: never; Returns: undefined }
+      cleanup_old_activity_logs: { Args: never; Returns: undefined }
+      cleanup_security_logs: { Args: never; Returns: number }
+      cpf_exists: { Args: { cpf_to_check: string }; Returns: boolean }
       create_business_credits_account: {
         Args: { business_uuid: string }
         Returns: undefined
@@ -2262,10 +2487,7 @@ export type Database = {
         }
         Returns: string
       }
-      deactivate_expired_businesses: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      deactivate_expired_businesses: { Args: never; Returns: number }
       evolve_newsletter_to_profile: {
         Args: {
           full_name?: string
@@ -2275,10 +2497,7 @@ export type Database = {
         }
         Returns: string
       }
-      format_cpf: {
-        Args: { cpf_input: string }
-        Returns: string
-      }
+      format_cpf: { Args: { cpf_input: string }; Returns: string }
       generate_business_slug: {
         Args: { business_id: string; business_name: string }
         Returns: string
@@ -2298,8 +2517,16 @@ export type Database = {
           variant_name: string
         }[]
       }
+      get_active_communities: {
+        Args: never
+        Returns: {
+          description: string
+          id: string
+          name: string
+        }[]
+      }
       get_admin_business_analytics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           average_rating: number
           business_category: string
@@ -2318,7 +2545,7 @@ export type Database = {
         }[]
       }
       get_admin_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_subscriptions: number
           new_users_this_month: number
@@ -2378,37 +2605,49 @@ export type Database = {
           state: string
         }[]
       }
-      get_current_user_admin_status: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+      get_communities_stats: {
+        Args: never
+        Returns: {
+          active_communities: number
+          businesses_with_community: number
+          pending_requests: number
+          total_communities: number
+        }[]
       }
-      get_current_user_blog_edit_status: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+      get_community_details: {
+        Args: { community_uuid: string }
+        Returns: {
+          active: boolean
+          categories_represented: string[]
+          created_at: string
+          description: string
+          id: string
+          name: string
+          total_businesses: number
+          total_views: number
+        }[]
       }
+      get_current_user_admin_status: { Args: never; Returns: boolean }
+      get_current_user_blog_edit_status: { Args: never; Returns: boolean }
       get_featured_businesses: {
         Args: { limit_count?: number }
         Returns: {
           category: string
           city: string
+          community_name: string
           cover_image_url: string
           description: string
           id: string
           logo_url: string
           name: string
-          reviews_count: number
           slug: string
           state: string
           subscription_plan: string
-          views_count: number
         }[]
       }
-      get_google_places_api_key: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_google_places_api_key: { Args: never; Returns: string }
       get_journey_funnel_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avg_hours_in_stage: number
           completion_rate: number
@@ -2428,6 +2667,17 @@ export type Database = {
           reviewer_name: string
           title: string
           verified: boolean
+        }[]
+      }
+      get_pending_community_requests: {
+        Args: never
+        Returns: {
+          business_id: string
+          business_name: string
+          created_at: string
+          description: string
+          id: string
+          requested_name: string
         }[]
       }
       get_popular_blog_tags: {
@@ -2480,6 +2730,7 @@ export type Database = {
           category: string
           city: string
           clicks_count: number
+          community_name: string
           contacts_count: number
           cover_image_url: string
           created_at: string
@@ -2518,12 +2769,14 @@ export type Database = {
         }[]
       }
       get_public_businesses: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           average_rating: number
           category: string
           city: string
           clicks_count: number
+          community_id: string
+          community_name: string
           cover_image_url: string
           created_at: string
           description: string
@@ -2547,16 +2800,15 @@ export type Database = {
         Returns: {
           category: string
           city: string
+          community_name: string
           cover_image_url: string
           description: string
           id: string
           logo_url: string
           name: string
-          reviews_count: number
           slug: string
           state: string
           subscription_plan: string
-          views_count: number
         }[]
       }
       get_safe_business_reviews: {
@@ -2603,22 +2855,16 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_blog_post_views: {
-        Args: { p_slug: string }
+      increment_blog_post_views: { Args: { p_slug: string }; Returns: boolean }
+      is_business_active: { Args: { business_uuid: string }; Returns: boolean }
+      is_business_visible: {
+        Args: {
+          business_row: Database["public"]["Tables"]["businesses"]["Row"]
+        }
         Returns: boolean
       }
-      is_business_active: {
-        Args: { business_uuid: string }
-        Returns: boolean
-      }
-      is_user_author: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      is_valid_uuid: {
-        Args: { uuid_string: string }
-        Returns: boolean
-      }
+      is_user_author: { Args: { user_uuid: string }; Returns: boolean }
+      is_valid_uuid: { Args: { uuid_string: string }; Returns: boolean }
       log_user_activity: {
         Args: {
           p_activity_type: string
@@ -2640,9 +2886,10 @@ export type Database = {
         }
         Returns: Json
       }
-      publish_scheduled_posts: {
-        Args: Record<PropertyKey, never>
-        Returns: number
+      publish_scheduled_posts: { Args: never; Returns: number }
+      reject_community_request: {
+        Args: { admin_notes: string; request_id: string }
+        Returns: Json
       }
       remove_user_role: {
         Args: {
@@ -2674,10 +2921,7 @@ export type Database = {
         Args: { email_type: string; recipient_email: string; user_data?: Json }
         Returns: Json
       }
-      setup_mailrelay_smtp: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      setup_mailrelay_smtp: { Args: never; Returns: string }
       submit_business_review_safe: {
         Args: {
           p_business_id: string
@@ -2689,6 +2933,15 @@ export type Database = {
           p_title?: string
         }
         Returns: Json
+      }
+      sync_existing_user_journeys: {
+        Args: never
+        Returns: {
+          new_stage: string
+          old_stage: string
+          reason: string
+          user_id: string
+        }[]
       }
       track_referral_click: {
         Args: { referral_code: string }
@@ -2740,10 +2993,7 @@ export type Database = {
         }
         Returns: Json
       }
-      user_has_business: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      user_has_business: { Args: { user_uuid: string }; Returns: boolean }
       user_has_permission: {
         Args: { permission_name: string; user_uuid: string }
         Returns: boolean
@@ -2755,10 +3005,17 @@ export type Database = {
         }
         Returns: boolean
       }
-      validate_cpf: {
-        Args: { cpf_input: string }
-        Returns: boolean
+      validate_business_visibility_consistency: {
+        Args: never
+        Returns: {
+          actual_count: number
+          expected_count: number
+          message: string
+          status: string
+          test_name: string
+        }[]
       }
+      validate_cpf: { Args: { cpf_input: string }; Returns: boolean }
     }
     Enums: {
       app_role:

@@ -14,6 +14,7 @@ import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
 import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
 import { ServiceAreasManager } from '@/components/business/ServiceAreasManager';
+import { CommunityRequestDialog } from '@/components/business/CommunityRequestDialog';
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { useGeocoding } from '@/hooks/useGeocoding';
@@ -808,6 +809,19 @@ export const DashboardEmpresa = () => {
                       <p className="text-sm text-muted-foreground mt-1">
                         Vincule seu negócio a uma comunidade ou coletivo
                       </p>
+                      {business?.id && (
+                        <div className="mt-1">
+                          <CommunityRequestDialog 
+                            businessId={business.id} 
+                            onSuccess={() => {
+                              toast({
+                                title: 'Solicitação enviada',
+                                description: 'Sua solicitação foi enviada para análise.',
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
