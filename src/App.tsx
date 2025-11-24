@@ -14,6 +14,7 @@ import Post from "./pages/Post";
 import Diretorio from "./pages/Diretorio";
 import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import Planos from './pages/Planos';
+import Comunidade from './pages/Comunidade';
 import PremiumDashboard from './pages/PremiumDashboard';
 import NotFound from "./pages/NotFound";
 import Favicon from "@/components/layout/Favicon";
@@ -50,6 +51,7 @@ import { ProfileCompletionModal } from '@/components/auth/ProfileCompletionModal
 import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
 import AdminRegistrations from '@/pages/AdminRegistrations';
+import AdminCommunities from '@/pages/AdminCommunities';
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,7 @@ function AppContent() {
         <Route path="/convergindo" element={<Convergindo />} />
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/planos" element={<Planos />} />
+        <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
@@ -132,6 +135,11 @@ function AppContent() {
         <Route path="/admin/parceiros" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminPartners />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/comunidades" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCommunities />
           </ProtectedRoute>
         } />
         <Route path="/admin/mensagens-contato" element={
