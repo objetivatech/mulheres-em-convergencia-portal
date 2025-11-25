@@ -19,13 +19,17 @@ interface LinkedInUserInfo {
 }
 
 Deno.serve(async (req) => {
+  console.log('🚀 Edge function called, method:', req.method, 'url:', req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('✅ Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const url = new URL(req.url);
     const pathname = url.pathname;
+    console.log('📍 Pathname:', pathname);
 
     // Iniciar fluxo OAuth
     if (pathname.endsWith('/authorize')) {
