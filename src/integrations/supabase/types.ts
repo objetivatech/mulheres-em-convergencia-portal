@@ -1852,6 +1852,122 @@ export type Database = {
         }
         Relationships: []
       }
+      social_accounts: {
+        Row: {
+          access_token: string | null
+          account_email: string | null
+          account_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          platform: string
+          platform_page_id: string | null
+          platform_user_id: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          account_email?: string | null
+          account_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          platform: string
+          platform_page_id?: string | null
+          platform_user_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          account_email?: string | null
+          account_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          platform?: string
+          platform_page_id?: string | null
+          platform_user_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      social_posts: {
+        Row: {
+          blog_post_id: string | null
+          content: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          is_republish: boolean | null
+          media_urls: string[] | null
+          platform_post_ids: Json | null
+          platform_responses: Json | null
+          platforms: string[]
+          published_at: string | null
+          republish_count: number | null
+          scheduled_for: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          blog_post_id?: string | null
+          content: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_republish?: boolean | null
+          media_urls?: string[] | null
+          platform_post_ids?: Json | null
+          platform_responses?: Json | null
+          platforms: string[]
+          published_at?: string | null
+          republish_count?: number | null
+          scheduled_for?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          blog_post_id?: string | null
+          content?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_republish?: boolean | null
+          media_urls?: string[] | null
+          platform_post_ids?: Json | null
+          platform_responses?: Json | null
+          platforms?: string[]
+          published_at?: string | null
+          republish_count?: number | null
+          scheduled_for?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           created_at: string | null
