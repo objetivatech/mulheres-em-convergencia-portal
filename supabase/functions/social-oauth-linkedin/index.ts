@@ -52,10 +52,108 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Callback OAuth
+    // Callback OAuth - recebe redirect do LinkedIn e retorna HTML com postMessage
     if (pathname.endsWith('/callback')) {
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state');
+      const error = url.searchParams.get('error');
+
+      if (error) {
+        const htmlResponse = `
+          <!DOCTYPE html>
+          <html>
+            <head><title>Erro de Autenticação</title></head>
+            <body>
+              <script>
+                window.opener.postMessage({ 
+                  type: 'LINKEDIN_AUTH_ERROR', 
+                  error: '${error}' 
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `;
+        return new Response(htmlResponse, {
+          headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+        });
+      }
+
+      if (!code) {
+        const htmlResponse = `
+          <!DOCTYPE html>
+          <html>
+            <head><title>Erro de Autenticação</title></head>
+            <body>
+              <script>
+                window.opener.postMessage({ 
+                  type: 'LINKEDIN_AUTH_ERROR', 
+                  error: 'Código de autorização não fornecido' 
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `;
+        return new Response(htmlResponse, {
+          headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+        });
+      }
+
+      // Retorna HTML que envia o código para a janela pai
+      const htmlResponse = `
+        <!DOCTYPE html>
+        <html>
+          <head><title>Conectando...</title></head>
+          <body>
+            <p>Conectando sua conta LinkedIn...</p>
+            <script>
+              window.opener.postMessage({ 
+                type: 'LINKEDIN_AUTH_SUCCESS', 
+                code: '${code}',
+                state: '${state}'
+              }, '*');
+              setTimeout(() => window.close(), 1000);
+            </script>
+          </body>
+        </html>
+      `;
+      
+      return new Response(htmlResponse, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+      });
+    }
+
+    // Endpoint para conectar conta após receber o código
+    if (pathname.endsWith('/connect')) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'Token de autenticação não fornecido' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+          global: {
+            headers: { Authorization: authHeader },
+          },
+        }
+      );
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        return new Response(
+          JSON.stringify({ error: 'Usuário não autenticado' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { code } = await req.json();
 
       if (!code) {
         return new Response(
@@ -107,34 +205,6 @@ Deno.serve(async (req) => {
       }
 
       const userInfo: LinkedInUserInfo = await userInfoResponse.json();
-
-      // Obter user_id do Supabase Auth
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader) {
-        return new Response(
-          JSON.stringify({ error: 'Token de autenticação não fornecido' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        {
-          global: {
-            headers: { Authorization: authHeader },
-          },
-        }
-      );
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Usuário não autenticado' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
 
       // Calcular expiração do token
       const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);

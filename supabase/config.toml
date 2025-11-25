@@ -74,3 +74,6 @@ verify_jwt = true
 
 [functions.cleanup-complimentary-subscriptions]
 verify_jwt = true
+
+[functions.social-oauth-linkedin]
+verify_jwt = false

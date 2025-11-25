@@ -65,6 +65,7 @@ export function SocialAccountsManager() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Não autenticado');
 
+      // Obter URL de autorização
       const response = await supabase.functions.invoke('social-oauth-linkedin/authorize', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -72,9 +73,7 @@ export function SocialAccountsManager() {
       });
 
       if (response.error) throw response.error;
-      return response.data;
-    },
-    onSuccess: (data) => {
+
       // Abrir janela de autorização
       const width = 600;
       const height = 700;
@@ -82,19 +81,69 @@ export function SocialAccountsManager() {
       const top = window.screenY + (window.outerHeight - height) / 2;
       
       const popup = window.open(
-        data.authUrl,
+        response.data.authUrl,
         'linkedin-oauth',
         `width=${width},height=${height},left=${left},top=${top}`
       );
 
-      // Verificar se a janela foi fechada
-      const checkClosed = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(checkClosed);
-          queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-          setConnectingPlatform(null);
-        }
-      }, 500);
+      if (!popup) {
+        throw new Error('Popup bloqueado pelo navegador');
+      }
+
+      // Aguardar mensagem do popup
+      return new Promise<string>((resolve, reject) => {
+        const messageHandler = (event: MessageEvent) => {
+          if (event.data.type === 'LINKEDIN_AUTH_SUCCESS') {
+            window.removeEventListener('message', messageHandler);
+            resolve(event.data.code);
+          } else if (event.data.type === 'LINKEDIN_AUTH_ERROR') {
+            window.removeEventListener('message', messageHandler);
+            reject(new Error(event.data.error));
+          }
+        };
+
+        window.addEventListener('message', messageHandler);
+
+        // Verificar se a janela foi fechada sem completar
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            reject(new Error('Janela fechada sem completar a autenticação'));
+          }
+        }, 500);
+      });
+    },
+    onSuccess: async (code) => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Não autenticado');
+
+        // Enviar código para conectar a conta
+        const response = await supabase.functions.invoke('social-oauth-linkedin/connect', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: { code },
+        });
+
+        if (response.error) throw response.error;
+
+        toast({
+          title: 'LinkedIn conectado',
+          description: 'Sua conta do LinkedIn foi conectada com sucesso',
+        });
+
+        queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      } catch (error: any) {
+        toast({
+          title: 'Erro ao conectar LinkedIn',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } finally {
+        setConnectingPlatform(null);
+      }
     },
     onError: (error: Error) => {
       toast({
