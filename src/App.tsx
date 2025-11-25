@@ -18,6 +18,9 @@ import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
 import NotFound from "./pages/NotFound";
+import TermosDeUso from './pages/TermosDeUso';
+import PoliticaDePrivacidade from './pages/PoliticaDePrivacidade';
+import PoliticaDeCookies from './pages/PoliticaDeCookies';
 import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -53,6 +56,7 @@ import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
 import AdminRegistrations from '@/pages/AdminRegistrations';
 import AdminCommunities from '@/pages/AdminCommunities';
+import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
 
@@ -96,6 +100,9 @@ function AppContent() {
         <Route path="/planos" element={<Planos />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
+        <Route path="/termos-de-uso" element={<TermosDeUso />} />
+        <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
+        <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
@@ -277,6 +284,9 @@ function AppContent() {
             onComplete={markAsComplete}
           />
         )}
+        
+        {/* Cookie Consent Banner */}
+        <CookieConsent />
       </BrowserRouter>
     </TooltipProvider>
   );

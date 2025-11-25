@@ -35,6 +35,12 @@ const Footer = () => {
     { name: 'Contato', href: '/contato' },
   ];
 
+  const legalLinks = [
+    { name: 'Termos de Uso', href: '/termos-de-uso' },
+    { name: 'Política de Privacidade', href: '/politica-de-privacidade' },
+    { name: 'Política de Cookies', href: '/politica-de-cookies' },
+  ];
+
   const footerText = settings?.footer_text || `© ${currentYear} Mulheres em Convergência. Todos os direitos reservados.`;
 
   return (
@@ -98,13 +104,32 @@ const Footer = () => {
         </div>
 
         {/* Linha de Copyright */}
-        <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-muted-foreground text-sm">
-            {footerText}
-          </p>
-          <p className="text-muted-foreground text-sm flex items-center mt-2 md:mt-0">
-            Feito com <Heart size={16} className="mx-1 text-primary" /> para empoderar mulheres
-          </p>
+        <div className="border-t border-border mt-8 pt-8 space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-muted-foreground text-sm">
+              {footerText}
+            </p>
+            <p className="text-muted-foreground text-sm flex items-center">
+              Feito com <Heart size={16} className="mx-1 text-primary" /> para empoderar mulheres
+            </p>
+          </div>
+          
+          {/* Links Jurídicos */}
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
+            {legalLinks.map((link, index) => (
+              <span key={link.name} className="flex items-center">
+                <Link
+                  to={link.href}
+                  className="hover:text-primary transition-colors"
+                >
+                  {link.name}
+                </Link>
+                {index < legalLinks.length - 1 && (
+                  <span className="mx-2 text-border">|</span>
+                )}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
