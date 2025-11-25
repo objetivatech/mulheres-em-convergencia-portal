@@ -43,11 +43,17 @@ const platformNames = {
 };
 
 export function SocialAccountsManager() {
+  console.log('🎯 SocialAccountsManager montado');
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const location = useLocation();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+
+  // Log imediato da URL atual
+  console.log('📍 URL no mount:', window.location.href);
+  console.log('📍 location.search:', location.search);
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['social-accounts'],
@@ -66,6 +72,7 @@ export function SocialAccountsManager() {
   useEffect(() => {
     console.log('🔍 useEffect executando - verificando URL params');
     console.log('📍 URL atual:', window.location.href);
+    console.log('📍 location.search value:', location.search);
     
     const urlParams = new URLSearchParams(location.search);
     const linkedinCode = urlParams.get('linkedin_code');
@@ -73,10 +80,11 @@ export function SocialAccountsManager() {
     const linkedinError = urlParams.get('linkedin_error');
 
     console.log('📝 Parâmetros capturados:', { 
-      linkedinCode: linkedinCode ? 'presente' : 'ausente',
-      linkedinState: linkedinState ? 'presente' : 'ausente', 
+      linkedinCode: linkedinCode ? `presente (${linkedinCode.substring(0, 20)}...)` : 'ausente',
+      linkedinState: linkedinState ? `presente (${linkedinState.substring(0, 20)}...)` : 'ausente', 
       linkedinError 
     });
+    console.log('📝 Raw params:', { linkedinCode, linkedinState, linkedinError });
 
     if (linkedinError) {
       console.log('❌ Erro do LinkedIn recebido:', linkedinError);
