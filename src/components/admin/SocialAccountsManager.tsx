@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,13 +46,8 @@ export function SocialAccountsManager() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const location = useLocation();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
-
-  // Log imediato da URL atual
-  console.log('📍 URL no mount:', window.location.href);
-  console.log('📍 location.search:', location.search);
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['social-accounts'],
@@ -68,103 +62,7 @@ export function SocialAccountsManager() {
     },
   });
 
-  // Monitorar parâmetros da URL para capturar o callback do LinkedIn
-  useEffect(() => {
-    console.log('🔍 useEffect executando - verificando URL params');
-    console.log('📍 URL atual:', window.location.href);
-    console.log('📍 location.search value:', location.search);
-    
-    const urlParams = new URLSearchParams(location.search);
-    const linkedinCode = urlParams.get('linkedin_code');
-    const linkedinState = urlParams.get('linkedin_state');
-    const linkedinError = urlParams.get('linkedin_error');
-
-    console.log('📝 Parâmetros capturados:', { 
-      linkedinCode: linkedinCode ? `presente (${linkedinCode.substring(0, 20)}...)` : 'ausente',
-      linkedinState: linkedinState ? `presente (${linkedinState.substring(0, 20)}...)` : 'ausente', 
-      linkedinError 
-    });
-    console.log('📝 Raw params:', { linkedinCode, linkedinState, linkedinError });
-
-    if (linkedinError) {
-      console.log('❌ Erro do LinkedIn recebido:', linkedinError);
-      toast({
-        title: 'Erro ao conectar LinkedIn',
-        description: linkedinError,
-        variant: 'destructive',
-      });
-      // Limpar parâmetros da URL
-      window.history.replaceState({}, '', '/admin/redes-sociais');
-      setConnectingPlatform(null);
-      return;
-    }
-
-    if (linkedinCode && linkedinState) {
-      console.log('✅ LinkedIn authorization code received from URL');
-      setConnectingPlatform('linkedin');
-      handleLinkedInCallback(linkedinCode);
-    }
-  }, [location.search, toast]);
-
-  const handleLinkedInCallback = async (code: string) => {
-    try {
-      console.log('🔄 Processing LinkedIn callback with code');
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: 'Erro',
-          description: 'Sessão expirada. Por favor, faça login novamente.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      console.log('📞 Calling /connect endpoint...');
-      const connectResponse = await fetch(
-        'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ code }),
-        }
-      );
-
-      console.log('📡 Connect response status:', connectResponse.status);
-
-      if (!connectResponse.ok) {
-        const errorData = await connectResponse.json();
-        console.error('❌ Connect error:', errorData);
-        throw new Error(errorData.error || 'Falha ao conectar conta LinkedIn');
-      }
-
-      const result = await connectResponse.json();
-      console.log('✅ Connection successful:', result);
-      
-      toast({
-        title: 'LinkedIn conectado',
-        description: 'Sua conta do LinkedIn foi conectada com sucesso',
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-      
-      // Limpar parâmetros da URL
-      window.history.replaceState({}, '', '/admin/redes-sociais');
-    } catch (error) {
-      console.error('❌ Error in LinkedIn callback:', error);
-      toast({
-        title: 'Erro ao conectar LinkedIn',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: 'destructive',
-      });
-    } finally {
-      setConnectingPlatform(null);
-    }
-  };
+  // Callback do LinkedIn agora é processado na página AdminSocialMedia.tsx
 
   const connectLinkedIn = useMutation({
     mutationFn: async () => {
