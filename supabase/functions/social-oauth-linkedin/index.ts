@@ -58,75 +58,51 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Callback OAuth - recebe redirect do LinkedIn e retorna HTML com postMessage
+    // Callback OAuth - recebe redirect do LinkedIn e redireciona de volta para o app
     if (pathname.endsWith('/callback')) {
+      console.log('📍 LinkedIn callback received');
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state');
       const error = url.searchParams.get('error');
+      
+      console.log('📝 Callback params - code:', code ? 'present' : 'missing', 'state:', state, 'error:', error);
 
+      // Obter a URL base do app a partir das variáveis de ambiente
+      const appUrl = Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com') || 'http://localhost:5173';
+      
       if (error) {
-        const htmlResponse = `
-          <!DOCTYPE html>
-          <html>
-            <head><title>Erro de Autenticação</title></head>
-            <body>
-              <script>
-                window.opener.postMessage({ 
-                  type: 'LINKEDIN_AUTH_ERROR', 
-                  error: '${error}' 
-                }, '*');
-                window.close();
-              </script>
-            </body>
-          </html>
-        `;
-        return new Response(htmlResponse, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+        console.log('❌ LinkedIn returned error:', error);
+        const redirectUrl = `${appUrl}/admin/redes-sociais?linkedin_error=${encodeURIComponent(error)}`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': redirectUrl,
+          },
         });
       }
 
       if (!code) {
-        const htmlResponse = `
-          <!DOCTYPE html>
-          <html>
-            <head><title>Erro de Autenticação</title></head>
-            <body>
-              <script>
-                window.opener.postMessage({ 
-                  type: 'LINKEDIN_AUTH_ERROR', 
-                  error: 'Código de autorização não fornecido' 
-                }, '*');
-                window.close();
-              </script>
-            </body>
-          </html>
-        `;
-        return new Response(htmlResponse, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+        console.log('❌ No authorization code provided');
+        const redirectUrl = `${appUrl}/admin/redes-sociais?linkedin_error=${encodeURIComponent('Código de autorização não fornecido')}`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': redirectUrl,
+          },
         });
       }
 
-      // Retorna HTML que envia o código para a janela pai
-      const htmlResponse = `
-        <!DOCTYPE html>
-        <html>
-          <head><title>Conectando...</title></head>
-          <body>
-            <p>Conectando sua conta LinkedIn...</p>
-            <script>
-              window.opener.postMessage({ 
-                type: 'LINKEDIN_AUTH_SUCCESS', 
-                code: '${code}',
-                state: '${state}'
-              }, '*');
-              setTimeout(() => window.close(), 1000);
-            </script>
-          </body>
-        </html>
-      `;
-      
-      return new Response(htmlResponse, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+      // Redirecionar de volta para o app com o código e state
+      console.log('✅ Redirecting back to app with code and state');
+      const redirectUrl = `${appUrl}/admin/redes-sociais?linkedin_code=${encodeURIComponent(code)}&linkedin_state=${encodeURIComponent(state)}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': redirectUrl,
+        },
       });
     }
 
