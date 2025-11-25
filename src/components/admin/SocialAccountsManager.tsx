@@ -102,15 +102,21 @@ export function SocialAccountsManager() {
       // Aguardar mensagem do popup
       return new Promise<string>((resolve, reject) => {
         const messageHandler = (event: MessageEvent) => {
+          console.log('📨 Message received:', event.data);
+          console.log('📨 Message origin:', event.origin);
+          
           if (event.data.type === 'LINKEDIN_AUTH_SUCCESS') {
+            console.log('✅ LinkedIn auth success message received');
             window.removeEventListener('message', messageHandler);
             resolve(event.data.code);
           } else if (event.data.type === 'LINKEDIN_AUTH_ERROR') {
+            console.log('❌ LinkedIn auth error message received');
             window.removeEventListener('message', messageHandler);
             reject(new Error(event.data.error));
           }
         };
 
+        console.log('👂 Setting up message listener...');
         window.addEventListener('message', messageHandler);
 
         // Verificar se a janela foi fechada sem completar
