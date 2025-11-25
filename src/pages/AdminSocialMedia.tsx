@@ -1,15 +1,117 @@
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SocialAccountsManager } from '@/components/admin/SocialAccountsManager';
 import { SocialPostComposer } from '@/components/admin/SocialPostComposer';
 import { SocialPostHistory } from '@/components/admin/SocialPostHistory';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AdminSocialMedia = () => {
   const { user, loading, isAdmin } = useAuth();
+  const location = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [processingCallback, setProcessingCallback] = useState(false);
+
+  // Processar callback do LinkedIn ANTES de renderizar as abas
+  useEffect(() => {
+    console.log('🔍 AdminSocialMedia - Verificando callback do LinkedIn');
+    console.log('📍 URL:', window.location.href);
+    console.log('📍 location.search:', location.search);
+    
+    const urlParams = new URLSearchParams(location.search);
+    const linkedinCode = urlParams.get('linkedin_code');
+    const linkedinState = urlParams.get('linkedin_state');
+    const linkedinError = urlParams.get('linkedin_error');
+
+    console.log('📝 Parâmetros:', { 
+      code: linkedinCode ? 'presente' : 'ausente',
+      state: linkedinState ? 'presente' : 'ausente',
+      error: linkedinError 
+    });
+
+    if (linkedinError) {
+      console.log('❌ Erro do LinkedIn:', linkedinError);
+      toast({
+        title: 'Erro ao conectar LinkedIn',
+        description: linkedinError,
+        variant: 'destructive',
+      });
+      window.history.replaceState({}, '', '/admin/redes-sociais');
+      return;
+    }
+
+    if (linkedinCode && linkedinState && !processingCallback) {
+      console.log('✅ Processando callback do LinkedIn...');
+      setProcessingCallback(true);
+      handleLinkedInCallback(linkedinCode);
+    }
+  }, [location.search]);
+
+  const handleLinkedInCallback = async (code: string) => {
+    try {
+      console.log('🔄 Chamando /connect com o código');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Erro',
+          description: 'Sessão expirada. Por favor, faça login novamente.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const response = await fetch(
+        'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ code }),
+        }
+      );
+
+      console.log('📡 Resposta do /connect:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Erro ao conectar:', errorData);
+        throw new Error(errorData.error || 'Falha ao conectar conta LinkedIn');
+      }
+
+      const result = await response.json();
+      console.log('✅ LinkedIn conectado com sucesso!', result);
+      
+      toast({
+        title: 'LinkedIn conectado',
+        description: 'Sua conta do LinkedIn foi conectada com sucesso',
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      
+      // Limpar parâmetros da URL
+      window.history.replaceState({}, '', '/admin/redes-sociais');
+    } catch (error) {
+      console.error('❌ Erro no callback:', error);
+      toast({
+        title: 'Erro ao conectar LinkedIn',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingCallback(false);
+    }
+  };
 
   if (loading) {
     return (
