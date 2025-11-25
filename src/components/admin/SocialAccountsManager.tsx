@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -60,18 +60,106 @@ export function SocialAccountsManager() {
     },
   });
 
+  // Monitorar parâmetros da URL para capturar o callback do LinkedIn
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const linkedinCode = urlParams.get('linkedin_code');
+    const linkedinState = urlParams.get('linkedin_state');
+    const linkedinError = urlParams.get('linkedin_error');
+
+    if (linkedinError) {
+      toast({
+        title: 'Erro ao conectar LinkedIn',
+        description: linkedinError,
+        variant: 'destructive',
+      });
+      // Limpar parâmetros da URL
+      window.history.replaceState({}, '', '/admin/redes-sociais');
+      setConnectingPlatform(null);
+      return;
+    }
+
+    if (linkedinCode) {
+      console.log('✅ LinkedIn authorization code received from URL');
+      handleLinkedInCallback(linkedinCode);
+    }
+  }, []);
+
+  const handleLinkedInCallback = async (code: string) => {
+    try {
+      console.log('🔄 Processing LinkedIn callback with code');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Erro',
+          description: 'Sessão expirada. Por favor, faça login novamente.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      console.log('📞 Calling /connect endpoint...');
+      const connectResponse = await fetch(
+        'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ code }),
+        }
+      );
+
+      console.log('📡 Connect response status:', connectResponse.status);
+
+      if (!connectResponse.ok) {
+        const errorData = await connectResponse.json();
+        console.error('❌ Connect error:', errorData);
+        throw new Error(errorData.error || 'Falha ao conectar conta LinkedIn');
+      }
+
+      const result = await connectResponse.json();
+      console.log('✅ Connection successful:', result);
+      
+      toast({
+        title: 'LinkedIn conectado',
+        description: 'Sua conta do LinkedIn foi conectada com sucesso',
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      
+      // Limpar parâmetros da URL
+      window.history.replaceState({}, '', '/admin/redes-sociais');
+    } catch (error) {
+      console.error('❌ Error in LinkedIn callback:', error);
+      toast({
+        title: 'Erro ao conectar LinkedIn',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive',
+      });
+    } finally {
+      setConnectingPlatform(null);
+    }
+  };
+
   const connectLinkedIn = useMutation({
     mutationFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Não autenticado');
 
-      // Obter URL de autorização
+      console.log('🚀 Starting LinkedIn connection...');
+      
+      // Chamar o endpoint /authorize para obter a URL de autorização
+      console.log('📞 Calling /authorize endpoint...');
       const response = await fetch(
         'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/authorize',
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -81,100 +169,12 @@ export function SocialAccountsManager() {
         throw new Error(error.error || 'Erro ao obter URL de autorização');
       }
 
-      const data = await response.json();
+      const { authUrl } = await response.json();
+      console.log('✅ Got auth URL, redirecting...');
 
-      // Abrir janela de autorização
-      const width = 600;
-      const height = 700;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      
-      const popup = window.open(
-        data.authUrl,
-        'linkedin-oauth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      if (!popup) {
-        throw new Error('Popup bloqueado pelo navegador');
-      }
-
-      // Aguardar mensagem do popup
-      return new Promise<string>((resolve, reject) => {
-        const messageHandler = (event: MessageEvent) => {
-          console.log('📨 Message received:', event.data);
-          console.log('📨 Message origin:', event.origin);
-          
-          if (event.data.type === 'LINKEDIN_AUTH_SUCCESS') {
-            console.log('✅ LinkedIn auth success message received');
-            window.removeEventListener('message', messageHandler);
-            resolve(event.data.code);
-          } else if (event.data.type === 'LINKEDIN_AUTH_ERROR') {
-            console.log('❌ LinkedIn auth error message received');
-            window.removeEventListener('message', messageHandler);
-            reject(new Error(event.data.error));
-          }
-        };
-
-        console.log('👂 Setting up message listener...');
-        window.addEventListener('message', messageHandler);
-
-        // Verificar se a janela foi fechada sem completar
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed);
-            window.removeEventListener('message', messageHandler);
-            reject(new Error('Janela fechada sem completar a autenticação'));
-          }
-        }, 500);
-      });
-    },
-    onSuccess: async (code) => {
-      console.log('✅ LinkedIn auth success, code received:', code);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('🔑 Session retrieved:', !!session);
-        if (!session) throw new Error('Não autenticado');
-
-        console.log('📤 Sending code to edge function...');
-        // Enviar código para conectar a conta
-        const response = await fetch(
-          'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ code }),
-          }
-        );
-
-        console.log('📥 Response status:', response.status);
-        if (!response.ok) {
-          const error = await response.json();
-          console.error('❌ Error response:', error);
-          throw new Error(error.error || 'Erro ao conectar conta');
-        }
-
-        const data = await response.json();
-        console.log('✅ Success response:', data);
-
-        toast({
-          title: 'LinkedIn conectado',
-          description: 'Sua conta do LinkedIn foi conectada com sucesso',
-        });
-
-        queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-      } catch (error: any) {
-        toast({
-          title: 'Erro ao conectar LinkedIn',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } finally {
-        setConnectingPlatform(null);
-      }
+      // Redirecionar para a URL de autorização do LinkedIn
+      // O callback retornará para esta mesma página com os parâmetros na URL
+      window.location.href = authUrl;
     },
     onError: (error: Error) => {
       toast({
