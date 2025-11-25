@@ -66,13 +66,22 @@ export function SocialAccountsManager() {
       if (!session) throw new Error('Não autenticado');
 
       // Obter URL de autorização
-      const response = await supabase.functions.invoke('social-oauth-linkedin/authorize', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch(
+        'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/authorize',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
-      if (response.error) throw response.error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao obter URL de autorização');
+      }
+
+      const data = await response.json();
 
       // Abrir janela de autorização
       const width = 600;
@@ -81,7 +90,7 @@ export function SocialAccountsManager() {
       const top = window.screenY + (window.outerHeight - height) / 2;
       
       const popup = window.open(
-        response.data.authUrl,
+        data.authUrl,
         'linkedin-oauth',
         `width=${width},height=${height},left=${left},top=${top}`
       );
@@ -120,14 +129,24 @@ export function SocialAccountsManager() {
         if (!session) throw new Error('Não autenticado');
 
         // Enviar código para conectar a conta
-        const response = await supabase.functions.invoke('social-oauth-linkedin/connect', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: { code },
-        });
+        const response = await fetch(
+          'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code }),
+          }
+        );
 
-        if (response.error) throw response.error;
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erro ao conectar conta');
+        }
+
+        const data = await response.json();
 
         toast({
           title: 'LinkedIn conectado',
