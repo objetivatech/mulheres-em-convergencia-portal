@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,6 +45,7 @@ const platformNames = {
 export function SocialAccountsManager() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const location = useLocation();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
 
@@ -65,7 +67,7 @@ export function SocialAccountsManager() {
     console.log('🔍 useEffect executando - verificando URL params');
     console.log('📍 URL atual:', window.location.href);
     
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const linkedinCode = urlParams.get('linkedin_code');
     const linkedinState = urlParams.get('linkedin_state');
     const linkedinError = urlParams.get('linkedin_error');
@@ -94,7 +96,7 @@ export function SocialAccountsManager() {
       setConnectingPlatform('linkedin');
       handleLinkedInCallback(linkedinCode);
     }
-  }, [toast]);
+  }, [location.search, toast]);
 
   const handleLinkedInCallback = async (code: string) => {
     try {
