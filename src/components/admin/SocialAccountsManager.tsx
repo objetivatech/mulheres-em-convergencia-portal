@@ -62,12 +62,22 @@ export function SocialAccountsManager() {
 
   // Monitorar parâmetros da URL para capturar o callback do LinkedIn
   useEffect(() => {
+    console.log('🔍 useEffect executando - verificando URL params');
+    console.log('📍 URL atual:', window.location.href);
+    
     const urlParams = new URLSearchParams(window.location.search);
     const linkedinCode = urlParams.get('linkedin_code');
     const linkedinState = urlParams.get('linkedin_state');
     const linkedinError = urlParams.get('linkedin_error');
 
+    console.log('📝 Parâmetros capturados:', { 
+      linkedinCode: linkedinCode ? 'presente' : 'ausente',
+      linkedinState: linkedinState ? 'presente' : 'ausente', 
+      linkedinError 
+    });
+
     if (linkedinError) {
+      console.log('❌ Erro do LinkedIn recebido:', linkedinError);
       toast({
         title: 'Erro ao conectar LinkedIn',
         description: linkedinError,
@@ -79,11 +89,12 @@ export function SocialAccountsManager() {
       return;
     }
 
-    if (linkedinCode) {
+    if (linkedinCode && linkedinState) {
       console.log('✅ LinkedIn authorization code received from URL');
+      setConnectingPlatform('linkedin');
       handleLinkedInCallback(linkedinCode);
     }
-  }, []);
+  }, [toast]);
 
   const handleLinkedInCallback = async (code: string) => {
     try {
