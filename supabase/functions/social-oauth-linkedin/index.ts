@@ -128,8 +128,13 @@ Deno.serve(async (req) => {
 
     // Endpoint para conectar conta após receber o código
     if (pathname.endsWith('/connect')) {
+      console.log('📥 Received /connect request');
+      
       const authHeader = req.headers.get('Authorization');
+      console.log('🔑 Auth header present:', !!authHeader);
+      
       if (!authHeader) {
+        console.error('❌ No auth header provided');
         return new Response(
           JSON.stringify({ error: 'Token de autenticação não fornecido' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -147,8 +152,10 @@ Deno.serve(async (req) => {
       );
 
       const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('👤 User retrieved:', !!user, 'Error:', userError);
       
       if (userError || !user) {
+        console.error('❌ User authentication failed:', userError);
         return new Response(
           JSON.stringify({ error: 'Usuário não autenticado' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -156,8 +163,10 @@ Deno.serve(async (req) => {
       }
 
       const { code } = await req.json();
+      console.log('📝 Authorization code received:', code ? 'Yes' : 'No');
 
       if (!code) {
+        console.error('❌ No authorization code provided');
         return new Response(
           JSON.stringify({ error: 'Código de autorização não fornecido' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -165,6 +174,7 @@ Deno.serve(async (req) => {
       }
 
       // Trocar código por access token
+      console.log('🔄 Exchanging code for access token...');
       const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
         method: 'POST',
         headers: {
@@ -181,7 +191,7 @@ Deno.serve(async (req) => {
 
       if (!tokenResponse.ok) {
         const errorData = await tokenResponse.text();
-        console.error('Erro ao obter token:', errorData);
+        console.error('❌ Failed to get access token:', tokenResponse.status, errorData);
         return new Response(
           JSON.stringify({ error: 'Falha ao obter token de acesso', details: errorData }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -189,8 +199,10 @@ Deno.serve(async (req) => {
       }
 
       const tokenData: LinkedInTokenResponse = await tokenResponse.json();
+      console.log('✅ Access token received, expires in:', tokenData.expires_in, 'seconds');
 
       // Obter informações do usuário
+      console.log('👤 Fetching user info from LinkedIn...');
       const userInfoResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`,
@@ -199,7 +211,7 @@ Deno.serve(async (req) => {
 
       if (!userInfoResponse.ok) {
         const errorData = await userInfoResponse.text();
-        console.error('Erro ao obter informações do usuário:', errorData);
+        console.error('❌ Failed to get user info:', userInfoResponse.status, errorData);
         return new Response(
           JSON.stringify({ error: 'Falha ao obter informações do usuário', details: errorData }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -207,11 +219,13 @@ Deno.serve(async (req) => {
       }
 
       const userInfo: LinkedInUserInfo = await userInfoResponse.json();
+      console.log('✅ User info received:', userInfo.name, userInfo.email);
 
       // Calcular expiração do token
       const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
 
       // Salvar conta social no banco de dados
+      console.log('💾 Saving account to database...');
       const { data: account, error: accountError } = await supabase
         .from('social_accounts')
         .upsert({
