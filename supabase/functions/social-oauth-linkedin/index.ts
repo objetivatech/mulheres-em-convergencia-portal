@@ -37,7 +37,9 @@ Deno.serve(async (req) => {
       }
 
       const state = crypto.randomUUID();
-      const scope = 'openid profile email w_member_social';
+      // LinkedIn OIDC scopes - w_member_social requer aprovação adicional em alguns casos
+      // Vamos usar r_liteprofile e w_member_social para ter acesso ao perfil e postagem
+      const scope = 'r_liteprofile r_emailaddress w_member_social';
       
       
       const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
