@@ -40,16 +40,22 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Capturar o origin da request para saber para onde redirecionar depois
+      const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/')[0] + '//' + req.headers.get('referer')?.split('/')[2];
+      console.log('📍 Origin captured:', origin);
+
       const state = crypto.randomUUID();
       // LinkedIn OIDC scopes - agora com Sign In with LinkedIn using OpenID Connect ativado
       const scope = 'openid profile email w_member_social';
       
+      // Armazenar o origin no state para recuperar depois (vamos usar um formato state:origin)
+      const stateWithOrigin = `${state}:${origin || ''}`;
       
       const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
         `response_type=code&` +
         `client_id=${LINKEDIN_CLIENT_ID}&` +
         `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
-        `state=${state}&` +
+        `state=${stateWithOrigin}&` +
         `scope=${encodeURIComponent(scope)}`;
 
       return new Response(
@@ -62,13 +68,25 @@ Deno.serve(async (req) => {
     if (pathname.endsWith('/callback')) {
       console.log('📍 LinkedIn callback received');
       const code = url.searchParams.get('code');
-      const state = url.searchParams.get('state');
+      const stateParam = url.searchParams.get('state');
       const error = url.searchParams.get('error');
       
-      console.log('📝 Callback params - code:', code ? 'present' : 'missing', 'state:', state, 'error:', error);
+      console.log('📝 Callback params - code:', code ? 'present' : 'missing', 'state:', stateParam, 'error:', error);
 
-      // Obter a URL base do app a partir das variáveis de ambiente
-      const appUrl = Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com') || 'http://localhost:5173';
+      // Extrair o origin do state (formato: state:origin)
+      let appUrl = 'https://mulheresemconvergencia.com.br'; // Default para o domínio customizado
+      let state = stateParam;
+      
+      if (stateParam && stateParam.includes(':')) {
+        const parts = stateParam.split(':');
+        state = parts[0];
+        const origin = parts.slice(1).join(':'); // Reconstrói o origin caso tenha mais de um ":"
+        if (origin) {
+          appUrl = origin;
+        }
+      }
+      
+      console.log('📍 App URL determined:', appUrl);
       
       if (error) {
         console.log('❌ LinkedIn returned error:', error);
@@ -96,7 +114,7 @@ Deno.serve(async (req) => {
 
       // Redirecionar de volta para o app com o código e state
       console.log('✅ Redirecting back to app with code and state');
-      const redirectUrl = `${appUrl}/admin/redes-sociais?linkedin_code=${encodeURIComponent(code)}&linkedin_state=${encodeURIComponent(state)}`;
+      const redirectUrl = `${appUrl}/admin/redes-sociais?linkedin_code=${encodeURIComponent(code)}&linkedin_state=${encodeURIComponent(state || '')}`;
       return new Response(null, {
         status: 302,
         headers: {
