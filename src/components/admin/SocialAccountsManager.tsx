@@ -124,10 +124,13 @@ export function SocialAccountsManager() {
       });
     },
     onSuccess: async (code) => {
+      console.log('✅ LinkedIn auth success, code received:', code);
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔑 Session retrieved:', !!session);
         if (!session) throw new Error('Não autenticado');
 
+        console.log('📤 Sending code to edge function...');
         // Enviar código para conectar a conta
         const response = await fetch(
           'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/social-oauth-linkedin/connect',
@@ -141,12 +144,15 @@ export function SocialAccountsManager() {
           }
         );
 
+        console.log('📥 Response status:', response.status);
         if (!response.ok) {
           const error = await response.json();
+          console.error('❌ Error response:', error);
           throw new Error(error.error || 'Erro ao conectar conta');
         }
 
         const data = await response.json();
+        console.log('✅ Success response:', data);
 
         toast({
           title: 'LinkedIn conectado',
