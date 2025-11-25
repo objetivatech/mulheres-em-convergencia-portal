@@ -37,7 +37,11 @@ Deno.serve(async (req) => {
       }
 
       const state = crypto.randomUUID();
-      const scope = 'openid profile email w_member_social';
+      // Removido w_member_social temporariamente - requer aprovação especial do LinkedIn
+      // Para adicionar posting, você precisa:
+      // 1. Adicionar o produto "Share on LinkedIn" no seu app LinkedIn
+      // 2. Solicitar acesso ao "Marketing Developer Platform"
+      const scope = 'openid profile email';
       
       const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
         `response_type=code&` +
