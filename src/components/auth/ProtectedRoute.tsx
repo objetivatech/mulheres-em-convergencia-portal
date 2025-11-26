@@ -27,6 +27,24 @@ export const ProtectedRoute = ({
     return <Navigate to="/entrar" replace />;
   }
 
+  // Aguardar verificação de permissões antes de redirecionar
+  if (requireAdmin && isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (requireBlogEditor && canEditBlog === null && isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Agora sim verificar permissões (valores já definidos)
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/" replace />;
   }
