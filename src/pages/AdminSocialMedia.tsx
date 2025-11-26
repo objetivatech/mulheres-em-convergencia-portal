@@ -12,7 +12,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
+// Log IMEDIATO quando o arquivo carrega
+console.log('🚀 ARQUIVO AdminSocialMedia.tsx CARREGADO');
+console.log('🌐 URL ATUAL:', window.location.href);
+console.log('🔍 SEARCH PARAMS:', window.location.search);
+
 const AdminSocialMedia = () => {
+  console.log('⚛️ COMPONENTE AdminSocialMedia RENDERIZANDO');
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
   const { toast } = useToast();
