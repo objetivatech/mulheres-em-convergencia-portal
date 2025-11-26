@@ -89,7 +89,9 @@ Deno.serve(async (req) => {
 
     // Preparar payload do post
     const postData: any = {
-      author: `urn:li:person:${account.platform_user_id}`,
+      author: account.platform_page_id 
+        ? `urn:li:organization:${account.platform_page_id}`
+        : `urn:li:person:${account.platform_user_id}`,
       lifecycleState: 'PUBLISHED',
       specificContent: {
         'com.linkedin.ugc.ShareContent': {

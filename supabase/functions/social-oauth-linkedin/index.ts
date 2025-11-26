@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
       console.log('📍 Origin captured:', origin);
 
       const state = crypto.randomUUID();
-      // LinkedIn OIDC scopes - agora com Sign In with LinkedIn using OpenID Connect ativado
-      const scope = 'openid profile email w_member_social';
+      // LinkedIn OIDC scopes - incluindo acesso a páginas de organização
+      const scope = 'openid profile email w_member_social r_organization_admin w_organization_social';
       
       // Armazenar o origin no state para recuperar depois (vamos usar um formato state:origin)
       const stateWithOrigin = `${state}:${origin || ''}`;
@@ -219,6 +219,29 @@ Deno.serve(async (req) => {
       const userInfo: LinkedInUserInfo = await userInfoResponse.json();
       console.log('✅ User info received:', userInfo.name, userInfo.email);
 
+      // Buscar páginas de organização que o usuário administra
+      console.log('🏢 Fetching organization pages...');
+      let organizationPages = [];
+      try {
+        const orgsResponse = await fetch('https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organization~(id,localizedName,vanityName)))', {
+          headers: {
+            'Authorization': `Bearer ${tokenData.access_token}`,
+          },
+        });
+
+        if (orgsResponse.ok) {
+          const orgsData = await orgsResponse.json();
+          organizationPages = orgsData.elements?.map((element: any) => ({
+            id: element['organization~']?.id,
+            name: element['organization~']?.localizedName,
+            vanityName: element['organization~']?.vanityName,
+          })) || [];
+          console.log('✅ Found', organizationPages.length, 'organization pages');
+        }
+      } catch (orgError) {
+        console.warn('⚠️ Could not fetch organization pages:', orgError);
+      }
+
       // Calcular expiração do token
       const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
 
@@ -234,9 +257,11 @@ Deno.serve(async (req) => {
           access_token: tokenData.access_token,
           token_expires_at: expiresAt.toISOString(),
           platform_user_id: userInfo.sub,
+          platform_page_id: null, // Será preenchido se o usuário selecionar uma página
           metadata: {
             scope: tokenData.scope,
             picture: userInfo.picture,
+            organization_pages: organizationPages,
           },
           is_active: true,
           updated_at: new Date().toISOString(),
@@ -264,6 +289,7 @@ Deno.serve(async (req) => {
             platform: 'linkedin',
             account_name: userInfo.name,
             account_email: userInfo.email,
+            organization_pages: organizationPages,
           },
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
