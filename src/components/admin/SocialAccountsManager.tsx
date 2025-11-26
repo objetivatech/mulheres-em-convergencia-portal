@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Linkedin, Facebook, Instagram, Globe, Trash2 } from 'lucide-react';
+import { Linkedin, Facebook, Instagram, Globe, Trash2, Building2 } from 'lucide-react';
+import { LinkedInPageSelector } from './LinkedInPageSelector';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +23,17 @@ interface SocialAccount {
   platform: string;
   account_name: string;
   account_email: string | null;
+  platform_page_id: string | null;
   is_active: boolean;
   token_expires_at: string;
   created_at: string;
+  metadata?: {
+    organization_pages?: Array<{
+      id: string;
+      name: string;
+      vanityName?: string;
+    }>;
+  };
 }
 
 const platformIcons = {
@@ -48,6 +57,7 @@ export function SocialAccountsManager() {
   const queryClient = useQueryClient();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
   const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  const [pageSelectorAccount, setPageSelectorAccount] = useState<SocialAccount | null>(null);
 
   const { data: accounts, isLoading } = useQuery({
     queryKey: ['social-accounts'],
@@ -224,7 +234,8 @@ export function SocialAccountsManager() {
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {platformNames[account.platform as keyof typeof platformNames]}
-                          {account.account_email && ` • ${account.account_email}`}
+                          {account.platform_page_id && ' • Página de negócio'}
+                          {!account.platform_page_id && account.account_email && ` • ${account.account_email}`}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Conectado em {new Date(account.created_at).toLocaleDateString('pt-BR')}
@@ -232,6 +243,18 @@ export function SocialAccountsManager() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {account.platform === 'linkedin' && 
+                       account.metadata?.organization_pages && 
+                       account.metadata.organization_pages.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPageSelectorAccount(account)}
+                        >
+                          <Building2 className="h-4 w-4 mr-1" />
+                          {account.platform_page_id ? 'Trocar Página' : 'Selecionar Página'}
+                        </Button>
+                      )}
                       {expired && (
                         <Button
                           variant="outline"
@@ -275,6 +298,16 @@ export function SocialAccountsManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {pageSelectorAccount && (
+        <LinkedInPageSelector
+          accountId={pageSelectorAccount.id}
+          accountName={pageSelectorAccount.account_name}
+          organizationPages={pageSelectorAccount.metadata?.organization_pages || []}
+          open={!!pageSelectorAccount}
+          onOpenChange={(open) => !open && setPageSelectorAccount(null)}
+        />
+      )}
     </div>
   );
 }
