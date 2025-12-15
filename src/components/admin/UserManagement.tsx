@@ -22,7 +22,6 @@ const roleIcons: Record<UserRole, any> = {
   subscriber: Mail,
   ambassador: Crown,
   community_member: Users,
-  author: Edit3,
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -33,7 +32,6 @@ const roleLabels: Record<UserRole, string> = {
   subscriber: 'Assinante Newsletter',
   ambassador: 'Embaixadora',
   community_member: 'Membro da Comunidade',
-  author: 'Autor',
 };
 
 const roleColors: Record<UserRole, string> = {
@@ -44,7 +42,6 @@ const roleColors: Record<UserRole, string> = {
   subscriber: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   ambassador: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   community_member: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-  author: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
 };
 
 export const UserManagement = () => {

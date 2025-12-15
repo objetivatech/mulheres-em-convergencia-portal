@@ -18,7 +18,6 @@ const roleIcons: Record<UserRole, any> = {
   subscriber: Mail,
   ambassador: Crown,
   community_member: Users,
-  author: Edit3,
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -29,7 +28,6 @@ const roleLabels: Record<UserRole, string> = {
   subscriber: 'Assinante Newsletter',
   ambassador: 'Embaixadora',
   community_member: 'Membro da Comunidade',
-  author: 'Autor',
 };
 
 interface AddUserDialogProps {

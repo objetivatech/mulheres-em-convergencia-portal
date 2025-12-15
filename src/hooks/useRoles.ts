@@ -3,15 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Roles alinhados com app_role enum do banco de dados
+// NOTA: 'author' foi removido pois 'blog_editor' é o role efetivo para edição de blog
 export type UserRole = 
   | 'admin' 
-  | 'blog_editor'
+  | 'blog_editor'       // Editor de Blog (role principal para edição de conteúdo)
   | 'business_owner'    // Associada/Dona de Negócio
   | 'customer'          // Cliente da Loja
   | 'subscriber'        // Assinante Newsletter
   | 'ambassador'        // Embaixadora
-  | 'community_member'  // Membro da Comunidade
-  | 'author';           // Autor
+  | 'community_member'; // Membro da Comunidade
 
 export type UserType = 'individual' | 'business' | 'community';
 export type SubscriptionType = 'newsletter' | 'loja' | 'comunidade' | 'negocio' | 'embaixadora';
@@ -62,7 +62,7 @@ export const useRoles = () => {
       case 'comunidade':
         return hasRole('community_member') || hasRole('admin');
       case 'blog':
-        return hasRole('author') || hasRole('blog_editor') || hasRole('admin');
+        return hasRole('blog_editor') || hasRole('admin');
       default:
         return false;
     }

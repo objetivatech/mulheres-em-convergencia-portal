@@ -57,6 +57,7 @@ import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
 import AdminRegistrations from '@/pages/AdminRegistrations';
 import AdminCommunities from '@/pages/AdminCommunities';
+import AdminNewsletter from '@/pages/AdminNewsletter';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
@@ -156,6 +157,11 @@ function AppContent() {
         <Route path="/admin/comunidades" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminCommunities />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/newsletter" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminNewsletter />
           </ProtectedRoute>
         } />
         <Route path="/admin/mensagens-contato" element={

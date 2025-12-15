@@ -77,3 +77,12 @@ verify_jwt = true
 
 [functions.social-oauth-linkedin]
 verify_jwt = false
+
+[functions.mailrelay-subscribers]
+verify_jwt = true
+
+[functions.mailrelay-campaigns]
+verify_jwt = true
+
+[functions.mailrelay-analytics]
+verify_jwt = true
