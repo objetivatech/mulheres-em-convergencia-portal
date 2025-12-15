@@ -52,10 +52,11 @@ const Admin = () => {
         },
         {
           title: 'Newsletter',
-          description: 'Gerenciar inscritos da newsletter',
+          description: 'Gerenciar inscritos e campanhas de email',
           icon: Mail,
           available: isAdmin,
-          comingSoon: true
+          href: '/admin/newsletter',
+          comingSoon: false
         }
       ]
     },
@@ -198,31 +199,6 @@ const Admin = () => {
               </div>
             </header>
 
-            {/* Status do Sistema */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-xl">Status do Sistema</CardTitle>
-                <CardDescription>
-                  Portal em produção: {PRODUCTION_DOMAIN}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="h-3 w-3 bg-green-500 rounded-full mx-auto mb-2"></div>
-                    <p className="text-sm font-medium text-green-700 dark:text-green-300">Sistema Online</p>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div className="h-3 w-3 bg-blue-500 rounded-full mx-auto mb-2"></div>
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Autenticação OK</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <div className="h-3 w-3 bg-purple-500 rounded-full mx-auto mb-2"></div>
-                    <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Base de Dados OK</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Módulos Administrativos - Organizados por Categoria */}
             <div className="space-y-8">

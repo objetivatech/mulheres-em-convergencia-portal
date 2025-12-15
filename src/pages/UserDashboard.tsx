@@ -235,8 +235,8 @@ export const UserDashboard = () => {
     });
   }
 
-  // Blog features
-  if (hasRole('author')) {
+  // Blog features - usando blog_editor como role principal para edição de blog
+  if (hasRole('blog_editor')) {
     modules.push({
       category: 'Blog',
       items: [
