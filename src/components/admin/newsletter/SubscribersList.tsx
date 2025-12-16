@@ -4,22 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useNewsletter } from '@/hooks/useNewsletter';
 import { useToast } from '@/hooks/use-toast';
-import { Users, RefreshCw, Download, Upload, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Users, RefreshCw, Download, Upload, CheckCircle, XCircle, Clock, Plus, Pencil, Trash2 } from 'lucide-react';
+import { SubscriberForm } from './SubscriberForm';
 
 export function SubscribersList() {
-  const { useLocalSubscribers, useMailrelaySubscribers, useSyncToMailrelay, useImportFromMailrelay, useSubscriberStats } = useNewsletter();
+  const { useLocalSubscribers, useMailrelaySubscribers, useSyncToMailrelay, useImportFromMailrelay, useSubscriberStats, useDeleteSubscriber } = useNewsletter();
   const { toast } = useToast();
   
   const [viewMode, setViewMode] = useState<'local' | 'mailrelay'>('local');
+  const [showForm, setShowForm] = useState(false);
+  const [editingSubscriber, setEditingSubscriber] = useState<any>(null);
   
-  const { data: localSubscribers, isLoading: localLoading } = useLocalSubscribers();
-  const { data: mailrelaySubscribers, isLoading: mailrelayLoading } = useMailrelaySubscribers();
+  const { data: localSubscribers, isLoading: localLoading, refetch: refetchLocal } = useLocalSubscribers();
+  const { data: mailrelaySubscribers, isLoading: mailrelayLoading, refetch: refetchMailrelay } = useMailrelaySubscribers();
   const { data: stats } = useSubscriberStats();
   
   const syncMutation = useSyncToMailrelay();
   const importMutation = useImportFromMailrelay();
+  const deleteMutation = useDeleteSubscriber();
 
   const handleSync = async () => {
     try {
@@ -29,11 +34,7 @@ export function SubscribersList() {
         description: `${result.synced} contatos sincronizados, ${result.failed} falhas.`,
       });
     } catch (error: any) {
-      toast({
-        title: 'Erro na sincronização',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro na sincronização', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -45,12 +46,28 @@ export function SubscribersList() {
         description: `${result.imported} novos, ${result.updated} atualizados.`,
       });
     } catch (error: any) {
-      toast({
-        title: 'Erro na importação',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro na importação', description: error.message, variant: 'destructive' });
     }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteMutation.mutateAsync(id);
+      toast({ title: 'Contato excluído', description: 'O contato foi removido com sucesso.' });
+      refetchMailrelay();
+    } catch (error: any) {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleEdit = (subscriber: any) => {
+    setEditingSubscriber(subscriber);
+    setShowForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    refetchLocal();
+    refetchMailrelay();
   };
 
   const subscribers = viewMode === 'local' ? localSubscribers : (mailrelaySubscribers?.data || mailrelaySubscribers || []);
@@ -71,7 +88,6 @@ export function SubscribersList() {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -83,7 +99,6 @@ export function SubscribersList() {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -97,77 +112,44 @@ export function SubscribersList() {
         </Card>
       </div>
 
-      {/* Ações de Sincronização */}
+      {/* Ações */}
       <Card>
         <CardHeader>
           <CardTitle>Sincronização</CardTitle>
-          <CardDescription>
-            Sincronize contatos entre o portal e o Mailrelay
-          </CardDescription>
+          <CardDescription>Sincronize contatos entre o portal e o Mailrelay</CardDescription>
         </CardHeader>
-        <CardContent className="flex gap-4">
-          <Button
-            onClick={handleSync}
-            disabled={syncMutation.isPending}
-          >
-            {syncMutation.isPending ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
+        <CardContent className="flex gap-4 flex-wrap">
+          <Button onClick={handleSync} disabled={syncMutation.isPending}>
+            {syncMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
             Enviar para Mailrelay
           </Button>
-          
-          <Button
-            variant="outline"
-            onClick={handleImport}
-            disabled={importMutation.isPending}
-          >
-            {importMutation.isPending ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
+          <Button variant="outline" onClick={handleImport} disabled={importMutation.isPending}>
+            {importMutation.isPending ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
             Importar do Mailrelay
           </Button>
         </CardContent>
       </Card>
 
-      {/* Lista de Inscritos */}
+      {/* Lista */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <CardTitle>Lista de Inscritos</CardTitle>
-              <CardDescription>
-                Contatos inscritos na newsletter
-              </CardDescription>
+              <CardDescription>Contatos inscritos na newsletter</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'local' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('local')}
-              >
-                Local
-              </Button>
-              <Button
-                variant={viewMode === 'mailrelay' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('mailrelay')}
-              >
-                Mailrelay
+              <Button variant={viewMode === 'local' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('local')}>Local</Button>
+              <Button variant={viewMode === 'mailrelay' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('mailrelay')}>Mailrelay</Button>
+              <Button size="sm" onClick={() => { setEditingSubscriber(null); setShowForm(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> Novo
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
+            <div className="space-y-2">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : subscribers && subscribers.length > 0 ? (
             <Table>
               <TableHeader>
@@ -177,6 +159,7 @@ export function SubscribersList() {
                   {viewMode === 'local' && <TableHead>Origem</TableHead>}
                   <TableHead>Status</TableHead>
                   <TableHead>Data</TableHead>
+                  {viewMode === 'mailrelay' && <TableHead>Ações</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -185,37 +168,44 @@ export function SubscribersList() {
                     <TableCell className="font-medium">{subscriber.email}</TableCell>
                     <TableCell>{subscriber.name || '-'}</TableCell>
                     {viewMode === 'local' && (
-                      <TableCell>
-                        <Badge variant="outline">{subscriber.origin || 'website'}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline">{subscriber.origin || 'website'}</Badge></TableCell>
                     )}
                     <TableCell>
                       {viewMode === 'local' ? (
                         subscriber.synced_at ? (
-                          <Badge className="bg-green-100 text-green-800">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Sincronizado
-                          </Badge>
+                          <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Sincronizado</Badge>
                         ) : subscriber.last_sync_error ? (
-                          <Badge variant="destructive">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Erro
-                          </Badge>
+                          <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Erro</Badge>
                         ) : (
-                          <Badge variant="secondary">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Pendente
-                          </Badge>
+                          <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendente</Badge>
                         )
                       ) : (
-                        <Badge className="bg-green-100 text-green-800">
-                          {subscriber.status || 'active'}
-                        </Badge>
+                        <Badge className="bg-green-100 text-green-800">{subscriber.status || 'active'}</Badge>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {new Date(subscriber.subscribed_at || subscriber.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
+                    <TableCell>{new Date(subscriber.subscribed_at || subscriber.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                    {viewMode === 'mailrelay' && (
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(subscriber)}><Pencil className="h-4 w-4" /></Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Contato</AlertDialogTitle>
+                                <AlertDialogDescription>Tem certeza que deseja excluir {subscriber.email}?</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(subscriber.id)}>Excluir</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -228,6 +218,13 @@ export function SubscribersList() {
           )}
         </CardContent>
       </Card>
+
+      <SubscriberForm 
+        open={showForm} 
+        onOpenChange={setShowForm} 
+        subscriber={editingSubscriber}
+        onSuccess={handleFormSuccess}
+      />
     </div>
   );
 }
