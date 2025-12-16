@@ -8,6 +8,24 @@ const corsHeaders = {
 const MAILRELAY_HOST = Deno.env.get('MAILRELAY_HOST');
 const MAILRELAY_API_KEY = Deno.env.get('MAILRELAY_API_KEY');
 
+function formatErrorMessage(data: any): string {
+  if (typeof data.error === 'string') return data.error;
+  if (Array.isArray(data.errors)) return data.errors.join(', ');
+  if (typeof data.errors === 'object' && data.errors !== null) {
+    const errorMessages: string[] = [];
+    for (const [field, messages] of Object.entries(data.errors)) {
+      if (Array.isArray(messages)) {
+        errorMessages.push(`${field}: ${messages.join(', ')}`);
+      } else if (typeof messages === 'string') {
+        errorMessages.push(`${field}: ${messages}`);
+      }
+    }
+    return errorMessages.length > 0 ? errorMessages.join('; ') : JSON.stringify(data.errors);
+  }
+  if (data.message) return data.message;
+  return 'Mailrelay API error';
+}
+
 async function mailrelayRequest(endpoint: string, method = 'GET', body?: any) {
   const url = `https://${MAILRELAY_HOST}/api/v1${endpoint}`;
   console.log(`Mailrelay API: ${method} ${url}`);
@@ -29,7 +47,7 @@ async function mailrelayRequest(endpoint: string, method = 'GET', body?: any) {
   
   if (!response.ok) {
     console.error('Mailrelay API error:', data);
-    throw new Error(data.error || 'Mailrelay API error');
+    throw new Error(formatErrorMessage(data));
   }
   
   return data;
@@ -55,7 +73,8 @@ async function getSentCampaignsWithStats(page = 1, perPage = 10) {
       try {
         const stats = await mailrelayRequest(`/sent_campaigns/${campaign.id}/stats`);
         return { ...campaign, stats };
-      } catch {
+      } catch (e) {
+        console.log(`Could not fetch stats for campaign ${campaign.id}:`, e);
         return { ...campaign, stats: null };
       }
     })
@@ -72,27 +91,56 @@ async function getCampaignClicks(campaignId: number) {
   return await mailrelayRequest(`/sent_campaigns/${campaignId}/clicks`);
 }
 
-// Aberturas de uma campanha específica  
-async function getCampaignOpens(campaignId: number) {
-  return await mailrelayRequest(`/sent_campaigns/${campaignId}/opens`);
+// Impressions (visualizações) de uma campanha
+async function getCampaignImpressions(campaignId: number) {
+  try {
+    return await mailrelayRequest(`/sent_campaigns/${campaignId}/impressions`);
+  } catch (e) {
+    console.log(`Impressions endpoint not available for campaign ${campaignId}, trying opens`);
+    // Fallback to opens if impressions not available
+    try {
+      return await mailrelayRequest(`/sent_campaigns/${campaignId}/opens`);
+    } catch {
+      return [];
+    }
+  }
 }
 
-// Bounces
-async function getCampaignBounces(campaignId: number) {
-  return await mailrelayRequest(`/sent_campaigns/${campaignId}/bounces`);
+// Unsubscribe events de uma campanha
+async function getCampaignUnsubscribeEvents(campaignId: number) {
+  try {
+    return await mailrelayRequest(`/sent_campaigns/${campaignId}/unsubscribe_events`);
+  } catch (e) {
+    console.log(`Unsubscribe events endpoint not available for campaign ${campaignId}`);
+    return [];
+  }
 }
 
-// Unsubscribes de uma campanha
-async function getCampaignUnsubscribes(campaignId: number) {
-  return await mailrelayRequest(`/sent_campaigns/${campaignId}/unsubscribes`);
+// Sent emails de uma campanha
+async function getCampaignSentEmails(campaignId: number, page = 1, perPage = 50) {
+  try {
+    return await mailrelayRequest(`/sent_campaigns/${campaignId}/sent_emails?page=${page}&per_page=${perPage}`);
+  } catch (e) {
+    console.log(`Sent emails endpoint not available for campaign ${campaignId}`);
+    return [];
+  }
 }
 
 // Dashboard completo
 async function getDashboard() {
   const [stats, packages, recentCampaigns] = await Promise.all([
-    getAccountStats().catch(() => ({})),
-    getPackages().catch(() => []),
-    getSentCampaignsWithStats(1, 5).catch(() => ({ data: [] })),
+    getAccountStats().catch((e) => {
+      console.log('Could not fetch account stats:', e);
+      return {};
+    }),
+    getPackages().catch((e) => {
+      console.log('Could not fetch packages:', e);
+      return [];
+    }),
+    getSentCampaignsWithStats(1, 5).catch((e) => {
+      console.log('Could not fetch recent campaigns:', e);
+      return { data: [] };
+    }),
   ]);
   
   // Calcular métricas agregadas
@@ -105,9 +153,9 @@ async function getDashboard() {
   for (const campaign of campaignsData) {
     if (campaign.stats) {
       totalSent += campaign.stats.sent || 0;
-      totalOpened += campaign.stats.opened || 0;
-      totalClicked += campaign.stats.clicked || 0;
-      totalBounced += campaign.stats.bounced || 0;
+      totalOpened += campaign.stats.opened || campaign.stats.impressions || 0;
+      totalClicked += campaign.stats.clicked || campaign.stats.clicks || 0;
+      totalBounced += campaign.stats.bounced || campaign.stats.hard_bounced || 0;
     }
   }
   
@@ -125,6 +173,7 @@ async function getDashboard() {
       total_bounced: totalBounced,
       open_rate: openRate,
       click_rate: clickRate,
+      campaigns_count: campaignsData.length,
     },
   };
 }
@@ -174,24 +223,25 @@ const handler = async (req: Request): Promise<Response> => {
         break;
       }
       
-      case 'campaign_opens': {
+      case 'campaign_impressions': {
         const id = parseInt(url.searchParams.get('id') || '0');
         if (!id) throw new Error('Campaign ID is required');
-        result = await getCampaignOpens(id);
-        break;
-      }
-      
-      case 'campaign_bounces': {
-        const id = parseInt(url.searchParams.get('id') || '0');
-        if (!id) throw new Error('Campaign ID is required');
-        result = await getCampaignBounces(id);
+        result = await getCampaignImpressions(id);
         break;
       }
       
       case 'campaign_unsubscribes': {
         const id = parseInt(url.searchParams.get('id') || '0');
         if (!id) throw new Error('Campaign ID is required');
-        result = await getCampaignUnsubscribes(id);
+        result = await getCampaignUnsubscribeEvents(id);
+        break;
+      }
+      
+      case 'campaign_sent_emails': {
+        const id = parseInt(url.searchParams.get('id') || '0');
+        const page = parseInt(url.searchParams.get('page') || '1');
+        if (!id) throw new Error('Campaign ID is required');
+        result = await getCampaignSentEmails(id, page);
         break;
       }
       
@@ -199,20 +249,18 @@ const handler = async (req: Request): Promise<Response> => {
         const id = parseInt(url.searchParams.get('id') || '0');
         if (!id) throw new Error('Campaign ID is required');
         
-        const [stats, clicks, opens, bounces, unsubscribes] = await Promise.all([
+        const [stats, clicks, impressions, unsubscribes] = await Promise.all([
           mailrelayRequest(`/sent_campaigns/${id}/stats`).catch(() => null),
           getCampaignClicks(id).catch(() => []),
-          getCampaignOpens(id).catch(() => []),
-          getCampaignBounces(id).catch(() => []),
-          getCampaignUnsubscribes(id).catch(() => []),
+          getCampaignImpressions(id).catch(() => []),
+          getCampaignUnsubscribeEvents(id).catch(() => []),
         ]);
         
         result = {
           stats,
-          clicks,
-          opens,
-          bounces,
-          unsubscribes,
+          clicks: clicks?.data || clicks || [],
+          impressions: impressions?.data || impressions || [],
+          unsubscribes: unsubscribes?.data || unsubscribes || [],
         };
         break;
       }

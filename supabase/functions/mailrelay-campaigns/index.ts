@@ -15,10 +15,41 @@ interface Campaign {
   sender_id?: number;
   html_part?: string;
   text_part?: string;
+  preview_text?: string;
+  reply_to?: string;
   target?: {
     group_ids?: number[];
+    segment_id?: number;
   };
   scheduled_date?: string;
+  url_token?: boolean;
+  analytics_utm_campaign?: string;
+}
+
+function formatErrorMessage(data: any): string {
+  // Handle various error formats from Mailrelay API
+  if (typeof data.error === 'string') {
+    return data.error;
+  }
+  if (Array.isArray(data.errors)) {
+    return data.errors.join(', ');
+  }
+  if (typeof data.errors === 'object' && data.errors !== null) {
+    // Handle object errors like { field: ["error message"] }
+    const errorMessages: string[] = [];
+    for (const [field, messages] of Object.entries(data.errors)) {
+      if (Array.isArray(messages)) {
+        errorMessages.push(`${field}: ${messages.join(', ')}`);
+      } else if (typeof messages === 'string') {
+        errorMessages.push(`${field}: ${messages}`);
+      }
+    }
+    return errorMessages.length > 0 ? errorMessages.join('; ') : JSON.stringify(data.errors);
+  }
+  if (data.message) {
+    return data.message;
+  }
+  return 'Mailrelay API error';
 }
 
 async function mailrelayRequest(endpoint: string, method = 'GET', body?: any) {
@@ -35,6 +66,7 @@ async function mailrelayRequest(endpoint: string, method = 'GET', body?: any) {
   
   if (body) {
     options.body = JSON.stringify(body);
+    console.log('Request body:', JSON.stringify(body, null, 2));
   }
   
   const response = await fetch(url, options);
@@ -50,7 +82,7 @@ async function mailrelayRequest(endpoint: string, method = 'GET', body?: any) {
   
   if (!response.ok) {
     console.error('Mailrelay API error:', data);
-    throw new Error(data.error || data.errors?.join(', ') || 'Mailrelay API error');
+    throw new Error(formatErrorMessage(data));
   }
   
   return data;
@@ -66,7 +98,29 @@ async function getCampaign(id: number) {
 }
 
 async function createCampaign(campaign: Campaign) {
-  return await mailrelayRequest('/campaigns', 'POST', campaign);
+  // Validate required fields
+  if (!campaign.subject) {
+    throw new Error('Assunto é obrigatório');
+  }
+  if (!campaign.html_part) {
+    throw new Error('Conteúdo HTML é obrigatório');
+  }
+  
+  // Build campaign payload
+  const payload: any = {
+    subject: campaign.subject,
+    html_part: campaign.html_part,
+  };
+  
+  if (campaign.sender_id) payload.sender_id = campaign.sender_id;
+  if (campaign.text_part) payload.text_part = campaign.text_part;
+  if (campaign.preview_text) payload.preview_text = campaign.preview_text;
+  if (campaign.reply_to) payload.reply_to = campaign.reply_to;
+  if (campaign.target) payload.target = campaign.target;
+  if (campaign.url_token !== undefined) payload.url_token = campaign.url_token;
+  if (campaign.analytics_utm_campaign) payload.analytics_utm_campaign = campaign.analytics_utm_campaign;
+  
+  return await mailrelayRequest('/campaigns', 'POST', payload);
 }
 
 async function updateCampaign(id: number, campaign: Partial<Campaign>) {
@@ -83,6 +137,9 @@ async function sendCampaign(id: number) {
 }
 
 async function sendTestCampaign(id: number, emails: string[]) {
+  if (!emails || emails.length === 0) {
+    throw new Error('Pelo menos um email é obrigatório para envio de teste');
+  }
   return await mailrelayRequest(`/campaigns/${id}/send_test`, 'POST', { emails });
 }
 
@@ -110,6 +167,11 @@ async function getSenders() {
 
 async function getPackages() {
   return await mailrelayRequest('/packages');
+}
+
+// Groups
+async function getGroups() {
+  return await mailrelayRequest('/groups');
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -220,6 +282,11 @@ const handler = async (req: Request): Promise<Response> => {
       
       case 'packages': {
         result = await getPackages();
+        break;
+      }
+      
+      case 'groups': {
+        result = await getGroups();
         break;
       }
       

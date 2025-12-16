@@ -23,6 +23,17 @@ interface DashboardData {
     total_bounced: number;
     open_rate: string;
     click_rate: string;
+    campaigns_count?: number;
+  };
+}
+
+const FUNCTIONS_URL = 'https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1';
+
+async function getAuthHeaders() {
+  const session = await supabase.auth.getSession();
+  return {
+    'Authorization': `Bearer ${session.data.session?.access_token}`,
+    'Content-Type': 'application/json',
   };
 }
 
@@ -35,18 +46,10 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'subscriber-stats'],
       queryFn: async () => {
-        const { data, error } = await supabase.functions.invoke('mailrelay-subscribers', {
-          body: {},
-        });
-        
-        // Parse query params in URL
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-subscribers?action=stats`,
-          {
-            headers: {
-              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=stats`,
+          { headers }
         );
         
         const result = await response.json();
@@ -60,20 +63,35 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'mailrelay-subscribers', page, perPage],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-subscribers?action=list&page=${page}&per_page=${perPage}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=list&page=${page}&per_page=${perPage}`,
+          { headers }
         );
         
         const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.data;
       },
+    });
+  };
+
+  const useMailrelaySubscriber = (id: number | null) => {
+    return useQuery({
+      queryKey: ['newsletter', 'mailrelay-subscriber', id],
+      queryFn: async () => {
+        if (!id) return null;
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=get&id=${id}`,
+          { headers }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      enabled: !!id,
     });
   };
 
@@ -81,14 +99,10 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'groups'],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-subscribers?action=groups`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=groups`,
+          { headers }
         );
         
         const result = await response.json();
@@ -98,18 +112,83 @@ export function useNewsletter() {
     });
   };
 
+  const useCreateSubscriber = () => {
+    return useMutation({
+      mutationFn: async (subscriber: { email: string; name?: string; status?: string; group_ids?: number[] }) => {
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=create`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(subscriber),
+          }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['newsletter'] });
+      },
+    });
+  };
+
+  const useUpdateSubscriber = () => {
+    return useMutation({
+      mutationFn: async ({ id, data }: { id: number; data: { email?: string; name?: string; status?: string; group_ids?: number[] } }) => {
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=update&id=${id}`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+          }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['newsletter'] });
+      },
+    });
+  };
+
+  const useDeleteSubscriber = () => {
+    return useMutation({
+      mutationFn: async (id: number) => {
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=delete&id=${id}`,
+          {
+            method: 'POST',
+            headers,
+          }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['newsletter'] });
+      },
+    });
+  };
+
   const useSyncToMailrelay = () => {
     return useMutation({
       mutationFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-subscribers?action=sync_to_mailrelay`,
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=sync_to_mailrelay`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
         
@@ -126,15 +205,12 @@ export function useNewsletter() {
   const useImportFromMailrelay = () => {
     return useMutation({
       mutationFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-subscribers?action=import_from_mailrelay`,
+          `${FUNCTIONS_URL}/mailrelay-subscribers?action=import_from_mailrelay`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
         
@@ -154,14 +230,10 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'campaigns', page],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=list&page=${page}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=list&page=${page}`,
+          { headers }
         );
         
         const result = await response.json();
@@ -171,18 +243,33 @@ export function useNewsletter() {
     });
   };
 
+  const useCampaign = (id: number | null) => {
+    return useQuery({
+      queryKey: ['newsletter', 'campaign', id],
+      queryFn: async () => {
+        if (!id) return null;
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=get&id=${id}`,
+          { headers }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      enabled: !!id,
+    });
+  };
+
   const useSentCampaigns = (page = 1) => {
     return useQuery({
       queryKey: ['newsletter', 'sent-campaigns', page],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=list_sent&page=${page}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=list_sent&page=${page}`,
+          { headers }
         );
         
         const result = await response.json();
@@ -196,14 +283,10 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'senders'],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=senders`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=senders`,
+          { headers }
         );
         
         const result = await response.json();
@@ -215,17 +298,69 @@ export function useNewsletter() {
 
   const useCreateCampaign = () => {
     return useMutation({
-      mutationFn: async (campaign: { subject: string; sender_id?: number; html_part: string; text_part?: string }) => {
-        const session = await supabase.auth.getSession();
+      mutationFn: async (campaign: { 
+        subject: string; 
+        sender_id?: number; 
+        html_part: string; 
+        text_part?: string;
+        preview_text?: string;
+        reply_to?: string;
+        target?: { group_ids?: number[] };
+        url_token?: boolean;
+        analytics_utm_campaign?: string;
+      }) => {
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=create`,
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=create`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify(campaign),
+          }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['newsletter', 'campaigns'] });
+      },
+    });
+  };
+
+  const useUpdateCampaign = () => {
+    return useMutation({
+      mutationFn: async ({ id, data }: { id: number; data: any }) => {
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=update&id=${id}`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data),
+          }
+        );
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        return result.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['newsletter', 'campaigns'] });
+      },
+    });
+  };
+
+  const useDeleteCampaign = () => {
+    return useMutation({
+      mutationFn: async (id: number) => {
+        const headers = await getAuthHeaders();
+        const response = await fetch(
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=delete&id=${id}`,
+          {
+            method: 'POST',
+            headers,
           }
         );
         
@@ -242,15 +377,12 @@ export function useNewsletter() {
   const useSendCampaign = () => {
     return useMutation({
       mutationFn: async (campaignId: number) => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=send&id=${campaignId}`,
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=send&id=${campaignId}`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
         
@@ -267,15 +399,12 @@ export function useNewsletter() {
   const useSendTestCampaign = () => {
     return useMutation({
       mutationFn: async ({ campaignId, emails }: { campaignId: number; emails: string[] }) => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-campaigns?action=send_test&id=${campaignId}`,
+          `${FUNCTIONS_URL}/mailrelay-campaigns?action=send_test&id=${campaignId}`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({ emails }),
           }
         );
@@ -293,14 +422,10 @@ export function useNewsletter() {
     return useQuery({
       queryKey: ['newsletter', 'dashboard'],
       queryFn: async () => {
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-analytics?action=dashboard`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-analytics?action=dashboard`,
+          { headers }
         );
         
         const result = await response.json();
@@ -316,14 +441,10 @@ export function useNewsletter() {
       queryFn: async () => {
         if (!campaignId) return null;
         
-        const session = await supabase.auth.getSession();
+        const headers = await getAuthHeaders();
         const response = await fetch(
-          `https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/mailrelay-analytics?action=campaign_full_report&id=${campaignId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.data.session?.access_token}`,
-            },
-          }
+          `${FUNCTIONS_URL}/mailrelay-analytics?action=campaign_full_report&id=${campaignId}`,
+          { headers }
         );
         
         const result = await response.json();
@@ -356,16 +477,23 @@ export function useNewsletter() {
     // Subscribers
     useSubscriberStats,
     useMailrelaySubscribers,
+    useMailrelaySubscriber,
     useGroups,
+    useCreateSubscriber,
+    useUpdateSubscriber,
+    useDeleteSubscriber,
     useSyncToMailrelay,
     useImportFromMailrelay,
     useLocalSubscribers,
     
     // Campaigns
     useCampaigns,
+    useCampaign,
     useSentCampaigns,
     useSenders,
     useCreateCampaign,
+    useUpdateCampaign,
+    useDeleteCampaign,
     useSendCampaign,
     useSendTestCampaign,
     
