@@ -520,7 +520,7 @@ export const useCRM = () => {
         const { data: leads, error: leadsError } = await leadsQuery;
         if (leadsError) throw leadsError;
 
-        // Buscar usuários (profiles)
+        // Buscar usuários (profiles) - TODOS os perfis
         let profilesQuery = supabase
           .from('profiles')
           .select('*')
@@ -533,11 +533,46 @@ export const useCRM = () => {
         const { data: profiles, error: profilesError } = await profilesQuery;
         if (profilesError) throw profilesError;
 
+        // Buscar contagens de interações e deals em batch
+        const { data: interactionCounts } = await supabase
+          .from('crm_interactions')
+          .select('lead_id, user_id');
+        
+        const { data: dealCounts } = await supabase
+          .from('crm_deals')
+          .select('lead_id, user_id, value');
+
+        // Mapear contagens
+        const leadInteractions = new Map<string, number>();
+        const userInteractions = new Map<string, number>();
+        const leadDeals = new Map<string, { count: number; value: number }>();
+        const userDeals = new Map<string, { count: number; value: number }>();
+
+        interactionCounts?.forEach(i => {
+          if (i.lead_id) leadInteractions.set(i.lead_id, (leadInteractions.get(i.lead_id) || 0) + 1);
+          if (i.user_id) userInteractions.set(i.user_id, (userInteractions.get(i.user_id) || 0) + 1);
+        });
+
+        dealCounts?.forEach(d => {
+          if (d.lead_id) {
+            const current = leadDeals.get(d.lead_id) || { count: 0, value: 0 };
+            leadDeals.set(d.lead_id, { count: current.count + 1, value: current.value + (d.value || 0) });
+          }
+          if (d.user_id) {
+            const current = userDeals.get(d.user_id) || { count: 0, value: 0 };
+            userDeals.set(d.user_id, { count: current.count + 1, value: current.value + (d.value || 0) });
+          }
+        });
+
         // Combinar em contatos unificados
         const contacts: UnifiedContact[] = [];
+        
+        // Map para rastrear usuários convertidos de leads (por user_id)
+        const convertedUserIds = new Set((leads || []).filter(l => l.converted_user_id).map(l => l.converted_user_id));
 
         // Adicionar leads
         for (const lead of leads || []) {
+          const dealData = leadDeals.get(lead.id) || { count: 0, value: 0 };
           contacts.push({
             type: 'lead',
             id: lead.id,
@@ -548,19 +583,19 @@ export const useCRM = () => {
             source: lead.source,
             status: lead.status,
             created_at: lead.created_at,
-            interactions_count: 0,
-            deals_count: 0,
-            total_value: 0,
+            interactions_count: leadInteractions.get(lead.id) || 0,
+            deals_count: dealData.count,
+            total_value: dealData.value,
             last_interaction_at: null,
             tags: lead.tags || [],
           });
         }
 
-        // Adicionar usuários (excluindo os já convertidos de leads)
-        const convertedEmails = new Set((leads || []).filter(l => l.converted_user_id).map(l => l.email?.toLowerCase()));
-        
+        // Adicionar TODOS os usuários (excluindo apenas os que já foram convertidos de leads pelo user_id)
         for (const profile of profiles || []) {
-          if (!convertedEmails.has(profile.email?.toLowerCase())) {
+          // Só exclui se o perfil for de um lead convertido
+          if (!convertedUserIds.has(profile.id)) {
+            const dealData = userDeals.get(profile.id) || { count: 0, value: 0 };
             contacts.push({
               type: 'user',
               id: profile.id,
@@ -571,9 +606,9 @@ export const useCRM = () => {
               source: 'cadastro',
               status: 'active',
               created_at: profile.created_at,
-              interactions_count: 0,
-              deals_count: 0,
-              total_value: 0,
+              interactions_count: userInteractions.get(profile.id) || 0,
+              deals_count: dealData.count,
+              total_value: dealData.value,
               last_interaction_at: null,
               tags: [],
             });
