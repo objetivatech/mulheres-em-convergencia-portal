@@ -64,6 +64,7 @@ import AdminCRMContacts from '@/pages/admin/AdminCRMContacts';
 import AdminCRMDashboard from '@/pages/admin/AdminCRMDashboard';
 import AdminCRMPipeline from '@/pages/admin/AdminCRMPipeline';
 import AdminCRMEvents from '@/pages/admin/AdminCRMEvents';
+import AdminCRMCoupons from '@/pages/admin/AdminCRMCoupons';
 import AdminCRMFinancial from '@/pages/admin/AdminCRMFinancial';
 import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
 import AdminCRMJourney from '@/pages/admin/AdminCRMJourney';
@@ -207,6 +208,11 @@ function AppContent() {
         <Route path="/admin/crm/eventos" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminCRMEvents />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/cupons" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMCoupons />
           </ProtectedRoute>
         } />
         <Route path="/admin/crm/financeiro" element={
