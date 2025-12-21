@@ -58,6 +58,9 @@ import { useAuth } from '@/hooks/useAuth';
 import AdminRegistrations from '@/pages/AdminRegistrations';
 import AdminCommunities from '@/pages/AdminCommunities';
 import AdminNewsletter from '@/pages/AdminNewsletter';
+import AdminCRMContacts from '@/pages/admin/AdminCRMContacts';
+import AdminCRMDashboard from '@/pages/admin/AdminCRMDashboard';
+import AdminCRMPipeline from '@/pages/admin/AdminCRMPipeline';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
@@ -173,6 +176,23 @@ function AppContent() {
         <Route path="/admin/cadastros" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminRegistrations />
+          </ProtectedRoute>
+        } />
+        
+        {/* CRM Routes */}
+        <Route path="/admin/crm" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/contatos" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMContacts />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/pipeline" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMPipeline />
           </ProtectedRoute>
         } />
         

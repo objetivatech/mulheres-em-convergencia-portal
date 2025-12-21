@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, LayoutDashboard, Kanban, ArrowLeft } from 'lucide-react';
+import { Users, LayoutDashboard, Kanban, ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ContactsList } from '@/components/admin/crm/ContactsList';
-import { ContactProfile } from '@/components/admin/crm/ContactProfile';
-import { ContactForm } from '@/components/admin/crm/ContactForm';
-import { UnifiedContact } from '@/hooks/useCRM';
+import { DealPipeline } from '@/components/admin/crm/DealPipeline';
+import { DealForm } from '@/components/admin/crm/DealForm';
+import { CRMDeal } from '@/hooks/useCRM';
 
-const AdminCRMContacts = () => {
+const AdminCRMPipeline = () => {
   const location = useLocation();
-  const [selectedContact, setSelectedContact] = useState<UnifiedContact | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showDealForm, setShowDealForm] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<CRMDeal | null>(null);
 
   const navItems = [
     { path: '/admin/crm', label: 'Dashboard', icon: LayoutDashboard },
@@ -18,16 +17,14 @@ const AdminCRMContacts = () => {
     { path: '/admin/crm/pipeline', label: 'Pipeline', icon: Kanban },
   ];
 
-  if (selectedContact) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <ContactProfile 
-          contact={selectedContact} 
-          onBack={() => setSelectedContact(null)} 
-        />
-      </div>
-    );
-  }
+  const handleDealClick = (deal: CRMDeal) => {
+    setSelectedDeal(deal);
+    // Could open a deal detail modal here
+  };
+
+  const handleAddDeal = () => {
+    setShowDealForm(true);
+  };
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -40,10 +37,14 @@ const AdminCRMContacts = () => {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Contatos</h1>
-            <p className="text-muted-foreground">Gestão unificada de leads e clientes</p>
+            <h1 className="text-2xl font-bold">Pipeline de Vendas</h1>
+            <p className="text-muted-foreground">Arraste os cards para mover entre estágios</p>
           </div>
         </div>
+        <Button onClick={handleAddDeal}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Negócio
+        </Button>
       </div>
 
       {/* Navigation */}
@@ -65,17 +66,22 @@ const AdminCRMContacts = () => {
         })}
       </div>
 
-      {/* Content */}
-      <ContactsList 
-        onSelectContact={setSelectedContact}
-        onAddContact={() => setShowAddForm(true)}
+      {/* Pipeline */}
+      <DealPipeline 
+        onDealClick={handleDealClick}
+        onAddDeal={handleAddDeal}
       />
-      <ContactForm 
-        open={showAddForm} 
-        onOpenChange={setShowAddForm} 
+
+      {/* Deal Form Dialog */}
+      <DealForm
+        open={showDealForm}
+        onOpenChange={setShowDealForm}
+        contactId=""
+        contactType="lead"
+        contactName="Novo Cliente"
       />
     </div>
   );
 };
 
-export default AdminCRMContacts;
+export default AdminCRMPipeline;
