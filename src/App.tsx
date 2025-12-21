@@ -64,6 +64,8 @@ import AdminCRMPipeline from '@/pages/admin/AdminCRMPipeline';
 import AdminCRMEvents from '@/pages/admin/AdminCRMEvents';
 import AdminCRMFinancial from '@/pages/admin/AdminCRMFinancial';
 import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
+import AdminCRMJourney from '@/pages/admin/AdminCRMJourney';
+import AdminCostCenters from '@/pages/admin/AdminCostCenters';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
@@ -211,6 +213,21 @@ function AppContent() {
         <Route path="/admin/crm/impacto" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminCRMImpact />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/jornada" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMJourney />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/jornada/:cpf" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMJourney />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/centros-custo" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCostCenters />
           </ProtectedRoute>
         } />
         
