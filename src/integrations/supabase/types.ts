@@ -1039,6 +1039,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cost_centers: {
+        Row: {
+          active: boolean
+          cnpj: string | null
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          cnpj?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          cnpj?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           active: boolean | null
@@ -1123,6 +1159,437 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_conversion_milestones: {
+        Row: {
+          activities_count: number | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          days_from_first_contact: number | null
+          email: string | null
+          id: string
+          metadata: Json | null
+          milestone_date: string
+          milestone_name: string
+          milestone_type: string
+          total_value: number | null
+          triggered_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activities_count?: number | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          days_from_first_contact?: number | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          milestone_date?: string
+          milestone_name: string
+          milestone_type: string
+          total_value?: number | null
+          triggered_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activities_count?: number | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          days_from_first_contact?: number | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          milestone_date?: string
+          milestone_name?: string
+          milestone_type?: string
+          total_value?: number | null
+          triggered_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_conversion_milestones_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_deals: {
+        Row: {
+          assigned_to: string | null
+          closed_at: string | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          description: string | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          lost_reason: string | null
+          metadata: Json | null
+          product_id: string | null
+          product_type: string | null
+          stage: string
+          title: string
+          updated_at: string
+          user_id: string | null
+          value: number | null
+          won: boolean | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          product_type?: string | null
+          stage?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          value?: number | null
+          won?: boolean | null
+        }
+        Update: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          product_type?: string | null
+          stage?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          value?: number | null
+          won?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_entity_tags: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          tag_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          tag_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          tag_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_entity_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_interactions: {
+        Row: {
+          activity_name: string | null
+          activity_online: boolean | null
+          activity_paid: boolean | null
+          channel: string | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          description: string | null
+          form_source: string | null
+          id: string
+          interaction_type: string
+          lead_id: string | null
+          metadata: Json | null
+          performed_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_name?: string | null
+          activity_online?: boolean | null
+          activity_paid?: boolean | null
+          channel?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          description?: string | null
+          form_source?: string | null
+          id?: string
+          interaction_type: string
+          lead_id?: string | null
+          metadata?: Json | null
+          performed_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_name?: string | null
+          activity_online?: boolean | null
+          activity_paid?: boolean | null
+          channel?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          description?: string | null
+          form_source?: string | null
+          id?: string
+          interaction_type?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          performed_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interactions_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          assigned_to: string | null
+          converted_at: string | null
+          converted_user_id: string | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          email: string | null
+          first_activity_date: string | null
+          first_activity_online: boolean | null
+          first_activity_paid: boolean | null
+          first_activity_type: string | null
+          full_name: string
+          id: string
+          metadata: Json | null
+          phone: string | null
+          score: number | null
+          source: string
+          source_detail: string | null
+          status: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          converted_at?: string | null
+          converted_user_id?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          first_activity_date?: string | null
+          first_activity_online?: boolean | null
+          first_activity_paid?: boolean | null
+          first_activity_type?: string | null
+          full_name: string
+          id?: string
+          metadata?: Json | null
+          phone?: string | null
+          score?: number | null
+          source: string
+          source_detail?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          converted_at?: string | null
+          converted_user_id?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          first_activity_date?: string | null
+          first_activity_online?: boolean | null
+          first_activity_paid?: boolean | null
+          first_activity_type?: string | null
+          full_name?: string
+          id?: string
+          metadata?: Json | null
+          phone?: string | null
+          score?: number | null
+          source?: string
+          source_detail?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tags: {
+        Row: {
+          category: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      donations: {
+        Row: {
+          amount: number
+          anonymous: boolean | null
+          campaign: string | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          donor_id: string | null
+          donor_name: string
+          email: string
+          frequency: string | null
+          id: string
+          message: string | null
+          metadata: Json | null
+          payment_id: string | null
+          payment_method: string | null
+          phone: string | null
+          project: string | null
+          receipt_sent: boolean | null
+          receipt_sent_at: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          anonymous?: boolean | null
+          campaign?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          donor_id?: string | null
+          donor_name: string
+          email: string
+          frequency?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          payment_id?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          project?: string | null
+          receipt_sent?: boolean | null
+          receipt_sent_at?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          anonymous?: boolean | null
+          campaign?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          donor_id?: string | null
+          donor_name?: string
+          email?: string
+          frequency?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          payment_id?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          project?: string | null
+          receipt_sent?: boolean | null
+          receipt_sent_at?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
             referencedColumns: ["id"]
           },
         ]
@@ -1302,6 +1769,180 @@ export type Database = {
           variables?: Json | null
         }
         Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          checked_in_at: string | null
+          cost_center_id: string | null
+          cpf: string | null
+          created_at: string
+          email: string
+          event_id: string
+          full_name: string
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          paid: boolean | null
+          payment_amount: number | null
+          payment_id: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          checked_in_at?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email: string
+          event_id: string
+          full_name: string
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          paid?: boolean | null
+          payment_amount?: number | null
+          payment_id?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          checked_in_at?: string | null
+          cost_center_id?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string
+          event_id?: string
+          full_name?: string
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          paid?: boolean | null
+          payment_amount?: number | null
+          payment_id?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          current_participants: number | null
+          date_end: string | null
+          date_start: string
+          description: string | null
+          format: string
+          free: boolean | null
+          id: string
+          image_url: string | null
+          instructor_id: string | null
+          instructor_name: string | null
+          location: string | null
+          location_url: string | null
+          max_participants: number | null
+          metadata: Json | null
+          price: number | null
+          registration_deadline: string | null
+          requires_approval: boolean | null
+          slug: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_participants?: number | null
+          date_end?: string | null
+          date_start: string
+          description?: string | null
+          format: string
+          free?: boolean | null
+          id?: string
+          image_url?: string | null
+          instructor_id?: string | null
+          instructor_name?: string | null
+          location?: string | null
+          location_url?: string | null
+          max_participants?: number | null
+          metadata?: Json | null
+          price?: number | null
+          registration_deadline?: string | null
+          requires_approval?: boolean | null
+          slug: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_participants?: number | null
+          date_end?: string | null
+          date_start?: string
+          description?: string | null
+          format?: string
+          free?: boolean | null
+          id?: string
+          image_url?: string | null
+          instructor_id?: string | null
+          instructor_name?: string | null
+          location?: string | null
+          location_url?: string | null
+          max_participants?: number | null
+          metadata?: Json | null
+          price?: number | null
+          registration_deadline?: string | null
+          requires_approval?: boolean | null
+          slug?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       faq_items: {
         Row: {
@@ -1903,6 +2544,83 @@ export type Database = {
         }
         Relationships: []
       }
+      social_impact_metrics: {
+        Row: {
+          cost_center_id: string | null
+          created_at: string
+          created_by: string | null
+          demographic: Json | null
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          project: string | null
+          region: string | null
+          source: string | null
+          unit: string | null
+          updated_at: string
+          value: number
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          demographic?: Json | null
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          project?: string | null
+          region?: string | null
+          source?: string | null
+          unit?: string | null
+          updated_at?: string
+          value: number
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          cost_center_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          demographic?: Json | null
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          project?: string | null
+          region?: string | null
+          source?: string | null
+          unit?: string | null
+          updated_at?: string
+          value?: number
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_impact_metrics_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_posts: {
         Row: {
           blog_post_id: string | null
@@ -1964,6 +2682,95 @@ export type Database = {
             columns: ["blog_post_id"]
             isOneToOne: false
             referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsors: {
+        Row: {
+          benefits: string[] | null
+          cnpj: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          cost_center_id: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          logo_url: string | null
+          metadata: Json | null
+          notes: string | null
+          social_links: Json | null
+          sponsorship_name: string | null
+          sponsorship_type: string
+          start_date: string | null
+          status: string
+          trading_name: string | null
+          updated_at: string
+          user_id: string | null
+          value: number | null
+          value_type: string | null
+          website_url: string | null
+        }
+        Insert: {
+          benefits?: string[] | null
+          cnpj?: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          logo_url?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          social_links?: Json | null
+          sponsorship_name?: string | null
+          sponsorship_type: string
+          start_date?: string | null
+          status?: string
+          trading_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value?: number | null
+          value_type?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          benefits?: string[] | null
+          cnpj?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          cost_center_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          logo_url?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          social_links?: Json | null
+          sponsorship_name?: string | null
+          sponsorship_type?: string
+          start_date?: string | null
+          status?: string
+          trading_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value?: number | null
+          value_type?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsors_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
             referencedColumns: ["id"]
           },
         ]
@@ -3144,6 +3951,13 @@ export type Database = {
         | "author"
         | "customer"
         | "community_member"
+        | "donor"
+        | "sponsor"
+        | "mentor"
+        | "volunteer"
+        | "staff"
+        | "partner"
+        | "project_client"
       business_category:
         | "alimentacao"
         | "beleza"
@@ -3315,6 +4129,13 @@ export const Constants = {
         "author",
         "customer",
         "community_member",
+        "donor",
+        "sponsor",
+        "mentor",
+        "volunteer",
+        "staff",
+        "partner",
+        "project_client",
       ],
       business_category: [
         "alimentacao",
