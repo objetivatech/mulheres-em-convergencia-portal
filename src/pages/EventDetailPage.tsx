@@ -126,6 +126,11 @@ const EventDetailPage = () => {
         cpf: formData.cpf?.replace(/\D/g, '') || null,
         status: 'confirmed',
         metadata: metadata as any,
+        cost_center_id: event.cost_center_id,
+        // Dados para integração CRM
+        eventTitle: event.title,
+        eventPrice: event.price || 0,
+        isFree: event.free ?? true,
       });
 
       setIsRegistered(true);

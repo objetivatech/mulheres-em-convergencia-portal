@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { crmIntegration } from '@/hooks/useCRMIntegration';
 
 export interface Event {
   id: string;
@@ -190,7 +191,12 @@ export const useEvents = () => {
 
   const useCreateRegistration = () => {
     return useMutation({
-      mutationFn: async (registration: Partial<EventRegistration>) => {
+      mutationFn: async (registration: Partial<EventRegistration> & { 
+        eventTitle?: string;
+        eventPrice?: number;
+        isFree?: boolean;
+      }) => {
+        // 1. Criar registro no banco
         const { data, error } = await supabase
           .from('event_registrations')
           .insert({
@@ -198,16 +204,57 @@ export const useEvents = () => {
             full_name: registration.full_name || '',
             email: registration.email || '',
             status: registration.status || 'pending',
-            ...registration,
-          } as any)
+            phone: registration.phone,
+            cpf: registration.cpf,
+            cost_center_id: registration.cost_center_id,
+            metadata: registration.metadata as any,
+          })
           .select()
           .single();
         if (error) throw error;
-        return data as EventRegistration;
+
+        const registrationData = data as EventRegistration;
+
+        // 2. Integrar com CRM (criar lead, interação e deal)
+        try {
+          const crmResult = await crmIntegration.processEventRegistration({
+            fullName: registration.full_name || '',
+            email: registration.email || '',
+            phone: registration.phone,
+            cpf: registration.cpf,
+            eventTitle: registration.eventTitle || 'Evento',
+            eventId: registration.event_id || '',
+            eventPrice: registration.eventPrice || 0,
+            isFree: registration.isFree ?? true,
+            costCenterId: registration.cost_center_id,
+          });
+
+          // Atualizar registro com lead_id
+          if (crmResult.leadId) {
+            await supabase
+              .from('event_registrations')
+              .update({ lead_id: crmResult.leadId })
+              .eq('id', registrationData.id);
+          }
+        } catch (crmError) {
+          console.error('[useCreateRegistration] CRM integration failed:', crmError);
+          // Não bloquear inscrição se CRM falhar
+        }
+
+        // 3. Enviar email de confirmação (não bloqueia se falhar)
+        try {
+          await crmIntegration.sendEventConfirmationEmail(registrationData.id);
+        } catch (emailError) {
+          console.error('[useCreateRegistration] Email sending failed:', emailError);
+        }
+
+        return registrationData;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
         queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
       },
     });
   };

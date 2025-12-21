@@ -68,10 +68,15 @@ export const DealForm = ({
     product_type: deal?.product_type || 'assinatura',
     expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
     cost_center_id: deal?.cost_center_id || '',
-    pipeline_id: '',
+    pipeline_id: deal?.pipeline_id || '',
   });
 
-  // Update stages when pipeline changes
+  // Initialize pipeline from deal
+  useEffect(() => {
+    if (deal?.pipeline_id && !selectedPipelineId) {
+      setSelectedPipelineId(deal.pipeline_id);
+    }
+  }, [deal?.pipeline_id, selectedPipelineId]);
   useEffect(() => {
     if (selectedPipelineId && pipelines) {
       const pipeline = pipelines.find(p => p.id === selectedPipelineId);
