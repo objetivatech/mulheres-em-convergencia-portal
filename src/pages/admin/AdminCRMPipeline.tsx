@@ -14,6 +14,7 @@ const AdminCRMPipeline = () => {
   const [showDealForm, setShowDealForm] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<CRMDeal | undefined>();
   const [showSettings, setShowSettings] = useState(false);
+  const [activePipelineId, setActivePipelineId] = useState<string | undefined>();
 
   const handleDealClick = (deal: CRMDeal) => {
     setSelectedDeal(deal);
@@ -23,6 +24,10 @@ const AdminCRMPipeline = () => {
   const handleAddDeal = () => {
     setSelectedDeal(undefined);
     setShowDealForm(true);
+  };
+
+  const handlePipelineChange = (pipelineId: string) => {
+    setActivePipelineId(pipelineId);
   };
 
   return (
@@ -59,6 +64,8 @@ const AdminCRMPipeline = () => {
           <DealPipeline 
             onDealClick={handleDealClick}
             onAddDeal={handleAddDeal}
+            pipelineId={activePipelineId}
+            onPipelineChange={handlePipelineChange}
           />
 
           <DealForm 

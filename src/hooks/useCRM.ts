@@ -53,7 +53,8 @@ export interface CRMDeal {
   title: string;
   description: string | null;
   value: number;
-  stage: 'lead' | 'contacted' | 'proposal' | 'negotiation' | 'won' | 'lost';
+  stage: string; // Dinâmico baseado no pipeline
+  pipeline_id: string | null;
   cost_center_id: string | null;
   product_type: string | null;
   product_id: string | null;
