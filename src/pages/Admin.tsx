@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, Share2 } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, Share2, UserCheck, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -30,6 +30,52 @@ const Admin = () => {
 
   // Organização por categorias
   const adminCategories = [
+    {
+      name: '🎯 CRM',
+      description: 'Gestão de relacionamento com clientes',
+      modules: [
+        {
+          title: 'Dashboard CRM',
+          description: 'Métricas e KPIs de conversão',
+          icon: TrendingUp,
+          available: isAdmin,
+          href: '/admin/crm',
+          comingSoon: false
+        },
+        {
+          title: 'Contatos',
+          description: 'Gestão unificada de leads e usuários',
+          icon: UserCheck,
+          available: isAdmin,
+          href: '/admin/crm/contatos',
+          comingSoon: false
+        },
+        {
+          title: 'Pipeline de Vendas',
+          description: 'Kanban de negociações e deals',
+          icon: BarChart3,
+          available: isAdmin,
+          href: '/admin/crm/pipeline',
+          comingSoon: false
+        },
+        {
+          title: 'Eventos',
+          description: 'Gestão de eventos, inscrições e check-in',
+          icon: Calendar,
+          available: isAdmin,
+          href: '/admin/crm/eventos',
+          comingSoon: false
+        },
+        {
+          title: 'Financeiro',
+          description: 'Doações e patrocinadores',
+          icon: DollarSign,
+          available: isAdmin,
+          href: '/admin/crm/financeiro',
+          comingSoon: false
+        }
+      ]
+    },
     {
       name: '📊 GERENCIAMENTO',
       description: 'Gestão de usuários, negócios e comunicação',

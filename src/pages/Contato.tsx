@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, MapPin, Phone, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { registerCRMInteraction } from '@/lib/crmIntegration';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
@@ -55,6 +56,25 @@ const Contato = () => {
         console.error('Error sending contact message:', error);
         toast.error('Erro ao enviar mensagem. Tente novamente.');
         return;
+      }
+
+      // Registrar interação no CRM
+      try {
+        await registerCRMInteraction(
+          {
+            name: contactData.name,
+            email: contactData.email,
+          },
+          {
+            form_source: 'contact_form',
+            interaction_type: 'form_submission',
+            channel: 'website',
+            description: `Assunto: ${contactData.subject}\n\nMensagem: ${contactData.message}`,
+          }
+        );
+      } catch (crmError) {
+        console.error('Error registering CRM interaction:', crmError);
+        // Não bloqueia o fluxo principal se o CRM falhar
       }
 
       if (data?.email_sent) {
