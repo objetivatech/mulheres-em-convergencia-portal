@@ -10,7 +10,8 @@ import {
   Route,
   Building2,
   ArrowLeft,
-  Settings
+  Settings,
+  Ticket
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -23,6 +24,7 @@ const navItems = [
   { path: '/admin/crm/contatos', label: 'Contatos', icon: Users },
   { path: '/admin/crm/pipeline', label: 'Pipeline', icon: Kanban },
   { path: '/admin/crm/eventos', label: 'Eventos', icon: Calendar },
+  { path: '/admin/crm/cupons', label: 'Cupons', icon: Ticket },
   { path: '/admin/crm/financeiro', label: 'Financeiro', icon: DollarSign },
   { path: '/admin/crm/impacto', label: 'Impacto Social', icon: Heart },
   { path: '/admin/centros-custo', label: 'Centros de Custo', icon: Building2 },
