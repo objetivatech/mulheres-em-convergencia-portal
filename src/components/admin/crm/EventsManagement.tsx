@@ -231,7 +231,7 @@ export const EventsManagement: React.FC = () => {
       }
     };
 
-    const publicUrl = `https://${PRODUCTION_DOMAIN}/eventos/${event.slug}`;
+    const publicUrl = `${PRODUCTION_DOMAIN}/eventos/${event.slug}`;
 
     return (
       <div className="space-y-6">
