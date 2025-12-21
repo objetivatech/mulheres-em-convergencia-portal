@@ -63,6 +63,7 @@ import AdminCRMDashboard from '@/pages/admin/AdminCRMDashboard';
 import AdminCRMPipeline from '@/pages/admin/AdminCRMPipeline';
 import AdminCRMEvents from '@/pages/admin/AdminCRMEvents';
 import AdminCRMFinancial from '@/pages/admin/AdminCRMFinancial';
+import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
@@ -205,6 +206,11 @@ function AppContent() {
         <Route path="/admin/crm/financeiro" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminCRMFinancial />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/crm/impacto" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminCRMImpact />
           </ProtectedRoute>
         } />
         
