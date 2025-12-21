@@ -3391,6 +3391,15 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      calculate_cac: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: number
+      }
+      calculate_churn_rate: {
+        Args: { p_period_months?: number }
+        Returns: number
+      }
+      calculate_ltv: { Args: never; Returns: number }
       cleanup_expired_email_tokens: { Args: never; Returns: undefined }
       cleanup_old_activity_logs: { Args: never; Returns: undefined }
       cleanup_security_logs: { Args: never; Returns: number }
@@ -3550,6 +3559,7 @@ export type Database = {
           total_views: number
         }[]
       }
+      get_crm_stats: { Args: never; Returns: Json }
       get_current_user_admin_status: { Args: never; Returns: boolean }
       get_current_user_blog_edit_status: { Args: never; Returns: boolean }
       get_featured_businesses: {
@@ -3568,7 +3578,9 @@ export type Database = {
           subscription_plan: string
         }[]
       }
+      get_funnel_stats: { Args: never; Returns: Json }
       get_google_places_api_key: { Args: never; Returns: string }
+      get_journey_by_cpf: { Args: { p_cpf: string }; Returns: Json }
       get_journey_funnel_stats: {
         Args: never
         Returns: {
