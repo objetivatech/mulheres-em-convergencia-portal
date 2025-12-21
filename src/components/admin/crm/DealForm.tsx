@@ -71,12 +71,27 @@ export const DealForm = ({
     pipeline_id: deal?.pipeline_id || '',
   });
 
-  // Initialize pipeline from deal
+  // Reinicializar formData quando o deal mudar (editar vs criar)
   useEffect(() => {
-    if (deal?.pipeline_id && !selectedPipelineId) {
-      setSelectedPipelineId(deal.pipeline_id);
+    if (open) {
+      setFormData({
+        title: deal?.title || `Negócio com ${contactName}`,
+        description: deal?.description || '',
+        value: deal?.value?.toString() || '',
+        stage: deal?.stage || 'lead',
+        product_type: deal?.product_type || 'assinatura',
+        expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
+        cost_center_id: deal?.cost_center_id || '',
+        pipeline_id: deal?.pipeline_id || '',
+      });
+      if (deal?.pipeline_id) {
+        setSelectedPipelineId(deal.pipeline_id);
+      } else {
+        setSelectedPipelineId('');
+      }
     }
-  }, [deal?.pipeline_id, selectedPipelineId]);
+  }, [deal, open, contactName]);
+
   useEffect(() => {
     if (selectedPipelineId && pipelines) {
       const pipeline = pipelines.find(p => p.id === selectedPipelineId);
