@@ -1,33 +1,16 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Users, LayoutDashboard, Kanban, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ContactsList } from '@/components/admin/crm/ContactsList';
-import { ContactProfile } from '@/components/admin/crm/ContactProfile';
-import { ContactForm } from '@/components/admin/crm/ContactForm';
-import { UnifiedContact } from '@/hooks/useCRM';
+import { CRMMetricsDashboard } from '@/components/admin/crm/CRMMetricsDashboard';
 
-const AdminCRMContacts = () => {
+const AdminCRMDashboard = () => {
   const location = useLocation();
-  const [selectedContact, setSelectedContact] = useState<UnifiedContact | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
 
   const navItems = [
     { path: '/admin/crm', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/crm/contatos', label: 'Contatos', icon: Users },
     { path: '/admin/crm/pipeline', label: 'Pipeline', icon: Kanban },
   ];
-
-  if (selectedContact) {
-    return (
-      <div className="container mx-auto py-6 px-4">
-        <ContactProfile 
-          contact={selectedContact} 
-          onBack={() => setSelectedContact(null)} 
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -40,8 +23,8 @@ const AdminCRMContacts = () => {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Contatos</h1>
-            <p className="text-muted-foreground">Gestão unificada de leads e clientes</p>
+            <h1 className="text-2xl font-bold">CRM</h1>
+            <p className="text-muted-foreground">Gestão de relacionamento com clientes</p>
           </div>
         </div>
       </div>
@@ -65,17 +48,10 @@ const AdminCRMContacts = () => {
         })}
       </div>
 
-      {/* Content */}
-      <ContactsList 
-        onSelectContact={setSelectedContact}
-        onAddContact={() => setShowAddForm(true)}
-      />
-      <ContactForm 
-        open={showAddForm} 
-        onOpenChange={setShowAddForm} 
-      />
+      {/* Dashboard Content */}
+      <CRMMetricsDashboard />
     </div>
   );
 };
 
-export default AdminCRMContacts;
+export default AdminCRMDashboard;
