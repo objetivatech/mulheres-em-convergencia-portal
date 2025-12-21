@@ -1,86 +1,79 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Users, LayoutDashboard, Kanban, ArrowLeft, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Layout from '@/components/layout/Layout';
+import { Helmet } from 'react-helmet-async';
+import { CRMNavigation } from '@/components/admin/crm/CRMNavigation';
 import { DealPipeline } from '@/components/admin/crm/DealPipeline';
 import { DealForm } from '@/components/admin/crm/DealForm';
+import { PipelineSettings } from '@/components/admin/crm/PipelineSettings';
+import { Button } from '@/components/ui/button';
+import { Plus, Settings } from 'lucide-react';
 import { CRMDeal } from '@/hooks/useCRM';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminCRMPipeline = () => {
-  const location = useLocation();
   const [showDealForm, setShowDealForm] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<CRMDeal | null>(null);
-
-  const navItems = [
-    { path: '/admin/crm', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/crm/contatos', label: 'Contatos', icon: Users },
-    { path: '/admin/crm/pipeline', label: 'Pipeline', icon: Kanban },
-  ];
+  const [selectedDeal, setSelectedDeal] = useState<CRMDeal | undefined>();
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleDealClick = (deal: CRMDeal) => {
     setSelectedDeal(deal);
-    // Could open a deal detail modal here
+    setShowDealForm(true);
   };
 
   const handleAddDeal = () => {
+    setSelectedDeal(undefined);
     setShowDealForm(true);
   };
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link to="/admin">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Pipeline de Vendas</h1>
-            <p className="text-muted-foreground">Arraste os cards para mover entre estágios</p>
-          </div>
-        </div>
-        <Button onClick={handleAddDeal}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Negócio
-        </Button>
-      </div>
+    <>
+      <Helmet>
+        <title>Pipeline de Vendas - CRM Admin</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/admin/crm/pipeline`} />
+      </Helmet>
 
-      {/* Navigation */}
-      <div className="flex gap-2 mb-6 border-b pb-4">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <Link key={item.path} to={item.path}>
-              <Button 
-                variant={isActive ? 'default' : 'ghost'}
-                className="gap-2"
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
+      <Layout>
+        <div className="container mx-auto py-6 px-4">
+          <CRMNavigation />
+          
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">Pipeline de Vendas</h1>
+              <p className="text-muted-foreground">
+                Gerencie negócios e acompanhe o funil de vendas
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowSettings(true)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar Pipelines
               </Button>
-            </Link>
-          );
-        })}
-      </div>
+              <Button onClick={handleAddDeal}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Negócio
+              </Button>
+            </div>
+          </div>
 
-      {/* Pipeline */}
-      <DealPipeline 
-        onDealClick={handleDealClick}
-        onAddDeal={handleAddDeal}
-      />
+          <DealPipeline 
+            onDealClick={handleDealClick}
+            onAddDeal={handleAddDeal}
+          />
 
-      {/* Deal Form Dialog */}
-      <DealForm
-        open={showDealForm}
-        onOpenChange={setShowDealForm}
-        contactId=""
-        contactType="lead"
-        contactName="Novo Cliente"
-      />
-    </div>
+          <DealForm 
+            open={showDealForm}
+            onOpenChange={setShowDealForm}
+            deal={selectedDeal}
+          />
+
+          <PipelineSettings
+            open={showSettings}
+            onOpenChange={setShowSettings}
+          />
+        </div>
+      </Layout>
+    </>
   );
 };
 
