@@ -372,6 +372,54 @@ serve(async (req) => {
         logStep("Subscription activated", { subscriptionId: localSub.id });
       }
     }
+    
+    // Handle event registration payments
+    else if (webhookData.event === "PAYMENT_RECEIVED" || 
+             webhookData.event === "PAYMENT_CONFIRMED") {
+      const payment = webhookData.payment;
+      
+      // Check if this is an event registration payment
+      if (payment?.externalReference?.startsWith('event_registration_')) {
+        const registrationId = payment.externalReference.replace('event_registration_', '');
+        
+        logStep("Processing event registration payment", { registrationId, paymentId: payment.id });
+        
+        // Update registration status
+        const { error: updateError } = await supabaseClient
+          .from('event_registrations')
+          .update({
+            status: 'confirmed',
+            paid: true,
+            payment_id: payment.id,
+          })
+          .eq('id', registrationId);
+        
+        if (updateError) {
+          logStep("Failed to update event registration", { error: updateError });
+        } else {
+          logStep("Event registration confirmed", { registrationId });
+          
+          // Increment event participants count
+          const { data: registration } = await supabaseClient
+            .from('event_registrations')
+            .select('event_id')
+            .eq('id', registrationId)
+            .single();
+          
+          if (registration) {
+            await supabaseClient.rpc('increment_event_participants', { 
+              p_event_id: registration.event_id 
+            }).catch(() => {
+              // Fallback if RPC doesn't exist
+              supabaseClient
+                .from('events')
+                .update({ current_participants: supabaseClient.rpc('get_event_participants', { p_event_id: registration.event_id }) })
+                .eq('id', registration.event_id);
+            });
+          }
+        }
+      }
+    }
 
     // Para outros eventos, apenas logar
     logStep("Event processed", { 

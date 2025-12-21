@@ -86,3 +86,6 @@ verify_jwt = true
 
 [functions.mailrelay-analytics]
 verify_jwt = true
+
+[functions.create-event-payment]
+verify_jwt = false

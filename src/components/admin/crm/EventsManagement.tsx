@@ -13,11 +13,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, Calendar, Users, MapPin, Clock, 
   CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { EventFormBuilder } from './EventFormBuilder';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -218,6 +220,7 @@ export const EventsManagement: React.FC = () => {
   // Event Details with Registrations
   const EventDetails: React.FC<{ event: Event }> = ({ event }) => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
+    const [activeTab, setActiveTab] = useState('details');
 
     const handleCheckIn = async (registrationId: string) => {
       try {
@@ -228,6 +231,8 @@ export const EventsManagement: React.FC = () => {
       }
     };
 
+    const publicUrl = `https://${PRODUCTION_DOMAIN}/eventos/${event.slug}`;
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -235,6 +240,11 @@ export const EventsManagement: React.FC = () => {
             ← Voltar
           </Button>
           <div className="flex gap-2">
+            <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm">
+                <ExternalLink className="h-4 w-4 mr-2" />Ver Página
+              </Button>
+            </a>
             <Button variant="outline" onClick={() => { setEditingEvent(event); setShowEventForm(true); }}>
               <Edit2 className="h-4 w-4 mr-2" />Editar
             </Button>
@@ -248,7 +258,15 @@ export const EventsManagement: React.FC = () => {
                 <CardTitle className="text-2xl">{event.title}</CardTitle>
                 <p className="text-muted-foreground mt-1">{event.description}</p>
               </div>
-              {formatStatusBadge(event.status)}
+              <div className="flex gap-2">
+                {formatStatusBadge(event.status)}
+                {!event.free && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    R$ {event.price?.toFixed(2)}
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -274,65 +292,88 @@ export const EventsManagement: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="details" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
               Inscritos ({registrations?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p>Carregando...</p>
-            ) : registrations?.length === 0 ? (
-              <p className="text-muted-foreground">Nenhuma inscrição ainda.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Check-in</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {registrations?.map((reg) => (
-                    <TableRow key={reg.id}>
-                      <TableCell className="font-medium">{reg.full_name}</TableCell>
-                      <TableCell>{reg.email}</TableCell>
-                      <TableCell>{formatStatusBadge(reg.status)}</TableCell>
-                      <TableCell>
-                        {reg.checked_in_at ? (
-                          <span className="text-green-600 flex items-center gap-1">
-                            <CheckCircle2 className="h-4 w-4" />
-                            {format(new Date(reg.checked_in_at), 'HH:mm')}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {!reg.checked_in_at && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleCheckIn(reg.id)}
-                            disabled={checkIn.isPending}
-                          >
-                            <UserCheck className="h-4 w-4 mr-1" />
-                            Check-in
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+            </TabsTrigger>
+            <TabsTrigger value="form" className="flex items-center gap-2">
+              <FileEdit className="h-4 w-4" />
+              Formulário
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="mt-4">
+            <Card>
+              <CardContent className="pt-6">
+                {isLoading ? (
+                  <p>Carregando...</p>
+                ) : registrations?.length === 0 ? (
+                  <p className="text-muted-foreground">Nenhuma inscrição ainda.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Pagamento</TableHead>
+                        <TableHead>Check-in</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {registrations?.map((reg) => (
+                        <TableRow key={reg.id}>
+                          <TableCell className="font-medium">{reg.full_name}</TableCell>
+                          <TableCell>{reg.email}</TableCell>
+                          <TableCell>{formatStatusBadge(reg.status)}</TableCell>
+                          <TableCell>
+                            {event.free ? (
+                              <Badge variant="secondary">Gratuito</Badge>
+                            ) : reg.paid ? (
+                              <Badge variant="default" className="bg-green-600">Pago</Badge>
+                            ) : (
+                              <Badge variant="destructive">Pendente</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {reg.checked_in_at ? (
+                              <span className="text-green-600 flex items-center gap-1">
+                                <CheckCircle2 className="h-4 w-4" />
+                                {format(new Date(reg.checked_in_at), 'HH:mm')}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {!reg.checked_in_at && (reg.paid || event.free) && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleCheckIn(reg.id)}
+                                disabled={checkIn.isPending}
+                              >
+                                <UserCheck className="h-4 w-4 mr-1" />
+                                Check-in
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="form" className="mt-4">
+            <EventFormBuilder eventId={event.id} />
+          </TabsContent>
+        </Tabs>
       </div>
     );
   };
