@@ -1075,6 +1075,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_usage: {
+        Row: {
+          coupon_id: string
+          discount_applied: number
+          id: string
+          registration_id: string | null
+          used_at: string
+          user_email: string
+        }
+        Insert: {
+          coupon_id: string
+          discount_applied: number
+          id?: string
+          registration_id?: string | null
+          used_at?: string
+          user_email: string
+        }
+        Update: {
+          coupon_id?: string
+          discount_applied?: number
+          id?: string
+          registration_id?: string | null
+          used_at?: string
+          user_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usage_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "event_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           active: boolean | null
@@ -1813,6 +1855,71 @@ export type Database = {
         }
         Relationships: []
       }
+      event_coupons: {
+        Row: {
+          active: boolean | null
+          all_events: boolean | null
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          event_id: string | null
+          id: string
+          max_uses: number | null
+          min_purchase: number | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          all_events?: boolean | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          event_id?: string | null
+          id?: string
+          max_uses?: number | null
+          min_purchase?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          all_events?: boolean | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          event_id?: string | null
+          id?: string
+          max_uses?: number | null
+          min_purchase?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_coupons_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_form_fields: {
         Row: {
           active: boolean | null
@@ -1867,14 +1974,17 @@ export type Database = {
         Row: {
           checked_in_at: string | null
           cost_center_id: string | null
+          coupon_id: string | null
           cpf: string | null
           created_at: string
+          discount_applied: number | null
           email: string
           event_id: string
           full_name: string
           id: string
           lead_id: string | null
           metadata: Json | null
+          original_amount: number | null
           paid: boolean | null
           payment_amount: number | null
           payment_id: string | null
@@ -1886,14 +1996,17 @@ export type Database = {
         Insert: {
           checked_in_at?: string | null
           cost_center_id?: string | null
+          coupon_id?: string | null
           cpf?: string | null
           created_at?: string
+          discount_applied?: number | null
           email: string
           event_id: string
           full_name: string
           id?: string
           lead_id?: string | null
           metadata?: Json | null
+          original_amount?: number | null
           paid?: boolean | null
           payment_amount?: number | null
           payment_id?: string | null
@@ -1905,14 +2018,17 @@ export type Database = {
         Update: {
           checked_in_at?: string | null
           cost_center_id?: string | null
+          coupon_id?: string | null
           cpf?: string | null
           created_at?: string
+          discount_applied?: number | null
           email?: string
           event_id?: string
           full_name?: string
           id?: string
           lead_id?: string | null
           metadata?: Json | null
+          original_amount?: number | null
           paid?: boolean | null
           payment_amount?: number | null
           payment_id?: string | null
@@ -1927,6 +2043,13 @@ export type Database = {
             columns: ["cost_center_id"]
             isOneToOne: false
             referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "event_coupons"
             referencedColumns: ["id"]
           },
           {
@@ -3457,6 +3580,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      apply_coupon: {
+        Args: {
+          p_coupon_id: string
+          p_discount: number
+          p_email: string
+          p_registration_id: string
+        }
+        Returns: boolean
+      }
       approve_community_request: {
         Args: { admin_notes?: string; request_id: string }
         Returns: Json
@@ -4043,6 +4175,15 @@ export type Database = {
           status: string
           test_name: string
         }[]
+      }
+      validate_coupon: {
+        Args: {
+          p_amount: number
+          p_code: string
+          p_email: string
+          p_event_id: string
+        }
+        Returns: Json
       }
       validate_cpf: { Args: { cpf_input: string }; Returns: boolean }
     }
