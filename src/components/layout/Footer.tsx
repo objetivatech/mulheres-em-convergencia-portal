@@ -30,6 +30,7 @@ const Footer = () => {
   const footerNavigation = [
     { name: 'Sobre', href: '/sobre' },
     { name: 'Diretório', href: '/diretorio' },
+    { name: 'Eventos', href: '/eventos' },
     { name: 'Comunidades', href: '/comunidades' },
     { name: 'Convergindo', href: '/convergindo' },
     { name: 'Contato', href: '/contato' },
