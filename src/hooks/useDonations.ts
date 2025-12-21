@@ -30,19 +30,25 @@ export interface Donation {
 export interface Sponsor {
   id: string;
   company_name: string;
-  contact_name: string | null;
+  trading_name: string | null;
+  contact_name: string;
   contact_email: string;
   contact_phone: string | null;
   cnpj: string | null;
-  sponsorship_tier: string;
-  sponsorship_value: number;
+  sponsorship_type: string;
+  sponsorship_name: string | null;
+  value: number | null;
+  value_type: string | null;
   status: string;
   start_date: string | null;
   end_date: string | null;
   logo_url: string | null;
   website_url: string | null;
-  benefits: string[];
+  social_links: Record<string, string> | null;
+  benefits: string[] | null;
+  notes: string | null;
   cost_center_id: string | null;
+  user_id: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
@@ -147,18 +153,18 @@ export const useDonations = () => {
         let query = supabase
           .from('sponsors')
           .select('*')
-          .order('sponsorship_value', { ascending: false });
+          .order('value', { ascending: false });
 
         if (filters?.status) {
           query = query.eq('status', filters.status);
         }
         if (filters?.tier) {
-          query = query.eq('sponsorship_tier', filters.tier);
+          query = query.eq('sponsorship_type', filters.tier);
         }
 
         const { data, error } = await query;
         if (error) throw error;
-        return data as unknown as Sponsor[];
+        return data as Sponsor[];
       },
       enabled: isAdmin,
     });
@@ -171,17 +177,17 @@ export const useDonations = () => {
           .from('sponsors')
           .insert({
             company_name: sponsor.company_name || '',
+            contact_name: sponsor.contact_name || '',
             contact_email: sponsor.contact_email || '',
-            sponsorship_tier: sponsor.sponsorship_tier || 'bronze',
+            sponsorship_type: sponsor.sponsorship_type || 'bronze',
             status: sponsor.status || 'pending',
-            sponsorship_value: sponsor.sponsorship_value || 0,
+            value: sponsor.value || 0,
             benefits: sponsor.benefits || [],
-            ...sponsor,
-          } as any)
+          })
           .select()
           .single();
         if (error) throw error;
-        return data as unknown as Sponsor;
+        return data as Sponsor;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['sponsors'] });

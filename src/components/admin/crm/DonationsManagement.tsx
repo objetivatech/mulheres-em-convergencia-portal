@@ -509,21 +509,21 @@ export const DonationsManagement: React.FC = () => {
             ) : (
               sponsorsList?.map((sponsor) => (
                 <Card key={sponsor.id} className="overflow-hidden">
-                  <div className={`h-2 ${tierColors[sponsor.tier]}`} />
+                  <div className={`h-2 ${tierColors[sponsor.sponsorship_type] || 'bg-gray-400'}`} />
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold">{sponsor.name}</h3>
-                        <p className="text-sm text-muted-foreground">{sponsor.email}</p>
+                        <h3 className="font-semibold">{sponsor.company_name}</h3>
+                        <p className="text-sm text-muted-foreground">{sponsor.contact_email}</p>
                       </div>
-                      <Badge className={tierColors[sponsor.tier]}>
-                        {tierLabels[sponsor.tier]}
+                      <Badge className={tierColors[sponsor.sponsorship_type] || 'bg-gray-400'}>
+                        {tierLabels[sponsor.sponsorship_type] || sponsor.sponsorship_type}
                       </Badge>
                     </div>
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Contribuição:</span>
-                        <span className="font-medium">{formatCurrency(sponsor.total_contribution)}</span>
+                        <span className="font-medium">{formatCurrency(sponsor.value || 0)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Status:</span>
