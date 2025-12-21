@@ -26,13 +26,18 @@ export const useEventFormFields = () => {
       queryKey: ['event-form-fields', eventId],
       queryFn: async () => {
         if (!eventId) return [];
+        console.log('[useFormFields] Buscando campos para evento:', eventId);
         const { data, error } = await supabase
           .from('event_form_fields')
           .select('*')
           .eq('event_id', eventId)
           .eq('active', true)
           .order('order_index', { ascending: true });
-        if (error) throw error;
+        if (error) {
+          console.error('[useFormFields] Erro ao buscar campos:', error);
+          throw error;
+        }
+        console.log('[useFormFields] Campos encontrados:', data?.length || 0);
         return data as EventFormField[];
       },
       enabled: !!eventId,
@@ -43,31 +48,48 @@ export const useEventFormFields = () => {
   const useCreateFormField = () => {
     return useMutation({
       mutationFn: async (field: Partial<EventFormField>) => {
+        console.log('[useCreateFormField] Criando campo para evento:', field.event_id);
+        
         // Get the max order_index for this event
-        const { data: existing } = await supabase
+        const { data: existing, error: orderError } = await supabase
           .from('event_form_fields')
           .select('order_index')
           .eq('event_id', field.event_id)
           .order('order_index', { ascending: false })
           .limit(1);
         
+        if (orderError) {
+          console.error('[useCreateFormField] Erro ao buscar order_index:', orderError);
+        }
+        
         const nextOrder = existing && existing.length > 0 ? (existing[0].order_index || 0) + 1 : 0;
+        console.log('[useCreateFormField] Próximo order_index:', nextOrder);
+        
+        const insertData = {
+          event_id: field.event_id,
+          field_name: field.field_name || `field_${Date.now()}`,
+          field_label: field.field_label || 'Novo Campo',
+          field_type: field.field_type || 'text',
+          required: field.required ?? false,
+          options: field.options || null,
+          order_index: nextOrder,
+          active: true,
+        };
+        
+        console.log('[useCreateFormField] Dados a inserir:', insertData);
         
         const { data, error } = await supabase
           .from('event_form_fields')
-          .insert({
-            event_id: field.event_id,
-            field_name: field.field_name || `field_${Date.now()}`,
-            field_label: field.field_label || 'Novo Campo',
-            field_type: field.field_type || 'text',
-            required: field.required ?? false,
-            options: field.options || null,
-            order_index: nextOrder,
-            active: true,
-          } as any)
+          .insert(insertData as any)
           .select()
           .single();
-        if (error) throw error;
+        
+        if (error) {
+          console.error('[useCreateFormField] Erro RLS/insert:', error);
+          throw error;
+        }
+        
+        console.log('[useCreateFormField] Campo criado com sucesso:', data);
         return data as EventFormField;
       },
       onSuccess: (data) => {
