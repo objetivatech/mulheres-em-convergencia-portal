@@ -57,11 +57,23 @@ Lista unificada de leads e usuários.
 
 ### 3. Pipeline de Vendas (`/admin/crm/pipeline`)
 
-Visualização Kanban dos negócios.
+Visualização Kanban dos negócios com suporte a pipelines customizáveis.
 
-#### Estágios
+#### Pipelines Disponíveis
+- **Vendas Geral**: Pipeline padrão de vendas
+- **Eventos**: Jornada de participantes de eventos
+- **Planos e Assinaturas**: Vendas de planos
+
+#### Criar Novo Pipeline
+1. Clique em "Configurar Pipelines"
+2. Clique no botão "+"
+3. Defina nome, tipo e descrição
+4. Adicione os estágios com cores personalizadas
+5. Salve
+
+#### Estágios (Pipeline Padrão)
 1. **Lead**: Primeiro contato
-2. **Qualificado**: Interesse confirmado
+2. **Contatado**: Contato realizado
 3. **Proposta**: Proposta enviada
 4. **Negociação**: Em negociação
 5. **Ganho**: Negócio fechado
@@ -70,11 +82,13 @@ Visualização Kanban dos negócios.
 #### Como Usar
 - **Arrastar e soltar**: Mova cards entre colunas
 - **Criar Deal**: Clique em "Novo Negócio"
+- **Selecionar Pipeline**: Use o seletor para alternar entre pipelines
 - **Editar**: Clique no card para abrir detalhes
 
 #### Campos do Deal
 - Título
 - Valor
+- Pipeline (opcional)
 - Contato associado
 - Data prevista de fechamento
 - Produto/Serviço
@@ -83,6 +97,12 @@ Visualização Kanban dos negócios.
 ### 4. Eventos (`/admin/crm/eventos`)
 
 Gestão de cursos, workshops e encontros.
+
+#### Página Pública
+Os eventos publicados aparecem automaticamente em `/eventos` no portal público, permitindo que visitantes:
+- Visualizem eventos disponíveis
+- Filtrem por tipo e formato
+- Se inscrevam diretamente
 
 #### Criar Evento
 1. Clique em "Novo Evento"
@@ -95,6 +115,11 @@ Gestão de cursos, workshops e encontros.
    - Preço (ou marque como gratuito)
    - Limite de participantes
    - Centro de Custo
+3. Mude o status para "Publicado" para exibir no portal
+
+#### Link Público
+Após publicar, o evento estará disponível em:
+`/eventos/{slug-do-evento}`
 
 #### Gerenciar Inscrições
 - Visualize lista de inscritos
