@@ -1235,6 +1235,7 @@ export type Database = {
           lead_id: string | null
           lost_reason: string | null
           metadata: Json | null
+          pipeline_id: string | null
           product_id: string | null
           product_type: string | null
           stage: string
@@ -1256,6 +1257,7 @@ export type Database = {
           lead_id?: string | null
           lost_reason?: string | null
           metadata?: Json | null
+          pipeline_id?: string | null
           product_id?: string | null
           product_type?: string | null
           stage?: string
@@ -1277,6 +1279,7 @@ export type Database = {
           lead_id?: string | null
           lost_reason?: string | null
           metadata?: Json | null
+          pipeline_id?: string | null
           product_id?: string | null
           product_type?: string | null
           stage?: string
@@ -1299,6 +1302,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
             referencedColumns: ["id"]
           },
         ]
@@ -1483,6 +1493,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_pipelines: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          pipeline_type: string | null
+          stages: Json
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          pipeline_type?: string | null
+          stages?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          pipeline_type?: string | null
+          stages?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       crm_tags: {
         Row: {
@@ -1769,6 +1812,56 @@ export type Database = {
           variables?: Json | null
         }
         Relationships: []
+      }
+      event_form_fields: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          event_id: string | null
+          field_label: string
+          field_name: string
+          field_type: string
+          id: string
+          options: Json | null
+          order_index: number | null
+          required: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          event_id?: string | null
+          field_label: string
+          field_name: string
+          field_type?: string
+          id?: string
+          options?: Json | null
+          order_index?: number | null
+          required?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          event_id?: string | null
+          field_label?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          options?: Json | null
+          order_index?: number | null
+          required?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_form_fields_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_registrations: {
         Row: {

@@ -1,21 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useCRM } from '@/hooks/useCRM';
+import { useCRM, CRMDeal } from '@/hooks/useCRM';
+import { usePipelines } from '@/hooks/usePipelines';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 interface DealFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  contactId: string;
-  contactType: 'lead' | 'user';
+  deal?: CRMDeal;
+  contactId?: string;
+  contactType?: 'lead' | 'user';
   cpf?: string | null;
-  contactName: string;
+  contactName?: string;
 }
 
 const productTypes = [
@@ -29,7 +31,7 @@ const productTypes = [
   { value: 'outro', label: 'Outro' },
 ];
 
-const stages = [
+const defaultStages = [
   { value: 'lead', label: 'Lead' },
   { value: 'contacted', label: 'Contatado' },
   { value: 'proposal', label: 'Proposta' },
@@ -38,21 +40,53 @@ const stages = [
   { value: 'lost', label: 'Perdido' },
 ];
 
-export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, contactName }: DealFormProps) => {
+export const DealForm = ({ 
+  open, 
+  onOpenChange, 
+  deal,
+  contactId, 
+  contactType, 
+  cpf, 
+  contactName = 'Novo Cliente' 
+}: DealFormProps) => {
   const { toast } = useToast();
-  const { useCreateDeal, useCostCenters } = useCRM();
+  const { useCreateDeal, useUpdateDeal, useCostCenters } = useCRM();
+  const { usePipelinesList } = usePipelines();
   const createDeal = useCreateDeal();
+  const updateDeal = useUpdateDeal();
   const { data: costCenters } = useCostCenters();
+  const { data: pipelines } = usePipelinesList();
+
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string>('');
+  const [stages, setStages] = useState(defaultStages);
 
   const [formData, setFormData] = useState({
-    title: `Negócio com ${contactName}`,
-    description: '',
-    value: '',
-    stage: 'lead',
-    product_type: 'assinatura',
-    expected_close_date: '',
-    cost_center_id: '',
+    title: deal?.title || `Negócio com ${contactName}`,
+    description: deal?.description || '',
+    value: deal?.value?.toString() || '',
+    stage: deal?.stage || 'lead',
+    product_type: deal?.product_type || 'assinatura',
+    expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
+    cost_center_id: deal?.cost_center_id || '',
+    pipeline_id: '',
   });
+
+  // Update stages when pipeline changes
+  useEffect(() => {
+    if (selectedPipelineId && pipelines) {
+      const pipeline = pipelines.find(p => p.id === selectedPipelineId);
+      if (pipeline?.stages) {
+        setStages(pipeline.stages.map(s => ({ value: s.id, label: s.name })));
+      }
+    } else {
+      setStages(defaultStages);
+    }
+  }, [selectedPipelineId, pipelines]);
+
+  const handlePipelineChange = (pipelineId: string) => {
+    setSelectedPipelineId(pipelineId);
+    setFormData(prev => ({ ...prev, pipeline_id: pipelineId }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,35 +97,32 @@ export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, cont
     }
 
     try {
-      await createDeal.mutateAsync({
+      const dealData: any = {
         title: formData.title,
         description: formData.description || null,
         value: parseFloat(formData.value) || 0,
-        stage: formData.stage as any,
+        stage: formData.stage,
         product_type: formData.product_type,
         expected_close_date: formData.expected_close_date || null,
         cost_center_id: formData.cost_center_id || null,
-        lead_id: contactType === 'lead' ? contactId : null,
-        user_id: contactType === 'user' ? contactId : null,
-        cpf: cpf || null,
-      });
+        pipeline_id: formData.pipeline_id || null,
+        lead_id: contactType === 'lead' ? contactId : deal?.lead_id || null,
+        user_id: contactType === 'user' ? contactId : deal?.user_id || null,
+        cpf: cpf || deal?.cpf || null,
+      };
+
+      if (deal) {
+        await updateDeal.mutateAsync({ id: deal.id, ...dealData });
+        toast({ title: 'Negócio atualizado com sucesso' });
+      } else {
+        await createDeal.mutateAsync(dealData);
+        toast({ title: 'Negócio criado com sucesso' });
+      }
       
-      toast({ title: 'Negócio criado com sucesso' });
       onOpenChange(false);
-      
-      // Reset form
-      setFormData({
-        title: `Negócio com ${contactName}`,
-        description: '',
-        value: '',
-        stage: 'lead',
-        product_type: 'assinatura',
-        expected_close_date: '',
-        cost_center_id: '',
-      });
     } catch (error: any) {
       toast({
-        title: 'Erro ao criar negócio',
+        title: deal ? 'Erro ao atualizar negócio' : 'Erro ao criar negócio',
         description: error.message,
         variant: 'destructive',
       });
@@ -102,9 +133,9 @@ export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, cont
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Novo Negócio</DialogTitle>
+          <DialogTitle>{deal ? 'Editar Negócio' : 'Novo Negócio'}</DialogTitle>
           <DialogDescription>
-            Crie um novo negócio para acompanhar no pipeline
+            {deal ? 'Atualize as informações do negócio' : 'Crie um novo negócio para acompanhar no pipeline'}
           </DialogDescription>
         </DialogHeader>
 
@@ -119,6 +150,26 @@ export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, cont
                 placeholder="Título do negócio"
                 required
               />
+            </div>
+
+            <div>
+              <Label htmlFor="pipeline">Pipeline</Label>
+              <Select
+                value={selectedPipelineId}
+                onValueChange={handlePipelineChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um pipeline (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Pipeline Padrão</SelectItem>
+                  {pipelines?.map((pipeline) => (
+                    <SelectItem key={pipeline.id} value={pipeline.id}>
+                      {pipeline.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -139,7 +190,7 @@ export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, cont
                 <Label htmlFor="stage">Estágio</Label>
                 <Select
                   value={formData.stage}
-                  onValueChange={(value) => setFormData({ ...formData, stage: value })}
+                  onValueChange={(value) => setFormData({ ...formData, stage: value as any })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -219,9 +270,9 @@ export const DealForm = ({ open, onOpenChange, contactId, contactType, cpf, cont
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={createDeal.isPending}>
-              {createDeal.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Criar Negócio
+            <Button type="submit" disabled={createDeal.isPending || updateDeal.isPending}>
+              {(createDeal.isPending || updateDeal.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {deal ? 'Atualizar' : 'Criar'} Negócio
             </Button>
           </DialogFooter>
         </form>
