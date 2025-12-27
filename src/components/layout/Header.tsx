@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Linkedin, Facebook, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,9 +10,70 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from '@/components/ui/navigation-menu';
 import { useAuth } from '@/hooks/useAuth';
 import LogoComponent from './LogoComponent';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { cn } from '@/lib/utils';
+
+interface NavItem {
+  label: string;
+  href: string;
+  active: boolean;
+  children?: NavItem[];
+}
+
+interface MobileSubmenuProps {
+  item: NavItem;
+  isActive: (path: string) => boolean;
+  onItemClick: () => void;
+}
+
+function MobileSubmenu({ item, isActive, onItemClick }: MobileSubmenuProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center justify-between w-full px-3 py-2 text-base font-medium rounded-md transition-colors",
+          "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        {item.label}
+        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      {isOpen && (
+        <div className="ml-4 mt-1 space-y-1 border-l-2 border-border pl-2">
+          {item.children?.filter(child => child.active).map((child) => (
+            <Link
+              key={child.href}
+              to={child.href}
+              onClick={onItemClick}
+              className={cn(
+                "block px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                isActive(child.href)
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,21 +97,53 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`text-base font-medium transition-colors hover:text-primary ${
-                  isActive(item.href)
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <NavigationMenu className="hidden md:flex">
+            <NavigationMenuList>
+              {navigation.map((item) => (
+                <NavigationMenuItem key={item.href || item.label}>
+                  {item.children && item.children.length > 0 ? (
+                    <>
+                      <NavigationMenuTrigger className={cn(
+                        "text-base font-medium bg-transparent",
+                        isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
+                      )}>
+                        {item.label}
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid w-48 gap-1 p-2">
+                          {item.children.filter(child => child.active).map((child) => (
+                            <li key={child.href}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to={child.href}
+                                  className={cn(
+                                    "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                    isActive(child.href) ? 'bg-accent text-primary' : ''
+                                  )}
+                                >
+                                  <span className="text-sm font-medium">{child.label}</span>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </>
+                  ) : (
+                    <Link to={item.href}>
+                      <NavigationMenuLink className={cn(
+                        navigationMenuTriggerStyle(),
+                        "text-base font-medium bg-transparent",
+                        isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
+                      )}>
+                        {item.label}
+                      </NavigationMenuLink>
+                    </Link>
+                  )}
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
 
           {/* Right side: Mobile Menu Button + User Menu */}
           <div className="flex items-center space-x-2">
@@ -132,20 +225,30 @@ export function Header() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border animate-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-1">
               {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-3 py-2 text-base font-medium rounded-md transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                  }`}
-                >
-                  {item.label}
-                </Link>
+                <div key={item.href || item.label}>
+                  {item.children && item.children.length > 0 ? (
+                    <MobileSubmenu 
+                      item={item} 
+                      isActive={isActive} 
+                      onItemClick={() => setIsMobileMenuOpen(false)} 
+                    />
+                  ) : (
+                    <Link
+                      to={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "block px-3 py-2 text-base font-medium rounded-md transition-colors",
+                        isActive(item.href)
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
               ))}
             </div>
           </nav>

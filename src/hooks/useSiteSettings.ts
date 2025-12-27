@@ -20,6 +20,7 @@ interface NavigationMenu {
   label: string;
   href: string;
   active: boolean;
+  children?: NavigationMenu[];
 }
 
 export const useSiteSettings = () => {
