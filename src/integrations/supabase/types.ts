@@ -2229,6 +2229,51 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_pages: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          product_id: string | null
+          slug: string
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          slug: string
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          slug?: string
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mailrelay_sync_log: {
         Row: {
           created_at: string | null
