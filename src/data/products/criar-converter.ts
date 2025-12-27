@@ -6,14 +6,14 @@ import { LandingPageContent } from '@/types/landing-page';
  */
 export const criarConverterContent: LandingPageContent = {
   product: {
-    id: 'criar-converter-2025',
+    id: 'criar-converter-2026',
     slug: 'criar-converter',
     name: 'Método Criar & Converter',
     tagline: 'Imersão presencial de marketing para mulheres empreendedoras',
     price: 297.00,
     paymentDescription: 'Método Criar & Converter - Imersão Presencial',
     eventDates: '21, 22 e 23 de janeiro',
-    eventDuration: '20 horas',
+    eventDuration: '+20 horas',
     eventFormat: 'presencial',
     eventLocation: 'A definir',
   },
@@ -80,11 +80,12 @@ export const criarConverterContent: LandingPageContent = {
   included: {
     title: 'O Que Você Vai Receber',
     items: [
-      { text: 'Curso presencial de 03 dias (20h de imersão)', highlight: true },
+      { text: 'Curso presencial de 03 dias', highlight: true },
       { text: 'Datas: 21, 22 e 23 de janeiro' },
       { text: 'Material didático + brindes exclusivos' },
       { text: '03 mentorias online em grupo', highlight: true },
       { text: 'Grupo de networking no WhatsApp' },
+      { text: 'Mais de 20 horas de Conteúdos Exclusivos', highlight: true },
       { text: 'Aula bônus online e ao vivo sobre SEO com especialista', isBonus: true },
     ],
   },
@@ -115,8 +116,8 @@ export const criarConverterContent: LandingPageContent = {
 
   eventDetails: {
     title: 'Detalhes do Evento',
-    dates: '21, 22 e 23 de janeiro de 2025',
-    duration: '20 horas de imersão',
+    dates: '21, 22 e 23 de janeiro de 2026',
+    duration: '+ de 20 horas de conteúdos',
     format: 'Presencial',
     location: 'A confirmar',
   },
