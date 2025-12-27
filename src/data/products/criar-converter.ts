@@ -92,7 +92,7 @@ export const criarConverterContent: LandingPageContent = {
   targetAudience: {
     title: 'Para Quem É o Criar & Converter',
     profiles: [
-      'Mulheres empreendedoras 40+',
+      'Mulheres empreendedoras',
       'Quem precisa aprender marketing e estratégia',
       'Quem se sente perdida sobre o que e como postar',
       'Quem não gosta de redes sociais, mas precisa aprender',
