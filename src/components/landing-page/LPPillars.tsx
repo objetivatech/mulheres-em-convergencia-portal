@@ -19,7 +19,7 @@ export const LPPillars = ({ content }: LPPillarsProps) => {
         <div className="max-w-5xl mx-auto space-y-12">
           {/* Title */}
           <h2 className="text-2xl md:text-4xl font-bold text-center text-foreground">
-            🧩 {content.title}
+            💪 {content.title}
           </h2>
 
           {/* Pillars Grid */}
