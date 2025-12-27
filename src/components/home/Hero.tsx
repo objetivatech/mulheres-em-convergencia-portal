@@ -57,9 +57,9 @@ const Hero = () => {
                   <div className="text-white text-center space-y-4">
                     <div className="text-2xl lg:text-3xl font-bold">MEC</div>
                     <div className="text-sm lg:text-base opacity-90">
-                      Conectando<br />
                       Mulheres<br />
-                      Empreendedoras
+                      Empreendedoras<br />
+                      Conectadas
                     </div>
                   </div>
                 </div>
