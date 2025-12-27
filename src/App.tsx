@@ -16,6 +16,7 @@ import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import Planos from './pages/Planos';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
+import CriarConverterPage from './pages/CriarConverterPage';
 import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
@@ -113,6 +114,7 @@ function AppContent() {
         <Route path="/planos" element={<Planos />} />
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
+        <Route path="/criar-converter" element={<CriarConverterPage />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
