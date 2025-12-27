@@ -12,7 +12,7 @@ export const LPMethod = ({ content }: LPMethodProps) => {
         <div className="max-w-3xl mx-auto text-center space-y-8">
           {/* Title */}
           <h2 className="text-2xl md:text-4xl font-bold text-foreground">
-            🧠 {content.title}
+            💎 {content.title}
           </h2>
 
           {/* Description */}
