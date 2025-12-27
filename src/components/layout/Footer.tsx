@@ -3,11 +3,13 @@ import { Heart } from 'lucide-react';
 import LogoComponent from './LogoComponent';
 import { TagCloud } from '@/components/blog/TagCloud';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useFooterNavigation } from '@/hooks/useFooterNavigation';
 import { getSocialIcon } from '@/lib/socialIconMap';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { settings } = useSiteSettings();
+  const { footerNavigation, footerLegal } = useFooterNavigation();
 
   // Fallback social links (mantém compatibilidade se não houver configurações)
   const defaultSocialLinks = [
@@ -27,21 +29,6 @@ const Footer = () => {
         }))
     : defaultSocialLinks;
 
-  const footerNavigation = [
-    { name: 'Sobre', href: '/sobre' },
-    { name: 'Diretório', href: '/diretorio' },
-    { name: 'Eventos', href: '/eventos' },
-    { name: 'Comunidades', href: '/comunidades' },
-    { name: 'Convergindo', href: '/convergindo' },
-    { name: 'Contato', href: '/contato' },
-  ];
-
-  const legalLinks = [
-    { name: 'Termos de Uso', href: '/termos-de-uso' },
-    { name: 'Política de Privacidade', href: '/politica-de-privacidade' },
-    { name: 'Política de Cookies', href: '/politica-de-cookies' },
-  ];
-
   const footerText = settings?.footer_text || `© ${currentYear} Mulheres em Convergência. Todos os direitos reservados.`;
 
   return (
@@ -60,17 +47,17 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Links de Navegação */}
+          {/* Links de Navegação - Agora dinâmicos */}
           <div className="space-y-4">
             <h3 className="font-semibold text-foreground">Navegação</h3>
             <nav className="flex flex-col space-y-2">
               {footerNavigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
                   className="text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
             </nav>
@@ -115,17 +102,17 @@ const Footer = () => {
             </p>
           </div>
           
-          {/* Links Jurídicos */}
+          {/* Links Jurídicos - Agora dinâmicos */}
           <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-            {legalLinks.map((link, index) => (
-              <span key={link.name} className="flex items-center">
+            {footerLegal.map((link, index) => (
+              <span key={link.href} className="flex items-center">
                 <Link
                   to={link.href}
                   className="hover:text-primary transition-colors"
                 >
-                  {link.name}
+                  {link.label}
                 </Link>
-                {index < legalLinks.length - 1 && (
+                {index < footerLegal.length - 1 && (
                   <span className="mx-2 text-border">|</span>
                 )}
               </span>

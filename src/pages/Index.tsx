@@ -2,6 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from "@/components/layout/Layout";
 import Hero from "@/components/home/Hero";
+import EventsAndLPsSlider from "@/components/home/EventsAndLPsSlider";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
 import BusinessShowcase from "@/components/home/BusinessShowcase";
 import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
@@ -41,6 +42,9 @@ const Index = () => {
       </Helmet>
       
       <Hero />
+      
+      {/* Slider de Eventos e LPs - Logo após o Hero */}
+      <EventsAndLPsSlider />
       
       <BusinessShowcase
         title="Empreendedoras Destaque"
