@@ -9,3 +9,5 @@ export { LPTransformation } from './LPTransformation';
 export { LPEventDetails } from './LPEventDetails';
 export { LPInvestment } from './LPInvestment';
 export { LPCheckoutForm } from './LPCheckoutForm';
+export { LPTestimonials } from './LPTestimonials';
+export type { Testimonial, VideoTestimonial, TextTestimonial, TestimonialsContent } from './LPTestimonials';
