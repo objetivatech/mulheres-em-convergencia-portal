@@ -19,11 +19,11 @@ export const criarConverterContent: LandingPageContent = {
   },
 
   hero: {
-    headline: 'Crie conteúdo com estratégia. Converta ideias em vendas.',
-    subheadline: 'Pare de se sentir perdida no marketing.',
+    headline: 'Você cria conteúdo, mas não consegue vender?',
+    subheadline: 'Aprenda a transformar divulgação confusa em vendas reais com método, clareza e estratégia.',
     description: 'O Método Criar & Converter é uma imersão presencial criada para mulheres empreendedoras que querem organizar sua comunicação, criar conteúdos estratégicos e transformar isso em resultado real para seus negócios.',
-    ctaPrimary: 'QUERO PARTICIPAR DO MÉTODO CRIAR & CONVERTER',
-    ctaSecondary: 'Saiba mais sobre o método',
+    ctaPrimary: 'QUERO APRENDER A VENDER COM ESTRATÉGIA',
+    ctaSecondary: 'Garantir minha vaga agora',
   },
 
   painPoints: {
@@ -34,6 +34,7 @@ export const criarConverterContent: LandingPageContent = {
       { text: 'Não gosta de redes sociais, mas sabe que precisa delas' },
       { text: 'Sente que perde tempo criando conteúdo sem resultado' },
       { text: 'Falta clareza, organização e segurança para vender' },
+      { text: '👉 Se você se identificou com pelo menos uma dessas situações, esse workshop foi criado para você.' },
     ],
     closingText: 'O problema não é você.',
     closingHighlight: 'É a falta de método.',
@@ -41,7 +42,7 @@ export const criarConverterContent: LandingPageContent = {
 
   method: {
     title: 'O Método Criar & Converter',
-    description: 'O Método Criar & Converter não entrega fórmulas prontas.',
+    description: 'O Método Criar & Converter entrega um caminho claro para vender, mesmo que você não goste de marketing..',
     benefits: [
       'Criar com clareza',
       'Organizar sua comunicação',
@@ -80,13 +81,13 @@ export const criarConverterContent: LandingPageContent = {
   included: {
     title: 'O Que Você Vai Receber',
     items: [
-      { text: 'Curso presencial de 03 dias', highlight: true },
-      { text: 'Datas: 21, 22 e 23 de janeiro' },
-      { text: 'Material didático + brindes exclusivos' },
-      { text: '03 mentorias online em grupo', highlight: true },
+      { text: 'Workshop presencial de 03 dias', highlight: true },
+      { text: 'Método Criar & Converter (passo a passo)' },
+      { text: 'Materiais práticos e aplicáveis' },
+      { text: '03 Mentorias em grupo', highlight: true },
       { text: 'Grupo de networking no WhatsApp' },
       { text: 'Mais de 20 horas de Conteúdos Exclusivos', highlight: true },
-      { text: 'Aula bônus online e ao vivo sobre SEO com especialista', isBonus: true },
+      { text: 'Aula bônus online e ao vivo sobre SEO e posicionamento online com o especialista Diogo Devitte', isBonus: true },
     ],
   },
 
@@ -100,6 +101,7 @@ export const criarConverterContent: LandingPageContent = {
       'Quem valoriza aprendizado prático e acompanhamento',
       'Quem quer usar ferramentas digitais e IA para ganhar produtividade',
     ],
+    closingText: 'Se você quer vender com mais segurança, sem depender de sorte ou indicação, esse método é para você.',
   },
 
   transformation: {
@@ -112,6 +114,7 @@ export const criarConverterContent: LandingPageContent = {
       { text: 'Para de perder tempo' },
       { text: 'Transforma ideias em oportunidades reais' },
     ],
+    closingText: 'Você não vai sair sabendo mais. Vai sair vendendo melhor.',
   },
 
   eventDetails: {
