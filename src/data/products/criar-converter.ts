@@ -101,7 +101,7 @@ export const criarConverterContent: LandingPageContent = {
       'Quem valoriza aprendizado prático e acompanhamento',
       'Quem quer usar ferramentas digitais e IA para ganhar produtividade',
     ],
-    closingText: 'Se você quer vender com mais segurança, sem depender de sorte ou indicação, esse método é para você.',
+    ctaPrimary: 'Se você quer vender com mais segurança, sem depender de sorte ou indicação, esse método é para você.',
   },
 
   transformation: {
@@ -114,7 +114,7 @@ export const criarConverterContent: LandingPageContent = {
       { text: 'Para de perder tempo' },
       { text: 'Transforma ideias em oportunidades reais' },
     ],
-    closingText: 'Você não vai sair sabendo mais. Vai sair vendendo melhor.',
+    ctaPrimary: 'Você não vai sair sabendo mais. Vai sair vendendo melhor.',
   },
 
   eventDetails: {
