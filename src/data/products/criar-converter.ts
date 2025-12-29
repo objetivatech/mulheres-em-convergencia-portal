@@ -150,22 +150,22 @@ export const criarConverterContent: LandingPageContent = {
       
       // Exemplo de depoimento em texto
       {
-        type: 'text',
-        quote: 'Antes do método, eu postava sem estratégia e não via resultado. Agora tenho clareza do que fazer e minhas vendas triplicaram!',
+        type: 'video',
+        youtubeUrl: 'https://youtube.com/shorts/HAIDWti3Rig',
         name: 'Ana Paula',
-        role: 'Consultora de Imagem',
+        role: 'Thrift Shop',
       },
       {
-        type: 'text',
-        quote: 'Finalmente entendi como criar conteúdo que vende. O método é prático e transformador.',
+        type: 'video',
+        youtubeUrl: 'https://youtube.com/shorts/QTwXM1Pe5is',
         name: 'Juliana Costa',
-        role: 'Coach de Carreira',
+        role: 'Revitalize',
       },
       {
-        type: 'text',
-        quote: 'Saí do workshop com um calendário de conteúdo pronto e muita confiança para vender.',
-        name: 'Carla Mendes',
-        role: 'Artesã',
+        type: 'video',
+        youtubeUrl: 'https://youtube.com/shorts/ypqKdDRq-zw',
+        name: 'Fabiane Roza',
+        role: 'Diretora Mary kay',
       },
     ],
   },
