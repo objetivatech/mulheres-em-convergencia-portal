@@ -152,14 +152,14 @@ export const criarConverterContent: LandingPageContent = {
       {
         type: 'video',
         youtubeUrl: 'https://youtube.com/shorts/HAIDWti3Rig',
-        name: 'Ana Paula',
+        name: 'Gabriela Rubatino',
         role: 'Thrift Shop',
       },
       {
         type: 'video',
         youtubeUrl: 'https://youtube.com/shorts/QTwXM1Pe5is',
-        name: 'Juliana Costa',
-        role: 'Revitalize',
+        name: 'Juliana Magali',
+        role: 'Revitalize Produtos Naturais',
       },
       {
         type: 'video',
