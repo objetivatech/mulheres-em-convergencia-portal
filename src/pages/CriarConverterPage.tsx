@@ -13,6 +13,7 @@ import {
   LPEventDetails,
   LPInvestment,
   LPCheckoutForm,
+  LPTestimonials,
 } from '@/components/landing-page';
 
 const CriarConverterPage = () => {
@@ -51,6 +52,12 @@ const CriarConverterPage = () => {
         <LPIncluded content={content.included} />
         <LPTargetAudience content={content.targetAudience} />
         <LPTransformation content={content.transformation} />
+        
+        {/* Depoimentos - aparece apenas se houver conteúdo */}
+        {content.testimonials && content.testimonials.testimonials.length > 0 && (
+          <LPTestimonials content={content.testimonials} />
+        )}
+        
         <LPEventDetails content={content.eventDetails} />
         <LPInvestment 
           content={content.investment} 

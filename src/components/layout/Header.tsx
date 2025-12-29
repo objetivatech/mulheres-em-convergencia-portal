@@ -42,16 +42,29 @@ function MobileSubmenu({ item, isActive, onItemClick }: MobileSubmenuProps) {
   
   return (
     <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "flex items-center justify-between w-full px-3 py-2 text-base font-medium rounded-md transition-colors",
-          "text-muted-foreground hover:bg-accent hover:text-foreground"
-        )}
-      >
-        {item.label}
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
-      </button>
+      <div className="flex items-center">
+        <Link
+          to={item.href}
+          onClick={onItemClick}
+          className={cn(
+            "flex-1 px-3 py-2 text-base font-medium rounded-l-md transition-colors",
+            isActive(item.href)
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          )}
+        >
+          {item.label}
+        </Link>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            "px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground rounded-r-md transition-colors"
+          )}
+          aria-label="Expandir submenu"
+        >
+          <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+        </button>
+      </div>
       {isOpen && (
         <div className="ml-4 mt-1 space-y-1 border-l-2 border-border pl-2">
           {item.children?.filter(child => child.active).map((child) => (
@@ -103,14 +116,29 @@ export function Header() {
                 <NavigationMenuItem key={item.href || item.label}>
                   {item.children && item.children.length > 0 ? (
                     <>
-                      <NavigationMenuTrigger className={cn(
-                        "text-base font-medium bg-transparent",
-                        isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
-                      )}>
-                        {item.label}
+                      <NavigationMenuTrigger 
+                        className={cn(
+                          "text-base font-medium bg-transparent gap-1",
+                          isActive(item.href) ? 'text-primary' : 'text-muted-foreground'
+                        )}
+                        onClick={(e) => {
+                          // Allow click on the text to navigate
+                          const target = e.target as HTMLElement;
+                          if (!target.closest('svg')) {
+                            window.location.href = item.href;
+                          }
+                        }}
+                      >
+                        <Link 
+                          to={item.href} 
+                          className="hover:text-primary transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {item.label}
+                        </Link>
                       </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-48 gap-1 p-2">
+                      <NavigationMenuContent className="left-0">
+                        <ul className="grid w-52 gap-1 p-2">
                           {item.children.filter(child => child.active).map((child) => (
                             <li key={child.href}>
                               <NavigationMenuLink asChild>

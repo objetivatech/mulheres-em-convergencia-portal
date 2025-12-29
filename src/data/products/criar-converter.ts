@@ -1,4 +1,4 @@
-import { LandingPageContent } from '@/types/landing-page';
+import { LandingPageContent, TestimonialsContent } from '@/types/landing-page';
 
 /**
  * Configuração do Produto: Método Criar & Converter
@@ -131,5 +131,42 @@ export const criarConverterContent: LandingPageContent = {
     priceValue: 297.00,
     description: 'Uma imersão completa para parar de errar, parar de improvisar e começar a trabalhar com método, clareza e estratégia.',
     ctaText: 'GARANTIR MINHA VAGA AGORA',
+  },
+
+  // Seção de Depoimentos (opcional)
+  // Para adicionar vídeos: use youtubeUrl com links do YouTube, Shorts ou apenas o ID
+  // Para adicionar texto: use quote com o depoimento
+  testimonials: {
+    title: 'O Que Dizem Nossas Alunas',
+    subtitle: 'Veja as transformações de quem já passou pelo método',
+    testimonials: [
+      // Exemplo de depoimento em vídeo (YouTube Shorts)
+      // {
+      //   type: 'video',
+      //   youtubeUrl: 'https://youtube.com/shorts/VIDEO_ID',
+      //   name: 'Maria Silva',
+      //   role: 'Empreendedora Digital',
+      // },
+      
+      // Exemplo de depoimento em texto
+      {
+        type: 'text',
+        quote: 'Antes do método, eu postava sem estratégia e não via resultado. Agora tenho clareza do que fazer e minhas vendas triplicaram!',
+        name: 'Ana Paula',
+        role: 'Consultora de Imagem',
+      },
+      {
+        type: 'text',
+        quote: 'Finalmente entendi como criar conteúdo que vende. O método é prático e transformador.',
+        name: 'Juliana Costa',
+        role: 'Coach de Carreira',
+      },
+      {
+        type: 'text',
+        quote: 'Saí do workshop com um calendário de conteúdo pronto e muita confiança para vender.',
+        name: 'Carla Mendes',
+        role: 'Artesã',
+      },
+    ],
   },
 };

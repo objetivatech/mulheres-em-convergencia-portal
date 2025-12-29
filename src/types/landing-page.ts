@@ -70,6 +70,7 @@ export interface IncludedContent {
 export interface TargetAudienceContent {
   title: string;
   profiles: string[];
+  ctaPrimary?: string;
 }
 
 export interface Transformation {
@@ -79,6 +80,7 @@ export interface Transformation {
 export interface TransformationContent {
   title: string;
   transformations: Transformation[];
+  ctaPrimary?: string;
 }
 
 export interface EventDetailsContent {
@@ -97,6 +99,30 @@ export interface InvestmentContent {
   ctaText: string;
 }
 
+// Tipos para Depoimentos
+export interface VideoTestimonial {
+  type: 'video';
+  youtubeUrl: string;
+  name?: string;
+  role?: string;
+}
+
+export interface TextTestimonial {
+  type: 'text';
+  quote: string;
+  name: string;
+  role?: string;
+  avatarUrl?: string;
+}
+
+export type Testimonial = VideoTestimonial | TextTestimonial;
+
+export interface TestimonialsContent {
+  title: string;
+  subtitle?: string;
+  testimonials: Testimonial[];
+}
+
 export interface LandingPageContent {
   product: ProductConfig;
   hero: HeroContent;
@@ -108,4 +134,5 @@ export interface LandingPageContent {
   transformation: TransformationContent;
   eventDetails: EventDetailsContent;
   investment: InvestmentContent;
+  testimonials?: TestimonialsContent;
 }
