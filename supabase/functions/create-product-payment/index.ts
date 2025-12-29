@@ -92,7 +92,13 @@ serve(async (req) => {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 3);
 
-    const paymentPayload = {
+    // Calculate max installments based on minimum installment value of R$20
+    const MIN_INSTALLMENT_VALUE = 20;
+    const MAX_INSTALLMENTS = 12;
+    const calculatedMaxInstallments = Math.floor(product_price / MIN_INSTALLMENT_VALUE);
+    const maxInstallmentCount = Math.min(Math.max(1, calculatedMaxInstallments), MAX_INSTALLMENTS);
+
+    const paymentPayload: Record<string, any> = {
       customer: customerId,
       billingType: "UNDEFINED",
       value: product_price,
@@ -100,6 +106,12 @@ serve(async (req) => {
       description: product_description || product_name,
       externalReference: `product_${product_id}_${Date.now()}`,
     };
+
+    // Enable installments for credit card if value allows (minimum R$20 per installment)
+    if (maxInstallmentCount > 1) {
+      paymentPayload.maxInstallmentCount = maxInstallmentCount;
+      logStep("Installments enabled", { maxInstallments: maxInstallmentCount, minInstallmentValue: MIN_INSTALLMENT_VALUE });
+    }
 
     logStep("Creating payment", paymentPayload);
 
