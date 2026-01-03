@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { crmIntegration } from '@/hooks/useCRMIntegration';
+import slugify from 'slugify';
 
 export interface Event {
   id: string;
@@ -110,7 +111,14 @@ export const useEvents = () => {
   const useCreateEvent = () => {
     return useMutation({
       mutationFn: async (event: Partial<Event>) => {
-        const slug = event.slug || event.title?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || `evento-${Date.now()}`;
+        // Generate slug using slugify for proper handling of accents and special chars
+        const baseSlug = event.slug || slugify(event.title || 'evento', { 
+          lower: true, 
+          strict: true,
+          locale: 'pt'
+        });
+        const slug = `${baseSlug}-${Date.now()}`;
+        
         const { data, error } = await supabase
           .from('events')
           .insert({
