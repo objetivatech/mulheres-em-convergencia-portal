@@ -118,10 +118,10 @@ Eventos (cursos, workshops, palestras).
 |-------|------|-----------|
 | id | UUID | Identificador único |
 | title | TEXT | Título |
-| type | TEXT | Tipo (curso, workshop, palestra, encontro) |
+| type | TEXT | Tipo (curso, workshop, palestra, encontro, encontro_networking, mentoria, webinar, conferencia, outro) |
 | format | TEXT | Formato (online, presencial, hibrido) |
 | date_start | TIMESTAMP | Data início |
-| date_end | TIMESTAMP | Data fim |
+| date_end | TIMESTAMP | Data fim (opcional) |
 | price | DECIMAL | Preço |
 | free | BOOLEAN | Se é gratuito |
 | max_participants | INTEGER | Limite de participantes |

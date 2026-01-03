@@ -22,7 +22,7 @@ O sistema de eventos permite:
 ### Lista de Eventos (`/eventos`)
 
 Página pública que exibe todos os eventos publicados com:
-- Filtros por tipo (workshop, curso, palestra, meetup, conferência)
+- Filtros por tipo (workshop, curso, palestra, encontro, encontro de networking, conferência)
 - Filtros por formato (online, presencial, híbrido)
 - Busca por texto
 - Cards com informações resumidas
@@ -104,11 +104,12 @@ Quando um usuário se inscreve em um evento:
 
 ## Boas Práticas
 
-1. **Sempre preencher o slug** - URL amigável para SEO
+1. **Slug**: se não for informado, o sistema gera automaticamente a partir do título
 2. **Definir limite de vagas** - Controle de capacidade
 3. **Usar imagens de qualidade** - Aspecto visual atrativo
 4. **Descrição completa** - Todas as informações necessárias
 5. **Publicar com antecedência** - Tempo para divulgação
+6. **Campos opcionais vazios viram `null`**: ex. data/hora fim (`date_end`)
 
 ## Navegação
 

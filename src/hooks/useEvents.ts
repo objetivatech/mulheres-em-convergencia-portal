@@ -56,6 +56,36 @@ export const useEvents = () => {
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
+  const normalizeEventPayload = (event: Partial<Event>) => {
+    const normalizeNullableString = (v: unknown) =>
+      typeof v === 'string' && v.trim() === '' ? null : v;
+
+    const normalizeDateTime = (v: unknown) => {
+      if (typeof v !== 'string') return v;
+      if (v.trim() === '') return null;
+
+      // Handle <input type="datetime-local"> values: 2026-01-03T15:30
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v)) {
+        return new Date(v).toISOString();
+      }
+
+      return v;
+    };
+
+    return {
+      ...event,
+      description: normalizeNullableString(event.description),
+      location: normalizeNullableString(event.location),
+      location_url: normalizeNullableString(event.location_url),
+      image_url: normalizeNullableString(event.image_url),
+      instructor_name: normalizeNullableString(event.instructor_name),
+      instructor_id: normalizeNullableString(event.instructor_id),
+      registration_deadline: normalizeDateTime((event as any).registration_deadline),
+      date_start: normalizeDateTime(event.date_start),
+      date_end: normalizeDateTime(event.date_end),
+    } as Partial<Event>;
+  };
+
   // ==================== EVENTS ====================
   const useEventsList = (filters?: {
     status?: string;
@@ -111,25 +141,31 @@ export const useEvents = () => {
   const useCreateEvent = () => {
     return useMutation({
       mutationFn: async (event: Partial<Event>) => {
+        const normalized = normalizeEventPayload(event);
+
         // Generate slug using slugify for proper handling of accents and special chars
-        const baseSlug = event.slug || slugify(event.title || 'evento', { 
-          lower: true, 
-          strict: true,
-          locale: 'pt'
-        });
+        const baseSlug =
+          normalized.slug ||
+          slugify(normalized.title || 'evento', {
+            lower: true,
+            strict: true,
+            locale: 'pt',
+          });
         const slug = `${baseSlug}-${Date.now()}`;
-        
+
+        const insertPayload = {
+          ...normalized,
+          title: normalized.title || 'Novo Evento',
+          slug,
+          type: (normalized.type as any) || 'workshop',
+          format: (normalized.format as any) || 'online',
+          date_start: (normalized.date_start as any) || new Date().toISOString(),
+          status: (normalized.status as any) || 'draft',
+        };
+
         const { data, error } = await supabase
           .from('events')
-          .insert({
-            title: event.title || 'Novo Evento',
-            slug,
-            type: event.type || 'workshop',
-            format: event.format || 'online',
-            date_start: event.date_start || new Date().toISOString(),
-            status: event.status || 'draft',
-            ...event,
-          } as any)
+          .insert(insertPayload as any)
           .select()
           .single();
         if (error) throw error;
@@ -144,9 +180,11 @@ export const useEvents = () => {
   const useUpdateEvent = () => {
     return useMutation({
       mutationFn: async ({ id, ...updates }: Partial<Event> & { id: string }) => {
+        const normalizedUpdates = normalizeEventPayload(updates);
+
         const { data, error } = await supabase
           .from('events')
-          .update(updates as any)
+          .update(normalizedUpdates as any)
           .eq('id', id)
           .select()
           .single();
