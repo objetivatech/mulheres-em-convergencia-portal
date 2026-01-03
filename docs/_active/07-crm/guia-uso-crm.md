@@ -108,9 +108,9 @@ Os eventos publicados aparecem automaticamente em `/eventos` no portal público,
 1. Clique em "Novo Evento"
 2. Preencha:
    - Título e descrição
-   - Tipo (curso, workshop, palestra, encontro)
+   - Tipo (curso, workshop, palestra, encontro, encontro de networking)
    - Formato (online, presencial, híbrido)
-   - Datas e horários
+   - Datas e horários (data fim é opcional)
    - Local (se presencial)
    - Preço (ou marque como gratuito)
    - Limite de participantes

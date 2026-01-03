@@ -120,7 +120,8 @@ export const EventsManagement: React.FC = () => {
                 <SelectItem value="workshop">Workshop</SelectItem>
                 <SelectItem value="palestra">Palestra</SelectItem>
                 <SelectItem value="curso">Curso</SelectItem>
-                <SelectItem value="meetup">Meetup</SelectItem>
+                <SelectItem value="encontro">Encontro</SelectItem>
+                <SelectItem value="encontro_networking">Encontro de Networking</SelectItem>
                 <SelectItem value="conferencia">Conferência</SelectItem>
               </SelectContent>
             </Select>
