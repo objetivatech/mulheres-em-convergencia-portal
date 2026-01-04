@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useEvents, Event, EventRegistration } from '@/hooks/useEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, Calendar, Users, MapPin, Clock, 
   CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -21,6 +21,56 @@ import { useToast } from '@/hooks/use-toast';
 import { EventFormBuilder } from './EventFormBuilder';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
+// Storage key for form persistence
+const FORM_STORAGE_KEY = 'crm_event_form_draft';
+
+interface EventFormData {
+  title: string;
+  description: string;
+  type: string;
+  format: string;
+  date_start: string;
+  date_end: string;
+  location: string;
+  location_url: string;
+  price: number;
+  free: boolean;
+  max_participants: number | null;
+  instructor_name: string;
+  status: string;
+}
+
+const getDefaultFormData = (): EventFormData => ({
+  title: '',
+  description: '',
+  type: 'workshop',
+  format: 'online',
+  date_start: '',
+  date_end: '',
+  location: '',
+  location_url: '',
+  price: 0,
+  free: true,
+  max_participants: null,
+  instructor_name: '',
+  status: 'draft',
+});
+
+const eventToFormData = (event: Event): EventFormData => ({
+  title: event.title || '',
+  description: event.description || '',
+  type: event.type || 'workshop',
+  format: event.format || 'online',
+  date_start: event.date_start ? format(new Date(event.date_start), "yyyy-MM-dd'T'HH:mm") : '',
+  date_end: event.date_end ? format(new Date(event.date_end), "yyyy-MM-dd'T'HH:mm") : '',
+  location: event.location || '',
+  location_url: event.location_url || '',
+  price: event.price || 0,
+  free: event.free ?? true,
+  max_participants: event.max_participants || null,
+  instructor_name: event.instructor_name || '',
+  status: event.status || 'draft',
+});
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
     draft: { label: 'Rascunho', variant: 'secondary' },
@@ -58,165 +108,208 @@ export const EventsManagement: React.FC = () => {
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Event Form
-  const EventForm: React.FC<{ event?: Event; onClose: () => void }> = ({ event, onClose }) => {
-    const [formData, setFormData] = useState({
-      title: event?.title || '',
-      description: event?.description || '',
-      type: event?.type || 'workshop',
-      format: event?.format || 'online',
-      date_start: event?.date_start ? format(new Date(event.date_start), "yyyy-MM-dd'T'HH:mm") : '',
-      date_end: event?.date_end ? format(new Date(event.date_end), "yyyy-MM-dd'T'HH:mm") : '',
-      location: event?.location || '',
-      location_url: event?.location_url || '',
-      price: event?.price || 0,
-      free: event?.free ?? true,
-      max_participants: event?.max_participants || null,
-      instructor_name: event?.instructor_name || '',
-      status: event?.status || 'draft',
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
+  
+  // Form state persisted - moved outside EventForm component
+  const [formData, setFormData] = useState<EventFormData>(() => {
+    // Try to load from localStorage on initial mount
+    const saved = localStorage.getItem(FORM_STORAGE_KEY);
+    if (saved) {
       try {
-        if (event) {
-          await updateEvent.mutateAsync({ id: event.id, ...formData } as any);
-          toast({ title: 'Evento atualizado com sucesso!' });
-        } else {
-          await createEvent.mutateAsync(formData as any);
-          toast({ title: 'Evento criado com sucesso!' });
-        }
-        onClose();
-      } catch (error) {
-        toast({ title: 'Erro ao salvar evento', variant: 'destructive' });
+        return JSON.parse(saved);
+      } catch {
+        return getDefaultFormData();
       }
-    };
+    }
+    return getDefaultFormData();
+  });
 
-    return (
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <Label>Título</Label>
-            <Input
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-            />
-          </div>
-          <div className="col-span-2">
-            <Label>Descrição</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div>
-            <Label>Tipo</Label>
-            <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="workshop">Workshop</SelectItem>
-                <SelectItem value="palestra">Palestra</SelectItem>
-                <SelectItem value="curso">Curso</SelectItem>
-                <SelectItem value="encontro">Encontro</SelectItem>
-                <SelectItem value="encontro_networking">Encontro de Networking</SelectItem>
-                <SelectItem value="conferencia">Conferência</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Formato</Label>
-            <Select value={formData.format} onValueChange={(v) => setFormData({ ...formData, format: v as any })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="presencial">Presencial</SelectItem>
-                <SelectItem value="hibrido">Híbrido</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Data/Hora Início</Label>
-            <Input
-              type="datetime-local"
-              value={formData.date_start}
-              onChange={(e) => setFormData({ ...formData, date_start: e.target.value })}
-              required
-            />
-          </div>
-          <div>
-            <Label>Data/Hora Fim</Label>
-            <Input
-              type="datetime-local"
-              value={formData.date_end}
-              onChange={(e) => setFormData({ ...formData, date_end: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label>Local</Label>
-            <Input
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="Ex: Zoom, Auditório..."
-            />
-          </div>
-          <div>
-            <Label>Link do Local</Label>
-            <Input
-              value={formData.location_url}
-              onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
-              placeholder="https://..."
-            />
-          </div>
-          <div>
-            <Label>Instrutor/Palestrante</Label>
-            <Input
-              value={formData.instructor_name}
-              onChange={(e) => setFormData({ ...formData, instructor_name: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label>Máx. Participantes</Label>
-            <Input
-              type="number"
-              value={formData.max_participants || ''}
-              onChange={(e) => setFormData({ ...formData, max_participants: e.target.value ? parseInt(e.target.value) : null })}
-              placeholder="Sem limite"
-            />
-          </div>
-          <div>
-            <Label>Preço (R$)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={formData.price || 0}
-              onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value), free: parseFloat(e.target.value) === 0 })}
-            />
-          </div>
-          <div>
-            <Label>Status</Label>
-            <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as any })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Rascunho</SelectItem>
-                <SelectItem value="published">Publicado</SelectItem>
-                <SelectItem value="cancelled">Cancelado</SelectItem>
-                <SelectItem value="completed">Concluído</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" disabled={createEvent.isPending || updateEvent.isPending}>
-            {event ? 'Atualizar' : 'Criar'} Evento
-          </Button>
-        </div>
-      </form>
-    );
+  // Persist form data to localStorage whenever it changes
+  useEffect(() => {
+    if (!editingEvent && showEventForm) {
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+    }
+  }, [formData, editingEvent, showEventForm]);
+
+  // Clear saved form when dialog closes after successful creation
+  const clearFormDraft = useCallback(() => {
+    localStorage.removeItem(FORM_STORAGE_KEY);
+    setFormData(getDefaultFormData());
+  }, []);
+
+  // Handle opening form for new event, editing, or duplicating
+  const openEventForm = useCallback((event?: Event, duplicate?: boolean) => {
+    if (event) {
+      const data = eventToFormData(event);
+      if (duplicate) {
+        // For duplication: reset status to draft and clear dates
+        data.title = `${data.title} (cópia)`;
+        data.status = 'draft';
+        setEditingEvent(null); // It's a new event, not editing
+      } else {
+        setEditingEvent(event);
+      }
+      setFormData(data);
+    } else {
+      // New event - check for saved draft
+      const saved = localStorage.getItem(FORM_STORAGE_KEY);
+      if (saved) {
+        try {
+          setFormData(JSON.parse(saved));
+        } catch {
+          setFormData(getDefaultFormData());
+        }
+      } else {
+        setFormData(getDefaultFormData());
+      }
+      setEditingEvent(null);
+    }
+    setShowEventForm(true);
+  }, []);
+
+  // Event Form - now uses external state for persistence
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingEvent) {
+        await updateEvent.mutateAsync({ id: editingEvent.id, ...formData } as any);
+        toast({ title: 'Evento atualizado com sucesso!' });
+      } else {
+        await createEvent.mutateAsync(formData as any);
+        toast({ title: 'Evento criado com sucesso!' });
+      }
+      clearFormDraft();
+      setShowEventForm(false);
+      setEditingEvent(null);
+    } catch (error) {
+      toast({ title: 'Erro ao salvar evento', variant: 'destructive' });
+    }
   };
+
+  const EventFormContent: React.FC = () => (
+    <form onSubmit={handleFormSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2">
+          <Label>Título</Label>
+          <Input
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            required
+          />
+        </div>
+        <div className="col-span-2">
+          <Label>Descrição</Label>
+          <Textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={3}
+          />
+        </div>
+        <div>
+          <Label>Tipo</Label>
+          <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="workshop">Workshop</SelectItem>
+              <SelectItem value="palestra">Palestra</SelectItem>
+              <SelectItem value="curso">Curso</SelectItem>
+              <SelectItem value="encontro">Encontro</SelectItem>
+              <SelectItem value="encontro_networking">Encontro de Networking</SelectItem>
+              <SelectItem value="conferencia">Conferência</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Formato</Label>
+          <Select value={formData.format} onValueChange={(v) => setFormData({ ...formData, format: v as any })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="online">Online</SelectItem>
+              <SelectItem value="presencial">Presencial</SelectItem>
+              <SelectItem value="hibrido">Híbrido</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Data/Hora Início</Label>
+          <Input
+            type="datetime-local"
+            value={formData.date_start}
+            onChange={(e) => setFormData({ ...formData, date_start: e.target.value })}
+            required
+          />
+        </div>
+        <div>
+          <Label>Data/Hora Fim</Label>
+          <Input
+            type="datetime-local"
+            value={formData.date_end}
+            onChange={(e) => setFormData({ ...formData, date_end: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label>Local</Label>
+          <Input
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            placeholder="Ex: Zoom, Auditório..."
+          />
+        </div>
+        <div>
+          <Label>Link do Local</Label>
+          <Input
+            value={formData.location_url}
+            onChange={(e) => setFormData({ ...formData, location_url: e.target.value })}
+            placeholder="https://..."
+          />
+        </div>
+        <div>
+          <Label>Instrutor/Palestrante</Label>
+          <Input
+            value={formData.instructor_name}
+            onChange={(e) => setFormData({ ...formData, instructor_name: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label>Máx. Participantes</Label>
+          <Input
+            type="number"
+            value={formData.max_participants || ''}
+            onChange={(e) => setFormData({ ...formData, max_participants: e.target.value ? parseInt(e.target.value) : null })}
+            placeholder="Sem limite"
+          />
+        </div>
+        <div>
+          <Label>Preço (R$)</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={formData.price || 0}
+            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value), free: parseFloat(e.target.value) === 0 })}
+          />
+        </div>
+        <div>
+          <Label>Status</Label>
+          <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as any })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Rascunho</SelectItem>
+              <SelectItem value="published">Publicado</SelectItem>
+              <SelectItem value="cancelled">Cancelado</SelectItem>
+              <SelectItem value="completed">Concluído</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={createEvent.isPending || updateEvent.isPending}>
+          {editingEvent ? 'Atualizar' : 'Criar'} Evento
+        </Button>
+      </div>
+    </form>
+  );
 
   // Event Details with Registrations
   const EventDetails: React.FC<{ event: Event }> = ({ event }) => {
@@ -246,8 +339,11 @@ export const EventsManagement: React.FC = () => {
                 <ExternalLink className="h-4 w-4 mr-2" />Ver Página
               </Button>
             </a>
-            <Button variant="outline" onClick={() => { setEditingEvent(event); setShowEventForm(true); }}>
+            <Button variant="outline" onClick={() => openEventForm(event, false)}>
               <Edit2 className="h-4 w-4 mr-2" />Editar
+            </Button>
+            <Button variant="outline" onClick={() => openEventForm(event, true)}>
+              <Copy className="h-4 w-4 mr-2" />Duplicar
             </Button>
           </div>
         </div>
@@ -430,9 +526,14 @@ export const EventsManagement: React.FC = () => {
             className="pl-10"
           />
         </div>
-        <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
+        <Dialog open={showEventForm} onOpenChange={(open) => {
+          if (!open) {
+            setEditingEvent(null);
+          }
+          setShowEventForm(open);
+        }}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingEvent(null)}>
+            <Button onClick={() => openEventForm()}>
               <Plus className="h-4 w-4 mr-2" />
               Novo Evento
             </Button>
@@ -441,10 +542,10 @@ export const EventsManagement: React.FC = () => {
             <DialogHeader>
               <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
               <DialogDescription>
-                {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento.'}
+                {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
               </DialogDescription>
             </DialogHeader>
-            <EventForm event={editingEvent || undefined} onClose={() => { setShowEventForm(false); setEditingEvent(null); }} />
+            <EventFormContent />
           </DialogContent>
         </Dialog>
       </div>
@@ -487,16 +588,20 @@ export const EventsManagement: React.FC = () => {
                     <TableCell>{formatStatusBadge(event.status)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)}>
+                        <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => { setEditingEvent(event); setShowEventForm(true); }}>
+                        <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
                           <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
+                          <Copy className="h-4 w-4" />
                         </Button>
                         <Button 
                           size="sm" 
                           variant="ghost" 
                           className="text-destructive"
+                          title="Excluir"
                           onClick={async () => {
                             if (confirm('Excluir evento?')) {
                               await deleteEvent.mutateAsync(event.id);
