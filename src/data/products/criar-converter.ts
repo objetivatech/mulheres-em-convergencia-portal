@@ -15,7 +15,7 @@ export const criarConverterContent: LandingPageContent = {
     eventDates: '21, 22 e 23 de janeiro',
     eventDuration: '+20 horas',
     eventFormat: 'presencial',
-    eventLocation: 'A definir',
+    eventLocation: 'Ilhota Hub - Largo Visconde do Cairú, 17 sala 500 - Centro Histórico, Porto Alegre - RS',
   },
 
   hero: {
@@ -122,7 +122,7 @@ export const criarConverterContent: LandingPageContent = {
     dates: '21, 22 e 23 de janeiro de 2026',
     duration: '+ de 20 horas de conteúdos',
     format: 'Presencial',
-    location: 'A confirmar',
+    location: 'Ilhota Hub - Largo Visconde do Cairú, 17 sala 500 - Centro Histórico, Porto Alegre - RS',
   },
 
   investment: {
