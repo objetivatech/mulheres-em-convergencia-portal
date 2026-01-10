@@ -110,7 +110,7 @@ const EventDetailPage = () => {
         }
       }
 
-      // Free event - register directly
+      // Free event - register via edge function (no login required)
       const metadata: Record<string, string> = {};
       customFields?.forEach(f => {
         if (formData[f.field_name]) {
@@ -118,20 +118,19 @@ const EventDetailPage = () => {
         }
       });
 
-      await createRegistration.mutateAsync({
-        event_id: event.id,
-        full_name: formData.full_name,
-        email: formData.email,
-        phone: formData.phone || null,
-        cpf: formData.cpf?.replace(/\D/g, '') || null,
-        status: 'confirmed',
-        metadata: metadata as any,
-        cost_center_id: event.cost_center_id,
-        // Dados para integração CRM
-        eventTitle: event.title,
-        eventPrice: event.price || 0,
-        isFree: event.free ?? true,
+      const { data, error } = await supabase.functions.invoke('create-event-registration', {
+        body: {
+          event_id: event.id,
+          full_name: formData.full_name,
+          email: formData.email,
+          phone: formData.phone || null,
+          cpf: formData.cpf?.replace(/\D/g, '') || null,
+          metadata,
+        },
       });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Erro ao realizar inscrição');
 
       setIsRegistered(true);
       toast({ title: 'Inscrição realizada com sucesso!' });
