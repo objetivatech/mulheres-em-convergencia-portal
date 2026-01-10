@@ -66,7 +66,7 @@ serve(async (req) => {
       }
     }
 
-    // Check if already registered
+    // Check if already registered (idempotent: return success)
     const { data: existingReg } = await supabaseClient
       .from('event_registrations')
       .select('id')
@@ -75,7 +75,19 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingReg) {
-      throw new Error("Email already registered for this event");
+      logStep("Already registered", { registrationId: existingReg.id, email });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          already_registered: true,
+          registration_id: existingReg.id,
+          message: "Email already registered for this event",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
     }
 
     const cleanCpf = cpf?.replace(/\D/g, '') || null;

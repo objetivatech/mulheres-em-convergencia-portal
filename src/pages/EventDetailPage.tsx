@@ -129,14 +129,32 @@ const EventDetailPage = () => {
         },
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Erro ao realizar inscrição');
+       if (error) throw error;
+       if (!data?.success) throw new Error(data?.error || 'Erro ao realizar inscrição');
 
-      setIsRegistered(true);
-      toast({ title: 'Inscrição realizada com sucesso!' });
-    } catch (error: any) {
-      toast({ title: 'Erro ao realizar inscrição', description: error.message, variant: 'destructive' });
-    } finally {
+       setIsRegistered(true);
+       toast({
+         title: data?.already_registered ? 'Você já está inscrito(a)!' : 'Inscrição realizada com sucesso!',
+         description: data?.already_registered ? 'Este email já tinha uma inscrição registrada para este evento.' : undefined,
+       });
+     } catch (error: any) {
+       const edgeBody = error?.context?.body;
+       const edgeMessage = (() => {
+         if (!edgeBody) return null;
+         try {
+           const parsed = typeof edgeBody === 'string' ? JSON.parse(edgeBody) : edgeBody;
+           return parsed?.error || parsed?.message || null;
+         } catch {
+           return null;
+         }
+       })();
+
+       toast({
+         title: 'Erro ao realizar inscrição',
+         description: edgeMessage || error.message,
+         variant: 'destructive',
+       });
+     } finally {
       setIsSubmitting(false);
     }
   };
