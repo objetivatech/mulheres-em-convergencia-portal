@@ -797,6 +797,171 @@ export const useCRM = () => {
     });
   };
 
+  // ==================== CHART DATA ====================
+  const useLeadsBySource = () => {
+    return useQuery({
+      queryKey: ['crm-leads-by-source'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('crm_leads')
+          .select('source');
+        if (error) throw error;
+
+        const counts: Record<string, number> = {};
+        data?.forEach((lead) => {
+          const source = lead.source || 'outros';
+          counts[source] = (counts[source] || 0) + 1;
+        });
+
+        const sourceLabels: Record<string, string> = {
+          website: 'Website',
+          evento: 'Eventos',
+          landing_page: 'Landing Page',
+          indicacao: 'Indicação',
+          social: 'Redes Sociais',
+          outros: 'Outros',
+        };
+
+        const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#a4de6c', '#d0ed57'];
+        
+        return Object.entries(counts).map(([source, count], idx) => ({
+          name: sourceLabels[source] || source,
+          value: count,
+          fill: colors[idx % colors.length],
+        }));
+      },
+      enabled: isAdmin,
+    });
+  };
+
+  const useDealsByStage = () => {
+    return useQuery({
+      queryKey: ['crm-deals-by-stage'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('crm_deals')
+          .select('stage, value');
+        if (error) throw error;
+
+        const stageData: Record<string, { count: number; value: number }> = {};
+        data?.forEach((deal) => {
+          const stage = deal.stage || 'novo';
+          if (!stageData[stage]) stageData[stage] = { count: 0, value: 0 };
+          stageData[stage].count += 1;
+          stageData[stage].value += deal.value || 0;
+        });
+
+        const stageLabels: Record<string, string> = {
+          inscrito: 'Inscritos',
+          novo: 'Novos',
+          contacted: 'Contatados',
+          qualified: 'Qualificados',
+          proposal: 'Propostas',
+          negotiation: 'Negociação',
+          won: 'Ganhos',
+          lost: 'Perdidos',
+        };
+
+        const stageOrder = ['inscrito', 'novo', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost'];
+        
+        return stageOrder
+          .filter(stage => stageData[stage])
+          .map((stage, idx) => ({
+            stage: stageLabels[stage] || stage,
+            value: stageData[stage].count,
+            totalValue: stageData[stage].value,
+            fill: `hsl(var(--chart-${(idx % 5) + 1}))`,
+          }));
+      },
+      enabled: isAdmin,
+    });
+  };
+
+  const useMonthlyLeads = () => {
+    return useQuery({
+      queryKey: ['crm-monthly-leads'],
+      queryFn: async () => {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        
+        const { data, error } = await supabase
+          .from('crm_leads')
+          .select('created_at, status')
+          .gte('created_at', sixMonthsAgo.toISOString());
+        if (error) throw error;
+
+        const monthlyData: Record<string, { leads: number; converted: number }> = {};
+        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        
+        // Inicializar últimos 6 meses
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          monthlyData[key] = { leads: 0, converted: 0 };
+        }
+
+        data?.forEach((lead) => {
+          const date = new Date(lead.created_at);
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (monthlyData[key]) {
+            monthlyData[key].leads += 1;
+            if (lead.status === 'converted') {
+              monthlyData[key].converted += 1;
+            }
+          }
+        });
+
+        return Object.entries(monthlyData).map(([key, data]) => {
+          const [year, month] = key.split('-');
+          return {
+            month: monthNames[parseInt(month) - 1],
+            leads: data.leads,
+            converted: data.converted,
+          };
+        });
+      },
+      enabled: isAdmin,
+    });
+  };
+
+  const useEventRegistrationStats = () => {
+    return useQuery({
+      queryKey: ['crm-event-stats'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('event_registrations')
+          .select('status, payment_amount');
+        if (error) throw error;
+
+        const total = data?.length || 0;
+        const confirmed = data?.filter(r => r.status === 'confirmed').length || 0;
+        const totalRevenue = data?.reduce((sum, r) => sum + (r.payment_amount || 0), 0) || 0;
+
+        return { total, confirmed, totalRevenue };
+      },
+      enabled: isAdmin,
+    });
+  };
+
+  const useDonationStats = () => {
+    return useQuery({
+      queryKey: ['crm-donation-stats'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('donations')
+          .select('amount, status');
+        if (error) throw error;
+
+        const completed = data?.filter(d => d.status === 'completed') || [];
+        const totalAmount = completed.reduce((sum, d) => sum + (d.amount || 0), 0);
+
+        return { total: completed.length, totalAmount };
+      },
+      enabled: isAdmin,
+    });
+  };
+
   return {
     // Cost Centers
     useCostCenters,
@@ -824,5 +989,11 @@ export const useCRM = () => {
     useContactProfile,
     // Stats
     useCRMStats,
+    // Chart Data
+    useLeadsBySource,
+    useDealsByStage,
+    useMonthlyLeads,
+    useEventRegistrationStats,
+    useDonationStats,
   };
 };
