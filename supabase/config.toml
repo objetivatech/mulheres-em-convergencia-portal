@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.create-product-payment]
 verify_jwt = false
+
+[functions.create-event-registration]
+verify_jwt = false
+
+[functions.delete-user]
+verify_jwt = true
