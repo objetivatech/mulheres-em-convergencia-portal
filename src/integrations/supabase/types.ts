@@ -1973,6 +1973,10 @@ export type Database = {
       event_registrations: {
         Row: {
           checked_in_at: string | null
+          confirmation_email_1_sent_at: string | null
+          confirmation_email_2_sent_at: string | null
+          confirmation_email_3_sent_at: string | null
+          confirmation_token: string | null
           cost_center_id: string | null
           coupon_id: string | null
           cpf: string | null
@@ -1989,12 +1993,19 @@ export type Database = {
           payment_amount: number | null
           payment_id: string | null
           phone: string | null
+          presence_confirmed_at: string | null
+          reminder_2h_sent_at: string | null
           status: string
           updated_at: string
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           checked_in_at?: string | null
+          confirmation_email_1_sent_at?: string | null
+          confirmation_email_2_sent_at?: string | null
+          confirmation_email_3_sent_at?: string | null
+          confirmation_token?: string | null
           cost_center_id?: string | null
           coupon_id?: string | null
           cpf?: string | null
@@ -2011,12 +2022,19 @@ export type Database = {
           payment_amount?: number | null
           payment_id?: string | null
           phone?: string | null
+          presence_confirmed_at?: string | null
+          reminder_2h_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           checked_in_at?: string | null
+          confirmation_email_1_sent_at?: string | null
+          confirmation_email_2_sent_at?: string | null
+          confirmation_email_3_sent_at?: string | null
+          confirmation_token?: string | null
           cost_center_id?: string | null
           coupon_id?: string | null
           cpf?: string | null
@@ -2033,9 +2051,12 @@ export type Database = {
           payment_amount?: number | null
           payment_id?: string | null
           phone?: string | null
+          presence_confirmed_at?: string | null
+          reminder_2h_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: [
           {

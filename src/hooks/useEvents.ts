@@ -336,10 +336,83 @@ export const useEvents = () => {
           .select()
           .single();
         if (error) throw error;
+
+        // Update deal stage to "participou" in CRM pipeline
+        try {
+          const { data: deals } = await supabase
+            .from('crm_deals')
+            .select('id')
+            .eq('product_type', 'evento')
+            .contains('metadata', { registration_id: registrationId });
+
+          if (deals && deals.length > 0) {
+            await supabase
+              .from('crm_deals')
+              .update({ stage: 'participou' })
+              .eq('id', deals[0].id);
+          }
+        } catch (crmError) {
+          console.error('[useCheckIn] Failed to update deal stage:', crmError);
+        }
+
         return data as EventRegistration;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
+      },
+    });
+  };
+
+  const useRemoveRegistration = () => {
+    return useMutation({
+      mutationFn: async ({ registrationId, eventId }: { registrationId: string; eventId: string }) => {
+        // 1. Delete associated deal (keep lead)
+        try {
+          const { data: deals } = await supabase
+            .from('crm_deals')
+            .select('id')
+            .eq('product_type', 'evento')
+            .contains('metadata', { registration_id: registrationId });
+
+          if (deals && deals.length > 0) {
+            await supabase
+              .from('crm_deals')
+              .delete()
+              .eq('id', deals[0].id);
+          }
+        } catch (crmError) {
+          console.error('[useRemoveRegistration] Failed to delete deal:', crmError);
+        }
+
+        // 2. Delete registration
+        const { error: regError } = await supabase
+          .from('event_registrations')
+          .delete()
+          .eq('id', registrationId);
+        
+        if (regError) throw regError;
+
+        // 3. Decrement participant count
+        const { data: event } = await supabase
+          .from('events')
+          .select('current_participants')
+          .eq('id', eventId)
+          .single();
+
+        if (event) {
+          await supabase
+            .from('events')
+            .update({ current_participants: Math.max(0, (event.current_participants || 0) - 1) })
+            .eq('id', eventId);
+        }
+
+        return { registrationId, eventId };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
       },
     });
   };
@@ -392,6 +465,7 @@ export const useEvents = () => {
     useCreateRegistration,
     useUpdateRegistration,
     useCheckIn,
+    useRemoveRegistration,
     useEventStats,
   };
 };

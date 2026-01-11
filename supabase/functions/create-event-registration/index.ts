@@ -248,6 +248,36 @@ serve(async (req) => {
       logStep("CRM integration failed (non-blocking)", { error: String(crmError) });
     }
 
+    // Generate confirmation token
+    const tokenArray = new Uint8Array(32);
+    crypto.getRandomValues(tokenArray);
+    const confirmationToken = Array.from(tokenArray, b => b.toString(16).padStart(2, '0')).join('');
+
+    await supabaseClient
+      .from('event_registrations')
+      .update({ confirmation_token: confirmationToken })
+      .eq('id', registration.id);
+
+    // Helper for Brazil timezone formatting
+    const formatDateBrazil = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(date);
+    };
+
+    const formatTimeBrazil = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    };
+
     // Send confirmation email (non-blocking)
     try {
       const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
@@ -255,7 +285,9 @@ serve(async (req) => {
       const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
       if (mailrelayApiKey && mailrelayHost) {
-        const eventDate = new Date(event.date_start);
+        const eventDateFormatted = formatDateBrazil(event.date_start);
+        const eventTimeFormatted = formatTimeBrazil(event.date_start);
+
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
             <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -264,10 +296,14 @@ serve(async (req) => {
               <p>Sua inscrição no evento <strong>${event.title}</strong> foi confirmada com sucesso!</p>
               <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                 <h3 style="margin-top: 0; color: #374151;">Detalhes do Evento</h3>
-                <p><strong>📅 Data:</strong> ${eventDate.toLocaleDateString('pt-BR')} às ${eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>📅 Data:</strong> ${eventDateFormatted} às ${eventTimeFormatted}</p>
                 ${event.location ? `<p><strong>📍 Local:</strong> ${event.location}</p>` : ''}
                 ${event.location_url ? `<p><strong>🔗 Link:</strong> <a href="${event.location_url}">${event.location_url}</a></p>` : ''}
               </div>
+              <p style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <strong>⚠️ Importante:</strong> Você receberá emails pedindo confirmação de presença alguns dias antes do evento. 
+                Por favor, confirme sua presença para garantir sua vaga!
+              </p>
               <p>Guarde este email para referência. Qualquer dúvida, entre em contato conosco.</p>
               <p>Até breve!</p>
               <p><strong>Equipe Mulheres em Convergência</strong></p>

@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, Calendar, Users, MapPin, Clock, 
   CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -103,6 +103,7 @@ export const EventsManagement: React.FC = () => {
   const updateEvent = events.useUpdateEvent();
   const deleteEvent = events.useDeleteEvent();
   const checkIn = events.useCheckIn();
+  const removeRegistration = events.useRemoveRegistration();
 
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -319,9 +320,21 @@ export const EventsManagement: React.FC = () => {
     const handleCheckIn = async (registrationId: string) => {
       try {
         await checkIn.mutateAsync(registrationId);
-        toast({ title: 'Check-in realizado!' });
+        toast({ title: 'Check-in realizado! Participante movido para "Participou" no pipeline.' });
       } catch (error) {
         toast({ title: 'Erro no check-in', variant: 'destructive' });
+      }
+    };
+
+    const handleRemoveRegistration = async (registrationId: string) => {
+      if (!confirm('Tem certeza que deseja remover esta inscrição? A vaga será liberada para outras pessoas. O contato no CRM será mantido.')) {
+        return;
+      }
+      try {
+        await removeRegistration.mutateAsync({ registrationId, eventId: event.id });
+        toast({ title: 'Inscrição removida com sucesso! Vaga liberada.' });
+      } catch (error) {
+        toast({ title: 'Erro ao remover inscrição', variant: 'destructive' });
       }
     };
 
@@ -446,17 +459,30 @@ export const EventsManagement: React.FC = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            {!reg.checked_in_at && (reg.paid || event.free) && (
+                            <div className="flex gap-1">
+                              {!reg.checked_in_at && (reg.paid || event.free) && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleCheckIn(reg.id)}
+                                  disabled={checkIn.isPending}
+                                  title="Fazer check-in"
+                                >
+                                  <UserCheck className="h-4 w-4 mr-1" />
+                                  Check-in
+                                </Button>
+                              )}
                               <Button 
                                 size="sm" 
-                                variant="outline"
-                                onClick={() => handleCheckIn(reg.id)}
-                                disabled={checkIn.isPending}
+                                variant="ghost"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => handleRemoveRegistration(reg.id)}
+                                disabled={removeRegistration.isPending}
+                                title="Remover inscrição (liberar vaga)"
                               >
-                                <UserCheck className="h-4 w-4 mr-1" />
-                                Check-in
+                                <UserMinus className="h-4 w-4" />
                               </Button>
-                            )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
