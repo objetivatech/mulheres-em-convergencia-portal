@@ -115,6 +115,7 @@ function AppContent() {
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
         <Route path="/criar-converter" element={<CriarConverterPage />} />
+        <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />

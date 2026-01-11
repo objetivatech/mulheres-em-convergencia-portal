@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[SEND-EVENT-EMAIL] ${step}${detailsStr}`);
 };
@@ -14,6 +14,26 @@ const logStep = (step: string, details?: any) => {
 const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
 const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
 const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
+
+// Helper for Brazil timezone formatting
+const formatDateBrazil = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+};
+
+const formatTimeBrazil = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
 
 interface EventEmailRequest {
   action: 'confirmation' | 'reminder' | 'certificate';
@@ -48,8 +68,9 @@ serve(async (req) => {
         throw new Error('Registration not found');
       }
 
-      const event = registration.event as any;
-      const eventDate = new Date(event.date_start);
+      const event = registration.event as Record<string, unknown>;
+      const eventDateFormatted = formatDateBrazil(event.date_start as string);
+      const eventTimeFormatted = formatTimeBrazil(event.date_start as string);
       
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -62,7 +83,7 @@ serve(async (req) => {
             
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #374151;">Detalhes do Evento</h3>
-              <p><strong>📅 Data:</strong> ${eventDate.toLocaleDateString('pt-BR')} às ${eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p><strong>📅 Data:</strong> ${eventDateFormatted} às ${eventTimeFormatted}</p>
               ${event.location ? `<p><strong>📍 Local:</strong> ${event.location}</p>` : ''}
               ${event.location_url ? `<p><strong>🔗 Link:</strong> <a href="${event.location_url}">${event.location_url}</a></p>` : ''}
             </div>
@@ -94,7 +115,8 @@ serve(async (req) => {
         .eq('event_id', event_id)
         .in('status', ['confirmed', 'pending']);
 
-      const eventDate = new Date(event.date_start);
+      const eventDateFormatted = formatDateBrazil(event.date_start);
+      const eventTimeFormatted = formatTimeBrazil(event.date_start);
       let sentCount = 0;
 
       for (const reg of registrations || []) {
@@ -108,8 +130,8 @@ serve(async (req) => {
               <p>Estamos ansiosos para te ver! O evento <strong>${event.title}</strong> acontece amanhã.</p>
               
               <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-                <p><strong>📅 Amanhã, ${eventDate.toLocaleDateString('pt-BR')}</strong></p>
-                <p><strong>🕐 ${eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</strong></p>
+                <p><strong>📅 Amanhã, ${eventDateFormatted}</strong></p>
+                <p><strong>🕐 ${eventTimeFormatted}</strong></p>
                 ${event.location ? `<p><strong>📍 ${event.location}</strong></p>` : ''}
               </div>
               
@@ -142,7 +164,8 @@ serve(async (req) => {
 
       if (!registration) throw new Error('Attended registration not found');
 
-      const event = registration.event as any;
+      const event = registration.event as Record<string, unknown>;
+      const eventDateFormatted = formatDateBrazil(event.date_start as string);
       
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -154,7 +177,7 @@ serve(async (req) => {
             <h2 style="color: #374151; margin: 10px 0;">${registration.full_name}</h2>
             <p style="font-size: 18px;">participou do evento</p>
             <h3 style="color: #7c3aed;">${event.title}</h3>
-            <p>realizado em ${new Date(event.date_start).toLocaleDateString('pt-BR')}</p>
+            <p>realizado em ${eventDateFormatted}</p>
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #6b7280; font-size: 14px;">

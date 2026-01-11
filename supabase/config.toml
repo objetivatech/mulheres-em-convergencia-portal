@@ -96,6 +96,12 @@ verify_jwt = false
 [functions.event-email-scheduler]
 verify_jwt = false
 
+[functions.event-confirmation-scheduler]
+verify_jwt = false
+
+[functions.confirm-event-presence]
+verify_jwt = false
+
 [functions.create-product-payment]
 verify_jwt = false
 
