@@ -17,6 +17,7 @@ import Planos from './pages/Planos';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import CriarConverterPage from './pages/CriarConverterPage';
+import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
 import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
