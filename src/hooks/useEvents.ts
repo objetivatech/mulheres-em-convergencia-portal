@@ -326,6 +326,13 @@ export const useEvents = () => {
   const useCheckIn = () => {
     return useMutation({
       mutationFn: async (registrationId: string) => {
+        // First get registration details for CRM interaction
+        const { data: regData } = await supabase
+          .from('event_registrations')
+          .select('*, event:events(*)')
+          .eq('id', registrationId)
+          .single();
+
         const { data, error } = await supabase
           .from('event_registrations')
           .update({ 
@@ -338,14 +345,16 @@ export const useEvents = () => {
         if (error) throw error;
 
         // Update deal stage to "participou" in CRM pipeline
+        let leadId: string | null = null;
         try {
           const { data: deals } = await supabase
             .from('crm_deals')
-            .select('id')
+            .select('id, lead_id')
             .eq('product_type', 'evento')
             .contains('metadata', { registration_id: registrationId });
 
           if (deals && deals.length > 0) {
+            leadId = deals[0].lead_id;
             await supabase
               .from('crm_deals')
               .update({ stage: 'participou' })
@@ -355,11 +364,38 @@ export const useEvents = () => {
           console.error('[useCheckIn] Failed to update deal stage:', crmError);
         }
 
+        // Register CRM interaction for check-in
+        const event = regData?.event as any;
+        try {
+          await supabase
+            .from('crm_interactions')
+            .insert({
+              lead_id: leadId || regData?.lead_id,
+              user_id: regData?.user_id,
+              cpf: regData?.cpf,
+              interaction_type: 'event_check_in',
+              channel: 'in_person',
+              description: `Check-in realizado no evento: ${event?.title || 'Evento'}`,
+              activity_name: event?.title,
+              activity_paid: !event?.free,
+              activity_online: event?.format === 'online',
+              cost_center_id: event?.cost_center_id,
+              metadata: {
+                registration_id: registrationId,
+                event_id: regData?.event_id,
+                checked_in_at: new Date().toISOString(),
+              },
+            } as any);
+        } catch (crmError) {
+          console.error('[useCheckIn] Failed to create CRM interaction:', crmError);
+        }
+
         return data as EventRegistration;
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-interactions'] });
       },
     });
   };
@@ -367,15 +403,26 @@ export const useEvents = () => {
   const useRemoveRegistration = () => {
     return useMutation({
       mutationFn: async ({ registrationId, eventId }: { registrationId: string; eventId: string }) => {
+        // First get registration details for CRM interaction
+        const { data: regData } = await supabase
+          .from('event_registrations')
+          .select('*, event:events(*)')
+          .eq('id', registrationId)
+          .single();
+
+        const event = regData?.event as any;
+        let leadId: string | null = regData?.lead_id || null;
+
         // 1. Delete associated deal (keep lead)
         try {
           const { data: deals } = await supabase
             .from('crm_deals')
-            .select('id')
+            .select('id, lead_id')
             .eq('product_type', 'evento')
             .contains('metadata', { registration_id: registrationId });
 
           if (deals && deals.length > 0) {
+            leadId = deals[0].lead_id || leadId;
             await supabase
               .from('crm_deals')
               .delete()
@@ -385,7 +432,32 @@ export const useEvents = () => {
           console.error('[useRemoveRegistration] Failed to delete deal:', crmError);
         }
 
-        // 2. Delete registration
+        // 2. Register CRM interaction for removal (before deleting registration)
+        try {
+          await supabase
+            .from('crm_interactions')
+            .insert({
+              lead_id: leadId,
+              user_id: regData?.user_id,
+              cpf: regData?.cpf,
+              interaction_type: 'event_registration_removed',
+              channel: 'admin',
+              description: `Inscrição removida do evento: ${event?.title || 'Evento'}`,
+              activity_name: event?.title,
+              cost_center_id: event?.cost_center_id,
+              metadata: {
+                registration_id: registrationId,
+                event_id: eventId,
+                removed_at: new Date().toISOString(),
+                participant_name: regData?.full_name,
+                participant_email: regData?.email,
+              },
+            } as any);
+        } catch (crmError) {
+          console.error('[useRemoveRegistration] Failed to create CRM interaction:', crmError);
+        }
+
+        // 3. Delete registration
         const { error: regError } = await supabase
           .from('event_registrations')
           .delete()
@@ -393,17 +465,17 @@ export const useEvents = () => {
         
         if (regError) throw regError;
 
-        // 3. Decrement participant count
-        const { data: event } = await supabase
+        // 4. Decrement participant count
+        const { data: eventData } = await supabase
           .from('events')
           .select('current_participants')
           .eq('id', eventId)
           .single();
 
-        if (event) {
+        if (eventData) {
           await supabase
             .from('events')
-            .update({ current_participants: Math.max(0, (event.current_participants || 0) - 1) })
+            .update({ current_participants: Math.max(0, (eventData.current_participants || 0) - 1) })
             .eq('id', eventId);
         }
 
@@ -413,6 +485,7 @@ export const useEvents = () => {
         queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
         queryClient.invalidateQueries({ queryKey: ['events'] });
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-interactions'] });
       },
     });
   };

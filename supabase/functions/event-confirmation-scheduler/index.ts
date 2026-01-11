@@ -229,6 +229,30 @@ serve(async (req) => {
             .update({ [sentAtField]: new Date().toISOString() })
             .eq('id', reg.id);
 
+          // Register CRM interaction for confirmation email sent
+          try {
+            await supabaseClient
+              .from('crm_interactions')
+              .insert({
+                lead_id: reg.lead_id,
+                user_id: reg.user_id,
+                cpf: reg.cpf,
+                interaction_type: 'email_confirmation_request',
+                channel: 'email',
+                description: `Email de confirmação #${emailNumber} enviado para: ${event.title}`,
+                activity_name: event.title,
+                cost_center_id: event.cost_center_id,
+                metadata: {
+                  registration_id: reg.id,
+                  event_id: event.id,
+                  email_number: emailNumber,
+                  days_until_event: daysUntilEvent,
+                },
+              });
+          } catch (crmErr) {
+            logStep("CRM interaction failed", { error: String(crmErr) });
+          }
+
           if (emailNumber === 1) results.email1_sent++;
           else if (emailNumber === 2) results.email2_sent++;
           else results.email3_sent++;

@@ -161,6 +161,29 @@ serve(async (req) => {
               .update({ reminder_2h_sent_at: new Date().toISOString() })
               .eq('id', reg.id);
 
+            // Register CRM interaction for 2h reminder
+            try {
+              await supabaseClient
+                .from('crm_interactions')
+                .insert({
+                  lead_id: reg.lead_id,
+                  user_id: reg.user_id,
+                  cpf: reg.cpf,
+                  interaction_type: 'email_reminder_2h',
+                  channel: 'email',
+                  description: `Lembrete de 2 horas enviado para: ${event.title}`,
+                  activity_name: event.title,
+                  cost_center_id: event.cost_center_id,
+                  metadata: {
+                    registration_id: reg.id,
+                    event_id: event.id,
+                    reminder_type: '2h',
+                  },
+                });
+            } catch (crmErr) {
+              logStep("CRM interaction failed", { error: String(crmErr) });
+            }
+
             totalEmailsSent++;
             logStep("2h reminder sent", { email: reg.email, eventId: event.id });
 
