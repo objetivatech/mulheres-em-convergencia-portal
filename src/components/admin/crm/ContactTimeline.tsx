@@ -30,31 +30,72 @@ interface ContactTimelineProps {
 }
 
 const interactionIcons: Record<string, React.ElementType> = {
+  // Email interactions
   email_sent: Mail,
   email_opened: Mail,
-  phone_call: Phone,
+  email_clicked: Mail,
+  email_confirmation_request: Mail,
+  email_welcome: Mail,
+  email_reminder: Mail,
+  email_reminder_2h: Clock,
+  // Event interactions
   event_registration: Calendar,
+  event_presence_confirmed: CheckCircle,
+  event_check_in: CheckCircle,
+  event_registration_removed: AlertCircle,
+  // Communication
+  phone_call: Phone,
+  message: MessageSquare,
+  contact_form: FileText,
+  newsletter_subscription: Mail,
+  business_contact: MessageSquare,
+  // Transactions
   purchase: DollarSign,
+  product_purchase_started: DollarSign,
+  product_purchase_confirmed: DollarSign,
+  event_payment_confirmed: DollarSign,
+  donation: Gift,
+  // Other
   signup: UserPlus,
   form_submit: FileText,
-  message: MessageSquare,
-  donation: Gift,
   campaign: Megaphone,
   other: Clock,
 };
 
 const interactionLabels: Record<string, string> = {
+  // Email interactions
   email_sent: 'Email enviado',
   email_opened: 'Email aberto',
   email_clicked: 'Email clicado',
-  phone_call: 'Ligação',
+  email_confirmation_request: 'Email de confirmação enviado',
+  email_welcome: 'Email de boas-vindas enviado',
+  email_reminder: 'Lembrete enviado',
+  email_reminder_2h: 'Lembrete 2h enviado',
+  // Event interactions
   event_registration: 'Inscrição em evento',
+  event_presence_confirmed: 'Presença confirmada',
+  event_check_in: 'Check-in realizado',
+  event_registration_removed: 'Inscrição removida',
+  // Communication
+  phone_call: 'Ligação',
+  message: 'Mensagem',
+  contact_form: 'Formulário de contato',
+  newsletter_subscription: 'Inscrição newsletter',
+  business_contact: 'Contato empresarial',
+  // Transactions
   purchase: 'Compra',
+  product_purchase_started: 'Compra iniciada',
+  product_purchase_confirmed: 'Pagamento confirmado',
+  event_payment_confirmed: 'Pagamento de evento confirmado',
+  donation: 'Doação',
+  // Other
   signup: 'Cadastro',
   form_submit: 'Formulário enviado',
-  message: 'Mensagem',
-  donation: 'Doação',
   campaign: 'Campanha',
+  course_interest: 'Interesse em curso',
+  webinar_attendance: 'Participação em webinar',
+  chat_message: 'Mensagem no chat',
+  content_download: 'Download de conteúdo',
   other: 'Outro',
 };
 

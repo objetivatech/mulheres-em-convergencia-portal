@@ -14,6 +14,7 @@ Quando um participante faz check-in em um evento:
 1. O campo `checked_in_at` é preenchido com a data/hora atual
 2. O status da inscrição muda para `attended`
 3. O deal no CRM é atualizado para o estágio **"participou"**
+4. **Interação CRM registrada:** `event_check_in`
 
 **Arquivo:** `src/hooks/useEvents.ts` → `useCheckIn()`
 
@@ -23,6 +24,7 @@ Para liberar vaga no evento:
 1. O botão "Remover" (ícone UserMinus) está disponível na tabela de inscritos
 2. Ao remover:
    - O deal associado no CRM é **deletado**
+   - **Interação CRM registrada:** `event_registration_removed`
    - A inscrição é **removida**
    - O contador `current_participants` é **decrementado**
    - O lead/contato **NÃO é removido** (mantido para comunicação futura)
@@ -52,22 +54,57 @@ Tabela `event_registrations` possui os seguintes campos de controle:
 ```
 Inscrição no Evento
         ↓
-   [5 dias antes] → Email 1: "Confirme sua presença"
+   [5 dias antes] → Email 1: "Confirme sua presença" → Interação: email_confirmation_request
         ↓ (se não confirmou)
-   [3 dias antes] → Email 2: "Aguardamos sua confirmação"
+   [3 dias antes] → Email 2: "Aguardamos sua confirmação" → Interação: email_confirmation_request
         ↓ (se não confirmou)
-   [1 dia antes] → Email 3: "Última chamada"
+   [1 dia antes] → Email 3: "Última chamada" → Interação: email_confirmation_request
         ↓
-   [Ao confirmar] → Email de Boas-vindas + Deal → "confirmado"
+   [Ao confirmar] → Interação: event_presence_confirmed + Email de Boas-vindas (email_welcome) + Deal → "confirmado"
         ↓
-   [2h antes] → Email lembrete (apenas para confirmados)
+   [2h antes] → Email lembrete → Interação: email_reminder_2h (apenas para confirmados)
         ↓
-   [Check-in] → Deal → "participou"
+   [Check-in] → Interação: event_check_in + Deal → "participou"
 ```
 
 ---
 
-## 3. Edge Functions
+## 3. Interações CRM Registradas
+
+Todas as seguintes ações são automaticamente registradas na timeline do contato:
+
+### Eventos
+
+| Tipo de Interação | Quando é Registrada | Canal |
+|-------------------|---------------------|-------|
+| `event_registration` | Inscrição no evento | website |
+| `event_presence_confirmed` | Confirmação via link no email | email |
+| `event_check_in` | Check-in pelo admin | in_person |
+| `event_registration_removed` | Remoção pelo admin | admin |
+
+### Emails
+
+| Tipo de Interação | Quando é Registrada | Descrição |
+|-------------------|---------------------|-----------|
+| `email_confirmation_request` | Envio de email de confirmação (1, 2 ou 3) | Inclui número do email |
+| `email_welcome` | Após confirmar presença | Email de boas-vindas |
+| `email_reminder_2h` | 2 horas antes do evento | Lembrete para confirmados |
+
+### Outros Tipos Suportados
+
+| Tipo | Descrição |
+|------|-----------|
+| `contact_form` | Formulário de contato |
+| `newsletter_subscription` | Inscrição na newsletter |
+| `business_contact` | Contato empresarial |
+| `product_purchase_started` | Início de compra |
+| `product_purchase_confirmed` | Pagamento confirmado |
+| `event_payment_confirmed` | Pagamento de evento confirmado |
+| `donation` | Doação registrada |
+
+---
+
+## 4. Edge Functions
 
 ### confirm-event-presence
 
@@ -78,8 +115,10 @@ Inscrição no Evento
 **Ações:**
 1. Valida o token de confirmação
 2. Atualiza `presence_confirmed_at` na inscrição
-3. Atualiza deal no CRM para estágio "confirmado"
-4. Envia email de boas-vindas
+3. **Registra interação CRM:** `event_presence_confirmed`
+4. Atualiza deal no CRM para estágio "confirmado"
+5. Envia email de boas-vindas
+6. **Registra interação CRM:** `email_welcome`
 
 **Retorno:**
 ```json
@@ -100,9 +139,9 @@ Inscrição no Evento
 **Deve ser executado:** Diariamente (cron job)
 
 **Lógica:**
-- **5 dias antes:** Envia email 1 para quem não recebeu ainda
-- **3 dias antes:** Envia email 2 para quem recebeu email 1 mas não confirmou
-- **1 dia antes:** Envia email 3 para quem recebeu email 2 mas não confirmou
+- **5 dias antes:** Envia email 1 + **Interação CRM:** `email_confirmation_request` (email_number: 1)
+- **3 dias antes:** Envia email 2 + **Interação CRM:** `email_confirmation_request` (email_number: 2)
+- **1 dia antes:** Envia email 3 + **Interação CRM:** `email_confirmation_request` (email_number: 3)
 
 **Retorno:**
 ```json
@@ -123,13 +162,13 @@ Inscrição no Evento
 
 **Ações disponíveis:**
 - `action: "reminder_tomorrow"` - Lembrete 1 dia antes
-- `action: "reminder_2h"` - Lembrete 2 horas antes (apenas para confirmados)
+- `action: "reminder_2h"` - Lembrete 2 horas antes (apenas para confirmados) + **Interação CRM:** `email_reminder_2h`
 
 **Deve ser executado:** A cada hora (para lembretes de 2h)
 
 ---
 
-## 4. Página de Confirmação
+## 5. Página de Confirmação
 
 **Rota:** `/confirmar-presenca?token=<TOKEN>`
 
@@ -143,7 +182,7 @@ Inscrição no Evento
 
 ---
 
-## 5. Configuração de Cron Jobs
+## 6. Configuração de Cron Jobs
 
 Para ativar as automações, configure os seguintes cron jobs no Supabase:
 
@@ -165,7 +204,7 @@ curl -X POST https://<project>.supabase.co/functions/v1/event-email-scheduler \
 
 ---
 
-## 6. Variáveis de Ambiente Necessárias
+## 7. Variáveis de Ambiente Necessárias
 
 | Variável | Descrição |
 |----------|-----------|
@@ -176,19 +215,19 @@ curl -X POST https://<project>.supabase.co/functions/v1/event-email-scheduler \
 
 ---
 
-## 7. Pipeline de Eventos no CRM
+## 8. Pipeline de Eventos no CRM
 
 Estágios do deal de evento:
 
-| Estágio | Quando |
-|---------|--------|
-| `inscrito` | Ao criar inscrição |
-| `confirmado` | Ao confirmar presença via link |
-| `participou` | Ao fazer check-in |
+| Estágio | Quando | Interação Registrada |
+|---------|--------|---------------------|
+| `inscrito` | Ao criar inscrição | `event_registration` |
+| `confirmado` | Ao confirmar presença via link | `event_presence_confirmed` |
+| `participou` | Ao fazer check-in | `event_check_in` |
 
 ---
 
-## 8. Fuso Horário
+## 9. Fuso Horário
 
 Todos os emails usam o fuso horário **America/Sao_Paulo** (Brasília) para formatação de datas e horários, garantindo consistência com a página do evento.
 
@@ -204,3 +243,18 @@ const formatDateBrazil = (dateStr: string) => {
   }).format(date);
 };
 ```
+
+---
+
+## 10. Timeline do Contato
+
+Todas as interações são exibidas na timeline do contato em `/admin/crm/contatos`. A timeline mostra:
+
+- **Ícone** específico para cada tipo de interação
+- **Label** em português
+- **Data e hora** da interação
+- **Descrição** detalhada
+- **Canal** de origem (email, website, admin, etc.)
+- **Atividade associada** (nome do evento)
+
+**Arquivo:** `src/components/admin/crm/ContactTimeline.tsx`

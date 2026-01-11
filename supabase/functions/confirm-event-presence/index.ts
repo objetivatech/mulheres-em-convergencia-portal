@@ -90,14 +90,16 @@ serve(async (req) => {
     logStep("Presence confirmed", { registrationId: registration.id });
 
     // Update deal stage to "confirmado"
+    let leadId: string | null = null;
     try {
       const { data: deals } = await supabaseClient
         .from('crm_deals')
-        .select('id')
+        .select('id, lead_id')
         .eq('product_type', 'evento')
         .contains('metadata', { registration_id: registration.id });
 
       if (deals && deals.length > 0) {
+        leadId = deals[0].lead_id;
         await supabaseClient
           .from('crm_deals')
           .update({ stage: 'confirmado' })
@@ -106,6 +108,33 @@ serve(async (req) => {
       }
     } catch (crmError) {
       logStep("CRM update failed (non-blocking)", { error: String(crmError) });
+    }
+
+    // Register CRM interaction for presence confirmation
+    try {
+      await supabaseClient
+        .from('crm_interactions')
+        .insert({
+          lead_id: leadId,
+          user_id: registration.user_id,
+          cpf: registration.cpf,
+          interaction_type: 'event_presence_confirmed',
+          channel: 'email',
+          description: `Presença confirmada no evento: ${event?.title}`,
+          activity_name: event?.title,
+          activity_paid: !event?.free,
+          activity_online: event?.format === 'online',
+          form_source: 'confirmation_link',
+          cost_center_id: event?.cost_center_id,
+          metadata: {
+            registration_id: registration.id,
+            event_id: event?.id,
+            confirmed_via: 'email_link',
+          },
+        });
+      logStep("CRM interaction created for presence confirmation");
+    } catch (crmError) {
+      logStep("CRM interaction failed (non-blocking)", { error: String(crmError) });
     }
 
     // Send welcome email
@@ -190,6 +219,25 @@ serve(async (req) => {
           .from('event_registrations')
           .update({ welcome_email_sent_at: new Date().toISOString() })
           .eq('id', registration.id);
+
+        // Register CRM interaction for welcome email
+        await supabaseClient
+          .from('crm_interactions')
+          .insert({
+            lead_id: leadId,
+            user_id: registration.user_id,
+            cpf: registration.cpf,
+            interaction_type: 'email_welcome',
+            channel: 'email',
+            description: `Email de boas-vindas enviado para: ${event?.title}`,
+            activity_name: event?.title,
+            cost_center_id: event?.cost_center_id,
+            metadata: {
+              registration_id: registration.id,
+              event_id: event?.id,
+              email_type: 'welcome',
+            },
+          });
 
         logStep("Welcome email sent", { email: registration.email });
       } catch (emailError) {
