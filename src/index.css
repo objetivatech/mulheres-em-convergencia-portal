@@ -123,76 +123,76 @@ All colors MUST be HSL.
   }
 }
 
-/* Blog post content typography */
-@layer components {
-  .prose {
-    font-family: 'Montserrat', system-ui, sans-serif;
-  }
+/* Blog post content typography - Force Montserrat on all prose elements */
+.prose,
+.prose * {
+  font-family: 'Montserrat', system-ui, sans-serif !important;
+}
 
-  .prose h1,
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
-  .prose h6 {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    font-weight: 600;
-    color: hsl(var(--secondary));
-  }
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: 'Montserrat', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  color: hsl(var(--secondary)) !important;
+}
 
-  .prose p,
-  .prose li {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    color: hsl(var(--foreground));
-    line-height: 1.75;
-  }
+.prose p,
+.prose li,
+.prose span {
+  font-family: 'Montserrat', system-ui, sans-serif !important;
+  color: hsl(var(--foreground)) !important;
+  line-height: 1.75 !important;
+}
 
-  .prose ul {
-    list-style-type: disc;
-    padding-left: 1.5rem;
-  }
+.prose ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+}
 
-  .prose ol {
-    list-style-type: decimal;
-    padding-left: 1.5rem;
-  }
+.prose ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+}
 
-  .prose ul li::marker,
-  .prose ol li::marker {
-    color: hsl(var(--primary));
-  }
+.prose ul li::marker,
+.prose ol li::marker {
+  color: hsl(var(--primary)) !important;
+}
 
-  .prose a {
-    color: hsl(var(--primary));
-    text-decoration: underline;
-  }
+.prose a {
+  color: hsl(var(--primary)) !important;
+  text-decoration: underline !important;
+}
 
-  .prose a:hover {
-    color: hsl(var(--primary) / 0.8);
-  }
+.prose a:hover {
+  color: hsl(var(--primary) / 0.8) !important;
+}
 
-  .prose blockquote {
-    border-left: 4px solid hsl(var(--primary));
-    padding-left: 1rem;
-    font-style: italic;
-    color: hsl(var(--muted-foreground));
-  }
+.prose blockquote {
+  border-left: 4px solid hsl(var(--primary)) !important;
+  padding-left: 1rem !important;
+  font-style: italic !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
 
-  .prose strong {
-    font-weight: 700;
-    color: hsl(var(--foreground));
-  }
+.prose strong {
+  font-weight: 700 !important;
+  color: hsl(var(--foreground)) !important;
+}
 
-  .prose img {
-    border-radius: 0.5rem;
-    margin: 1.5rem auto;
-  }
+.prose img {
+  border-radius: 0.5rem !important;
+  margin: 1.5rem auto !important;
+}
 
-  .prose pre,
-  .prose code {
-    background-color: hsl(var(--muted));
-    border-radius: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875em;
-  }
+.prose pre,
+.prose code {
+  background-color: hsl(var(--muted)) !important;
+  border-radius: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.875em !important;
 }
