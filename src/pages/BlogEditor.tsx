@@ -192,7 +192,8 @@ export default function BlogEditor() {
         content: sanitizedContent,
         published_at: finalStatus === 'published' && !data.published_at 
           ? new Date().toISOString() 
-          : data.published_at,
+          : (data.published_at || null),
+        scheduled_for: data.scheduled_for || null,
       };
 
       if (isEditing && id) {
