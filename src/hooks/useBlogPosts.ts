@@ -9,7 +9,7 @@ export interface BlogPost {
   slug: string;
   content?: string;
   excerpt?: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'published' | 'archived' | 'scheduled';
   featured_image_url?: string;
   seo_title?: string;
   seo_description?: string;
@@ -49,7 +49,7 @@ export const useBlogPosts = (status?: string, limit?: number) => {
         .order('created_at', { ascending: false });
 
       if (status && status !== 'all') {
-        query = query.eq('status', status as 'draft' | 'published' | 'archived');
+        query = query.eq('status', status as 'draft' | 'published' | 'archived' | 'scheduled');
       }
 
       if (limit) {

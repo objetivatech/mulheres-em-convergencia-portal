@@ -4283,7 +4283,7 @@ export type Database = {
         | "consultoria"
         | "eventos"
         | "marketing"
-      post_status: "draft" | "published" | "archived"
+      post_status: "draft" | "published" | "archived" | "scheduled"
       subscription_type:
         | "newsletter"
         | "community"
@@ -4463,7 +4463,7 @@ export const Constants = {
         "eventos",
         "marketing",
       ],
-      post_status: ["draft", "published", "archived"],
+      post_status: ["draft", "published", "archived", "scheduled"],
       subscription_type: [
         "newsletter",
         "community",

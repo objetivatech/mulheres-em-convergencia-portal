@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Eye, Send } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Send, Clock } from 'lucide-react';
 import slugify from 'slugify';
 import DOMPurify from 'dompurify';
 
@@ -62,7 +62,7 @@ const blogPostSchema = z.object({
   seo_title: z.string().optional(),
   seo_description: z.string().optional(),
   seo_keywords: z.array(z.string()).optional(),
-  status: z.enum(['draft', 'published', 'archived']),
+  status: z.enum(['draft', 'published', 'archived', 'scheduled']),
   published_at: z.string().optional(),
   scheduled_for: z.string().optional(),
 });
@@ -253,22 +253,35 @@ export default function BlogEditor() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft' }))()}
+              onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'draft', scheduled_for: '' }))()}
               disabled={createBlogPost.isPending || updateBlogPost.isPending}
             >
               <Save className="w-4 h-4 mr-2" />
               {permissions?.isAuthor ? 'Enviar para Revisão' : 'Salvar Rascunho'}
             </Button>
             
+            {/* Botão Agendar - apenas quando há data de agendamento */}
+            {permissions?.canPublish && form.watch('scheduled_for') && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'scheduled' }))()}
+                disabled={createBlogPost.isPending || updateBlogPost.isPending}
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Agendar
+              </Button>
+            )}
+            
             {/* Botão Publicar - apenas para quem tem permissão */}
             {permissions?.canPublish && (
               <Button
                 type="button"
-                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'published' }))()}
+                onClick={() => form.handleSubmit((data) => onSubmit({ ...data, status: 'published', scheduled_for: '' }))()}
                 disabled={createBlogPost.isPending || updateBlogPost.isPending}
               >
                 <Send className="w-4 h-4 mr-2" />
-                Publicar
+                Publicar Agora
               </Button>
             )}
           </div>
@@ -441,7 +454,10 @@ export default function BlogEditor() {
                         <SelectContent>
                           <SelectItem value="draft">Rascunho</SelectItem>
                           {permissions?.canPublish && (
-                            <SelectItem value="published">Publicado</SelectItem>
+                            <>
+                              <SelectItem value="scheduled">Agendado</SelectItem>
+                              <SelectItem value="published">Publicado</SelectItem>
+                            </>
                           )}
                           <SelectItem value="archived">Arquivado</SelectItem>
                         </SelectContent>
@@ -553,7 +569,8 @@ export default function BlogEditor() {
                   />
                 )}
 
-                {form.watch('status') === 'draft' && (
+                {/* Campo de Agendamento - aparece para rascunhos ou quando status é agendado */}
+                {(form.watch('status') === 'draft' || form.watch('status') === 'scheduled') && (
                   <FormField
                     control={form.control}
                     name="scheduled_for"
@@ -569,7 +586,9 @@ export default function BlogEditor() {
                           />
                         </FormControl>
                         <p className="text-sm text-muted-foreground">
-                          Opcional: Defina quando este post deve ser publicado automaticamente.
+                          {form.watch('scheduled_for') 
+                            ? 'Clique em "Agendar" para confirmar o agendamento.' 
+                            : 'Defina quando este post deve ser publicado automaticamente.'}
                         </p>
                         <FormMessage />
                       </FormItem>
