@@ -105,9 +105,11 @@ const FeaturedPosts = () => {
                         </span>
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
-                      {post.title}
-                    </h3>
+                    <Link to={`/convergindo/${post.slug}`}>
+                      <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                        {post.title}
+                      </h3>
+                    </Link>
                     {post.excerpt && (
                       <p className="text-muted-foreground mb-4 line-clamp-3">
                         {post.excerpt}
