@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search, Filter, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -43,19 +43,34 @@ export default function BlogDashboard() {
   const { data: categories } = useBlogCategories();
   const deleteBlogPost = useDeleteBlogPost();
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, scheduledFor?: string) => {
     const statusConfig = {
-      draft: { label: 'Rascunho', variant: 'secondary' as const },
-      published: { label: 'Publicado', variant: 'default' as const },
-      archived: { label: 'Arquivado', variant: 'outline' as const }
+      draft: { label: 'Rascunho', variant: 'secondary' as const, className: '' },
+      published: { label: 'Publicado', variant: 'default' as const, className: '' },
+      archived: { label: 'Arquivado', variant: 'outline' as const, className: '' },
+      scheduled: { label: 'Agendado', variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800 border-blue-200' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
     
     return (
-      <Badge variant={config.variant}>
-        {config.label}
-      </Badge>
+      <div className="flex flex-col gap-1">
+        <Badge variant={config.variant} className={config.className}>
+          {status === 'scheduled' && <Clock className="w-3 h-3 mr-1" />}
+          {config.label}
+        </Badge>
+        {status === 'scheduled' && scheduledFor && (
+          <span className="text-xs text-muted-foreground">
+            {new Date(scheduledFor).toLocaleString('pt-BR', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              year: 'numeric',
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -96,7 +111,7 @@ export default function BlogDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <div className="bg-card p-6 rounded-lg border">
             <h3 className="font-medium text-sm text-muted-foreground">Total de Posts</h3>
             <p className="text-2xl font-bold text-foreground mt-2">
@@ -113,6 +128,12 @@ export default function BlogDashboard() {
             <h3 className="font-medium text-sm text-muted-foreground">Rascunhos</h3>
             <p className="text-2xl font-bold text-foreground mt-2">
               {posts?.filter(p => p.status === 'draft').length || 0}
+            </p>
+          </div>
+          <div className="bg-card p-6 rounded-lg border">
+            <h3 className="font-medium text-sm text-muted-foreground">Agendados</h3>
+            <p className="text-2xl font-bold text-foreground mt-2">
+              {posts?.filter(p => p.status === 'scheduled').length || 0}
             </p>
           </div>
           <div className="bg-card p-6 rounded-lg border">
@@ -142,6 +163,7 @@ export default function BlogDashboard() {
               <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="published">Publicados</SelectItem>
               <SelectItem value="draft">Rascunhos</SelectItem>
+              <SelectItem value="scheduled">Agendados</SelectItem>
               <SelectItem value="archived">Arquivados</SelectItem>
             </SelectContent>
           </Select>
@@ -180,7 +202,7 @@ export default function BlogDashboard() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(post.status)}
+                      {getStatusBadge(post.status, post.scheduled_for)}
                     </TableCell>
                     <TableCell>
                       {post.category ? (
