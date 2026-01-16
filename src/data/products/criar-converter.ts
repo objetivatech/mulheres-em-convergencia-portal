@@ -12,7 +12,7 @@ export const criarConverterContent: LandingPageContent = {
     tagline: 'Imersão presencial de marketing para mulheres empreendedoras',
     price: 297.00,
     paymentDescription: 'Método Criar & Converter - Imersão Presencial',
-    eventDates: '21, 22 e 23 de janeiro',
+    eventDates: '25, 26 e 27 de fevereiro',
     eventDuration: '+20 horas',
     eventFormat: 'presencial',
     eventLocation: 'Ilhota Hub - Largo Visconde do Cairú, 17 sala 500 - Centro Histórico, Porto Alegre - RS',
@@ -119,7 +119,7 @@ export const criarConverterContent: LandingPageContent = {
 
   eventDetails: {
     title: 'Detalhes do Evento',
-    dates: '21, 22 e 23 de janeiro de 2026',
+    dates: '25, 26 e 27 de fevereiro de 2026',
     duration: '+ de 20 horas de conteúdos',
     format: 'Presencial',
     location: 'Ilhota Hub - Largo Visconde do Cairú, 17 sala 500 - Centro Histórico, Porto Alegre - RS',
