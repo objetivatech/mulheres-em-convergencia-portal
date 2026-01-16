@@ -32,8 +32,8 @@ export const LPInvestment = ({ content, product, onCtaClick, isLoading }: LPInve
                 <p className="text-5xl md:text-6xl font-bold text-primary">
                   {content.price}
                 </p>
-                <p className="text-muted-foreground">
-                  pagamento único
+                <p className="text-2xl md:text-3xl font-bold">
+                  ou em até 10x de R$39,90
                 </p>
               </div>
 
