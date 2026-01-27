@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, Share2, UserCheck, Calendar, DollarSign, TrendingUp, Award } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, Share2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -94,6 +94,14 @@ const Admin = () => {
           icon: Users,
           available: isAdmin,
           href: '/admin/usuarios',
+          comingSoon: false
+        },
+        {
+          title: 'Gestão de Negócios',
+          description: 'Consultar, ativar e desativar negócios do diretório',
+          icon: Store,
+          available: isAdmin,
+          href: '/admin/negocios',
           comingSoon: false
         },
         {

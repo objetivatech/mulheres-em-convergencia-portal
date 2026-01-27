@@ -71,6 +71,7 @@ import AdminCRMFinancial from '@/pages/admin/AdminCRMFinancial';
 import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
 import AdminCRMJourney from '@/pages/admin/AdminCRMJourney';
 import AdminCostCenters from '@/pages/admin/AdminCostCenters';
+import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
 import { CookieConsent } from '@/components/CookieConsent';
 
 const queryClient = new QueryClient();
@@ -242,6 +243,11 @@ function AppContent() {
         <Route path="/admin/centros-custo" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminCostCenters />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/negocios" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminBusinessManagement />
           </ProtectedRoute>
         } />
         
