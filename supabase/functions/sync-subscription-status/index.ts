@@ -11,6 +11,47 @@ const logStep = (step: string, details?: any) => {
   console.log(`[SYNC-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Log sync errors for admin monitoring
+const logSyncError = async (supabaseClient: any, error: any, context: any) => {
+  try {
+    await supabaseClient.from('sync_error_log').insert({
+      error_type: 'subscription_sync',
+      error_message: error.message || String(error),
+      context: context,
+      created_at: new Date().toISOString()
+    });
+  } catch (logError) {
+    logStep('Failed to log sync error', { error: logError.message });
+  }
+};
+
+// Notify admins of critical sync failures
+const notifyAdmins = async (supabaseClient: any, message: string, details: any) => {
+  try {
+    // Get admin emails
+    const { data: admins } = await supabaseClient
+      .from('profiles')
+      .select('email')
+      .eq('is_admin', true);
+
+    if (admins && admins.length > 0) {
+      // Log critical notification (in production, you could send email here)
+      logStep('ADMIN NOTIFICATION', { message, details, adminCount: admins.length });
+      
+      // Store notification for admin dashboard
+      await supabaseClient.from('admin_notifications').insert({
+        type: 'sync_failure',
+        title: 'Falha na Sincronização de Assinatura',
+        message,
+        metadata: details,
+        created_at: new Date().toISOString()
+      }).catch(() => {});
+    }
+  } catch (error) {
+    logStep('Failed to notify admins', { error: error.message });
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,10 +68,12 @@ serve(async (req) => {
 
     // Parse request body for optional user_id parameter
     let specificUserId: string | null = null;
+    let forceSync = false;
     try {
       const body = await req.json();
       specificUserId = body?.user_id || null;
-      logStep("Request body parsed", { specificUserId });
+      forceSync = body?.force || false;
+      logStep("Request body parsed", { specificUserId, forceSync });
     } catch (e) {
       logStep("No request body or invalid JSON, proceeding with full sync");
     }
@@ -40,112 +83,148 @@ serve(async (req) => {
       throw new Error('ASAAS API key not configured');
     }
 
-    // Helper to call ASAAS API with environment fallback
-    const asaasBases = ['https://www.asaas.com/api/v3', 'https://sandbox.asaas.com/api/v3'];
+    // Determine ASAAS base URL
+    const asaasBaseUrl = asaasApiKey.includes('_test_') 
+      ? 'https://sandbox.asaas.com/api/v3'
+      : 'https://www.asaas.com/api/v3';
+
+    // Helper to call ASAAS API
     const asaasFetch = async (path: string) => {
-      for (const base of asaasBases) {
-        try {
-          const res = await fetch(`${base}${path}`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'access_token': asaasApiKey,
-            },
-          });
-          
-          if (res.ok) {
-            logStep('ASAAS request successful', { base, path });
-            return await res.json();
-          }
-        } catch (error) {
-          logStep('ASAAS request failed', { base, path, error: error.message });
-        }
+      const res = await fetch(`${asaasBaseUrl}${path}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'access_token': asaasApiKey,
+        },
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`ASAAS API error ${res.status}: ${errorText.substring(0, 200)}`);
       }
-      throw new Error(`Failed to fetch from ASAAS: ${path}`);
+      
+      return await res.json();
     };
 
-    // Fetch pending subscriptions, optionally filtered by user
+    // Fetch subscriptions to sync
+    // Include both pending AND active (to verify they're still active in ASAAS)
     let query = supabaseClient
       .from('user_subscriptions')
-      .select('*')
-      .eq('status', 'pending')
+      .select(`
+        *,
+        profiles:user_id (
+          id,
+          full_name,
+          email,
+          cpf
+        )
+      `)
       .not('external_subscription_id', 'is', null);
 
     if (specificUserId) {
       query = query.eq('user_id', specificUserId);
+    } else if (!forceSync) {
+      // Only sync pending subscriptions in normal mode
+      query = query.eq('status', 'pending');
     }
 
-    const { data: pendingSubscriptions, error: fetchError } = await query;
+    const { data: subscriptions, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Failed to fetch subscriptions: ${fetchError.message}`);
     }
 
-    logStep("Pending subscriptions found", { 
-      count: pendingSubscriptions?.length || 0,
-      specificUser: specificUserId 
+    logStep("Subscriptions to sync", { 
+      count: subscriptions?.length || 0,
+      specificUser: specificUserId,
+      forceSync
     });
 
     let updatedSubscriptions = 0;
     let activatedBusinesses = 0;
+    let syncErrors: any[] = [];
+    let requeued: string[] = [];
 
-    // Process each pending subscription
-    for (const subscription of pendingSubscriptions || []) {
+    // Process each subscription
+    for (const subscription of subscriptions || []) {
       try {
         logStep("Processing subscription", { 
           subscriptionId: subscription.id,
           externalId: subscription.external_subscription_id,
-          userId: subscription.user_id
+          userId: subscription.user_id,
+          currentStatus: subscription.status
         });
 
-        let paymentStatus = null;
-        let subscriptionStatus = null;
+        const externalId = subscription.external_subscription_id;
+        let asaasStatus: string | null = null;
+        let isPaymentConfirmed = false;
+        let asaasEntityType: 'subscription' | 'payment' | null = null;
 
-        // Try to get status as both subscription and payment
+        // First, try to get it as a subscription
         try {
-          // First, try as subscription
-          const subscriptionData = await asaasFetch(`/subscriptions/${subscription.external_subscription_id}`);
+          const subscriptionData = await asaasFetch(`/subscriptions/${externalId}`);
           if (subscriptionData && subscriptionData.status) {
-            subscriptionStatus = subscriptionData.status;
-            logStep("Found as ASAAS subscription", { 
-              externalId: subscription.external_subscription_id,
-              status: subscriptionStatus 
-            });
-          }
-        } catch (subError) {
-          logStep("Not found as subscription, trying as payment", { 
-            externalId: subscription.external_subscription_id 
-          });
-          
-          // If not subscription, try as payment
-          try {
-            const paymentData = await asaasFetch(`/payments/${subscription.external_subscription_id}`);
-            if (paymentData && paymentData.status) {
-              paymentStatus = paymentData.status;
-              logStep("Found as ASAAS payment", { 
-                externalId: subscription.external_subscription_id,
-                status: paymentStatus 
-              });
+            asaasStatus = subscriptionData.status;
+            asaasEntityType = 'subscription';
+            logStep("Found as ASAAS subscription", { externalId, status: asaasStatus });
+            
+            // For subscriptions, we need to check if there are RECEIVED/CONFIRMED payments
+            if (asaasStatus === 'ACTIVE') {
+              try {
+                const paymentsData = await asaasFetch(`/payments?subscription=${externalId}&status=RECEIVED&limit=1`);
+                if (paymentsData.data && paymentsData.data.length > 0) {
+                  isPaymentConfirmed = true;
+                  logStep("Subscription has confirmed payments", { count: paymentsData.totalCount });
+                }
+              } catch (e) {
+                // Try CONFIRMED status
+                const paymentsData = await asaasFetch(`/payments?subscription=${externalId}&status=CONFIRMED&limit=1`);
+                if (paymentsData.data && paymentsData.data.length > 0) {
+                  isPaymentConfirmed = true;
+                }
+              }
             }
-          } catch (payError) {
-            logStep("Not found as payment either", { 
-              externalId: subscription.external_subscription_id,
-              error: payError.message 
+          }
+        } catch (subError: any) {
+          logStep("Not a subscription, trying as payment", { externalId, error: subError.message });
+          
+          // Try as a single payment
+          try {
+            const paymentData = await asaasFetch(`/payments/${externalId}`);
+            if (paymentData && paymentData.status) {
+              asaasStatus = paymentData.status;
+              asaasEntityType = 'payment';
+              isPaymentConfirmed = paymentData.status === 'RECEIVED' || paymentData.status === 'CONFIRMED';
+              logStep("Found as ASAAS payment", { externalId, status: asaasStatus });
+            }
+          } catch (payError: any) {
+            logStep("Not found as payment either", { externalId, error: payError.message });
+            
+            // Record this as an error for admin review
+            syncErrors.push({
+              subscriptionId: subscription.id,
+              externalId,
+              userId: subscription.user_id,
+              userName: subscription.profiles?.full_name,
+              userEmail: subscription.profiles?.email,
+              error: 'External ID not found in ASAAS'
             });
+            
             continue;
           }
         }
 
-        // Check if payment/subscription is confirmed
-        const isConfirmed = 
-          paymentStatus === 'RECEIVED' || 
-          paymentStatus === 'CONFIRMED' ||
-          subscriptionStatus === 'ACTIVE';
+        // Determine if we should activate
+        const shouldActivate = 
+          isPaymentConfirmed || 
+          asaasStatus === 'ACTIVE' ||
+          asaasStatus === 'RECEIVED' || 
+          asaasStatus === 'CONFIRMED';
 
-        if (isConfirmed) {
-          logStep("Confirming subscription", { 
+        if (shouldActivate && subscription.status !== 'active') {
+          logStep("Activating subscription", { 
             subscriptionId: subscription.id,
-            paymentStatus,
-            subscriptionStatus 
+            asaasStatus,
+            asaasEntityType
           });
 
           // Update subscription status to active
@@ -162,21 +241,28 @@ serve(async (req) => {
               subscriptionId: subscription.id,
               error: updateError 
             });
+            syncErrors.push({
+              subscriptionId: subscription.id,
+              error: `Failed to update status: ${updateError.message}`
+            });
             continue;
           }
 
           updatedSubscriptions++;
 
-          // Activate businesses for this user
+          // Activate businesses for this user - calculate 31 days from now
+          const renewalDate = new Date();
+          renewalDate.setDate(renewalDate.getDate() + 31);
+          
           const { data: businesses, error: bizError } = await supabaseClient
             .from('businesses')
             .update({
               subscription_active: true,
               subscription_expires_at: subscription.expires_at,
+              subscription_renewal_date: renewalDate.toISOString(),
               updated_at: new Date().toISOString()
             })
             .eq('owner_id', subscription.user_id)
-            .eq('subscription_active', false)
             .select('id, name');
 
           if (bizError) {
@@ -192,25 +278,89 @@ serve(async (req) => {
               businesses: businesses?.map(b => ({ id: b.id, name: b.name }))
             });
           }
-        } else {
-          logStep("Payment/subscription not confirmed yet", { 
-            externalId: subscription.external_subscription_id,
-            paymentStatus,
-            subscriptionStatus 
+
+          // Log CRM interaction
+          try {
+            await supabaseClient.from('crm_interactions').insert({
+              user_id: subscription.user_id,
+              cpf: subscription.profiles?.cpf,
+              interaction_type: 'subscription_activated_sync',
+              channel: 'system',
+              description: `Assinatura sincronizada e ativada via sync-subscription-status`,
+              metadata: {
+                subscription_id: subscription.id,
+                external_id: externalId,
+                asaas_status: asaasStatus,
+                asaas_entity_type: asaasEntityType,
+                businesses_activated: businesses?.length || 0
+              }
+            });
+          } catch (crmError) {
+            logStep("Failed to log CRM interaction", { error: crmError });
+          }
+
+        } else if (!shouldActivate && subscription.status === 'pending') {
+          // Still pending - add to requeue for next sync
+          requeued.push(subscription.id);
+          logStep("Subscription still pending", { 
+            subscriptionId: subscription.id,
+            asaasStatus 
           });
+        } else if (asaasStatus === 'OVERDUE' || asaasStatus === 'CANCELED') {
+          // Handle cancelled/overdue subscriptions
+          logStep("Subscription is overdue/cancelled in ASAAS", {
+            subscriptionId: subscription.id,
+            asaasStatus
+          });
+          
+          // Only deactivate if it was active
+          if (subscription.status === 'active') {
+            await supabaseClient
+              .from('user_subscriptions')
+              .update({ 
+                status: 'cancelled',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', subscription.id);
+            
+            syncErrors.push({
+              subscriptionId: subscription.id,
+              externalId,
+              userId: subscription.user_id,
+              userName: subscription.profiles?.full_name,
+              warning: `Subscription marked as ${asaasStatus} in ASAAS`
+            });
+          }
         }
-      } catch (error) {
+      } catch (error: any) {
         logStep("Error processing subscription", { 
           subscriptionId: subscription.id,
           error: error.message 
         });
+        
+        syncErrors.push({
+          subscriptionId: subscription.id,
+          externalId: subscription.external_subscription_id,
+          userId: subscription.user_id,
+          error: error.message
+        });
       }
+    }
+
+    // If there were sync errors, notify admins
+    if (syncErrors.length > 0) {
+      await notifyAdmins(supabaseClient, 
+        `${syncErrors.length} erros na sincronização de assinaturas`,
+        { errors: syncErrors }
+      );
     }
 
     logStep("Sync completed", { 
       updatedSubscriptions,
       activatedBusinesses,
-      totalProcessed: pendingSubscriptions?.length || 0
+      totalProcessed: subscriptions?.length || 0,
+      errorsCount: syncErrors.length,
+      requeuedCount: requeued.length
     });
 
     return new Response(JSON.stringify({
@@ -218,7 +368,9 @@ serve(async (req) => {
       message: "Subscription sync completed",
       updatedSubscriptions,
       activatedBusinesses,
-      totalProcessed: pendingSubscriptions?.length || 0
+      totalProcessed: subscriptions?.length || 0,
+      errors: syncErrors,
+      requeued: requeued.length
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

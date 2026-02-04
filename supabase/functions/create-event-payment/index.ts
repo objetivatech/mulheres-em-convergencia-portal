@@ -142,7 +142,8 @@ serve(async (req) => {
     // Create payment in Asaas
     const paymentPayload = {
       customer: customerId,
-      billingType: payment_method,
+      // Use UNDEFINED to allow all payment methods (PIX, Boleto, Credit Card) in ASAAS checkout
+      billingType: "UNDEFINED",
       value: event.price,
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days from now
       description: `Inscrição: ${event.title}`,
