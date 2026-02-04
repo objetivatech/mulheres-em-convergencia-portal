@@ -388,7 +388,9 @@ serve(async (req) => {
     
     const subscriptionPayload: any = {
       customer: customerId,
-      billingType: payment_method,
+      // Use UNDEFINED to allow customer to choose any payment method (PIX, Boleto, Credit Card)
+      // in the ASAAS checkout page
+      billingType: payment_method === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'UNDEFINED',
       value: price,
       nextDueDate: getNextDueDate(),
       description: `Assinatura ${plan.display_name} - ${getBillingDescription()}`,
@@ -429,7 +431,8 @@ serve(async (req) => {
       // Fallback to single payment
       const paymentPayload: any = {
         customer: customerId,
-        billingType: payment_method,
+        // Use UNDEFINED to allow all payment methods in checkout
+        billingType: payment_method === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'UNDEFINED',
         value: price,
         dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         description: `Pagamento ${plan.display_name} - ${billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}`,

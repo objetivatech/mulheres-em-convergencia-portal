@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Store, Search, CheckCircle, XCircle, Gift, Calendar, 
   RefreshCw, Eye, Building2, User, CreditCard, AlertTriangle,
-  ExternalLink
+  ExternalLink, Loader2, Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -57,6 +57,8 @@ const AdminBusinessManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
 
   // Buscar todos os negócios com informações do proprietário e assinatura
   const { data: businesses = [], isLoading, refetch } = useQuery({
@@ -84,10 +86,44 @@ const AdminBusinessManagement = () => {
       return businessesData.map(business => ({
         ...business,
         owner: owners?.find(o => o.id === business.owner_id) || null,
-        subscription: subscriptions?.find(s => s.user_id === business.owner_id && s.status === 'active') || null,
+        subscription: subscriptions?.find(s => s.user_id === business.owner_id && (s.status === 'active' || s.status === 'pending')) || null,
       })) as Business[];
     },
   });
+
+  // Sincronização manual com ASAAS
+  const syncWithAsaas = async (userId?: string) => {
+    if (userId) {
+      setSyncingUserId(userId);
+    } else {
+      setIsSyncingAll(true);
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-subscription-status', {
+        body: userId ? { user_id: userId } : { force: true }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Sincronização concluída',
+        description: `${data.updatedSubscriptions || 0} assinatura(s) atualizada(s), ${data.activatedBusinesses || 0} negócio(s) ativado(s)`,
+      });
+      
+      refetch();
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast({
+        title: 'Erro na sincronização',
+        description: error.message || 'Erro ao sincronizar com ASAAS',
+        variant: 'destructive'
+      });
+    } finally {
+      setSyncingUserId(null);
+      setIsSyncingAll(false);
+    }
+  };
 
   // Filtrar negócios
   const filteredBusinesses = businesses.filter(business => {
@@ -208,6 +244,18 @@ const AdminBusinessManagement = () => {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
+                    <Button 
+                      variant="default" 
+                      onClick={() => syncWithAsaas()}
+                      disabled={isSyncingAll}
+                    >
+                      {isSyncingAll ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Zap className="h-4 w-4 mr-2" />
+                      )}
+                      Sincronizar ASAAS
+                    </Button>
                     <Button variant="outline" onClick={() => refetch()}>
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Atualizar
@@ -320,7 +368,22 @@ const AdminBusinessManagement = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Link to={`/diretorio/${business.id}`} target="_blank">
+                                {business.owner_id && business.subscription?.status === 'pending' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => syncWithAsaas(business.owner_id!)}
+                                    disabled={syncingUserId === business.owner_id}
+                                    title="Sincronizar com ASAAS"
+                                  >
+                                    {syncingUserId === business.owner_id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Zap className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                )}
+                                <Link to={`/diretorio/${business.slug}`} target="_blank">
                                   <Button variant="outline" size="sm">
                                     <ExternalLink className="h-4 w-4" />
                                   </Button>
