@@ -143,6 +143,22 @@ src/
 - ✅ Diferentes tipos de destaque (Featured, Premium Badge, Spotlight)
 - ✅ Controle de acesso por plano de assinatura
 
+### ✅ FASE 6 - Implementada (Upgrade do Perfil)
+- ✅ Cadastro de horários de funcionamento (dias/períodos)
+- ✅ Sistema de facilidades/amenidades com ícones
+- ✅ Correção do mapa com geocodificação por endereço completo
+- ✅ Novas tabelas: `business_amenities`, `business_menu_categories`, `business_menu_items`
+- ✅ Componentes de exibição pública (OpeningHoursDisplay, AmenitiesDisplay)
+- ✅ Indicador "Aberto agora" / "Fechado" em tempo real
+- ✅ Interface responsiva otimizada para mobile
+
+### 🔜 FASE 7 - Planejada (Cardápio/Catálogo)
+- 🔜 Editor de categorias de produtos/serviços
+- 🔜 Cadastro de itens com imagem, descrição e preço
+- 🔜 Tags de destaque (Novo, Mais vendido, Promoção)
+- 🔜 Drag-and-drop para reordenação
+- 🔜 Exibição pública com abas por categoria
+
 ## Segurança e Performance
 
 - **RLS (Row Level Security)**: Controle de acesso no Supabase
@@ -168,5 +184,26 @@ src/
 
 ---
 
-*Documentação atualizada em: Janeiro 2025*
-*Versão: 4.0 - Fases 1, 2, 3 e 4 Implementadas*
+## Alterações Recentes (Fevereiro 2026)
+
+### Removido
+- ❌ Integração Ayrshare/Redes Sociais (removida por descontinuação do serviço)
+- ❌ Bloco "Redes Sociais" do painel administrativo
+- ❌ Edge functions relacionadas: `ayrshare-auth`, `ayrshare-post`, `linkedin-auth`
+
+### Adicionado
+- ✅ Auto-rotação no slider de parceiros (2.5s delay)
+- ✅ Efeito grayscale-to-color no hover dos logos de parceiros
+- ✅ Sincronização de reviews nos cards da home via SQL JOIN
+- ✅ Sistema de horários de funcionamento com múltiplos períodos
+- ✅ Facilidades/amenidades com ícones visuais
+- ✅ Geocodificação por endereço completo para precisão no mapa
+
+### Corrigido
+- ✅ Marcador do mapa agora reflete o endereço exato do negócio
+- ✅ Avaliações sincronizadas corretamente nos cards de showcase
+
+---
+
+*Documentação atualizada em: Fevereiro 2026*
+*Versão: 5.0 - Fases 1 a 6 Implementadas*
