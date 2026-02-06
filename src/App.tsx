@@ -33,8 +33,6 @@ import ResetPasswordWithToken from "./pages/ResetPasswordWithToken";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
-import AdminAyrshare from "./pages/AdminAyrshare";
-import AdminSocialMedia from "./pages/AdminSocialMedia";
 import AdminPartners from "./pages/AdminPartners";
 import AdminContactMessages from "./pages/AdminContactMessages";
 import UserManagement from './pages/UserManagement';
@@ -157,16 +155,7 @@ function AppContent() {
         <Route path="/admin/users" element={<Navigate to="/admin/usuarios" replace />} />
         <Route path="/admin/user-journey" element={<Navigate to="/admin/jornada-usuario" replace />} />
         <Route path="/admin/analytics" element={<Navigate to="/admin/analiticas" replace />} />
-        <Route path="/admin/ayrshare" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminAyrshare />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/redes-sociais" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminSocialMedia />
-          </ProtectedRoute>
-        } />
+        {/* Rotas removidas: AdminAyrshare, AdminSocialMedia */}
         <Route path="/admin/parceiros" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminPartners />

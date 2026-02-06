@@ -3856,6 +3856,7 @@ export type Database = {
       get_featured_businesses: {
         Args: { limit_count?: number }
         Returns: {
+          average_rating: number
           category: string
           city: string
           community_name: string
@@ -3864,6 +3865,7 @@ export type Database = {
           id: string
           logo_url: string
           name: string
+          reviews_count: number
           slug: string
           state: string
           subscription_plan: string
@@ -4024,6 +4026,7 @@ export type Database = {
       get_random_businesses: {
         Args: { limit_count?: number }
         Returns: {
+          average_rating: number
           category: string
           city: string
           community_name: string
@@ -4032,6 +4035,7 @@ export type Database = {
           id: string
           logo_url: string
           name: string
+          reviews_count: number
           slug: string
           state: string
           subscription_plan: string

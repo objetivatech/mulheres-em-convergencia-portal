@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Layout from '@/components/layout/Layout';
 import { useBlogPosts, useDeleteBlogPost } from '@/hooks/useBlogPosts';
-import { PublishToSocialButton } from '@/components/blog/PublishToSocialButton';
+
 import { useBlogCategories } from '@/hooks/useBlogCategories';
 
 export default function BlogDashboard() {
@@ -227,9 +227,6 @@ export default function BlogDashboard() {
                             <Edit className="w-4 h-4" />
                           </Link>
                         </Button>
-                        {post.status === 'published' && (
-                          <PublishToSocialButton post={post} variant="outline" size="sm" />
-                        )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
