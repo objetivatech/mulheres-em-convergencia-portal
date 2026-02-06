@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -36,10 +36,16 @@ export const PartnersCarousel = ({
   const [loading, setLoading] = useState(true);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [hoveredPartnerId, setHoveredPartnerId] = useState<string | null>(null);
+
+  const autoplayPlugin = React.useMemo(
+    () => Autoplay({ delay: 2500, stopOnInteraction: false, stopOnMouseEnter: true }),
+    []
+  );
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: 'start' },
-    [Autoplay({ delay: 3000, stopOnInteraction: false })]
+    { loop: true, align: 'start', dragFree: true },
+    [autoplayPlugin]
   );
 
   useEffect(() => {
@@ -102,25 +108,35 @@ export const PartnersCarousel = ({
           </div>
 
           <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-8">
-              {partners.map((partner) => (
-                <div
-                  key={partner.id}
-                  className="flex-[0_0_33.33%] md:flex-[0_0_20%] lg:flex-[0_0_14.28%] min-w-0"
-                >
-                  <button
-                    onClick={() => handlePartnerClick(partner)}
-                    className="w-full h-24 bg-card border border-border rounded-lg p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"
+            <div className="flex gap-6">
+              {partners.map((partner) => {
+                const isHovered = hoveredPartnerId === partner.id;
+                const isSelected = selectedPartner?.id === partner.id;
+                const isActive = isHovered || isSelected;
+                
+                return (
+                  <div
+                    key={partner.id}
+                    className="flex-[0_0_28%] sm:flex-[0_0_22%] md:flex-[0_0_16%] lg:flex-[0_0_12%] min-w-0"
                   >
-                    <img
-                      src={partner.logo_url}
-                      alt={partner.name}
-                      className="w-full h-full object-contain"
-                      loading="lazy"
-                    />
-                  </button>
-                </div>
-              ))}
+                    <button
+                      onClick={() => handlePartnerClick(partner)}
+                      onMouseEnter={() => setHoveredPartnerId(partner.id)}
+                      onMouseLeave={() => setHoveredPartnerId(null)}
+                      className="w-full h-20 md:h-24 bg-card border border-border rounded-lg p-3 md:p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <img
+                        src={partner.logo_url}
+                        alt={partner.name}
+                        className={`w-full h-full object-contain transition-all duration-300 ${
+                          isActive ? '' : 'grayscale opacity-70'
+                        }`}
+                        loading="lazy"
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
