@@ -18,6 +18,8 @@ import { CommunityRequestDialog } from '@/components/business/CommunityRequestDi
 import { useBusinessAnalytics } from '@/hooks/useBusinessAnalytics';
 import { useToast } from '@/hooks/use-toast';
 import { useGeocoding } from '@/hooks/useGeocoding';
+import { OpeningHoursEditor, OpeningHours } from '@/components/business/OpeningHoursEditor';
+import { AmenitiesEditor, Amenity } from '@/components/business/AmenitiesEditor';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -91,7 +93,7 @@ const categoryLabels = {
 export const DashboardEmpresa = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { geocodeLocation } = useGeocoding();
+  const { geocodeFullAddress } = useGeocoding();
   const [business, setBusiness] = useState<any>(null);
   const [userSubscription, setUserSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,8 @@ export const DashboardEmpresa = () => {
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [coverUrl, setCoverUrl] = useState<string>('');
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
+  const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewStats, setReviewStats] = useState<any>(null);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -158,6 +162,14 @@ export const DashboardEmpresa = () => {
         setCoverUrl(data.cover_image_url || '');
         setGalleryImages(data.gallery_images || []);
         setSelectedCommunityId(data.community_id || null);
+        
+        // Carregar horários de funcionamento
+        if (data.opening_hours && typeof data.opening_hours === 'object') {
+          setOpeningHours(data.opening_hours as unknown as OpeningHours);
+        }
+        
+        // Carregar facilidades do banco
+        fetchAmenities(data.id);
         
         // Preencher formulário
         Object.keys(data).forEach(key => {
@@ -222,6 +234,31 @@ export const DashboardEmpresa = () => {
     } catch (error) {
       console.error('Erro ao carregar comunidades:', error);
       // Não quebra a página se falhar
+    }
+  };
+
+  const fetchAmenities = async (businessId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('business_amenities')
+        .select('*')
+        .eq('business_id', businessId)
+        .eq('active', true);
+
+      if (error) {
+        console.error('Erro ao carregar facilidades:', error);
+        return;
+      }
+
+      if (data) {
+        setAmenities(data.map(a => ({
+          name: a.name,
+          icon: a.icon || 'Sparkles',
+          active: a.active
+        })));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar facilidades:', error);
     }
   };
 
@@ -318,16 +355,22 @@ export const DashboardEmpresa = () => {
         galleryCount: galleryImages.length
       });
       
-      // Geocodificar endereço para obter latitude e longitude
+      // Geocodificar endereço COMPLETO para obter latitude e longitude precisas
       let latitude = business?.latitude;
       let longitude = business?.longitude;
       
-      if (data.city && data.state) {
-        const geocoded = await geocodeLocation(data.city, data.state);
+      if (data.address && data.city && data.state) {
+        const geocoded = await geocodeFullAddress(data.address, data.city, data.state, data.postal_code);
         if (geocoded) {
           latitude = geocoded.latitude;
           longitude = geocoded.longitude;
-          console.log('Endereço geocodificado:', { city: data.city, state: data.state, latitude, longitude });
+          console.log('Endereço geocodificado:', { 
+            address: data.address,
+            city: data.city, 
+            state: data.state, 
+            latitude, 
+            longitude 
+          });
         }
       }
       
@@ -371,6 +414,7 @@ export const DashboardEmpresa = () => {
         logo_url: logoUrl || null,
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
+        opening_hours: openingHours ? openingHours as unknown as Database['public']['Tables']['businesses']['Insert']['opening_hours'] : null,
         community_id: selectedCommunityId,
         owner_id: user?.id,
         subscription_active: (business?.is_complimentary === true) ||
@@ -381,6 +425,8 @@ export const DashboardEmpresa = () => {
         requires_subscription: true
       };
 
+      let businessIdForAmenities: string | undefined;
+
       if (business) {
         // Atualizar
         const { error } = await supabase
@@ -389,6 +435,7 @@ export const DashboardEmpresa = () => {
           .eq('id', business.id);
 
         if (error) throw error;
+        businessIdForAmenities = business.id;
 
         // Log business update activity
         await supabase.rpc('log_user_activity', {
@@ -412,6 +459,7 @@ export const DashboardEmpresa = () => {
 
         if (error) throw error;
         setBusiness(newBusiness);
+        businessIdForAmenities = newBusiness.id;
 
         // Log business creation activity
         await supabase.rpc('log_user_activity', {
@@ -426,6 +474,31 @@ export const DashboardEmpresa = () => {
             state: data.state
           }
         });
+      }
+
+      // Salvar facilidades/amenidades
+      if (amenities.length > 0 && businessIdForAmenities) {
+        // Primeiro, remover facilidades antigas
+        await supabase
+          .from('business_amenities')
+          .delete()
+          .eq('business_id', businessIdForAmenities);
+        
+        // Inserir novas facilidades
+        const amenitiesToInsert = amenities.map(a => ({
+          business_id: businessIdForAmenities,
+          name: a.name,
+          icon: a.icon,
+          active: true
+        }));
+        
+        const { error: amenitiesError } = await supabase
+          .from('business_amenities')
+          .insert(amenitiesToInsert);
+        
+        if (amenitiesError) {
+          console.error('Erro ao salvar facilidades:', amenitiesError);
+        }
       }
 
       // Debug: Confirmar o que foi salvo
@@ -730,10 +803,11 @@ export const DashboardEmpresa = () => {
         )}
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="w-full flex gap-1 overflow-x-auto scrollbar-hide md:grid md:grid-cols-6 p-1">
-            <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Dados da Empresa</TabsTrigger>
+          <TabsList className="w-full flex gap-1 overflow-x-auto scrollbar-hide p-1">
+            <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Dados</TabsTrigger>
+            <TabsTrigger value="horarios" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Horários</TabsTrigger>
             <TabsTrigger value="imagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Imagens</TabsTrigger>
-            <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Áreas de Atendimento</TabsTrigger>
+            <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Áreas</TabsTrigger>
             <TabsTrigger value="contatos" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Contatos</TabsTrigger>
             <TabsTrigger value="mensagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Mensagens</TabsTrigger>
             <TabsTrigger value="avaliacoes" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Avaliações</TabsTrigger>
@@ -890,6 +964,27 @@ export const DashboardEmpresa = () => {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="horarios" className="space-y-6">
+            <OpeningHoursEditor
+              value={openingHours}
+              onChange={setOpeningHours}
+            />
+            <AmenitiesEditor
+              value={amenities}
+              onChange={setAmenities}
+            />
+            
+            {/* Botão para salvar horários e facilidades */}
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleSubmit(onSubmit)} 
+                disabled={saving}
+              >
+                {saving ? 'Salvando...' : 'Salvar Horários e Facilidades'}
+              </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="imagens" className="space-y-6">
