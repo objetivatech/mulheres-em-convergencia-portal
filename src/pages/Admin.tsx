@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, Share2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -170,22 +170,6 @@ const Admin = () => {
           icon: Settings,
           available: isAdmin,
           href: '/admin/configuracoes-site',
-          comingSoon: false
-        },
-        {
-          title: 'Redes Sociais',
-          description: 'Conectar contas e publicar nas redes sociais',
-          icon: Share2,
-          available: isAdmin,
-          href: '/admin/redes-sociais',
-          comingSoon: false
-        },
-        {
-          title: 'Integrações',
-          description: 'Ayrshare e outras integrações',
-          icon: Settings,
-          available: isAdmin,
-          href: '/admin/ayrshare',
           comingSoon: false
         },
         {
