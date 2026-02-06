@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useGeocoding } from '@/hooks/useGeocoding';
 import { OpeningHoursEditor, OpeningHours } from '@/components/business/OpeningHoursEditor';
 import { AmenitiesEditor, Amenity } from '@/components/business/AmenitiesEditor';
+import { MenuEditor } from '@/components/business/MenuEditor';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -806,6 +807,7 @@ export const DashboardEmpresa = () => {
           <TabsList className="w-full flex gap-1 overflow-x-auto scrollbar-hide p-1">
             <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Dados</TabsTrigger>
             <TabsTrigger value="horarios" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Horários</TabsTrigger>
+            <TabsTrigger value="cardapio" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Cardápio</TabsTrigger>
             <TabsTrigger value="imagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Imagens</TabsTrigger>
             <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Áreas</TabsTrigger>
             <TabsTrigger value="contatos" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Contatos</TabsTrigger>
@@ -985,6 +987,18 @@ export const DashboardEmpresa = () => {
                 {saving ? 'Salvando...' : 'Salvar Horários e Facilidades'}
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="cardapio" className="space-y-6">
+            {business?.id ? (
+              <MenuEditor businessId={business.id} />
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Salve os dados básicos da empresa primeiro para gerenciar o cardápio.
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="imagens" className="space-y-6">

@@ -24,6 +24,10 @@ import { BusinessMapboxMap } from '@/components/maps/BusinessMapboxMap';
 import ReviewForm from '@/components/ui/review-form';
 import BusinessContactForm from '@/components/business/BusinessContactForm';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { OpeningHoursDisplay } from '@/components/business/OpeningHoursDisplay';
+import { AmenitiesDisplay } from '@/components/business/AmenitiesDisplay';
+import { MenuDisplay } from '@/components/business/MenuDisplay';
+import { useBusinessAmenities } from '@/hooks/useBusinessAmenities';
 
 interface BusinessDetails {
   id: string;
@@ -79,6 +83,9 @@ const DiretorioEmpresa = () => {
   const [loading, setLoading] = useState(true);
   const [showAllImages, setShowAllImages] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  
+  // Hook para buscar amenidades - deve ser chamado antes de qualquer return
+  const { amenities, loading: amenitiesLoading } = useBusinessAmenities(business?.id);
 
   useEffect(() => {
     if (slug) {
@@ -379,6 +386,27 @@ const DiretorioEmpresa = () => {
                 </Card>
               )}
 
+              {/* Amenities/Facilities */}
+              {amenities.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Facilidades</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <AmenitiesDisplay 
+                      amenities={amenities.map(a => ({
+                        name: a.name,
+                        icon: a.icon,
+                        active: a.active
+                      }))} 
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Menu/Catalog */}
+              <MenuDisplay businessId={business.id} />
+
               {/* Gallery */}
               {business?.gallery_images && Array.isArray(business.gallery_images) && business.gallery_images.length > 0 && (
                 <Card>
@@ -611,20 +639,7 @@ const DiretorioEmpresa = () => {
 
               {/* Opening Hours */}
               {business.opening_hours && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      <Clock className="w-4 h-4 inline mr-2" />
-                      Horário de Funcionamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Aqui você pode implementar a exibição dos horários */}
-                    <p className="text-sm text-muted-foreground">
-                      Informações de horário disponíveis em breve.
-                    </p>
-                  </CardContent>
-                </Card>
+                <OpeningHoursDisplay hours={business.opening_hours} />
               )}
 
               {/* Stats */}
