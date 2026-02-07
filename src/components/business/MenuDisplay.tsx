@@ -91,7 +91,7 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
       <CardContent className="px-3 sm:px-6">
         <Tabs value={activeCategory} onValueChange={setSelectedCategory} className="w-full">
           <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-            <div className="inline-flex gap-2 min-w-full sm:min-w-0">
+            <TabsList className="inline-flex gap-2 h-auto p-1 bg-transparent">
               {categories.map((category) => {
                 const itemCount = items.filter(item => item.category_id === category.id).length;
                 return (
@@ -118,7 +118,7 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
                   </Badge>
                 </TabsTrigger>
               )}
-            </div>
+            </TabsList>
           </div>
 
           {categories.map((category) => (
