@@ -32,6 +32,11 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
   const { categories, items, loading, hasMenu } = useBusinessMenu(businessId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Não renderizar nada se não houver businessId
+  if (!businessId) {
+    return null;
+  }
+
   if (loading) {
     return (
       <Card className={className}>
