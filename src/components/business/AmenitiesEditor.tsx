@@ -153,14 +153,14 @@ export const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5" />
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Sparkles className="h-5 w-5 flex-shrink-0" />
           Facilidades Oferecidas
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-3 sm:px-6">
         {/* Facilidades Selecionadas */}
         {amenities.length > 0 && (
           <div className="mb-4">
@@ -193,12 +193,12 @@ export const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({
             <Label className="text-sm font-medium text-muted-foreground mb-2 block">
               {category}
             </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {items.map(item => (
                 <div
                   key={item.name}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors min-h-[48px]",
                     isSelected(item.name) 
                       ? "bg-primary/5 border-primary" 
                       : "bg-background border-border hover:bg-muted/50"
@@ -209,6 +209,7 @@ export const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({
                     checked={isSelected(item.name)}
                     onCheckedChange={() => toggleAmenity(item.name, item.icon)}
                     aria-label={item.name}
+                    className="h-5 w-5"
                   />
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {renderIcon(item.icon, cn(
@@ -216,7 +217,7 @@ export const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({
                       isSelected(item.name) ? "text-primary" : "text-muted-foreground"
                     ))}
                     <span className={cn(
-                      "text-sm truncate",
+                      "text-sm",
                       isSelected(item.name) ? "font-medium" : ""
                     )}>
                       {item.name}

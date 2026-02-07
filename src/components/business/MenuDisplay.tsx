@@ -76,50 +76,52 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
   const filteredItems = items.filter(item => item.category_id === activeCategory);
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UtensilsCrossed className="w-5 h-5" />
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <UtensilsCrossed className="w-5 h-5 flex-shrink-0" />
           Produtos e Serviços
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 sm:px-6">
         <Tabs value={activeCategory} onValueChange={setSelectedCategory} className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto flex-wrap h-auto gap-1 bg-transparent p-0 mb-4">
-            {categories.map((category) => {
-              const itemCount = items.filter(item => item.category_id === category.id).length;
-              return (
+          <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div className="inline-flex gap-2 min-w-full sm:min-w-0">
+              {categories.map((category) => {
+                const itemCount = items.filter(item => item.category_id === category.id).length;
+                return (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.id}
+                    className="whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-3 py-1.5 text-sm min-h-[36px] flex-shrink-0"
+                  >
+                    {category.name}
+                    <Badge variant="secondary" className="ml-1.5 text-xs">
+                      {itemCount}
+                    </Badge>
+                  </TabsTrigger>
+                );
+              })}
+              {uncategorizedItems.length > 0 && (
                 <TabsTrigger
-                  key={category.id}
-                  value={category.id}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4"
+                  value="uncategorized"
+                  className="whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-3 py-1.5 text-sm min-h-[36px] flex-shrink-0"
                 >
-                  {category.name}
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {itemCount}
+                  Outros
+                  <Badge variant="secondary" className="ml-1.5 text-xs">
+                    {uncategorizedItems.length}
                   </Badge>
                 </TabsTrigger>
-              );
-            })}
-            {uncategorizedItems.length > 0 && (
-              <TabsTrigger
-                value="uncategorized"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4"
-              >
-                Outros
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {uncategorizedItems.length}
-                </Badge>
-              </TabsTrigger>
-            )}
-          </TabsList>
+              )}
+            </div>
+          </div>
 
           {categories.map((category) => (
-            <TabsContent key={category.id} value={category.id} className="mt-0">
+            <TabsContent key={category.id} value={category.id} className="mt-4">
               {category.description && (
-                <p className="text-sm text-muted-foreground mb-4">{category.description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3">{category.description}</p>
               )}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {items
                   .filter(item => item.category_id === category.id)
                   .map((item) => (
@@ -130,8 +132,8 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
           ))}
 
           {uncategorizedItems.length > 0 && (
-            <TabsContent value="uncategorized" className="mt-0">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <TabsContent value="uncategorized" className="mt-4">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                 {uncategorizedItems.map((item) => (
                   <MenuItemCard key={item.id} item={item} />
                 ))}
@@ -159,9 +161,9 @@ const MenuItemCard: React.FC<{
   const highlight = item.highlight_label ? highlightLabels[item.highlight_label] : null;
 
   return (
-    <div className="flex gap-4 p-4 rounded-lg border bg-card hover:shadow-md transition-shadow">
+    <div className="flex gap-3 p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md transition-shadow">
       {/* Imagem */}
-      <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
+      <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-muted">
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -171,33 +173,31 @@ const MenuItemCard: React.FC<{
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="w-8 h-8 text-muted-foreground" />
+            <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
           </div>
         )}
       </div>
 
       {/* Conteúdo */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="font-medium truncate">{item.name}</h4>
-              {item.is_highlighted && highlight && (
-                <Badge className={cn('text-xs', highlight.color)}>
-                  {highlight.label}
-                </Badge>
-              )}
-            </div>
-            {item.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {item.description}
-              </p>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-1 flex-wrap">
+            <h4 className="font-medium text-sm sm:text-base leading-tight">{item.name}</h4>
+            {item.is_highlighted && highlight && (
+              <Badge className={cn('text-[10px] sm:text-xs px-1.5 py-0.5', highlight.color)}>
+                {highlight.label}
+              </Badge>
             )}
           </div>
+          {item.description && (
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mt-0.5">
+              {item.description}
+            </p>
+          )}
         </div>
         
-        <div className="mt-2">
-          <span className="font-semibold text-primary">
+        <div className="mt-auto pt-1">
+          <span className="font-semibold text-primary text-sm sm:text-base">
             {formatPrice(item.price)}
           </span>
         </div>
