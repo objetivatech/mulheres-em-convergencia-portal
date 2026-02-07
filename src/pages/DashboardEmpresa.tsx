@@ -22,6 +22,7 @@ import { OpeningHoursEditor, OpeningHours } from '@/components/business/OpeningH
 import { AmenitiesEditor, Amenity } from '@/components/business/AmenitiesEditor';
 import { MenuEditor } from '@/components/business/MenuEditor';
 import { Building2, TrendingUp, Eye, Phone, Mail } from 'lucide-react';
+import { ScrollableTabsContainer } from '@/components/ui/scrollable-tabs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -804,7 +805,7 @@ export const DashboardEmpresa = () => {
         )}
 
         <Tabs defaultValue="dados" className="w-full">
-          <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <ScrollableTabsContainer className="pb-2">
             <TabsList className="inline-flex h-auto min-w-full sm:min-w-0 gap-1 p-1 bg-muted/50 rounded-lg">
               <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Dados</TabsTrigger>
               <TabsTrigger value="horarios" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Horários</TabsTrigger>
@@ -815,7 +816,7 @@ export const DashboardEmpresa = () => {
               <TabsTrigger value="mensagens" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Mensagens</TabsTrigger>
               <TabsTrigger value="avaliacoes" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Avaliações</TabsTrigger>
             </TabsList>
-          </div>
+          </ScrollableTabsContainer>
 
           <TabsContent value="dados" className="space-y-6">
             <Card>

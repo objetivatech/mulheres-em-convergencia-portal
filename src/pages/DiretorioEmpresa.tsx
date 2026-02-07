@@ -84,8 +84,9 @@ const DiretorioEmpresa = () => {
   const [showAllImages, setShowAllImages] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   
-  // Hook para buscar amenidades - deve ser chamado antes de qualquer return
-  const { amenities, loading: amenitiesLoading } = useBusinessAmenities(business?.id);
+  // Hook para buscar amenidades - chamado com ID do business (pode ser undefined)
+  const businessId = business?.id;
+  const { amenities, loading: amenitiesLoading } = useBusinessAmenities(businessId);
 
   useEffect(() => {
     if (slug) {
