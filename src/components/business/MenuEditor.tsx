@@ -312,22 +312,22 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
   return (
     <div className="space-y-6">
       {/* Header com botões de ação */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3">
         <div>
-          <h3 className="text-lg font-semibold">Cardápio / Catálogo</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-base sm:text-lg font-semibold">Cardápio / Catálogo</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Adicione categorias e itens para exibir no seu perfil
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px]">
                 <FolderPlus className="w-4 h-4 mr-2" />
                 Nova Categoria
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="mx-4 sm:mx-0 max-w-[calc(100vw-2rem)] sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Nova Categoria</DialogTitle>
               </DialogHeader>
@@ -339,6 +339,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     placeholder="Ex: Entradas, Pratos Principais, Serviços..."
+                    className="min-h-[44px]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -352,11 +353,11 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                   />
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
                 <DialogClose asChild>
-                  <Button variant="outline">Cancelar</Button>
+                  <Button variant="outline" className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
                 </DialogClose>
-                <Button onClick={handleAddCategory} disabled={saving}>
+                <Button onClick={handleAddCategory} disabled={saving} className="w-full sm:w-auto min-h-[44px]">
                   {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Adicionar
                 </Button>
@@ -364,7 +365,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
             </DialogContent>
           </Dialog>
 
-          <Button size="sm" onClick={() => openItemDialog()}>
+          <Button size="sm" onClick={() => openItemDialog()} className="w-full sm:w-auto min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             Novo Item
           </Button>
@@ -428,10 +429,11 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                       </div>
                     )}
                     
-                    <div className="flex gap-2 pt-2 border-t">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t">
                       <Button 
                         variant="outline" 
                         size="sm" 
+                        className="min-h-[40px]"
                         onClick={() => {
                           setItemCategoryId(category.id);
                           openItemDialog();
@@ -443,7 +445,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive min-h-[40px]"
                         onClick={() => handleDeleteCategory(category.id)}
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
@@ -484,7 +486,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
 
       {/* Dialog para adicionar/editar item */}
       <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="mx-4 sm:mx-0 max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingItem ? 'Editar Item' : 'Novo Item'}</DialogTitle>
           </DialogHeader>
@@ -510,7 +512,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="itemPrice">Preço (R$)</Label>
                 <Input
@@ -520,6 +522,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                   placeholder="0,00"
                   type="text"
                   inputMode="decimal"
+                  className="min-h-[44px]"
                 />
               </div>
 
@@ -529,7 +532,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
                   value={itemCategoryId || 'none'}
                   onValueChange={(value) => setItemCategoryId(value === 'none' ? null : value)}
                 >
-                  <SelectTrigger id="itemCategory">
+                  <SelectTrigger id="itemCategory" className="min-h-[44px]">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -603,11 +606,11 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({ businessId }) => {
               )}
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <DialogClose asChild>
-              <Button variant="outline">Cancelar</Button>
+              <Button variant="outline" className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
             </DialogClose>
-            <Button onClick={handleSaveItem} disabled={saving}>
+            <Button onClick={handleSaveItem} disabled={saving} className="w-full sm:w-auto min-h-[44px]">
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {editingItem ? 'Salvar' : 'Adicionar'}
             </Button>
@@ -635,9 +638,9 @@ const ItemCard: React.FC<{
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+    <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
       {/* Imagem */}
-      <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
+      <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-muted">
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -646,35 +649,35 @@ const ItemCard: React.FC<{
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Image className="w-6 h-6 text-muted-foreground" />
+            <Image className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
           </div>
         )}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{item.name}</span>
+        <div className="flex items-start gap-1 flex-wrap">
+          <span className="font-medium text-sm sm:text-base leading-tight">{item.name}</span>
           {item.is_highlighted && item.highlight_label && (
-            <Badge className={cn('text-xs', highlightColors[item.highlight_label] || 'bg-primary/10 text-primary')}>
+            <Badge className={cn('text-[10px] sm:text-xs px-1.5', highlightColors[item.highlight_label] || 'bg-primary/10 text-primary')}>
               {highlightLabels.find(l => l.value === item.highlight_label)?.label || item.highlight_label}
             </Badge>
           )}
         </div>
         {item.description && (
-          <p className="text-sm text-muted-foreground truncate">{item.description}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">{item.description}</p>
         )}
-        <span className="text-sm font-semibold text-primary">
+        <span className="text-xs sm:text-sm font-semibold text-primary">
           {formatPrice(item.price)}
         </span>
       </div>
 
       {/* Ações */}
-      <div className="flex-shrink-0 flex gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
+      <div className="flex-shrink-0 flex flex-col sm:flex-row gap-1">
+        <Button variant="ghost" size="icon" className="h-8 w-8 min-h-[32px]" onClick={onEdit}>
           <Edit className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={onDelete}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 min-h-[32px] text-destructive hover:text-destructive" onClick={onDelete}>
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>

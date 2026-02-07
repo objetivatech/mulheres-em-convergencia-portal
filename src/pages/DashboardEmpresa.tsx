@@ -804,16 +804,18 @@ export const DashboardEmpresa = () => {
         )}
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="w-full flex gap-1 overflow-x-auto scrollbar-hide p-1">
-            <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Dados</TabsTrigger>
-            <TabsTrigger value="horarios" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Horários</TabsTrigger>
-            <TabsTrigger value="cardapio" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Cardápio</TabsTrigger>
-            <TabsTrigger value="imagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Imagens</TabsTrigger>
-            <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Áreas</TabsTrigger>
-            <TabsTrigger value="contatos" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Contatos</TabsTrigger>
-            <TabsTrigger value="mensagens" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Mensagens</TabsTrigger>
-            <TabsTrigger value="avaliacoes" className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3">Avaliações</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex h-auto min-w-full sm:min-w-0 gap-1 p-1 bg-muted/50 rounded-lg">
+              <TabsTrigger value="dados" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Dados</TabsTrigger>
+              <TabsTrigger value="horarios" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Horários</TabsTrigger>
+              <TabsTrigger value="cardapio" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Cardápio</TabsTrigger>
+              <TabsTrigger value="imagens" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Imagens</TabsTrigger>
+              <TabsTrigger value="areas" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Áreas</TabsTrigger>
+              <TabsTrigger value="contatos" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Contatos</TabsTrigger>
+              <TabsTrigger value="mensagens" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Mensagens</TabsTrigger>
+              <TabsTrigger value="avaliacoes" className="whitespace-nowrap text-xs sm:text-sm px-3 py-2 min-h-[44px] data-[state=active]:bg-background">Avaliações</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="dados" className="space-y-6">
             <Card>

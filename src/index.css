@@ -196,3 +196,12 @@ All colors MUST be HSL.
   padding: 0.25rem 0.5rem !important;
   font-size: 0.875em !important;
 }
+
+/* Scrollbar hide utility for horizontal scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
