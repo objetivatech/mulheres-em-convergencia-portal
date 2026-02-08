@@ -49,7 +49,7 @@ export const convitePageContent: ConvitePageContent = {
     badge: 'Você foi indicada!',
     headline: 'Faça parte da maior comunidade de mulheres empreendedoras do Brasil',
     subheadline: 'Conecte-se. Cresça. Transforme.',
-    description: 'Junte-se a milhares de mulheres que estão construindo negócios de sucesso através de networking estratégico, aprendizado contínuo e oportunidades exclusivas.',
+    description: 'Junte-se a diversas mulheres que estão construindo negócios de sucesso através de networking estratégico, aprendizado contínuo e oportunidades exclusivas.',
     ctaPrimary: 'QUERO FAZER PARTE',
     ctaSecondary: 'Ver planos disponíveis',
   },
