@@ -347,16 +347,18 @@ function AppContent() {
         } />
         
         {/* Embaixadora Dashboard */}
-        <Route path="/embaixadora/dashboard" element={
+        {/* Painel Embaixadora - rota principal */}
+        <Route path="/painel/embaixadora" element={
           <ProtectedRoute>
             <EmbaixadoraDashboard />
           </ProtectedRoute>
         } />
-        <Route path="/dashboard/embaixadora" element={
-          <Navigate to="/embaixadora/dashboard" replace />
+        {/* Rotas secundárias com redirect */}
+        <Route path="/embaixadora/dashboard" element={
+          <Navigate to="/painel/embaixadora" replace />
         } />
-        <Route path="/painel/embaixadora" element={
-          <Navigate to="/embaixadora/dashboard" replace />
+        <Route path="/dashboard/embaixadora" element={
+          <Navigate to="/painel/embaixadora" replace />
         } />
         
         <Route path="/premium" element={

@@ -90,7 +90,7 @@ function MobileSubmenu({ item, isActive, onItemClick }: MobileSubmenuProps) {
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, signOut, isAdmin, canEditBlog, hasBusiness } = useAuth();
+  const { user, signOut, isAdmin, canEditBlog, hasBusiness, isAmbassador } = useAuth();
   const location = useLocation();
   const { navigation, settings } = useSiteSettings();
 
@@ -203,17 +203,26 @@ export function Header() {
                   </DropdownMenuItem>
 
                   {/* Meus Acessos - Condicionais por Role */}
-                  {hasBusiness && (
+                  {(hasBusiness || isAmbassador) && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel className="text-xs text-muted-foreground">
                         Meus Acessos
                       </DropdownMenuLabel>
-                      <DropdownMenuItem asChild>
-                        <Link to="/painel-empresa" className="flex items-center">
-                          <span>💼 Painel Empresa</span>
-                        </Link>
-                      </DropdownMenuItem>
+                      {hasBusiness && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/painel-empresa" className="flex items-center">
+                            <span>💼 Painel Empresa</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      {isAmbassador && (
+                        <DropdownMenuItem asChild>
+                          <Link to="/painel/embaixadora" className="flex items-center">
+                            <span>👑 Painel Embaixadora</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                     </>
                   )}
 

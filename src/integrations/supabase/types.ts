@@ -4083,6 +4083,7 @@ export type Database = {
         Args: { business_id: string; business_name: string }
         Returns: string
       }
+      generate_unique_referral_code: { Args: never; Returns: string }
       get_ab_test_metrics: {
         Args: { p_days?: number; p_template_id?: string }
         Returns: {
@@ -4210,6 +4211,7 @@ export type Database = {
       }
       get_crm_stats: { Args: never; Returns: Json }
       get_current_user_admin_status: { Args: never; Returns: boolean }
+      get_current_user_ambassador_status: { Args: never; Returns: boolean }
       get_current_user_blog_edit_status: { Args: never; Returns: boolean }
       get_featured_businesses: {
         Args: { limit_count?: number }
