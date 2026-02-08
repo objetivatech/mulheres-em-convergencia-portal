@@ -6,7 +6,7 @@ import Layout from '@/components/layout/Layout';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Crown, BarChart3, Link2, Wallet, Users, FileText } from 'lucide-react';
+import { Crown, BarChart3, Link2, Wallet, Users, FileText, Bell } from 'lucide-react';
 import {
   AmbassadorStatsCards,
   AmbassadorReferralLink,
@@ -14,6 +14,7 @@ import {
   AmbassadorPaymentSettings,
   AmbassadorClicksChart,
   AmbassadorPayoutHistory,
+  AmbassadorNotifications,
 } from '@/components/ambassador';
 
 export const EmbaixadoraDashboard = () => {
@@ -79,18 +80,22 @@ export const EmbaixadoraDashboard = () => {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <header className="mb-8">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="p-3 rounded-xl bg-primary text-primary-foreground">
-                  <Crown className="h-8 w-8" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-xl bg-primary text-primary-foreground">
+                    <Crown className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                      Dashboard Embaixadora
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Gerencie suas indicações e acompanhe suas comissões
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                    Dashboard Embaixadora
-                  </h1>
-                  <p className="text-muted-foreground">
-                    Gerencie suas indicações e acompanhe suas comissões
-                  </p>
-                </div>
+                {/* Notification Icon */}
+                <AmbassadorNotifications ambassadorId={ambassador.id} variant="icon" />
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="outline">
@@ -160,6 +165,9 @@ export const EmbaixadoraDashboard = () => {
 
               {/* Pagamentos */}
               <TabsContent value="payments" className="space-y-6">
+                {/* Notificações de pagamento */}
+                <AmbassadorNotifications ambassadorId={ambassador.id} variant="full" />
+                
                 <div className="grid gap-6 lg:grid-cols-2">
                   <AmbassadorPaymentSettings ambassador={ambassador} />
                   <AmbassadorPayoutHistory 

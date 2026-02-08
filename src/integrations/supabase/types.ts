@@ -59,6 +59,50 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_notifications: {
+        Row: {
+          ambassador_id: string
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean
+          read_at: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          ambassador_id: string
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean
+          read_at?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          ambassador_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean
+          read_at?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_notifications_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ambassador_payouts: {
         Row: {
           ambassador_id: string
