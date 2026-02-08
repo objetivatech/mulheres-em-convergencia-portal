@@ -59,14 +59,196 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_payouts: {
+        Row: {
+          ambassador_id: string
+          created_at: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          notes: string | null
+          paid_at: string | null
+          payment_details: Json | null
+          payment_method: string | null
+          reference_period: string
+          scheduled_date: string
+          status: string
+          total_sales: number
+          updated_at: string
+        }
+        Insert: {
+          ambassador_id: string
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_details?: Json | null
+          payment_method?: string | null
+          reference_period: string
+          scheduled_date: string
+          status?: string
+          total_sales?: number
+          updated_at?: string
+        }
+        Update: {
+          ambassador_id?: string
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          paid_at?: string | null
+          payment_details?: Json | null
+          payment_method?: string | null
+          reference_period?: string
+          scheduled_date?: string
+          status?: string
+          total_sales?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_payouts_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ambassador_referral_clicks: {
+        Row: {
+          ambassador_id: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          visitor_ip: string | null
+        }
+        Insert: {
+          ambassador_id?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_ip?: string | null
+        }
+        Update: {
+          ambassador_id?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          visitor_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_referral_clicks_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ambassador_referrals: {
+        Row: {
+          ambassador_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          payment_confirmed_at: string | null
+          payout_eligible_date: string | null
+          payout_id: string | null
+          plan_name: string
+          referred_user_id: string | null
+          sale_amount: number
+          status: string
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ambassador_id: string
+          commission_amount: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          payment_confirmed_at?: string | null
+          payout_eligible_date?: string | null
+          payout_id?: string | null
+          plan_name: string
+          referred_user_id?: string | null
+          sale_amount: number
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ambassador_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          payment_confirmed_at?: string | null
+          payout_eligible_date?: string | null
+          payout_id?: string | null
+          plan_name?: string
+          referred_user_id?: string | null
+          sale_amount?: number
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_referrals_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambassador_referrals_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambassador_referrals_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ambassadors: {
         Row: {
           active: boolean | null
           asaas_split_config: Json | null
+          bank_data: Json | null
           commission_rate: number | null
           created_at: string | null
           id: string
           link_clicks: number | null
+          minimum_payout: number | null
+          next_payout_date: string | null
+          payment_preference: string | null
+          pending_commission: number | null
+          pix_key: string | null
           referral_code: string
           total_earnings: number | null
           total_sales: number | null
@@ -76,10 +258,16 @@ export type Database = {
         Insert: {
           active?: boolean | null
           asaas_split_config?: Json | null
+          bank_data?: Json | null
           commission_rate?: number | null
           created_at?: string | null
           id?: string
           link_clicks?: number | null
+          minimum_payout?: number | null
+          next_payout_date?: string | null
+          payment_preference?: string | null
+          pending_commission?: number | null
+          pix_key?: string | null
           referral_code: string
           total_earnings?: number | null
           total_sales?: number | null
@@ -89,10 +277,16 @@ export type Database = {
         Update: {
           active?: boolean | null
           asaas_split_config?: Json | null
+          bank_data?: Json | null
           commission_rate?: number | null
           created_at?: string | null
           id?: string
           link_clicks?: number | null
+          minimum_payout?: number | null
+          next_payout_date?: string | null
+          payment_preference?: string | null
+          pending_commission?: number | null
+          pix_key?: string | null
           referral_code?: string
           total_earnings?: number | null
           total_sales?: number | null
@@ -3600,6 +3794,7 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          ambassador_id: string | null
           auto_renew: boolean | null
           billing_cycle: string
           created_at: string | null
@@ -3608,12 +3803,14 @@ export type Database = {
           id: string
           payment_provider: string | null
           plan_id: string
+          referral_code: string | null
           starts_at: string
           status: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          ambassador_id?: string | null
           auto_renew?: boolean | null
           billing_cycle?: string
           created_at?: string | null
@@ -3622,12 +3819,14 @@ export type Database = {
           id?: string
           payment_provider?: string | null
           plan_id: string
+          referral_code?: string | null
           starts_at?: string
           status?: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          ambassador_id?: string | null
           auto_renew?: boolean | null
           billing_cycle?: string
           created_at?: string | null
@@ -3636,12 +3835,20 @@ export type Database = {
           id?: string
           payment_provider?: string | null
           plan_id?: string
+          referral_code?: string | null
           starts_at?: string
           status?: string
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_subscriptions_plan_id_fkey"
             columns: ["plan_id"]
@@ -3827,10 +4034,25 @@ export type Database = {
         Returns: number
       }
       calculate_ltv: { Args: never; Returns: number }
+      calculate_payout_eligible_date: {
+        Args: { p_payment_date: string }
+        Returns: string
+      }
       cleanup_expired_email_tokens: { Args: never; Returns: undefined }
       cleanup_old_activity_logs: { Args: never; Returns: undefined }
       cleanup_security_logs: { Args: never; Returns: number }
       cpf_exists: { Args: { cpf_to_check: string }; Returns: boolean }
+      create_ambassador_referral: {
+        Args: {
+          p_ambassador_id: string
+          p_commission_rate?: number
+          p_plan_name: string
+          p_referred_user_id: string
+          p_sale_amount: number
+          p_subscription_id: string
+        }
+        Returns: string
+      }
       create_business_credits_account: {
         Args: { business_uuid: string }
         Returns: undefined
@@ -4312,6 +4534,25 @@ export type Database = {
       }
       track_referral_click: {
         Args: { referral_code: string }
+        Returns: undefined
+      }
+      track_referral_click_extended: {
+        Args: {
+          p_referral_code: string
+          p_user_agent?: string
+          p_utm_campaign?: string
+          p_utm_medium?: string
+          p_utm_source?: string
+          p_visitor_ip?: string
+        }
+        Returns: string
+      }
+      update_ambassador_totals: {
+        Args: {
+          p_ambassador_id: string
+          p_commission_amount: number
+          p_sale_amount: number
+        }
         Returns: undefined
       }
       update_business_analytics: {
