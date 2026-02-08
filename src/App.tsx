@@ -51,6 +51,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 import ConfirmacaoPagamento from './pages/ConfirmacaoPagamento';
 import ConvitePage from './pages/ConvitePage';
+import EmbaixadoraDashboard from './pages/EmbaixadoraDashboard';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -344,6 +345,20 @@ function AppContent() {
             <ConfirmacaoPagamento />
           </ProtectedRoute>
         } />
+        
+        {/* Embaixadora Dashboard */}
+        <Route path="/embaixadora/dashboard" element={
+          <ProtectedRoute>
+            <EmbaixadoraDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/embaixadora" element={
+          <Navigate to="/embaixadora/dashboard" replace />
+        } />
+        <Route path="/painel/embaixadora" element={
+          <Navigate to="/embaixadora/dashboard" replace />
+        } />
+        
         <Route path="/premium" element={
           <ProtectedRoute>
             <PremiumDashboard />
