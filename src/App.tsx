@@ -50,6 +50,7 @@ import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 import ConfirmacaoPagamento from './pages/ConfirmacaoPagamento';
+import ConvitePage from './pages/ConvitePage';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -115,6 +116,7 @@ function AppContent() {
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
         <Route path="/criar-converter" element={<CriarConverterPage />} />
+        <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
