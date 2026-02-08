@@ -72,8 +72,8 @@ import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
 import AdminCRMJourney from '@/pages/admin/AdminCRMJourney';
 import AdminCostCenters from '@/pages/admin/AdminCostCenters';
 import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
+import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
-
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
@@ -241,6 +241,17 @@ function AppContent() {
           <ProtectedRoute requireAdmin={true}>
             <AdminBusinessManagement />
           </ProtectedRoute>
+        } />
+        
+        {/* Gestão de Embaixadoras */}
+        <Route path="/admin/embaixadoras" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminAmbassadors />
+          </ProtectedRoute>
+        } />
+        {/* Redirect alternativo */}
+        <Route path="/dashboard/embaixadoras" element={
+          <Navigate to="/admin/embaixadoras" replace />
         } />
         
         {/* Blog Routes */}
