@@ -71,7 +71,7 @@ export const EmbaixadoraDashboard = () => {
           name="description" 
           content="Gerencie suas indicações, acompanhe comissões e visualize suas métricas." 
         />
-        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/embaixadora/dashboard`} />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/painel/embaixadora`} />
       </Helmet>
 
       <Layout>

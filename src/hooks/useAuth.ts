@@ -15,6 +15,7 @@ interface AuthContextType {
   isAdmin: boolean | null;
   canEditBlog: boolean | null;
   hasBusiness: boolean | null;
+  isAmbassador: boolean | null;
   requestPasswordReset: (email: string) => Promise<{ error: any }>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
 }
@@ -37,6 +38,7 @@ export const useAuthProvider = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [canEditBlog, setCanEditBlog] = useState<boolean | null>(null);
   const [hasBusiness, setHasBusiness] = useState<boolean | null>(null);
+  const [isAmbassador, setIsAmbassador] = useState<boolean | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -64,22 +66,26 @@ export const useAuthProvider = () => {
               const { data: businessStatus } = await supabase.rpc('user_has_business', { 
                 user_uuid: session.user.id 
               });
+              const { data: ambassadorStatus } = await supabase.rpc('get_current_user_ambassador_status');
               
               setIsAdmin(adminStatus || false);
               setCanEditBlog(blogEditStatus || false);
               setHasBusiness(businessStatus || false);
+              setIsAmbassador(ambassadorStatus || false);
             } catch (error) {
               console.error('Error checking user permissions:', error);
               // On error, default to no permissions for security
               setIsAdmin(false);
               setCanEditBlog(false);
               setHasBusiness(false);
+              setIsAmbassador(false);
             }
           })();
         } else {
           setIsAdmin(false);
           setCanEditBlog(false);
           setHasBusiness(false);
+          setIsAmbassador(false);
         }
       }
     );
@@ -256,6 +262,7 @@ export const useAuthProvider = () => {
     isAdmin,
     canEditBlog,
     hasBusiness,
+    isAmbassador,
     requestPasswordReset,
     updatePassword,
   };

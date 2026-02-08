@@ -31,9 +31,9 @@ src/
 
 | Rota | Descrição | Redirect |
 |------|-----------|----------|
-| `/embaixadora/dashboard` | Dashboard principal | - |
-| `/dashboard/embaixadora` | Compatibilidade | → `/embaixadora/dashboard` |
-| `/painel/embaixadora` | Compatibilidade | → `/embaixadora/dashboard` |
+| `/painel/embaixadora` | Dashboard principal | - |
+| `/embaixadora/dashboard` | Compatibilidade | → `/painel/embaixadora` |
+| `/dashboard/embaixadora` | Compatibilidade | → `/painel/embaixadora` |
 
 ## Hook useAmbassador
 
@@ -135,10 +135,23 @@ Histórico de pagamentos recebidos:
 
 ## Fluxo de Acesso
 
-1. Usuário autenticado acessa `/embaixadora/dashboard`
-2. Sistema verifica se existe registro na tabela `ambassadors` vinculado ao `user_id`
+1. Usuário autenticado acessa `/painel/embaixadora`
+2. Sistema verifica via `isAmbassador` no `useAuth` se o usuário tem registro ativo na tabela `ambassadors`
 3. Se existir: exibe dashboard completo
 4. Se não existir: exibe mensagem de acesso restrito
+5. O link aparece automaticamente no menu do usuário quando `isAmbassador === true`
+
+## Criação Automática de Embaixadora
+
+Quando a role `ambassador` é atribuída a um usuário via UserManagement:
+1. Trigger `trigger_create_ambassador_on_role` dispara automaticamente
+2. Cria registro em `ambassadors` com código de referral único
+3. Código é gerado via `generate_unique_referral_code()` (8 caracteres alfanuméricos)
+4. Embaixadora fica ativa imediatamente
+
+Quando a role é removida:
+1. Trigger `trigger_deactivate_ambassador_on_role` dispara
+2. Registro é desativado (`active = false`) mas mantido para histórico
 
 ## Segurança (RLS)
 
