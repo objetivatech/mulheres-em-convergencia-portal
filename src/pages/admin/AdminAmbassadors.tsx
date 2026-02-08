@@ -147,7 +147,11 @@ const AdminAmbassadorsPage = () => {
               </TabsContent>
 
               <TabsContent value="payouts" className="mt-6">
-                <AdminPayoutsList payouts={payouts} isLoading={payoutsLoading} />
+                <AdminPayoutsList 
+                  payouts={payouts} 
+                  isLoading={payoutsLoading} 
+                  ambassadors={ambassadors}
+                />
               </TabsContent>
             </Tabs>
 

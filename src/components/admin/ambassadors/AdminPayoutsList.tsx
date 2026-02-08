@@ -28,7 +28,10 @@ import {
   X, 
   Clock,
   Calendar,
+  Plus,
 } from 'lucide-react';
+import { CreatePayoutDialog } from './CreatePayoutDialog';
+import { AmbassadorWithProfile } from '@/hooks/useAmbassadorAdmin';
 import { useAmbassadorAdmin } from '@/hooks/useAmbassadorAdmin';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -36,15 +39,17 @@ import { ptBR } from 'date-fns/locale';
 interface AdminPayoutsListProps {
   payouts: any[];
   isLoading?: boolean;
+  ambassadors?: AmbassadorWithProfile[];
 }
 
-export const AdminPayoutsList = ({ payouts, isLoading }: AdminPayoutsListProps) => {
+export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: AdminPayoutsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [markPaidDialog, setMarkPaidDialog] = useState<{ open: boolean; payout: any | null }>({ 
     open: false, 
     payout: null 
   });
+  const [createPayoutOpen, setCreatePayoutOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [paymentNotes, setPaymentNotes] = useState('');
 
@@ -120,6 +125,10 @@ export const AdminPayoutsList = ({ payouts, isLoading }: AdminPayoutsListProps) 
               Pagamentos ({payouts.length})
             </CardTitle>
             <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={() => setCreatePayoutOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Pagamento
+              </Button>
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -292,6 +301,13 @@ export const AdminPayoutsList = ({ payouts, isLoading }: AdminPayoutsListProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog para criar pagamento */}
+      <CreatePayoutDialog
+        open={createPayoutOpen}
+        onOpenChange={setCreatePayoutOpen}
+        ambassadors={ambassadors}
+      />
     </>
   );
 };
