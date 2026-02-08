@@ -10,6 +10,7 @@ const corsHeaders = {
 interface CreateSubscriptionRequest {
   plan_id: string;
   billing_cycle: 'monthly' | 'yearly' | '6-monthly';
+  referral_code?: string;
 }
 
 // ✅ SEGURANÇA: Schema de validação Zod
@@ -77,7 +78,7 @@ serve(async (req) => {
     logStep("Processing request", { hasUser: !!user, userEmail: user?.email });
 
     const body = await req.json();
-    const { plan_id, billing_cycle } = body as CreateSubscriptionRequest & { payment_method?: 'PIX' | 'BOLETO' | 'CREDIT_CARD'; customer?: any };
+    const { plan_id, billing_cycle, referral_code } = body as CreateSubscriptionRequest & { payment_method?: 'PIX' | 'BOLETO' | 'CREDIT_CARD'; customer?: any };
     const payment_method: 'PIX' | 'BOLETO' | 'CREDIT_CARD' = body.payment_method ?? 'PIX';
     const customerInput = body.customer ?? null;
     
@@ -104,7 +105,23 @@ serve(async (req) => {
       }
     }
     
-    logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput });
+    logStep("Request data received", { plan_id, billing_cycle, payment_method, customerProvided: !!customerInput, referralCode: referral_code });
+
+    // ✅ NOVO: Verificar e validar código de referral
+    let ambassadorId = null;
+    if (referral_code) {
+      const { data: ambassador, error: ambassadorError } = await supabaseServiceClient
+        .rpc('get_ambassador_by_referral', { referral_code });
+      
+      if (ambassadorError) {
+        logStep("Error checking ambassador", { error: ambassadorError });
+      } else if (ambassador && ambassador.length > 0 && ambassador[0].active) {
+        ambassadorId = ambassador[0].id;
+        logStep("Ambassador found for referral", { ambassadorId, ambassadorCode: referral_code });
+      } else {
+        logStep("Ambassador not found or inactive", { referralCode: referral_code });
+      }
+    }
 
     // ✅ NOVO: Verificar se usuário já tem negócios cortesia
     if (user) {
@@ -485,6 +502,8 @@ serve(async (req) => {
         status: 'pending',
         external_subscription_id: asaasData.id, // This could be subscription ID or payment ID
         payment_provider: 'asaas',
+        referral_code: referral_code || null,
+        ambassador_id: ambassadorId || null,
         expires_at: billing_cycle === 'yearly' 
           ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
           : billing_cycle === '6-monthly'

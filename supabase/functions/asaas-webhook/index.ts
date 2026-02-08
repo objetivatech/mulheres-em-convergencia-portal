@@ -192,6 +192,95 @@ const processProductPayment = async (supabaseClient: any, payment: any, external
   return { success: true, dealId: deal?.id };
 };
 
+// ✅ NOVO: Process ambassador commission from subscription payment
+const processAmbassadorCommission = async (supabaseClient: any, subscription: any, payment: any) => {
+  if (!subscription.ambassador_id) {
+    logStep("No ambassador for this subscription");
+    return { success: false };
+  }
+
+  logStep("Processing ambassador commission", {
+    ambassadorId: subscription.ambassador_id,
+    saleAmount: payment.value,
+    subscriptionId: subscription.id
+  });
+
+  const commissionRate = 0.15; // 15%
+  const commissionAmount = payment.value * commissionRate;
+
+  // Calculate payout eligible date (vendas até dia 20 = pago dia 10 seguinte)
+  const paymentDate = new Date();
+  const cutoffDay = 20;
+  let payoutEligibleDate;
+
+  if (paymentDate.getDate() <= cutoffDay) {
+    // Pago no mês seguinte
+    payoutEligibleDate = new Date(
+      paymentDate.getFullYear(),
+      paymentDate.getMonth() + 1,
+      10
+    );
+  } else {
+    // Pago em dois meses
+    payoutEligibleDate = new Date(
+      paymentDate.getFullYear(),
+      paymentDate.getMonth() + 2,
+      10
+    );
+  }
+
+  // Create ambassador referral record
+  const { error: refError } = await supabaseClient
+    .from('ambassador_referrals')
+    .insert({
+      ambassador_id: subscription.ambassador_id,
+      referred_user_id: subscription.user_id,
+      subscription_id: subscription.id,
+      plan_name: subscription.plan_id, // Will be enriched with plan details
+      sale_amount: payment.value,
+      commission_rate: commissionRate * 100,
+      commission_amount: commissionAmount,
+      status: 'confirmed',
+      payment_confirmed_at: new Date().toISOString(),
+      payout_eligible_date: payoutEligibleDate.toISOString().split('T')[0],
+    });
+
+  if (refError) {
+    logStep("Error creating ambassador referral", { error: refError });
+    return { success: false };
+  }
+
+  logStep("Ambassador referral created", {
+    ambassadorId: subscription.ambassador_id,
+    commissionAmount,
+    payoutEligibleDate: payoutEligibleDate.toISOString().split('T')[0]
+  });
+
+  // Update ambassador totals
+  const { error: updateError } = await supabaseClient
+    .from('ambassadors')
+    .update({
+      total_earnings: {
+        increment: commissionAmount
+      },
+      total_sales: {
+        increment: 1
+      },
+      pending_commission: {
+        increment: commissionAmount
+      }
+    })
+    .eq('id', subscription.ambassador_id);
+
+  if (updateError) {
+    logStep("Error updating ambassador totals", { error: updateError });
+  } else {
+    logStep("Ambassador totals updated");
+  }
+
+  return { success: true, commissionAmount };
+};
+
 // Process event registration payment
 const processEventPayment = async (supabaseClient: any, payment: any, registrationId: string) => {
   logStep("Processing event registration payment", { registrationId, paymentId: payment.id });
@@ -479,6 +568,14 @@ serve(async (req) => {
           logStep('Businesses activated for 31 days', {
             count: renewalResult?.businesses_renewed || 0,
             renewal_date: renewalResult?.renewal_date || null
+          });
+        }
+
+        // ✅ NOVO: Processar comissão de embaixadora
+        const commissionResult = await processAmbassadorCommission(supabaseClient, subscription, payment);
+        if (commissionResult.success) {
+          logStep('Ambassador commission processed', {
+            commissionAmount: commissionResult.commissionAmount
           });
         }
 
