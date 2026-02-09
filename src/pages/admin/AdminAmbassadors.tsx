@@ -10,6 +10,7 @@ import {
   Download,
   BarChart3,
   Package,
+  Globe,
 } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { useAmbassadorAdmin, AmbassadorWithProfile } from '@/hooks/useAmbassadorAdmin';
@@ -21,6 +22,7 @@ import {
   EditPaymentDataDialog,
   AmbassadorDetailsDialog,
   AdminMaterialsManager,
+  AdminPublicPageManager,
 } from '@/components/admin/ambassadors';
 
 const AdminAmbassadorsPage = () => {
@@ -115,7 +117,7 @@ const AdminAmbassadorsPage = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-              <TabsList className="grid w-full grid-cols-4 max-w-lg">
+              <TabsList className="grid w-full grid-cols-5 max-w-2xl">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Visão Geral</span>
@@ -131,6 +133,10 @@ const AdminAmbassadorsPage = () => {
                 <TabsTrigger value="materials" className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
                   <span className="hidden sm:inline">Materiais</span>
+                </TabsTrigger>
+                <TabsTrigger value="public-page" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span className="hidden sm:inline">Página</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -162,6 +168,10 @@ const AdminAmbassadorsPage = () => {
 
               <TabsContent value="materials" className="mt-6">
                 <AdminMaterialsManager />
+              </TabsContent>
+
+              <TabsContent value="public-page" className="mt-6">
+                <AdminPublicPageManager />
               </TabsContent>
             </Tabs>
 

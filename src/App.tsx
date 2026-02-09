@@ -52,6 +52,7 @@ import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 import ConfirmacaoPagamento from './pages/ConfirmacaoPagamento';
 import ConvitePage from './pages/ConvitePage';
 import EmbaixadoraDashboard from './pages/EmbaixadoraDashboard';
+import Embaixadoras from './pages/Embaixadoras';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -114,6 +115,7 @@ function AppContent() {
         <Route path="/convergindo" element={<Convergindo />} />
         <Route path="/convergindo/:slug" element={<Post />} />
         <Route path="/planos" element={<Planos />} />
+        <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
         <Route path="/criar-converter" element={<CriarConverterPage />} />

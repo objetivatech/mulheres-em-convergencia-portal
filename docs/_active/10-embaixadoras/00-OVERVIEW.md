@@ -14,8 +14,9 @@ O Programa de Embaixadoras é um sistema de marketing de afiliadas que permite q
 6. [Fluxo de Indicação](#fluxo-de-indicação)
 7. [Gestão Administrativa](#gestão-administrativa)
 8. [FAQ e Materiais](#faq-e-materiais)
-9. [Integrações](#integrações)
-10. [Banco de Dados](#banco-de-dados)
+9. [Página Pública de Embaixadoras](#página-pública-de-embaixadoras)
+10. [Integrações](#integrações)
+11. [Banco de Dados](#banco-de-dados)
 
 ---
 
@@ -66,6 +67,7 @@ src/
 | `/painel/embaixadora` | Dashboard da embaixadora |
 | `/admin/embaixadoras` | Painel administrativo |
 | `/convite/:codigo` | Landing page de indicação |
+| `/embaixadoras` | Página pública com lista de embaixadoras |
 
 ---
 
@@ -269,6 +271,7 @@ Conquistas verificadas
 2. **Embaixadoras:** Lista completa com ações
 3. **Pagamentos:** Processar e gerenciar payouts
 4. **Materiais:** Upload e gestão de conteúdo promocional
+5. **Página:** Gerenciar visibilidade na página pública
 
 ### Ações Administrativas
 
@@ -317,6 +320,50 @@ Gerenciável via banco de dados.
 - Geração dinâmica com link de indicação
 - Download em PNG com branding
 - Código de referência visível
+
+---
+
+## Página Pública de Embaixadoras
+
+### Rota: `/embaixadoras`
+
+Página pública para divulgar as embaixadoras do programa, permitindo que visitantes conheçam as parceiras e utilizem seus links de indicação.
+
+### Componentes
+
+- **Hero Section:** Título e descrição do programa
+- **Grid de Embaixadoras:** Cards em layout 3 colunas (responsivo)
+- **CTA Final:** Botão para página de planos
+
+### Card de Embaixadora
+
+Cada card exibe:
+- Avatar com badge de nível (Bronze/Prata/Ouro)
+- Nome completo
+- Localização (cidade/estado)
+- Bio pública (até 3 linhas)
+- Links de redes sociais (Instagram, LinkedIn, Website)
+- Botão "Copiar Link de Indicação"
+
+### Gerenciamento no Admin
+
+Na aba **"Página"** do painel admin:
+- Toggle de visibilidade por embaixadora
+- Ordenação via setas ou campo numérico
+- Link para preview da página
+- Contador de embaixadoras visíveis
+
+### Campos de Perfil
+
+**Tabela `profiles`:**
+- `instagram_url` - URL do Instagram
+- `linkedin_url` - URL do LinkedIn
+- `website_url` - URL do site pessoal
+- `public_bio` - Biografia pública
+
+**Tabela `ambassadors`:**
+- `show_on_public_page` - Controle de visibilidade
+- `display_order` - Ordem de exibição
 
 ---
 
