@@ -656,6 +656,45 @@ export type Database = {
           },
         ]
       }
+      blog_authors: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_name: string
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          photo_url: string | null
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          photo_url?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          photo_url?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       blog_categories: {
         Row: {
           created_at: string | null
@@ -679,6 +718,57 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          author_email: string
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          post_id: string
+          status: Database["public"]["Enums"]["comment_status"]
+          user_id: string | null
+        }
+        Insert: {
+          author_email: string
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          status?: Database["public"]["Enums"]["comment_status"]
+          user_id?: string | null
+        }
+        Update: {
+          author_email?: string
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          status?: Database["public"]["Enums"]["comment_status"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "blog_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blog_post_tags: {
         Row: {
@@ -713,6 +803,7 @@ export type Database = {
       blog_posts: {
         Row: {
           author_id: string | null
+          author_profile_id: string | null
           category_id: string | null
           content: string | null
           created_at: string | null
@@ -732,6 +823,7 @@ export type Database = {
         }
         Insert: {
           author_id?: string | null
+          author_profile_id?: string | null
           category_id?: string | null
           content?: string | null
           created_at?: string | null
@@ -751,6 +843,7 @@ export type Database = {
         }
         Update: {
           author_id?: string | null
+          author_profile_id?: string | null
           category_id?: string | null
           content?: string | null
           created_at?: string | null
@@ -774,6 +867,13 @@ export type Database = {
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_author_profile_id_fkey"
+            columns: ["author_profile_id"]
+            isOneToOne: false
+            referencedRelation: "blog_authors"
             referencedColumns: ["id"]
           },
           {
@@ -5035,6 +5135,7 @@ export type Database = {
         | "consultoria"
         | "eventos"
         | "marketing"
+      comment_status: "pending" | "approved" | "rejected"
       post_status: "draft" | "published" | "archived" | "scheduled"
       subscription_type:
         | "newsletter"
@@ -5215,6 +5316,7 @@ export const Constants = {
         "eventos",
         "marketing",
       ],
+      comment_status: ["pending", "approved", "rejected"],
       post_status: ["draft", "published", "archived", "scheduled"],
       subscription_type: [
         "newsletter",

@@ -50,7 +50,7 @@ interface BusinessProfile {
 }
 
 export const UserDashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, canEditBlog } = useAuth();
   const { hasRole } = useRoles();
   const { toast } = useToast();
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
@@ -235,8 +235,8 @@ export const UserDashboard = () => {
     });
   }
 
-  // Blog features - usando blog_editor como role principal para edição de blog
-  if (hasRole('blog_editor')) {
+  // Blog features - usando blog_editor ou canEditBlog para edição de blog
+  if (hasRole('blog_editor') || canEditBlog) {
     modules.push({
       category: 'Blog',
       items: [
@@ -244,15 +244,15 @@ export const UserDashboard = () => {
           title: 'Meus Artigos',
           description: 'Gerenciar posts publicados',
           icon: Edit3,
-          href: '/blog/meus-posts',
-          available: false, // Coming soon
+          href: '/admin/blog',
+          available: true,
         },
         {
           title: 'Criar Post',
           description: 'Escrever novo artigo',
           icon: FileText,
-          href: '/blog/criar',
-          available: false, // Coming soon
+          href: '/admin/blog/novo',
+          available: true,
         }
       ]
     });

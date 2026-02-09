@@ -4,13 +4,16 @@ import Layout from '@/components/layout/Layout';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, Eye, Share2, ChevronRight, Home, Clock } from 'lucide-react';
+import { Calendar, User, Eye, Share2, ChevronRight, Home, Clock, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Helmet } from 'react-helmet-async';
 import { ShareButtons } from '@/components/blog/ShareButtons';
 import { SchemaOrg } from '@/components/blog/SchemaOrg';
 import DOMPurify from 'dompurify';
+import { AuthorBlock } from '@/components/blog/AuthorBlock';
+import { CommentForm } from '@/components/blog/CommentForm';
+import { CommentList } from '@/components/blog/CommentList';
 
 interface BlogPost {
   id: string;
@@ -34,6 +37,14 @@ interface BlogPost {
   author: {
     full_name: string;
     avatar_url: string | null;
+  } | null;
+  author_profile: {
+    display_name: string;
+    photo_url: string | null;
+    bio: string | null;
+    instagram_url: string | null;
+    linkedin_url: string | null;
+    website_url: string | null;
   } | null;
   tags: Array<{
     id: string;
@@ -80,6 +91,14 @@ const Post = () => {
               full_name,
               avatar_url
             ),
+            blog_authors:author_profile_id (
+              display_name,
+              photo_url,
+              bio,
+              instagram_url,
+              linkedin_url,
+              website_url
+            ),
             blog_post_tags (
               blog_tags (
                 id,
@@ -102,6 +121,7 @@ const Post = () => {
           ...data,
           category: data.blog_categories,
           author: data.profiles,
+          author_profile: data.blog_authors || null,
           tags: data.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
         };
 
@@ -157,6 +177,7 @@ const Post = () => {
                 full_name: post.profiles.full_name,
                 avatar_url: null 
               } : null,
+              author_profile: null,
               tags: []
             }));
             setRelatedPosts(formattedRelated);
@@ -363,10 +384,10 @@ const Post = () => {
             {/* Author & Share */}
             <div className="flex items-center justify-between border-y py-4 mb-8">
               <div className="flex items-center gap-3">
-                {post.author?.avatar_url ? (
+                {(post.author_profile?.photo_url || post.author?.avatar_url) ? (
                   <img
-                    src={post.author.avatar_url}
-                    alt={post.author.full_name}
+                    src={post.author_profile?.photo_url || post.author?.avatar_url || ''}
+                    alt={post.author_profile?.display_name || post.author?.full_name || ''}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
@@ -376,7 +397,7 @@ const Post = () => {
                 )}
                 <div>
                   <p className="font-medium text-sm">
-                    {post.author?.full_name || 'Admin'}
+                    {post.author_profile?.display_name || post.author?.full_name || 'Equipe Editorial'}
                   </p>
                   <p className="text-xs text-muted-foreground">Autora</p>
                 </div>
@@ -441,6 +462,31 @@ const Post = () => {
                 ))}
               </div>
             )}
+
+            {/* Author Block */}
+            {post.author_profile && (
+              <AuthorBlock
+                displayName={post.author_profile.display_name}
+                photoUrl={post.author_profile.photo_url}
+                bio={post.author_profile.bio}
+                instagramUrl={post.author_profile.instagram_url}
+                linkedinUrl={post.author_profile.linkedin_url}
+                websiteUrl={post.author_profile.website_url}
+              />
+            )}
+
+            {/* Comments Section */}
+            <div className="mt-10 pt-8 border-t border-border">
+              <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Comentários
+              </h2>
+              <CommentList postId={post.id} />
+              <div className="mt-8">
+                <h3 className="text-lg font-medium mb-4">Deixe seu comentário</h3>
+                <CommentForm postId={post.id} />
+              </div>
+            </div>
           </div>
         </div>
       </article>
