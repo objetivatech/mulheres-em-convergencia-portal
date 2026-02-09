@@ -30,15 +30,15 @@ export interface UserProfile {
 }
 
 export const useRoles = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, canEditBlog } = useAuth();
   const queryClient = useQueryClient();
 
   // Verificar se usuário tem role específico
   const hasRole = (role: UserRole): boolean => {
     if (!user) return false;
-    // Para compatibilidade com o sistema atual
-    if (role === 'admin') return isAdmin;
-    // TODO: Implementar verificação completa quando os dados estiverem disponíveis
+    if (role === 'admin') return !!isAdmin;
+    if (role === 'blog_editor') return !!canEditBlog || !!isAdmin;
+    // TODO: Implementar verificação completa para outros roles via user_roles table
     return false;
   };
 

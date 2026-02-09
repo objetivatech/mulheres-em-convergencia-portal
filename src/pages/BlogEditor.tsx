@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ArrowLeft, Save, Eye, Send, Clock } from 'lucide-react';
 import slugify from 'slugify';
 import DOMPurify from 'dompurify';
+import { useAuth } from '@/hooks/useAuth';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useBlogAuthors } from '@/hooks/useBlogAuthors';
 import { Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -58,6 +60,7 @@ const blogPostSchema = z.object({
   excerpt: z.string().optional(),
   content: z.string().min(1, 'Conteúdo é obrigatório'),
   category_id: z.string().optional(),
+  author_profile_id: z.string().optional(),
   featured_image_url: z.string().optional(),
   seo_title: z.string().optional(),
   seo_description: z.string().optional(),
@@ -85,6 +88,8 @@ export default function BlogEditor() {
   const { data: categories } = useBlogCategories();
   const { data: tags } = useBlogTags();
   const { data: permissions } = useUserPermissions();
+  const { data: blogAuthors } = useBlogAuthors();
+  const { isAdmin, user } = useAuth();
   const createBlogPost = useCreateBlogPost();
   const updateBlogPost = useUpdateBlogPost();
   const createTag = useCreateBlogTag();
@@ -98,6 +103,7 @@ export default function BlogEditor() {
       excerpt: '',
       content: '',
       category_id: '',
+      author_profile_id: '',
       featured_image_url: '',
       seo_title: '',
       seo_description: '',
@@ -117,6 +123,7 @@ export default function BlogEditor() {
         excerpt: post.excerpt || '',
         content: post.content || '',
         category_id: post.category_id || '',
+        author_profile_id: (post as any).author_profile_id || '',
         featured_image_url: post.featured_image_url || '',
         seo_title: post.seo_title || '',
         seo_description: post.seo_description || '',
@@ -190,6 +197,8 @@ export default function BlogEditor() {
         ...data,
         status: finalStatus,
         content: sanitizedContent,
+        author_id: user?.id,
+        author_profile_id: data.author_profile_id || null,
         published_at: finalStatus === 'published' && !data.published_at 
           ? new Date().toISOString() 
           : (data.published_at || null),
@@ -466,6 +475,35 @@ export default function BlogEditor() {
                     </FormItem>
                   )}
                 />
+
+                {/* Author Selector (admin only) */}
+                {isAdmin && blogAuthors && blogAuthors.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="author_profile_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Autor</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecionar autor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">Sem autor específico</SelectItem>
+                            {blogAuthors.map((author) => (
+                              <SelectItem key={author.id} value={author.id}>
+                                {author.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 {/* Tags Section */}
                 <div className="space-y-3">
