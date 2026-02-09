@@ -30,7 +30,8 @@ interface BlogPost {
     slug: string;
   } | null;
   author: {
-    full_name: string;
+    full_name?: string;
+    display_name?: string;
   } | null;
   tags: Array<{
     id: string;
@@ -111,6 +112,9 @@ const Convergindo = () => {
             profiles:author_id (
               full_name
             ),
+            blog_authors:author_profile_id (
+              display_name
+            ),
             blog_post_tags (
               blog_tags (
                 id,
@@ -152,7 +156,7 @@ const Convergindo = () => {
           seo_title: post.seo_title,
           seo_description: post.seo_description,
           category: post.blog_categories,
-          author: post.profiles,
+          author: post.blog_authors || post.profiles,
           tags: post.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
         })) || [];
 
@@ -184,25 +188,28 @@ const Convergindo = () => {
           views_count,
           seo_title,
           seo_description,
-          blog_categories:category_id (
-            id,
-            name,
-            slug
-          ),
-          profiles:author_id (
-            full_name
-          ),
-          blog_post_tags (
-            blog_tags (
+            blog_categories:category_id (
               id,
               name,
               slug
+            ),
+            profiles:author_id (
+              full_name
+            ),
+            blog_authors:author_profile_id (
+              display_name
+            ),
+            blog_post_tags (
+              blog_tags (
+                id,
+                name,
+                slug
+              )
             )
-          )
-        `)
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
-        .range(posts.length, posts.length + POSTS_PER_PAGE - 1);
+          `)
+          .eq('status', 'published')
+          .order('published_at', { ascending: false })
+          .range(posts.length, posts.length + POSTS_PER_PAGE - 1);
 
       // Apply filters
       if (selectedCategory !== 'all') {
@@ -232,7 +239,7 @@ const Convergindo = () => {
         seo_title: post.seo_title,
         seo_description: post.seo_description,
         category: post.blog_categories,
-        author: post.profiles,
+        author: post.blog_authors || post.profiles,
         tags: post.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
       })) || [];
 
@@ -410,7 +417,7 @@ const Convergindo = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center text-xs text-muted-foreground">
                             <User className="h-3 w-3 mr-1" />
-                            {post.author?.full_name || 'Admin'}
+                            {post.author?.display_name || post.author?.full_name || 'Admin'}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {post.views_count} visualizações
