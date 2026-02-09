@@ -406,6 +406,60 @@ export const useAmbassadorAdmin = () => {
     });
   };
 
+  // Estornar pagamento (reverse a paid payout)
+  const useRefundPayout = () => {
+    return useMutation({
+      mutationFn: async ({ 
+        payoutId, 
+        reason 
+      }: { 
+        payoutId: string; 
+        reason?: string;
+      }) => {
+        if (!isAdmin) throw new Error('Acesso negado');
+        
+        const { error } = await supabase
+          .from('ambassador_payouts')
+          .update({ 
+            status: 'refunded',
+            notes: reason,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', payoutId);
+        
+        if (error) throw error;
+
+        // Send refund notification email via edge function
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-ambassador-payout-email', {
+            body: { payout_id: payoutId, action: 'refunded' }
+          });
+          
+          if (emailError) {
+            console.error('Error sending refund email:', emailError);
+          }
+        } catch (emailErr) {
+          console.error('Failed to invoke refund email function:', emailErr);
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin-ambassador-payouts'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-ambassadors'] });
+        toast({
+          title: 'Pagamento estornado',
+          description: 'Pagamento estornado e valores revertidos com sucesso.',
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: 'Erro ao estornar pagamento',
+          description: error.message,
+          variant: 'destructive',
+        });
+      },
+    });
+  };
+
   // Exportar dados para CSV
   const exportToCSV = (data: any[], filename: string) => {
     if (!data || data.length === 0) {
@@ -453,6 +507,7 @@ export const useAmbassadorAdmin = () => {
     useCreatePayout,
     useMarkPayoutPaid,
     useCancelPayout,
+    useRefundPayout,
     exportToCSV,
   };
 };

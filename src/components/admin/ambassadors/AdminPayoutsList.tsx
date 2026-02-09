@@ -29,6 +29,7 @@ import {
   Clock,
   Calendar,
   Plus,
+  RotateCcw,
 } from 'lucide-react';
 import { CreatePayoutDialog } from './CreatePayoutDialog';
 import { AmbassadorWithProfile } from '@/hooks/useAmbassadorAdmin';
@@ -49,13 +50,19 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
     open: false, 
     payout: null 
   });
+  const [refundDialog, setRefundDialog] = useState<{ open: boolean; payout: any | null }>({ 
+    open: false, 
+    payout: null 
+  });
   const [createPayoutOpen, setCreatePayoutOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [paymentNotes, setPaymentNotes] = useState('');
+  const [refundReason, setRefundReason] = useState('');
 
-  const { useMarkPayoutPaid, useCancelPayout } = useAmbassadorAdmin();
+  const { useMarkPayoutPaid, useCancelPayout, useRefundPayout } = useAmbassadorAdmin();
   const markPaid = useMarkPayoutPaid();
   const cancelPayout = useCancelPayout();
+  const refundPayout = useRefundPayout();
 
   const filteredPayouts = payouts.filter(payout => {
     const ambassadorName = payout.ambassador?.profile?.full_name?.toLowerCase() || '';
@@ -81,6 +88,7 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
       scheduled: { label: 'Agendado', variant: 'secondary' },
       paid: { label: 'Pago', variant: 'default' },
       cancelled: { label: 'Cancelado', variant: 'destructive' },
+      refunded: { label: 'Estornado', variant: 'destructive' },
     };
     const config = statusConfig[status] || { label: status, variant: 'outline' };
     return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -103,6 +111,18 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
   const handleCancel = async (payoutId: string) => {
     if (!confirm('Tem certeza que deseja cancelar este pagamento?')) return;
     await cancelPayout.mutateAsync({ payoutId });
+  };
+
+  const handleRefund = async () => {
+    if (!refundDialog.payout) return;
+    
+    await refundPayout.mutateAsync({
+      payoutId: refundDialog.payout.id,
+      reason: refundReason,
+    });
+    
+    setRefundDialog({ open: false, payout: null });
+    setRefundReason('');
   };
 
   if (isLoading) {
@@ -147,6 +167,7 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
                   <SelectItem value="pending">Pendentes</SelectItem>
                   <SelectItem value="scheduled">Agendados</SelectItem>
                   <SelectItem value="paid">Pagos</SelectItem>
+                  <SelectItem value="refunded">Estornados</SelectItem>
                   <SelectItem value="cancelled">Cancelados</SelectItem>
                 </SelectContent>
               </Select>
@@ -221,9 +242,24 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
-                      ) : payout.status === 'paid' && payout.paid_at ? (
-                        <span className="text-sm text-muted-foreground">
-                          Pago em {format(new Date(payout.paid_at), 'dd/MM/yyyy', { locale: ptBR })}
+                      ) : payout.status === 'paid' ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            Pago em {format(new Date(payout.paid_at), 'dd/MM/yyyy', { locale: ptBR })}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive border-destructive hover:bg-destructive/10"
+                            onClick={() => setRefundDialog({ open: true, payout })}
+                          >
+                            <RotateCcw className="h-3 w-3 mr-1" />
+                            Estornar
+                          </Button>
+                        </div>
+                      ) : payout.status === 'refunded' ? (
+                        <span className="text-sm text-destructive">
+                          Estornado
                         </span>
                       ) : (
                         <span className="text-sm text-muted-foreground">-</span>
@@ -297,6 +333,55 @@ export const AdminPayoutsList = ({ payouts, isLoading, ambassadors = [] }: Admin
             <Button onClick={handleMarkPaid} disabled={markPaid.isPending}>
               <Check className="h-4 w-4 mr-2" />
               Confirmar Pagamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para estorno */}
+      <Dialog open={refundDialog.open} onOpenChange={(open) => setRefundDialog({ open, payout: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Estornar Pagamento</DialogTitle>
+            <DialogDescription>
+              Estornar pagamento de {refundDialog.payout?.ambassador?.profile?.full_name}. 
+              O valor será devolvido ao saldo de comissões pendentes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+              <div className="flex justify-between mb-2">
+                <span>Período:</span>
+                <span className="font-medium">{refundDialog.payout?.reference_period}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Valor a estornar:</span>
+                <span className="font-bold text-destructive">
+                  {formatCurrency(refundDialog.payout?.net_amount || 0)}
+                </span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Motivo do Estorno</Label>
+              <Textarea
+                placeholder="Descreva o motivo do estorno..."
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefundDialog({ open: false, payout: null })}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleRefund} 
+              disabled={refundPayout.isPending}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Confirmar Estorno
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -45,7 +45,7 @@ const formatPeriodBrazil = (periodStr: string) => {
 
 interface PayoutEmailRequest {
   payout_id: string;
-  action?: 'paid'; // For now, only 'paid' triggers email
+  action?: 'paid' | 'refunded';
 }
 
 serve(async (req) => {
@@ -108,7 +108,7 @@ serve(async (req) => {
       amount: payout.net_amount 
     });
 
-    // Only send confirmation email when status is paid
+    // Send confirmation email when status is paid
     if (action === 'paid' && payout.status === 'paid') {
       const emailHtml = generatePaymentConfirmationEmail({
         name: profile.full_name || 'Embaixadora',
@@ -128,6 +128,24 @@ serve(async (req) => {
       );
 
       logStep("Payment confirmation email sent", { email: profile.email });
+    }
+
+    // Send refund email when status is refunded
+    if (action === 'refunded' && payout.status === 'refunded') {
+      const emailHtml = generateRefundNotificationEmail({
+        name: profile.full_name || 'Embaixadora',
+        amount: payout.net_amount,
+        period: payout.reference_period,
+        notes: payout.notes,
+      });
+
+      await sendEmail(
+        profile.email,
+        `⚠️ Pagamento Estornado - ${formatPeriodBrazil(payout.reference_period)}`,
+        emailHtml
+      );
+
+      logStep("Refund notification email sent", { email: profile.email });
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -275,6 +293,135 @@ function generatePaymentConfirmationEmail(data: PaymentEmailData): string {
 
               <p style="margin: 20px 0 0; color: #374151;">
                 Com carinho,<br>
+                <strong>Equipe Mulheres em Convergência</strong>
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+          <tr>
+            <td style="text-align: center; padding: 20px;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                Este email foi enviado automaticamente pelo sistema de pagamentos.<br>
+                © ${new Date().getFullYear()} Mulheres em Convergência. Todos os direitos reservados.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+interface RefundEmailData {
+  name: string;
+  amount: number;
+  period: string;
+  notes?: string | null;
+}
+
+function generateRefundNotificationEmail(data: RefundEmailData): string {
+  const periodFormatted = formatPeriodBrazil(data.period);
+  
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento Estornado</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <tr>
+      <td style="padding: 20px 0;">
+        <!-- Header -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #dc2626 0%, #f87171 100%); border-radius: 16px 16px 0 0;">
+          <tr>
+            <td style="padding: 40px 30px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+              <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 600;">
+                Pagamento Estornado
+              </h1>
+              <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">
+                Programa de Embaixadoras
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Main Content -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: white; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 30px;">
+              <p style="margin: 0 0 20px; color: #374151; font-size: 16px; line-height: 1.6;">
+                Olá <strong>${data.name}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 25px; color: #374151; font-size: 16px; line-height: 1.6;">
+                Informamos que o pagamento referente ao período de <strong>${periodFormatted}</strong> foi estornado.
+              </p>
+
+              <!-- Refund Details Card -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #fef2f2; border-radius: 12px; border: 1px solid #fca5a5;">
+                <tr>
+                  <td style="padding: 25px;">
+                    <h3 style="margin: 0 0 20px; color: #991b1b; font-size: 18px; font-weight: 600;">
+                      📋 Detalhes do Estorno
+                    </h3>
+                    
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 8px 0; color: #374151; font-size: 14px;">Período de Referência:</td>
+                        <td style="padding: 8px 0; color: #374151; font-size: 14px; text-align: right; font-weight: 600;">${periodFormatted}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #991b1b; font-size: 16px; font-weight: 600;">Valor Estornado:</td>
+                        <td style="padding: 8px 0; color: #991b1b; font-size: 20px; text-align: right; font-weight: 700;">${formatCurrency(data.amount)}</td>
+                      </tr>
+                    </table>
+                    
+                    ${data.notes ? `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #fca5a5;">
+                      <p style="margin: 0; color: #6b7280; font-size: 13px;">
+                        <strong>Motivo:</strong> ${data.notes}
+                      </p>
+                    </div>
+                    ` : ''}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info Message -->
+              <div style="margin-top: 25px; padding: 20px; background-color: #fef3c7; border-radius: 8px;">
+                <p style="margin: 0; color: #92400e; font-size: 14px;">
+                  ℹ️ O valor foi devolvido ao seu saldo de comissões pendentes e será incluído no próximo ciclo de pagamento.
+                </p>
+              </div>
+
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="https://mulheresemconvergencia.com.br/painel/embaixadora" 
+                       style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                      Ver Meu Painel
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 25px 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                Em caso de dúvidas sobre este estorno, entre em contato conosco.
+              </p>
+
+              <p style="margin: 20px 0 0; color: #374151;">
+                Atenciosamente,<br>
                 <strong>Equipe Mulheres em Convergência</strong>
               </p>
             </td>
