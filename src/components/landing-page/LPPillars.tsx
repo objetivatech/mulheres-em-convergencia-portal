@@ -14,7 +14,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export const LPPillars = ({ content }: LPPillarsProps) => {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-secondary/10 to-background">
+    <section id="pilares" className="py-16 md:py-24 bg-gradient-to-b from-secondary/10 to-background">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto space-y-12">
           {/* Title */}
