@@ -13,10 +13,11 @@ import {
   FileText,
   QrCode,
   Download,
-  ExternalLink,
+  Loader2,
   Sparkles
 } from 'lucide-react';
 import { AmbassadorQRCode } from './AmbassadorQRCode';
+import { useAmbassadorMaterials, MaterialType } from '@/hooks/useAmbassadorMaterials';
 
 interface AmbassadorMaterialsProps {
   referralCode: string;
@@ -26,9 +27,22 @@ interface AmbassadorMaterialsProps {
 export const AmbassadorMaterials = ({ referralCode, referralLink }: AmbassadorMaterialsProps) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const { useMaterialsByType, incrementDownloadCount } = useAmbassadorMaterials();
+  
+  const { data: whatsappTemplates = [], isLoading: loadingWpp } = useMaterialsByType('whatsapp_template');
+  const { data: instagramTemplates = [], isLoading: loadingIg } = useMaterialsByType('instagram_template');
+  const { data: banners = [], isLoading: loadingBanners } = useMaterialsByType('banner');
+  const { data: pdfs = [], isLoading: loadingPdfs } = useMaterialsByType('pdf');
+
+  const replaceVariables = (content: string) => {
+    return content
+      .replace(/\{\{LINK\}\}/g, referralLink)
+      .replace(/\{\{CODIGO\}\}/g, referralCode);
+  };
+
   const copyToClipboard = async (text: string, id: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(replaceVariables(text));
       setCopiedId(id);
       toast.success('Copiado para a área de transferência!');
       setTimeout(() => setCopiedId(null), 2000);
@@ -37,114 +51,25 @@ export const AmbassadorMaterials = ({ referralCode, referralLink }: AmbassadorMa
     }
   };
 
-  // WhatsApp message templates
-  const whatsappTemplates = [
-    {
-      id: 'wpp-invite',
-      title: 'Convite Simples',
-      message: `🌟 Oi! Tudo bem?
-
-Você já conhece o Mulheres em Convergência? É uma comunidade incrível de mulheres empreendedoras que se apoiam e crescem juntas!
-
-Eu faço parte e tenho aprendido muito. Acho que você ia amar!
-
-Se quiser conhecer, dá uma olhada aqui: ${referralLink}
-
-Qualquer dúvida, me chama! 💜`
-    },
-    {
-      id: 'wpp-benefits',
-      title: 'Destacando Benefícios',
-      message: `✨ Oii!
-
-Preciso te contar sobre uma comunidade que tem transformado minha jornada empreendedora!
-
-O Mulheres em Convergência oferece:
-📚 Conteúdos exclusivos
-🤝 Networking com outras mulheres
-📅 Eventos e workshops
-💡 Apoio mútuo de verdade
-
-Usa meu link para conhecer: ${referralLink}
-
-Me conta o que achou! 💜`
-    },
-    {
-      id: 'wpp-personal',
-      title: 'História Pessoal',
-      message: `🌸 Oi, [NOME]!
-
-Lembrei de você quando estava no evento do Mulheres em Convergência hoje!
-
-Desde que entrei para a comunidade, minha visão sobre empreendedorismo mudou completamente. As mulheres lá são incríveis e o apoio é real.
-
-Achei que você também ia curtir: ${referralLink}
-
-Se inscreve e depois a gente conversa! 💜`
+  const handleDownload = async (material: { id: string; file_url: string | null; title: string }) => {
+    if (!material.file_url) return;
+    
+    try {
+      await incrementDownloadCount(material.id);
+      
+      const link = document.createElement('a');
+      link.href = material.file_url;
+      link.download = material.title;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Download iniciado!');
+    } catch (error) {
+      toast.error('Erro ao baixar arquivo');
     }
-  ];
-
-  // Instagram templates
-  const instagramTemplates = [
-    {
-      id: 'ig-stories',
-      title: 'Stories',
-      content: `🌟 Dica de ouro pra você que empreende!
-
-Conheci uma comunidade que mudou minha forma de ver negócios: @mulheresemconvergencia
-
-✨ Conteúdo exclusivo
-✨ Eventos incríveis  
-✨ Rede de apoio real
-
-Link na bio pra você conhecer também! 💜
-
-#empreendedorismofeminino #mulheresqueempreendem #comunidade #networking`
-    },
-    {
-      id: 'ig-feed',
-      title: 'Post Feed',
-      content: `Se você é mulher e empreende (ou quer empreender), precisa conhecer o @mulheresemconvergencia!
-
-É uma comunidade que une mulheres incríveis, com conteúdos, eventos e uma rede de apoio que faz toda a diferença.
-
-Desde que entrei, aprendi tanto e fiz conexões valiosas! 🌟
-
-👉 Link na bio para você conhecer
-Use meu código: ${referralCode}
-
-Marca aqui uma amiga que precisa conhecer! 💜
-
-#mulheresemconvergencia #empreendedorismo #mulheresqueinspiriam #comunidadefeminina #networking #crescerjuntas`
-    },
-    {
-      id: 'ig-reels',
-      title: 'Roteiro Reels',
-      content: `[HOOK] "Se você é mulher e empreende, para tudo!"
-
-[DESENVOLVIMENTO]
-Preciso te contar sobre a comunidade que mudou minha vida empreendedora.
-
-O Mulheres em Convergência reúne mulheres incríveis que:
-- Compartilham conhecimento
-- Fazem networking de verdade
-- Se apoiam nos desafios
-
-[CTA]
-O link tá na bio! Usa meu código ${referralCode} pra entrar 💜
-
-#mulheresquefazem #empreendedorismofeminino`
-    }
-  ];
-
-  // Banner sizes info
-  const bannerInfo = [
-    { size: '1200x628', usage: 'Facebook/LinkedIn', aspect: '1.91:1' },
-    { size: '1080x1080', usage: 'Instagram Feed', aspect: '1:1' },
-    { size: '1080x1920', usage: 'Stories/Reels', aspect: '9:16' },
-    { size: '728x90', usage: 'Banner Horizontal', aspect: '8:1' },
-    { size: '300x250', usage: 'Banner Quadrado', aspect: '6:5' },
-  ];
+  };
 
   return (
     <Card>
@@ -191,30 +116,48 @@ O link tá na bio! Usa meu código ${referralCode} pra entrar 💜
             <p className="text-sm text-muted-foreground">
               Mensagens prontas para enviar via WhatsApp. Clique para copiar e personalize como quiser!
             </p>
-            {whatsappTemplates.map((template) => (
-              <Card key={template.id} className="bg-muted/50">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">{template.title}</h4>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(template.message, template.id)}
-                    >
-                      {copiedId === template.id ? (
-                        <Check className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Copy className="h-4 w-4 mr-2" />
-                      )}
-                      Copiar
-                    </Button>
-                  </div>
-                  <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-background p-3 rounded-lg overflow-x-auto">
-                    {template.message}
-                  </pre>
-                </CardContent>
-              </Card>
-            ))}
+            {loadingWpp ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : whatsappTemplates.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum template de WhatsApp disponível no momento.</p>
+              </div>
+            ) : (
+              whatsappTemplates.map((template) => (
+                <Card key={template.id} className="bg-muted/50">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">{template.title}</h4>
+                        {template.category && (
+                          <Badge variant="outline" className="text-xs">
+                            {template.category}
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(template.content || '', template.id)}
+                      >
+                        {copiedId === template.id ? (
+                          <Check className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-2" />
+                        )}
+                        Copiar
+                      </Button>
+                    </div>
+                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-background p-3 rounded-lg overflow-x-auto">
+                      {replaceVariables(template.content || '')}
+                    </pre>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           {/* Instagram Templates */}
@@ -222,36 +165,48 @@ O link tá na bio! Usa meu código ${referralCode} pra entrar 💜
             <p className="text-sm text-muted-foreground">
               Templates para Stories, Feed e Reels. Adapte para seu estilo!
             </p>
-            {instagramTemplates.map((template) => (
-              <Card key={template.id} className="bg-muted/50">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{template.title}</h4>
-                      <Badge variant="secondary" className="text-xs">
-                        {template.id.includes('stories') ? 'Stories' : 
-                         template.id.includes('reels') ? 'Reels' : 'Feed'}
-                      </Badge>
+            {loadingIg ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : instagramTemplates.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Instagram className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum template de Instagram disponível no momento.</p>
+              </div>
+            ) : (
+              instagramTemplates.map((template) => (
+                <Card key={template.id} className="bg-muted/50">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">{template.title}</h4>
+                        {template.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {template.category}
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(template.content || '', template.id)}
+                      >
+                        {copiedId === template.id ? (
+                          <Check className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-2" />
+                        )}
+                        Copiar
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(template.content, template.id)}
-                    >
-                      {copiedId === template.id ? (
-                        <Check className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Copy className="h-4 w-4 mr-2" />
-                      )}
-                      Copiar
-                    </Button>
-                  </div>
-                  <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-background p-3 rounded-lg overflow-x-auto">
-                    {template.content}
-                  </pre>
-                </CardContent>
-              </Card>
-            ))}
+                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-background p-3 rounded-lg overflow-x-auto">
+                      {replaceVariables(template.content || '')}
+                    </pre>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           {/* Banners */}
@@ -259,29 +214,65 @@ O link tá na bio! Usa meu código ${referralCode} pra entrar 💜
             <p className="text-sm text-muted-foreground">
               Banners em diferentes tamanhos para suas redes sociais e materiais de divulgação.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {bannerInfo.map((banner, index) => (
-                <Card key={index} className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">{banner.usage}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {banner.size} ({banner.aspect})
-                        </p>
+            {loadingBanners ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : banners.length === 0 ? (
+              <div className="bg-muted/30 rounded-lg p-8 text-center">
+                <ImageIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Nenhum banner disponível no momento.
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Em breve novos materiais serão adicionados!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {banners.map((banner) => (
+                  <Card key={banner.id} className="bg-muted/50 overflow-hidden">
+                    {banner.file_url && (
+                      <div className="aspect-video bg-muted">
+                        <img 
+                          src={banner.file_url} 
+                          alt={banner.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <Badge variant="outline">Em breve</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <ImageIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Os banners personalizados com seu código estarão disponíveis em breve!
-              </p>
-            </div>
+                    )}
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{banner.title}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            {banner.dimensions && (
+                              <Badge variant="secondary" className="text-xs">
+                                {banner.dimensions}
+                              </Badge>
+                            )}
+                            {banner.category && (
+                              <Badge variant="outline" className="text-xs">
+                                {banner.category}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(banner)}
+                          disabled={!banner.file_url}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Baixar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* QR Code */}
@@ -298,18 +289,52 @@ O link tá na bio! Usa meu código ${referralCode} pra entrar 💜
           {/* PDF */}
           <TabsContent value="pdf" className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Apresentação em PDF para enviar por email ou imprimir.
+              Apresentações e documentos em PDF para enviar por email ou imprimir.
             </p>
-            <Card className="bg-muted/50">
-              <CardContent className="p-6 text-center">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h4 className="font-medium mb-2">Apresentação do Programa</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  PDF com todos os benefícios da associação e como funciona o programa de embaixadoras.
-                </p>
-                <Badge variant="outline">Em breve</Badge>
-              </CardContent>
-            </Card>
+            {loadingPdfs ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : pdfs.length === 0 ? (
+              <Card className="bg-muted/50">
+                <CardContent className="p-6 text-center">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <h4 className="font-medium mb-2">Nenhum PDF disponível</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Em breve materiais em PDF serão adicionados.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {pdfs.map((pdf) => (
+                  <Card key={pdf.id} className="bg-muted/50">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-lg bg-primary/10">
+                          <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{pdf.title}</h4>
+                          {pdf.description && (
+                            <p className="text-sm text-muted-foreground">
+                              {pdf.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleDownload(pdf)}
+                        disabled={!pdf.file_url}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar PDF
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

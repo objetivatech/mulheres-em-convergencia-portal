@@ -9,6 +9,7 @@ import {
   DollarSign, 
   Download,
   BarChart3,
+  Package,
 } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { useAmbassadorAdmin, AmbassadorWithProfile } from '@/hooks/useAmbassadorAdmin';
@@ -19,6 +20,7 @@ import {
   EditAmbassadorDialog,
   EditPaymentDataDialog,
   AmbassadorDetailsDialog,
+  AdminMaterialsManager,
 } from '@/components/admin/ambassadors';
 
 const AdminAmbassadorsPage = () => {
@@ -113,18 +115,22 @@ const AdminAmbassadorsPage = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-              <TabsList className="grid w-full grid-cols-3 max-w-md">
+              <TabsList className="grid w-full grid-cols-4 max-w-lg">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
-                  Visão Geral
+                  <span className="hidden sm:inline">Visão Geral</span>
                 </TabsTrigger>
                 <TabsTrigger value="ambassadors" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Embaixadoras
+                  <span className="hidden sm:inline">Embaixadoras</span>
                 </TabsTrigger>
                 <TabsTrigger value="payouts" className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  Pagamentos
+                  <span className="hidden sm:inline">Pagamentos</span>
+                </TabsTrigger>
+                <TabsTrigger value="materials" className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  <span className="hidden sm:inline">Materiais</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -152,6 +158,10 @@ const AdminAmbassadorsPage = () => {
                   isLoading={payoutsLoading} 
                   ambassadors={ambassadors}
                 />
+              </TabsContent>
+
+              <TabsContent value="materials" className="mt-6">
+                <AdminMaterialsManager />
               </TabsContent>
             </Tabs>
 
