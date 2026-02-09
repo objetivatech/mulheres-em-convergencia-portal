@@ -562,6 +562,14 @@ export type Database = {
           payment_preference: string | null
           pending_commission: number | null
           pix_key: string | null
+          public_bio: string | null
+          public_city: string | null
+          public_instagram_url: string | null
+          public_linkedin_url: string | null
+          public_name: string | null
+          public_photo_url: string | null
+          public_state: string | null
+          public_website_url: string | null
           referral_code: string
           show_on_public_page: boolean | null
           tier: string
@@ -587,6 +595,14 @@ export type Database = {
           payment_preference?: string | null
           pending_commission?: number | null
           pix_key?: string | null
+          public_bio?: string | null
+          public_city?: string | null
+          public_instagram_url?: string | null
+          public_linkedin_url?: string | null
+          public_name?: string | null
+          public_photo_url?: string | null
+          public_state?: string | null
+          public_website_url?: string | null
           referral_code: string
           show_on_public_page?: boolean | null
           tier?: string
@@ -612,6 +628,14 @@ export type Database = {
           payment_preference?: string | null
           pending_commission?: number | null
           pix_key?: string | null
+          public_bio?: string | null
+          public_city?: string | null
+          public_instagram_url?: string | null
+          public_linkedin_url?: string | null
+          public_name?: string | null
+          public_photo_url?: string | null
+          public_state?: string | null
+          public_website_url?: string | null
           referral_code?: string
           show_on_public_page?: boolean | null
           tier?: string
