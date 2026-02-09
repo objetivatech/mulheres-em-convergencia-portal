@@ -3,10 +3,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAmbassador } from '@/hooks/useAmbassador';
 import Layout from '@/components/layout/Layout';
-import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { PRODUCTION_DOMAIN, PRODUCTION_DOMAIN as DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Crown, BarChart3, Link2, Wallet, Users, FileText, Bell } from 'lucide-react';
+import { Crown, BarChart3, Link2, Wallet, Users, FileText, HelpCircle } from 'lucide-react';
 import {
   AmbassadorStatsCards,
   AmbassadorReferralLink,
@@ -15,7 +15,10 @@ import {
   AmbassadorClicksChart,
   AmbassadorPayoutHistory,
   AmbassadorNotifications,
+  AmbassadorFAQ,
+  AmbassadorMaterials,
 } from '@/components/ambassador';
+
 
 export const EmbaixadoraDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -121,7 +124,7 @@ export const EmbaixadoraDashboard = () => {
 
             {/* Tabs para diferentes seções */}
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-auto">
                 <TabsTrigger value="overview" className="gap-2">
                   <BarChart3 className="h-4 w-4" />
                   <span className="hidden sm:inline">Visão Geral</span>
@@ -141,6 +144,10 @@ export const EmbaixadoraDashboard = () => {
                 <TabsTrigger value="reports" className="gap-2">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Relatórios</span>
+                </TabsTrigger>
+                <TabsTrigger value="help" className="gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ajuda</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -188,6 +195,15 @@ export const EmbaixadoraDashboard = () => {
                   payouts={payouts || []} 
                   isLoading={payoutsLoading} 
                 />
+              </TabsContent>
+
+              {/* Ajuda - FAQ e Materiais */}
+              <TabsContent value="help" className="space-y-6">
+                <AmbassadorMaterials 
+                  referralCode={ambassador.referral_code}
+                  referralLink={`${DOMAIN}/convite/${ambassador.referral_code}`}
+                />
+                <AmbassadorFAQ />
               </TabsContent>
             </Tabs>
           </div>
