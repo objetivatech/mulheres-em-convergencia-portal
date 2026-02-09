@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -190,6 +191,7 @@ const AdminBusinessManagement = () => {
       <Layout>
         <main className="flex-1 py-8">
           <div className="container mx-auto px-4 max-w-7xl">
+            <AdminBackButton />
             <header className="mb-8">
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                 <Building2 className="h-8 w-8" />

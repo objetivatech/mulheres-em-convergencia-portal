@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Eye, Globe, FileText } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -111,6 +112,7 @@ const PagesManagement = () => {
       
       <Layout>
         <div className="container mx-auto py-8">
+          <AdminBackButton />
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-nexa text-foreground">Gerenciar Páginas</h1>

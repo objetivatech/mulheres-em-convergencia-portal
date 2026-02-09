@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import { BusinessAnalyticsDashboard } from '@/components/admin/BusinessAnalyticsDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminAnalytics = () => {
@@ -31,6 +32,7 @@ const AdminAnalytics = () => {
       <Layout>
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto">
+            <AdminBackButton />
             <header className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
                 Analytics Administrativo
