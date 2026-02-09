@@ -340,13 +340,27 @@ export const useAmbassadorAdmin = () => {
           .eq('id', payoutId);
         
         if (error) throw error;
+
+        // Send email notification via edge function
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-ambassador-payout-email', {
+            body: { payout_id: payoutId, action: 'paid' }
+          });
+          
+          if (emailError) {
+            console.error('Error sending payout email:', emailError);
+            // Don't throw - email failure shouldn't block the payment confirmation
+          }
+        } catch (emailErr) {
+          console.error('Failed to invoke email function:', emailErr);
+        }
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin-ambassador-payouts'] });
         queryClient.invalidateQueries({ queryKey: ['admin-ambassadors'] });
         toast({
           title: 'Pagamento confirmado',
-          description: 'Pagamento marcado como pago com sucesso.',
+          description: 'Pagamento marcado como pago e email de confirmação enviado.',
         });
       },
       onError: (error) => {
