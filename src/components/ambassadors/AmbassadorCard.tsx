@@ -17,7 +17,7 @@ const tierConfig: Record<string, { label: string; color: string }> = {
 };
 
 export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
-  const { profile, referral_code, tier } = ambassador;
+  const { referral_code, tier } = ambassador;
   const tierInfo = tierConfig[tier] || tierConfig.bronze;
   
   const referralLink = `${window.location.origin}/convite/${referral_code}`;
@@ -36,7 +36,7 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
     toast.success('Link copiado!');
   };
 
-  const location = [profile.city, profile.state].filter(Boolean).join(', ');
+  const location = [ambassador.public_city, ambassador.public_state].filter(Boolean).join(', ');
 
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card border-border">
@@ -44,9 +44,9 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
         {/* Avatar with tier badge */}
         <div className="relative mb-4">
           <Avatar className="h-24 w-24 ring-4 ring-primary/20 group-hover:ring-primary/40 transition-all">
-            <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
+            <AvatarImage src={ambassador.public_photo_url || undefined} alt={ambassador.public_name} />
             <AvatarFallback className="text-xl bg-primary/10 text-primary font-semibold">
-              {getInitials(profile.full_name)}
+              {getInitials(ambassador.public_name)}
             </AvatarFallback>
           </Avatar>
           <Badge className={`absolute -bottom-2 left-1/2 -translate-x-1/2 ${tierInfo.color} text-xs`}>
@@ -56,7 +56,7 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
 
         {/* Name */}
         <h3 className="text-lg font-semibold text-foreground mb-1">
-          {profile.full_name}
+          {ambassador.public_name}
         </h3>
 
         {/* Location */}
@@ -68,17 +68,17 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
         )}
 
         {/* Bio */}
-        {profile.public_bio && (
+        {ambassador.public_bio && (
           <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-            {profile.public_bio}
+            {ambassador.public_bio}
           </p>
         )}
 
         {/* Social Links */}
         <div className="flex items-center gap-2 mb-4">
-          {profile.instagram_url && (
+          {ambassador.public_instagram_url && (
             <a
-              href={profile.instagram_url}
+              href={ambassador.public_instagram_url}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition-colors"
@@ -87,9 +87,9 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
               <Instagram className="h-4 w-4" />
             </a>
           )}
-          {profile.linkedin_url && (
+          {ambassador.public_linkedin_url && (
             <a
-              href={profile.linkedin_url}
+              href={ambassador.public_linkedin_url}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition-colors"
@@ -98,9 +98,9 @@ export function AmbassadorCard({ ambassador }: AmbassadorCardProps) {
               <Linkedin className="h-4 w-4" />
             </a>
           )}
-          {profile.website_url && (
+          {ambassador.public_website_url && (
             <a
-              href={profile.website_url}
+              href={ambassador.public_website_url}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition-colors"

@@ -3,6 +3,8 @@
 ## Objetivo
 Criar uma página pública para divulgar as embaixadoras do programa, permitindo que visitantes conheçam as parceiras e utilizem seus links de indicação.
 
+**IMPORTANTE:** Todos os dados exibidos na página pública são cadastrados e gerenciados exclusivamente pelo administrador. A embaixadora não tem controle sobre esta página.
+
 ## Funcionalidades Implementadas
 
 ### 1. Página Pública `/embaixadoras`
@@ -16,7 +18,7 @@ Criar uma página pública para divulgar as embaixadoras do programa, permitindo
 - Layout responsivo: 1 coluna (mobile), 2 colunas (tablet), 3 colunas (desktop)
 - Cards com:
   - **Avatar** com badge de nível (Bronze/Prata/Ouro)
-  - **Nome completo**
+  - **Nome público** (cadastrado pelo admin)
   - **Localização** (cidade/estado)
   - **Bio pública** (até 3 linhas)
   - **Links de redes sociais** (Instagram, LinkedIn, Website)
@@ -31,20 +33,38 @@ Criar uma página pública para divulgar as embaixadoras do programa, permitindo
 
 Nova aba **"Página"** em `/admin/embaixadoras`:
 
-- **Toggle de visibilidade**: Controlar quais embaixadoras aparecem na página pública
-- **Ordenação**: Definir ordem de exibição (setas e campo numérico)
-- **Preview**: Link direto para visualizar a página pública
+#### Lista de Embaixadoras
+- Mostra todas as embaixadoras ativas
+- Indica quais têm dados públicos cadastrados
+- Badge "Não cadastrada" para embaixadoras sem dados
+
+#### Formulário de Edição (Dialog)
+O admin pode cadastrar para cada embaixadora:
+- **Foto pública** (upload de imagem até 5MB)
+- **Nome para exibição** (obrigatório)
+- **Cidade e Estado**
+- **Mini-bio** (texto livre)
+- **Instagram** (URL)
+- **LinkedIn** (URL)
+- **Website** (URL)
+
+#### Controles
+- **Toggle de visibilidade**: Só funciona após cadastrar o nome
+- **Ordenação**: Setas e campo numérico
+- **Preview**: Link direto para visualizar a página
 - **Contador**: Mostra quantas embaixadoras estão visíveis
 
-### 3. Novos Campos no Perfil
+### 3. Campos no Banco de Dados
 
-Campos adicionados à tabela `profiles`:
-- `instagram_url` - URL do perfil Instagram
-- `linkedin_url` - URL do perfil LinkedIn
-- `website_url` - URL do site pessoal
-- `public_bio` - Biografia para exibição pública
-
-Campos adicionados à tabela `ambassadors`:
+Campos adicionados à tabela `ambassadors` (gerenciados pelo admin):
+- `public_name` - Nome para exibição pública
+- `public_photo_url` - URL da foto pública
+- `public_bio` - Biografia pública
+- `public_city` - Cidade
+- `public_state` - Estado
+- `public_instagram_url` - URL do Instagram
+- `public_linkedin_url` - URL do LinkedIn
+- `public_website_url` - URL do Website
 - `show_on_public_page` - Controle de visibilidade
 - `display_order` - Ordem de exibição
 
@@ -61,7 +81,7 @@ src/
 │       └── AmbassadorsGrid.tsx             # Grid com loading
 │   └── admin/
 │       └── ambassadors/
-│           └── AdminPublicPageManager.tsx  # Gerenciador no admin
+│           └── AdminPublicPageManager.tsx  # Gerenciador completo
 └── hooks/
     └── usePublicAmbassadors.ts             # Hook para buscar dados
 ```

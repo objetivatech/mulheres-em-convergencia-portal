@@ -6,16 +6,14 @@ export interface PublicAmbassador {
   referral_code: string;
   tier: string;
   display_order: number;
-  profile: {
-    full_name: string;
-    avatar_url: string | null;
-    city: string | null;
-    state: string | null;
-    public_bio: string | null;
-    instagram_url: string | null;
-    linkedin_url: string | null;
-    website_url: string | null;
-  };
+  public_name: string;
+  public_photo_url: string | null;
+  public_bio: string | null;
+  public_city: string | null;
+  public_state: string | null;
+  public_instagram_url: string | null;
+  public_linkedin_url: string | null;
+  public_website_url: string | null;
 }
 
 export function usePublicAmbassadors() {
@@ -29,41 +27,37 @@ export function usePublicAmbassadors() {
           referral_code,
           tier,
           display_order,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            city,
-            state,
-            public_bio,
-            instagram_url,
-            linkedin_url,
-            website_url
-          )
+          public_name,
+          public_photo_url,
+          public_bio,
+          public_city,
+          public_state,
+          public_instagram_url,
+          public_linkedin_url,
+          public_website_url
         `)
         .eq('active', true)
         .eq('show_on_public_page', true)
+        .not('public_name', 'is', null)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
 
-      // Transform the data to flatten profiles
       return (data || []).map((ambassador: any) => ({
         id: ambassador.id,
         referral_code: ambassador.referral_code,
         tier: ambassador.tier,
         display_order: ambassador.display_order,
-        profile: ambassador.profiles || {
-          full_name: 'Embaixadora',
-          avatar_url: null,
-          city: null,
-          state: null,
-          public_bio: null,
-          instagram_url: null,
-          linkedin_url: null,
-          website_url: null,
-        },
+        public_name: ambassador.public_name || 'Embaixadora',
+        public_photo_url: ambassador.public_photo_url,
+        public_bio: ambassador.public_bio,
+        public_city: ambassador.public_city,
+        public_state: ambassador.public_state,
+        public_instagram_url: ambassador.public_instagram_url,
+        public_linkedin_url: ambassador.public_linkedin_url,
+        public_website_url: ambassador.public_website_url,
       }));
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }
