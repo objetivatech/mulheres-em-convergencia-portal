@@ -5,3 +5,6 @@ export { AmbassadorPaymentSettings } from './AmbassadorPaymentSettings';
 export { AmbassadorClicksChart } from './AmbassadorClicksChart';
 export { AmbassadorPayoutHistory } from './AmbassadorPayoutHistory';
 export { AmbassadorNotifications } from './AmbassadorNotifications';
+export { AmbassadorFAQ } from './AmbassadorFAQ';
+export { AmbassadorMaterials } from './AmbassadorMaterials';
+export { AmbassadorQRCode } from './AmbassadorQRCode';

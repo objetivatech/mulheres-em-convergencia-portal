@@ -59,6 +59,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_faq_items: {
+        Row: {
+          active: boolean
+          answer: string
+          category: string
+          created_at: string
+          display_order: number
+          id: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          answer: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          answer?: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ambassador_notifications: {
         Row: {
           ambassador_id: string
