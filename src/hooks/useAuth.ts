@@ -3,6 +3,13 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { registerReferralSignup } from '@/hooks/useAmbassadorCRMIntegration';
+
+// Helper function to get referral code from cookie (outside hook to avoid circular dependency)
+const getReferralCodeFromCookie = (): string | null => {
+  const match = document.cookie.match(/mec_referral=([^;]+)/);
+  return match ? match[1] : null;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -131,6 +138,9 @@ export const useAuthProvider = () => {
 
   const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => {
     try {
+      // Check for referral code before signup
+      const referralCode = getReferralCodeFromCookie();
+      
       // Create user with auto-confirm disabled
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -181,6 +191,23 @@ export const useAuthProvider = () => {
       } catch (emailError) {
         console.error('Error invoking send-confirmation-email:', emailError);
         // Don't fail signup if email fails
+      }
+
+      // Register in CRM if user signed up via referral
+      if (referralCode) {
+        try {
+          console.log('[Auth] User signed up via referral, registering in CRM:', referralCode);
+          await registerReferralSignup({
+            referralCode,
+            referredUserEmail: email,
+            referredUserName: fullName || email,
+            referredUserCpf: cpf,
+            referredUserId: authData.user.id,
+          });
+        } catch (crmError) {
+          console.error('[Auth] Error registering referral in CRM:', crmError);
+          // Don't fail signup if CRM fails
+        }
       }
 
       toast({
