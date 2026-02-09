@@ -32,6 +32,16 @@ export default defineConfig(({ mode }) => ({
           });
         },
       },
+      '/llms-full.txt': {
+        target: `${SUPABASE_URL}/functions/v1/generate-llms-full`,
+        changeOrigin: true,
+        rewrite: () => '',
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('apikey', SUPABASE_ANON_KEY);
+          });
+        },
+      },
     },
   },
   plugins: [

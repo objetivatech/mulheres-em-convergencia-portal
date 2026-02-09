@@ -47,7 +47,11 @@ const EventsPage = () => {
       <Helmet>
         <title>Eventos | Mulheres em Convergência</title>
         <meta name="description" content="Participe de nossos workshops, cursos e encontros. Conecte-se com mulheres empreendedoras e amplie sua rede de contatos." />
-        <link rel="canonical" href={`https://${PRODUCTION_DOMAIN}/eventos`} />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/eventos`} />
+        <meta property="og:title" content="Eventos | Mulheres em Convergência" />
+        <meta property="og:description" content="Participe de nossos workshops, cursos e encontros." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${PRODUCTION_DOMAIN}/eventos`} />
       </Helmet>
 
       <Layout>

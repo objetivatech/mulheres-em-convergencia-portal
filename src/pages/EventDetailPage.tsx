@@ -189,9 +189,13 @@ const EventDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{event.title} | Eventos</title>
+        <title>{event.title} | Eventos - Mulheres em Convergência</title>
         <meta name="description" content={event.description || `Participe do evento ${event.title}`} />
-        <link rel="canonical" href={`https://${PRODUCTION_DOMAIN}/eventos/${event.slug}`} />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/eventos/${event.slug}`} />
+        <meta property="og:title" content={`${event.title} | Eventos`} />
+        <meta property="og:description" content={event.description || `Participe do evento ${event.title}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${PRODUCTION_DOMAIN}/eventos/${event.slug}`} />
       </Helmet>
 
       <Layout>

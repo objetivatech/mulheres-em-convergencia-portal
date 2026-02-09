@@ -423,7 +423,11 @@ const Diretorio = () => {
           name="description" 
           content="Descubra empresas lideradas por mulheres empreendedoras. Conecte-se com negócios locais e apoie o empreendedorismo feminino."
         />
-        <meta name="keywords" content="diretório empresarial, mulheres empreendedoras, negócios femininos, empreendedorismo" />
+        <link rel="canonical" href="https://mulheresemconvergencia.com.br/diretorio" />
+        <meta property="og:title" content="Diretório de Associadas | Mulheres em Convergência" />
+        <meta property="og:description" content="Descubra empresas lideradas por mulheres empreendedoras." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mulheresemconvergencia.com.br/diretorio" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
