@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Eye, Send, Clock } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Send, Clock, Wand2 } from 'lucide-react';
 import slugify from 'slugify';
 import DOMPurify from 'dompurify';
 import { useAuth } from '@/hooks/useAuth';
@@ -654,18 +654,69 @@ export default function BlogEditor() {
 
                 {/* SEO Section */}
                 <div className="bg-card p-6 rounded-lg border space-y-4">
-                  <h3 className="font-medium text-foreground">SEO</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-foreground">SEO</h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const title = form.getValues('title');
+                        const excerpt = form.getValues('excerpt');
+                        const content = form.getValues('content');
+                        
+                        // Generate SEO title: use post title, truncated to ~60 chars
+                        if (title && !form.getValues('seo_title')) {
+                          const seoTitle = title.length > 57 ? title.substring(0, 57) + '...' : title;
+                          form.setValue('seo_title', seoTitle);
+                        }
+                        
+                        // Generate SEO description from excerpt or content
+                        if (!form.getValues('seo_description')) {
+                          let desc = excerpt || '';
+                          if (!desc && content) {
+                            // Strip HTML tags and get first ~155 chars
+                            const stripped = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                            desc = stripped.substring(0, 155);
+                            if (stripped.length > 155) desc += '...';
+                          }
+                          if (desc) {
+                            if (desc.length > 158) desc = desc.substring(0, 155) + '...';
+                            form.setValue('seo_description', desc);
+                          }
+                        }
+
+                        // Generate keywords from title
+                        if (title && (!form.getValues('seo_keywords') || form.getValues('seo_keywords')?.length === 0)) {
+                          const stopWords = ['de', 'da', 'do', 'das', 'dos', 'em', 'no', 'na', 'nos', 'nas', 'um', 'uma', 'uns', 'umas', 'o', 'a', 'os', 'as', 'e', 'ou', 'que', 'para', 'por', 'com', 'como', 'se', 'é', 'ao', 'à', 'seu', 'sua', 'seus', 'suas'];
+                          const keywords = title
+                            .toLowerCase()
+                            .split(/\s+/)
+                            .filter(w => w.length > 2 && !stopWords.includes(w))
+                            .slice(0, 6);
+                          if (keywords.length > 0) {
+                            form.setValue('seo_keywords', keywords);
+                          }
+                        }
+                      }}
+                      className="gap-1"
+                    >
+                      <Wand2 className="h-4 w-4" />
+                      Preencher SEO
+                    </Button>
+                  </div>
                   
                   <FormField
                     control={form.control}
                     name="seo_title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Título SEO</FormLabel>
+                        <FormLabel>Título SEO <span className="text-muted-foreground text-xs">({(field.value || '').length}/60)</span></FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             placeholder="Título otimizado para SEO"
+                            maxLength={60}
                           />
                         </FormControl>
                         <FormMessage />
@@ -678,12 +729,13 @@ export default function BlogEditor() {
                     name="seo_description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Meta Descrição</FormLabel>
+                        <FormLabel>Meta Descrição <span className="text-muted-foreground text-xs">({(field.value || '').length}/160)</span></FormLabel>
                         <FormControl>
                           <Textarea
                             {...field}
                             placeholder="Descrição para motores de busca"
                             rows={3}
+                            maxLength={160}
                           />
                         </FormControl>
                         <FormMessage />
