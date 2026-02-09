@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Mail, Users, Send, BarChart3 } from 'lucide-react';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { NewsletterDashboard } from '@/components/admin/newsletter/NewsletterDashboard';
 import { SubscribersList } from '@/components/admin/newsletter/SubscribersList';
 import { CampaignsList } from '@/components/admin/newsletter/CampaignsList';
@@ -36,6 +37,7 @@ const AdminNewsletter = () => {
       <Layout>
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto">
+            <AdminBackButton label="Voltar ao Admin" />
             <header className="mb-8">
               <h1 className="text-3xl font-bold flex items-center gap-3">
                 <Mail className="h-8 w-8 text-primary" />

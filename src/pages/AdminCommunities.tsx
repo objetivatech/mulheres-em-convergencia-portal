@@ -7,6 +7,7 @@ import { Navigate } from 'react-router-dom';
 import { CommunitiesManagement } from '@/components/admin/CommunitiesManagement';
 import { CommunityRequestsManagement } from '@/components/admin/CommunityRequestsManagement';
 import { Building2, FileText } from 'lucide-react';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminCommunities = () => {
@@ -36,6 +37,7 @@ const AdminCommunities = () => {
       <Layout>
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto">
+            <AdminBackButton label="Voltar ao Admin" />
             <header className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
                 Gerenciar Comunidades
