@@ -1,0 +1,30 @@
+# Mulheres em Convergência
+
+> Portal dedicado a educar, conectar e impulsionar mulheres por meio do empreendedorismo e do fortalecimento de redes de apoio.
+
+## Sobre
+
+Mulheres em Convergência é uma plataforma brasileira que conecta mulheres empreendedoras, oferecendo um diretório de negócios, eventos, conteúdo educacional e comunidades de apoio mútuo.
+
+## Seções Principais
+
+- [Home](https://mulheresemconvergencia.com.br/)
+- [Blog Convergindo](https://mulheresemconvergencia.com.br/convergindo) - Artigos sobre empreendedorismo feminino
+- [Diretório de Associadas](https://mulheresemconvergencia.com.br/diretorio) - Negócios liderados por mulheres
+- [Eventos](https://mulheresemconvergencia.com.br/eventos) - Workshops, cursos e encontros
+- [Comunidades](https://mulheresemconvergencia.com.br/comunidades) - Coletivos de mulheres empreendedoras
+- [Embaixadoras](https://mulheresemconvergencia.com.br/embaixadoras) - Programa de embaixadoras
+- [Planos](https://mulheresemconvergencia.com.br/planos) - Planos de assinatura para negócios
+- [Sobre](https://mulheresemconvergencia.com.br/sobre) - Sobre o portal
+- [Contato](https://mulheresemconvergencia.com.br/contato) - Fale conosco
+
+## Conteúdo Dinâmico
+
+- [RSS Feed](https://mulheresemconvergencia.com.br/rss.xml) - Feed RSS com os artigos mais recentes
+- [Sitemap](https://mulheresemconvergencia.com.br/sitemap.xml) - Mapa do site completo
+- [Conteúdo completo para LLMs](https://mulheresemconvergencia.com.br/llms-full.txt) - Todos os artigos do blog em formato texto
+
+## Contato
+
+- Email: juntas@mulheresemconvergencia.com.br
+- Instagram: @mulheresemconvergencia

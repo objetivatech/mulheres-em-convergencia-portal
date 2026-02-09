@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { supabase } from '@/integrations/supabase/client';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -271,6 +273,15 @@ const Convergindo = () => {
 
   return (
     <Layout>
+      <Helmet>
+        <title>Blog Convergindo | Mulheres em Convergência</title>
+        <meta name="description" content="Artigos sobre empreendedorismo feminino, networking, economia criativa e histórias de mulheres que fazem acontecer." />
+        <link rel="canonical" href={`${PRODUCTION_DOMAIN}/convergindo`} />
+        <meta property="og:title" content="Blog Convergindo | Mulheres em Convergência" />
+        <meta property="og:description" content="Artigos sobre empreendedorismo feminino, networking e histórias de mulheres que fazem acontecer." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${PRODUCTION_DOMAIN}/convergindo`} />
+      </Helmet>
       {/* Breadcrumbs */}
       <div className="bg-tertiary/20 py-4">
         <div className="container mx-auto px-4">

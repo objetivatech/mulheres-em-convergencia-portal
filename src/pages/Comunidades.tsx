@@ -50,6 +50,10 @@ const Comunidades = () => {
           content="Conheça as comunidades e coletivos de mulheres empreendedoras cadastradas em nosso portal" 
         />
         <link rel="canonical" href={`${PRODUCTION_DOMAIN}/comunidades`} />
+        <meta property="og:title" content="Comunidades e Coletivos - Mulheres em Convergência" />
+        <meta property="og:description" content="Conheça as comunidades e coletivos de mulheres empreendedoras." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${PRODUCTION_DOMAIN}/comunidades`} />
       </Helmet>
 
       <Layout>

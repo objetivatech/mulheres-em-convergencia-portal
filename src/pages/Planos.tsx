@@ -423,6 +423,10 @@ const Planos: React.FC = () => {
         <Helmet>
           <title>{pageContent.title} | Mulheres em Convergência</title>
           <meta name="description" content="Escolha o plano ideal para o seu negócio no Diretório de Associadas" />
+          <link rel="canonical" href="https://mulheresemconvergencia.com.br/planos" />
+          <meta property="og:title" content={`${pageContent.title} | Mulheres em Convergência`} />
+          <meta property="og:description" content="Escolha o plano ideal para o seu negócio." />
+          <meta property="og:url" content="https://mulheresemconvergencia.com.br/planos" />
         </Helmet>
         <PageRenderer data={pageContent.content} />
       </Layout>
@@ -434,6 +438,10 @@ const Planos: React.FC = () => {
       <Helmet>
         <title>Planos de Assinatura - Mulheres em Convergência</title>
         <meta name="description" content="Escolha o plano ideal para o seu negócio no Diretório de Associadas" />
+        <link rel="canonical" href="https://mulheresemconvergencia.com.br/planos" />
+        <meta property="og:title" content="Planos de Assinatura - Mulheres em Convergência" />
+        <meta property="og:description" content="Escolha o plano ideal para o seu negócio." />
+        <meta property="og:url" content="https://mulheresemconvergencia.com.br/planos" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

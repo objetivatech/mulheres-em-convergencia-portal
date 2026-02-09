@@ -33,7 +33,7 @@ interface SchemaOrgProps {
   baseUrl?: string;
 }
 
-export const SchemaOrg = ({ post, baseUrl = 'https://mulhereemconvergeencia.com.br' }: SchemaOrgProps) => {
+export const SchemaOrg = ({ post, baseUrl = 'https://mulheresemconvergencia.com.br' }: SchemaOrgProps) => {
   const postUrl = `${baseUrl}/convergindo/${post.slug}`;
   const authorName = post.author?.full_name || 'Mulheres em Convergência';
   

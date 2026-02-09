@@ -13,5 +13,17 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Bloquear rotas administrativas e privadas
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /painel/
+Disallow: /painel/*
+Disallow: /configuracoes/
+Disallow: /configuracoes/*
+
 # Sitemaps
 Sitemap: https://mulheresemconvergencia.com.br/sitemap.xml
+
+# Arquivos para IAs Generativas
+# https://llmstxt.org/
+LLMs-Txt: https://mulheresemconvergencia.com.br/llms.txt

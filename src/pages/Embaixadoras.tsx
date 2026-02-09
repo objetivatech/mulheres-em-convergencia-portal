@@ -14,6 +14,11 @@ export default function Embaixadoras() {
           name="description" 
           content="Conheça as embaixadoras do Mulheres em Convergência. Mulheres que acreditam no poder da colaboração e estão prontas para ajudar você em sua jornada." 
         />
+        <link rel="canonical" href="https://mulheresemconvergencia.com.br/embaixadoras" />
+        <meta property="og:title" content="Nossas Embaixadoras | Mulheres em Convergência" />
+        <meta property="og:description" content="Conheça as embaixadoras do Mulheres em Convergência." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mulheresemconvergencia.com.br/embaixadoras" />
       </Helmet>
 
       <main className="min-h-screen bg-background">

@@ -11,6 +11,16 @@ interface BlogCategory {
   slug: string;
 }
 
+interface Business {
+  slug: string;
+  updated_at: string;
+}
+
+interface Event {
+  slug: string;
+  updated_at: string;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -43,6 +53,25 @@ Deno.serve(async (req) => {
       throw categoriesError;
     }
 
+    // Fetch published businesses
+    const { data: businesses, error: bizError } = await supabase
+      .from('businesses')
+      .select('slug, updated_at');
+
+    if (bizError) {
+      console.error('Error fetching businesses:', bizError);
+    }
+
+    // Fetch published events
+    const { data: events, error: eventsError } = await supabase
+      .from('events')
+      .select('slug, updated_at')
+      .eq('status', 'published');
+
+    if (eventsError) {
+      console.error('Error fetching events:', eventsError);
+    }
+
     const baseUrl = 'https://mulheresemconvergencia.com.br';
     const currentDate = new Date().toISOString();
 
@@ -52,6 +81,14 @@ Deno.serve(async (req) => {
       { url: '/convergindo', priority: '0.9', changefreq: 'daily' },
       { url: '/contato', priority: '0.7', changefreq: 'monthly' },
       { url: '/planos', priority: '0.6', changefreq: 'weekly' },
+      { url: '/diretorio', priority: '0.9', changefreq: 'daily' },
+      { url: '/embaixadoras', priority: '0.7', changefreq: 'weekly' },
+      { url: '/eventos', priority: '0.8', changefreq: 'daily' },
+      { url: '/comunidades', priority: '0.7', changefreq: 'weekly' },
+      { url: '/criar-converter', priority: '0.6', changefreq: 'monthly' },
+      { url: '/termos-de-uso', priority: '0.3', changefreq: 'yearly' },
+      { url: '/politica-de-privacidade', priority: '0.3', changefreq: 'yearly' },
+      { url: '/politica-de-cookies', priority: '0.3', changefreq: 'yearly' },
     ];
 
     // Generate sitemap XML
@@ -80,6 +117,20 @@ Deno.serve(async (req) => {
     <lastmod>${currentDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>`).join('') || ''}
+  ${businesses?.map((biz: Business) => `
+  <url>
+    <loc>${baseUrl}/diretorio/${biz.slug}</loc>
+    <lastmod>${biz.updated_at ? new Date(biz.updated_at).toISOString() : currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`).join('') || ''}
+  ${events?.map((evt: Event) => `
+  <url>
+    <loc>${baseUrl}/eventos/${evt.slug}</loc>
+    <lastmod>${evt.updated_at ? new Date(evt.updated_at).toISOString() : currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>`).join('') || ''}
 </urlset>`;
 

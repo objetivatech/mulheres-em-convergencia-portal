@@ -8,6 +8,7 @@ import BusinessShowcase from "@/components/home/BusinessShowcase";
 import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Index = () => {
   const { pageContent, loading } = usePageBuilder('home');
@@ -19,10 +20,11 @@ const Index = () => {
         <Helmet>
           <title>{pageContent.title} | Mulheres em Convergência</title>
           <meta name="description" content="Portal de conexão entre mulheres empreendedoras. Encontre negócios liderados por mulheres, networking, cursos e oportunidades de crescimento." />
-          <meta name="keywords" content="empreendedorismo feminino, mulheres, negócios, networking, economia criativa" />
+          <link rel="canonical" href={PRODUCTION_DOMAIN} />
           <meta property="og:title" content={pageContent.title} />
           <meta property="og:description" content="Portal de conexão entre mulheres empreendedoras" />
           <meta property="og:type" content="website" />
+          <meta property="og:url" content={PRODUCTION_DOMAIN} />
         </Helmet>
         <PageRenderer data={pageContent.content} />
       </Layout>
@@ -32,14 +34,15 @@ const Index = () => {
   // Senão, mostra a página estática original
   return (
     <Layout>
-      <Helmet>
-        <title>Mulheres em Convergência | Portal de Empreendedorismo Feminino</title>
-        <meta name="description" content="Portal de conexão entre mulheres empreendedoras. Encontre negócios liderados por mulheres, networking, cursos e oportunidades de crescimento." />
-        <meta name="keywords" content="empreendedorismo feminino, mulheres, negócios, networking, economia criativa" />
-        <meta property="og:title" content="Mulheres em Convergência" />
-        <meta property="og:description" content="Portal de conexão entre mulheres empreendedoras" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+        <Helmet>
+          <title>Mulheres em Convergência | Portal de Empreendedorismo Feminino</title>
+          <meta name="description" content="Portal de conexão entre mulheres empreendedoras. Encontre negócios liderados por mulheres, networking, cursos e oportunidades de crescimento." />
+          <link rel="canonical" href={PRODUCTION_DOMAIN} />
+          <meta property="og:title" content="Mulheres em Convergência" />
+          <meta property="og:description" content="Portal de conexão entre mulheres empreendedoras" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content={PRODUCTION_DOMAIN} />
+        </Helmet>
       
       <Hero />
       
