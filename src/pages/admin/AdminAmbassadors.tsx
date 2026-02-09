@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { 
   Crown, 
   Users, 
@@ -87,6 +88,7 @@ const AdminAmbassadorsPage = () => {
       <Layout>
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto">
+            <AdminBackButton />
             {/* Header */}
             <header className="mb-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

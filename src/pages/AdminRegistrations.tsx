@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CommunitiesManagement } from '@/components/admin/CommunitiesManagement';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminRegistrations = () => {
@@ -16,6 +17,7 @@ const AdminRegistrations = () => {
 
       <Layout>
         <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <AdminBackButton />
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold">Cadastros</h1>
