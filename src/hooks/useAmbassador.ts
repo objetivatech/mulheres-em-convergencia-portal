@@ -18,6 +18,11 @@ export interface Ambassador {
   minimum_payout: number;
   pending_commission: number;
   next_payout_date: string | null;
+  // Novos campos de gamificação
+  tier: 'bronze' | 'silver' | 'gold';
+  tier_updated_at: string | null;
+  lifetime_sales: number;
+  total_points: number;
   created_at: string;
   updated_at: string;
 }
