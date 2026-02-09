@@ -7,7 +7,7 @@ interface LPIncludedProps {
 
 export const LPIncluded = ({ content }: LPIncludedProps) => {
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="o-que-voce-recebe" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto space-y-8">
           {/* Title */}

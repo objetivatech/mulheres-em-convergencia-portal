@@ -7,7 +7,7 @@ interface LPTransformationProps {
 
 export const LPTransformation = ({ content }: LPTransformationProps) => {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-background to-primary/5">
+    <section id="resultados" className="py-16 md:py-24 bg-gradient-to-b from-background to-primary/5">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto space-y-8">
           {/* Title */}

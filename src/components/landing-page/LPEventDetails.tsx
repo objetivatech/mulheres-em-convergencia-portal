@@ -7,7 +7,7 @@ interface LPEventDetailsProps {
 
 export const LPEventDetails = ({ content }: LPEventDetailsProps) => {
   return (
-    <section className="py-16 md:py-24 bg-muted/30">
+    <section id="quando-e-onde" className="py-16 md:py-24 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto space-y-8">
           {/* Title */}

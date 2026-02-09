@@ -10,7 +10,7 @@ interface LPHeroProps {
 
 export const LPHero = ({ content, onCtaClick, onScrollClick }: LPHeroProps) => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/20">
+    <section id="comece-agora" className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/20">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
