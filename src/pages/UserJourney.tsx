@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { UserJourneyDashboard } from '@/components/admin/UserJourneyDashboard';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 
 const UserJourneyPage = () => {
   return (
@@ -15,6 +16,7 @@ const UserJourneyPage = () => {
       <Layout>
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto">
+            <AdminBackButton label="Voltar ao Admin" />
             <header className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
                 Jornada do Cliente

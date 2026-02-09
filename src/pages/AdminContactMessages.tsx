@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import {
   Select,
   SelectContent,
@@ -273,6 +274,7 @@ const AdminContactMessages = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        <AdminBackButton label="Voltar ao Admin" />
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Mensagens de Contato</h1>

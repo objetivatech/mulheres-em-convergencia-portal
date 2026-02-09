@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Layout from '@/components/layout/Layout';
 import { useBlogPosts, useDeleteBlogPost } from '@/hooks/useBlogPosts';
-
+import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { useBlogCategories } from '@/hooks/useBlogCategories';
 
 export default function BlogDashboard() {
@@ -86,6 +86,7 @@ export default function BlogDashboard() {
   return (
     <Layout>
       <div className="container mx-auto py-8 space-y-8">
+        <AdminBackButton label="Voltar ao Admin" />
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
