@@ -484,14 +484,14 @@ export default function BlogEditor() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Autor</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={(val) => field.onChange(val === '__none__' ? '' : val)} value={field.value || '__none__'}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecionar autor" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Sem autor específico</SelectItem>
+                            <SelectItem value="__none__">Sem autor específico</SelectItem>
                             {blogAuthors.map((author) => (
                               <SelectItem key={author.id} value={author.id}>
                                 {author.display_name}
