@@ -92,6 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_materials: {
+        Row: {
+          active: boolean
+          category: string | null
+          content: string | null
+          created_at: string
+          description: string | null
+          dimensions: string | null
+          display_order: number
+          download_count: number
+          file_url: string | null
+          id: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          dimensions?: string | null
+          display_order?: number
+          download_count?: number
+          file_url?: string | null
+          id?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          dimensions?: string | null
+          display_order?: number
+          download_count?: number
+          file_url?: string | null
+          id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ambassador_notifications: {
         Row: {
           ambassador_id: string
