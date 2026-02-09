@@ -553,6 +553,7 @@ export type Database = {
           bank_data: Json | null
           commission_rate: number | null
           created_at: string | null
+          display_order: number | null
           id: string
           lifetime_sales: number
           link_clicks: number | null
@@ -562,6 +563,7 @@ export type Database = {
           pending_commission: number | null
           pix_key: string | null
           referral_code: string
+          show_on_public_page: boolean | null
           tier: string
           tier_updated_at: string | null
           total_earnings: number | null
@@ -576,6 +578,7 @@ export type Database = {
           bank_data?: Json | null
           commission_rate?: number | null
           created_at?: string | null
+          display_order?: number | null
           id?: string
           lifetime_sales?: number
           link_clicks?: number | null
@@ -585,6 +588,7 @@ export type Database = {
           pending_commission?: number | null
           pix_key?: string | null
           referral_code: string
+          show_on_public_page?: boolean | null
           tier?: string
           tier_updated_at?: string | null
           total_earnings?: number | null
@@ -599,6 +603,7 @@ export type Database = {
           bank_data?: Json | null
           commission_rate?: number | null
           created_at?: string | null
+          display_order?: number | null
           id?: string
           lifetime_sales?: number
           link_clicks?: number | null
@@ -608,6 +613,7 @@ export type Database = {
           pending_commission?: number | null
           pix_key?: string | null
           referral_code?: string
+          show_on_public_page?: boolean | null
           tier?: string
           tier_updated_at?: string | null
           total_earnings?: number | null
@@ -3311,10 +3317,13 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          instagram_url: string | null
           is_admin: boolean | null
+          linkedin_url: string | null
           newsletter_subscribed: boolean | null
           onboarding_completed: boolean | null
           phone: string | null
+          public_bio: string | null
           roles: Database["public"]["Enums"]["user_role"][] | null
           state: string | null
           subscription_types:
@@ -3322,6 +3331,7 @@ export type Database = {
             | null
           updated_at: string | null
           user_types: Database["public"]["Enums"]["user_type"][] | null
+          website_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -3334,10 +3344,13 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          instagram_url?: string | null
           is_admin?: boolean | null
+          linkedin_url?: string | null
           newsletter_subscribed?: boolean | null
           onboarding_completed?: boolean | null
           phone?: string | null
+          public_bio?: string | null
           roles?: Database["public"]["Enums"]["user_role"][] | null
           state?: string | null
           subscription_types?:
@@ -3345,6 +3358,7 @@ export type Database = {
             | null
           updated_at?: string | null
           user_types?: Database["public"]["Enums"]["user_type"][] | null
+          website_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -3357,10 +3371,13 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          instagram_url?: string | null
           is_admin?: boolean | null
+          linkedin_url?: string | null
           newsletter_subscribed?: boolean | null
           onboarding_completed?: boolean | null
           phone?: string | null
+          public_bio?: string | null
           roles?: Database["public"]["Enums"]["user_role"][] | null
           state?: string | null
           subscription_types?:
@@ -3368,6 +3385,7 @@ export type Database = {
             | null
           updated_at?: string | null
           user_types?: Database["public"]["Enums"]["user_type"][] | null
+          website_url?: string | null
         }
         Relationships: []
       }

@@ -6,3 +6,4 @@ export * from './EditPaymentDataDialog';
 export * from './AmbassadorDetailsDialog';
 export * from './CreatePayoutDialog';
 export * from './AdminMaterialsManager';
+export * from './AdminPublicPageManager';
