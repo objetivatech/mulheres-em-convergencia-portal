@@ -1,150 +1,148 @@
 
-# Melhorias no Blog: Role Editor, Perfil de Autor, e Comentarios
+# Plano de Otimizacao SEO e Visibilidade para IA Generativa
 
-## Resumo
+## Diagnostico Atual
 
-Este plano cobre 5 areas principais de melhoria no sistema de blog:
-
-1. **Ajuste da role `blog_editor`** - permissoes corretas e acesso via menu do usuario
-2. **Restricao de edicao/exclusao** - editores so gerenciam seus proprios posts
-3. **Perfil de autor gerenciado pelo admin** - foto, bio, links sociais
-4. **Bloco de autor no post publicado** - exibicao no final do artigo + nome no resumo
-5. **Sistema de comentarios com moderacao** - comentarios nos posts com aprovacao pelo admin
+Apos uma varredura completa do site, identifiquei problemas e oportunidades em 7 areas. Tudo pode ser feito sem servicos externos pagos.
 
 ---
 
-## 1. Acesso do Blog Editor
+## 1. Bug Critico: URL Errada no SchemaOrg
 
-### Situacao Atual
-- A rota `/admin/blog` ja aceita usuarios com `canEditBlog = true`
-- O `UserDashboard` ja tem modulos de blog para a role `blog_editor`, porem marcados como "Coming soon" (`available: false`)
-- Os links apontam para `/blog/meus-posts` e `/blog/criar` (rotas que nao existem)
+O componente `SchemaOrg.tsx` usa a URL base `https://mulhereemconvergeencia.com.br` (com "ee" duplicado), que esta **incorreta**. A URL correta e `https://mulheresemconvergencia.com.br`. Isso afeta todos os dados estruturados dos posts.
 
-### Mudancas
-- **`UserDashboard.tsx`**: Ativar os modulos de blog (`available: true`) e apontar os links para as rotas existentes (`/admin/blog` e `/admin/blog/novo`)
-- Adicionar item "Editor de Blog" no menu do usuario (header/navigation) quando o usuario tiver a role `blog_editor`
+**Correcao:** Alterar o default de `baseUrl` para usar `PRODUCTION_DOMAIN` da constante ja existente.
 
 ---
 
-## 2. Restricao de Edicao/Exclusao por Role
+## 2. Paginas Publicas sem Meta Tags (Helmet)
 
-### Situacao Atual
-- O `BlogDashboard` mostra botoes de editar e excluir para todos os posts, sem verificar autoria
-- As RLS policies ja restringem parcialmente (autores so veem seus posts via policy "Authors can manage their posts")
+Varias paginas publicas estao com meta tags incompletas ou ausentes:
 
-### Mudancas
-- **`BlogDashboard.tsx`**: 
-  - Para editores (nao-admin): filtrar posts para exibir apenas os do proprio usuario
-  - Ocultar botao de exclusao para editores (somente admin pode excluir)
-  - Ocultar botao de editar em posts de outros autores
-- **`useBlogPosts.ts`**: Adicionar parametro opcional `authorId` para filtrar posts por autor
-- **RLS**: Ajustar policy para que `blog_editor` so possa INSERT e UPDATE em seus proprios posts, enquanto admin pode tudo (incluindo DELETE)
+| Pagina | Problema |
+|--------|----------|
+| `/convergindo` (listagem do blog) | Sem `<Helmet>` nenhum - sem title, description, canonical, OG |
+| `/diretorio` | Sem canonical, sem OG |
+| `/embaixadoras` | Sem canonical, sem OG |
+| `/eventos` | Tem canonical mas sem OG image |
+| `/planos` | Verificar se tem meta tags completas |
+| `/comunidades` | Tem canonical mas sem OG image |
+| `Index (/)` | Sem canonical |
+| `NotFound (404)` | Sem Helmet, texto em ingles ("Page not found") |
 
----
-
-## 3. Perfil de Autor (Gerenciado pelo Admin)
-
-### Nova Tabela: `blog_authors`
-
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid | PK |
-| user_id | uuid | FK para auth.users (usuario vinculado) |
-| display_name | text | Nome de exibicao |
-| photo_url | text | Foto do autor |
-| bio | text | Mini-bio |
-| instagram_url | text | Link Instagram |
-| linkedin_url | text | Link LinkedIn |
-| website_url | text | Link site pessoal |
-| created_at | timestamptz | Data de criacao |
-| updated_at | timestamptz | Data de atualizacao |
-
-### Admin: Gestao de Autores
-- **Nova aba no `BlogDashboard`** ou **nova pagina `/admin/blog/autores`** para o admin cadastrar/editar perfis de autores
-- Interface similar ao `AdminPublicPageManager` das embaixadoras: foto, bio, redes sociais
-- Upload de foto via bucket `blog-images`
-- Vinculacao com usuario existente (select de usuarios com role `blog_editor`)
-
-### Blog Editor: Vinculacao ao Post
-- No `BlogEditor.tsx`, adicionar campo de selecao de autor (visivel apenas para admin)
-- Campo `author_profile_id` na tabela `blog_posts` (FK para `blog_authors`)
+**Correcao:** Adicionar `<Helmet>` completo (title, description, canonical, og:title, og:description, og:image, og:url, twitter cards) em todas as paginas publicas.
 
 ---
 
-## 4. Bloco de Autor no Post Publicado
+## 3. Sitemap Incompleto
 
-### Componente: `AuthorBlock`
-- Exibido no final do artigo (apos o conteudo, antes dos posts relacionados)
-- Layout: foto circular + nome + bio + links de redes sociais
-- Estilo consistente com o design do portal
+O sitemap atual so inclui: Home, Sobre, Convergindo, Contato, Planos + posts do blog + categorias.
 
-### Nome do Autor no Resumo
-- Na area onde hoje aparece "Admin/Autora" (linha 378-381 do `Post.tsx`), exibir o `display_name` do `blog_authors` vinculado
-- Fallback para `profiles.full_name` se nao houver perfil de autor
+**Paginas faltando no sitemap:**
+- `/diretorio` (e paginas individuais `/diretorio/:slug`)
+- `/embaixadoras`
+- `/eventos` (e paginas individuais `/eventos/:slug`)
+- `/comunidades`
+- `/criar-converter` (landing page)
+- `/termos-de-uso`
+- `/politica-de-privacidade`
+- `/politica-de-cookies`
 
----
-
-## 5. Sistema de Comentarios
-
-### Nova Tabela: `blog_comments`
-
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid | PK |
-| post_id | uuid | FK para blog_posts |
-| author_name | text | Nome do comentarista |
-| author_email | text | Email (nao exibido publicamente) |
-| content | text | Texto do comentario |
-| status | enum | 'pending', 'approved', 'rejected' |
-| user_id | uuid | FK opcional (se logado) |
-| parent_id | uuid | FK para blog_comments (respostas) |
-| created_at | timestamptz | Data |
-
-### Componentes
-- **`CommentForm`**: Formulario para enviar comentario (nome, email, texto)
-- **`CommentList`**: Lista de comentarios aprovados no post
-- **`CommentModeration`**: Painel admin para aprovar/rejeitar comentarios
-
-### Admin: Moderacao
-- Nova pagina ou aba em `/admin/blog` com lista de comentarios pendentes
-- Acoes: Aprovar, Rejeitar, Excluir
-- Badge com contagem de pendentes no dashboard
-
-### Post Publico
-- Secao de comentarios no final do post (apos o bloco de autor)
-- Apenas comentarios com status `approved` sao exibidos
-- Formulario simples para novos comentarios (ficam como `pending`)
+**Correcao:** Atualizar a edge function `generate-sitemap` para incluir todas as paginas publicas e buscar tambem negócios e eventos publicados do banco de dados.
 
 ---
 
-## Detalhes Tecnicos
+## 4. Robots.txt Melhorado
 
-### Migracao SQL
-1. Criar tabela `blog_authors` com RLS (admin pode tudo, leitura publica)
-2. Adicionar coluna `author_profile_id` em `blog_posts` (FK para `blog_authors`)
-3. Criar tabela `blog_comments` com enum `comment_status`
-4. RLS: comentarios aprovados sao publicos; qualquer um pode inserir (pending); admin modera
-5. Ajustar RLS de `blog_posts`: separar policies por operacao (SELECT, INSERT, UPDATE, DELETE)
+O robots.txt atual e muito basico. Pode ser melhorado para:
+- Bloquear rotas admin (`/admin/*`)
+- Bloquear rotas privadas (`/painel/*`, `/configuracoes/*`)
+- Adicionar referencia ao `llms.txt` (para IAs)
+- Confirmar o sitemap
 
-### Novos Hooks
-- `useBlogAuthors`: CRUD de perfis de autor
-- `useBlogComments`: Listar comentarios por post
-- `useCommentModeration`: Aprovar/rejeitar/excluir comentarios (admin)
+---
 
-### Novos Componentes
-- `src/components/blog/AuthorBlock.tsx` - Bloco de autor no post
-- `src/components/blog/CommentForm.tsx` - Formulario de comentario
-- `src/components/blog/CommentList.tsx` - Lista de comentarios
-- `src/components/admin/blog/AuthorManager.tsx` - Gestao de autores
-- `src/components/admin/blog/CommentModeration.tsx` - Moderacao de comentarios
+## 5. Arquivos para IA Generativa (llms.txt e llms-full.txt)
 
-### Arquivos Modificados
-- `src/pages/Post.tsx` - Adicionar AuthorBlock e CommentList/CommentForm
-- `src/pages/BlogDashboard.tsx` - Adicionar abas (Posts, Autores, Comentarios), filtrar por autoria
-- `src/pages/BlogEditor.tsx` - Campo de selecao de autor (admin only)
-- `src/pages/UserDashboard.tsx` - Ativar links do blog editor
-- `src/hooks/useBlogPosts.ts` - Filtro por autor
-- `src/App.tsx` - Rota para gestao de autores se necessario
+Este e o ponto mais importante para que ferramentas como ChatGPT, Gemini, Perplexity e outras IAs consigam acessar e referenciar o conteudo do site.
 
-### Documentacao
-- Atualizar `docs/_active/03-blog/blog-editor.md` com todas as novas funcionalidades
+### O que e o llms.txt?
+
+E um padrao emergente (similar ao robots.txt) que permite que IAs entendam o que o site oferece e acessem conteudo de forma estruturada. Nenhum servico externo e necessario.
+
+**Criar dois arquivos estaticos e uma edge function:**
+
+### `public/llms.txt` (resumo para IAs)
+Conteudo em markdown com:
+- Nome e descricao do portal
+- Links para as principais secoes
+- Instrucoes sobre como acessar conteudo dinamico
+- Link para o `llms-full.txt`
+
+### Edge Function `generate-llms-full`
+Gera dinamicamente o conteudo completo dos posts do blog em formato markdown, acessivel via `/llms-full.txt`. Assim as IAs podem ler todos os artigos publicados.
+
+### Redirect em `_redirects`
+Adicionar redirect de `/llms-full.txt` para a edge function.
+
+---
+
+## 6. Schema.org para Paginas Alem do Blog
+
+Atualmente, Schema.org so existe nos posts individuais do blog. Paginas importantes como Home, Sobre, Diretorio e Eventos nao possuem dados estruturados.
+
+**Adicionar Schema.org para:**
+
+- **Home**: `WebSite` + `Organization` + `SearchAction`
+- **Diretorio**: `ItemList` com `LocalBusiness` para cada negocio
+- **DiretorioEmpresa**: `LocalBusiness` individual com endereco, categoria, reviews
+- **Eventos**: `Event` schema com data, local, preco
+- **Convergindo (listagem)**: `CollectionPage` + `Blog`
+
+Criar um componente reutilizavel `SiteSchemaOrg.tsx` para o schema global (Organization + WebSite) e incluir no Layout.
+
+---
+
+## 7. Melhorias Tecnicas Adicionais
+
+### 7a. Pagina 404 em portugues
+A pagina NotFound atual esta em ingles. Corrigir para portugues e adicionar Helmet com `noindex`.
+
+### 7b. Alt text nas imagens
+Verificar e garantir que todas as imagens do blog e diretorio tenham `alt` descritivo (ja existe na maioria, mas padronizar).
+
+### 7c. Link RSS no `<head>`
+Adicionar `<link rel="alternate" type="application/rss+xml">` no `index.html` para que leitores RSS descubram o feed automaticamente.
+
+### 7d. Open Graph image padrao
+Varias paginas referenciam `og-default.jpg` que pode nao existir no `public/`. Garantir que exista uma imagem padrao OG.
+
+---
+
+## Resumo de Arquivos
+
+### Novos arquivos
+- `public/llms.txt` - Arquivo de descoberta para IAs
+- `supabase/functions/generate-llms-full/index.ts` - Conteudo completo para IAs
+- `src/components/seo/SiteSchemaOrg.tsx` - Schema.org global
+- `src/components/seo/PageSchemaOrg.tsx` - Schema.org por tipo de pagina
+
+### Arquivos modificados
+- `public/robots.txt` - Adicionar bloqueios e referencia llms.txt
+- `public/_redirects` - Adicionar redirect para llms-full.txt
+- `index.html` - Adicionar link RSS no head
+- `src/components/blog/SchemaOrg.tsx` - Corrigir URL base
+- `src/components/layout/Layout.tsx` - Incluir SiteSchemaOrg
+- `src/pages/Convergindo.tsx` - Adicionar Helmet completo
+- `src/pages/NotFound.tsx` - Traduzir para portugues + Helmet
+- `src/pages/Index.tsx` - Adicionar canonical e OG completo
+- `src/pages/Diretorio.tsx` - Adicionar canonical e OG
+- `src/pages/Embaixadoras.tsx` - Adicionar canonical e OG
+- `src/pages/DiretorioEmpresa.tsx` - Adicionar Schema.org LocalBusiness
+- `src/pages/EventsPage.tsx` - Adicionar OG image
+- `src/pages/EventDetailPage.tsx` - Adicionar Schema.org Event
+- `supabase/functions/generate-sitemap/index.ts` - Adicionar paginas faltantes
+- `docs/_active/06-funcionalidades/rss-sitemap-schema.md` - Atualizar documentacao
+
+### Nenhum servico externo necessario
+Todas as melhorias utilizam apenas arquivos estaticos, edge functions existentes e padrao web abertos.
