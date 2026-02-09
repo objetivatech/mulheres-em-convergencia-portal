@@ -17,7 +17,11 @@ import {
   AmbassadorNotifications,
   AmbassadorFAQ,
   AmbassadorMaterials,
+  AmbassadorTierProgress,
+  AmbassadorAchievements,
+  AmbassadorRanking,
 } from '@/components/ambassador';
+import { useAmbassadorRealtime } from '@/hooks/useAmbassadorRealtime';
 
 
 export const EmbaixadoraDashboard = () => {
@@ -35,6 +39,9 @@ export const EmbaixadoraDashboard = () => {
   const { data: clicks, isLoading: clicksLoading } = useClicks(ambassador?.id);
   const { data: payouts, isLoading: payoutsLoading } = usePayouts(ambassador?.id);
   const stats = useStats(ambassador?.id);
+
+  // Ativar atualizações em tempo real
+  useAmbassadorRealtime(ambassador?.id);
 
   const isLoading = authLoading || ambassadorLoading;
 
@@ -153,6 +160,23 @@ export const EmbaixadoraDashboard = () => {
 
               {/* Visão Geral */}
               <TabsContent value="overview" className="space-y-6">
+                {/* Nível e Progresso */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <AmbassadorTierProgress 
+                    currentTier={ambassador.tier || 'bronze'}
+                    lifetimeSales={ambassador.lifetime_sales || ambassador.total_sales || 0}
+                    commissionRate={ambassador.commission_rate || 15}
+                  />
+                  <AmbassadorRanking currentAmbassadorId={ambassador.id} />
+                </div>
+                
+                {/* Conquistas */}
+                <AmbassadorAchievements 
+                  ambassadorId={ambassador.id}
+                  totalSales={ambassador.total_sales || 0}
+                  totalClicks={ambassador.link_clicks || 0}
+                />
+                
                 <AmbassadorReferralLink referralCode={ambassador.referral_code} />
                 <AmbassadorClicksChart clicks={clicks || []} isLoading={clicksLoading} />
               </TabsContent>

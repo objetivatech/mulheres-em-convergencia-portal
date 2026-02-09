@@ -8,3 +8,6 @@ export { AmbassadorNotifications } from './AmbassadorNotifications';
 export { AmbassadorFAQ } from './AmbassadorFAQ';
 export { AmbassadorMaterials } from './AmbassadorMaterials';
 export { AmbassadorQRCode } from './AmbassadorQRCode';
+export { AmbassadorTierProgress } from './AmbassadorTierProgress';
+export { AmbassadorAchievements } from './AmbassadorAchievements';
+export { AmbassadorRanking } from './AmbassadorRanking';

@@ -59,6 +59,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_achievements: {
+        Row: {
+          active: boolean
+          badge_color: string
+          category: string
+          created_at: string
+          description: string
+          display_order: number
+          icon: string
+          id: string
+          name: string
+          points: number
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          active?: boolean
+          badge_color?: string
+          category?: string
+          created_at?: string
+          description: string
+          display_order?: number
+          icon: string
+          id: string
+          name: string
+          points?: number
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          active?: boolean
+          badge_color?: string
+          category?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          name?: string
+          points?: number
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
       ambassador_faq_items: {
         Row: {
           active: boolean
@@ -243,6 +288,44 @@ export type Database = {
           },
         ]
       }
+      ambassador_points: {
+        Row: {
+          ambassador_id: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          points_type: string
+          reference_id: string | null
+        }
+        Insert: {
+          ambassador_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          points_type: string
+          reference_id?: string | null
+        }
+        Update: {
+          ambassador_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          points_type?: string
+          reference_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_points_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ambassador_referral_clicks: {
         Row: {
           ambassador_id: string | null
@@ -294,10 +377,13 @@ export type Database = {
           commission_rate: number
           created_at: string
           id: string
+          is_recurring: boolean
+          original_referral_id: string | null
           payment_confirmed_at: string | null
           payout_eligible_date: string | null
           payout_id: string | null
           plan_name: string
+          recurring_month: number | null
           referred_user_id: string | null
           sale_amount: number
           status: string
@@ -310,10 +396,13 @@ export type Database = {
           commission_rate?: number
           created_at?: string
           id?: string
+          is_recurring?: boolean
+          original_referral_id?: string | null
           payment_confirmed_at?: string | null
           payout_eligible_date?: string | null
           payout_id?: string | null
           plan_name: string
+          recurring_month?: number | null
           referred_user_id?: string | null
           sale_amount: number
           status?: string
@@ -326,10 +415,13 @@ export type Database = {
           commission_rate?: number
           created_at?: string
           id?: string
+          is_recurring?: boolean
+          original_referral_id?: string | null
           payment_confirmed_at?: string | null
           payout_eligible_date?: string | null
           payout_id?: string | null
           plan_name?: string
+          recurring_month?: number | null
           referred_user_id?: string | null
           sale_amount?: number
           status?: string
@@ -342,6 +434,13 @@ export type Database = {
             columns: ["ambassador_id"]
             isOneToOne: false
             referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambassador_referrals_original_referral_id_fkey"
+            columns: ["original_referral_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_referrals"
             referencedColumns: ["id"]
           },
           {
@@ -360,6 +459,93 @@ export type Database = {
           },
         ]
       }
+      ambassador_tiers: {
+        Row: {
+          active: boolean
+          benefits: string[] | null
+          color: string
+          commission_rate: number
+          created_at: string
+          display_order: number
+          icon: string | null
+          id: string
+          min_sales: number
+          name: string
+          recurring_months: number
+          recurring_rate: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: string[] | null
+          color?: string
+          commission_rate: number
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id: string
+          min_sales: number
+          name: string
+          recurring_months?: number
+          recurring_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: string[] | null
+          color?: string
+          commission_rate?: number
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          min_sales?: number
+          name?: string
+          recurring_months?: number
+          recurring_rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ambassador_user_achievements: {
+        Row: {
+          achievement_id: string
+          ambassador_id: string
+          id: string
+          notified: boolean
+          unlocked_at: string
+        }
+        Insert: {
+          achievement_id: string
+          ambassador_id: string
+          id?: string
+          notified?: boolean
+          unlocked_at?: string
+        }
+        Update: {
+          achievement_id?: string
+          ambassador_id?: string
+          id?: string
+          notified?: boolean
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambassador_user_achievements_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassadors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ambassadors: {
         Row: {
           active: boolean | null
@@ -368,6 +554,7 @@ export type Database = {
           commission_rate: number | null
           created_at: string | null
           id: string
+          lifetime_sales: number
           link_clicks: number | null
           minimum_payout: number | null
           next_payout_date: string | null
@@ -375,7 +562,10 @@ export type Database = {
           pending_commission: number | null
           pix_key: string | null
           referral_code: string
+          tier: string
+          tier_updated_at: string | null
           total_earnings: number | null
+          total_points: number
           total_sales: number | null
           updated_at: string | null
           user_id: string | null
@@ -387,6 +577,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           id?: string
+          lifetime_sales?: number
           link_clicks?: number | null
           minimum_payout?: number | null
           next_payout_date?: string | null
@@ -394,7 +585,10 @@ export type Database = {
           pending_commission?: number | null
           pix_key?: string | null
           referral_code: string
+          tier?: string
+          tier_updated_at?: string | null
           total_earnings?: number | null
+          total_points?: number
           total_sales?: number | null
           updated_at?: string | null
           user_id?: string | null
@@ -406,6 +600,7 @@ export type Database = {
           commission_rate?: number | null
           created_at?: string | null
           id?: string
+          lifetime_sales?: number
           link_clicks?: number | null
           minimum_payout?: number | null
           next_payout_date?: string | null
@@ -413,7 +608,10 @@ export type Database = {
           pending_commission?: number | null
           pix_key?: string | null
           referral_code?: string
+          tier?: string
+          tier_updated_at?: string | null
           total_earnings?: number | null
+          total_points?: number
           total_sales?: number | null
           updated_at?: string | null
           user_id?: string | null
@@ -4126,6 +4324,10 @@ export type Database = {
       approve_community_request: {
         Args: { admin_notes?: string; request_id: string }
         Returns: Json
+      }
+      calculate_ambassador_tier: {
+        Args: { sales_count: number }
+        Returns: string
       }
       calculate_business_rating: {
         Args: { business_uuid: string }
