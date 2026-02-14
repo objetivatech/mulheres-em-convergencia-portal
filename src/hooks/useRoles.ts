@@ -11,7 +11,8 @@ export type UserRole =
   | 'customer'          // Cliente da Loja
   | 'subscriber'        // Assinante Newsletter
   | 'ambassador'        // Embaixadora
-  | 'community_member'; // Membro da Comunidade
+  | 'community_member'  // Membro da Comunidade
+  | 'student';          // Aluno(a) do MeC Academy
 
 export type UserType = 'individual' | 'business' | 'community';
 export type SubscriptionType = 'newsletter' | 'loja' | 'comunidade' | 'negocio' | 'embaixadora';

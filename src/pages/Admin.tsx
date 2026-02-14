@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -156,6 +156,14 @@ const Admin = () => {
           icon: Mail,
           available: isAdmin,
           href: '/admin/mensagens-contato',
+          comingSoon: false
+        },
+        {
+          title: 'MeC Academy',
+          description: 'Gerenciar cursos, aulas e conteúdos da Academy',
+          icon: GraduationCap,
+          available: isAdmin,
+          href: '/admin/academy',
           comingSoon: false
         }
       ]

@@ -14,6 +14,322 @@ export type Database = {
   }
   public: {
     Tables: {
+      academy_categories: {
+        Row: {
+          active: boolean | null
+          category_type: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          active?: boolean | null
+          category_type: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          active?: boolean | null
+          category_type?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      academy_courses: {
+        Row: {
+          allowed_roles: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          featured: boolean | null
+          id: string
+          instructor_avatar_url: string | null
+          instructor_bio: string | null
+          instructor_name: string | null
+          is_free: boolean | null
+          is_standalone_lesson: boolean | null
+          long_description: string | null
+          material_type_id: string | null
+          published_at: string | null
+          show_on_landing: boolean | null
+          slug: string
+          status: string | null
+          subject_id: string | null
+          thumbnail_url: string | null
+          title: string
+          total_duration_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          featured?: boolean | null
+          id?: string
+          instructor_avatar_url?: string | null
+          instructor_bio?: string | null
+          instructor_name?: string | null
+          is_free?: boolean | null
+          is_standalone_lesson?: boolean | null
+          long_description?: string | null
+          material_type_id?: string | null
+          published_at?: string | null
+          show_on_landing?: boolean | null
+          slug: string
+          status?: string | null
+          subject_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          total_duration_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          featured?: boolean | null
+          id?: string
+          instructor_avatar_url?: string | null
+          instructor_bio?: string | null
+          instructor_name?: string | null
+          is_free?: boolean | null
+          is_standalone_lesson?: boolean | null
+          long_description?: string | null
+          material_type_id?: string | null
+          published_at?: string | null
+          show_on_landing?: boolean | null
+          slug?: string
+          status?: string | null
+          subject_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          total_duration_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_courses_material_type_id_fkey"
+            columns: ["material_type_id"]
+            isOneToOne: false
+            referencedRelation: "academy_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_courses_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "academy_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          enrolled_at: string | null
+          id: string
+          source: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          enrolled_at?: string | null
+          id?: string
+          source?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          enrolled_at?: string | null
+          id?: string
+          source?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_lessons: {
+        Row: {
+          active: boolean | null
+          content_type: string
+          content_url: string
+          course_id: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          duration_minutes: number | null
+          id: string
+          is_free_preview: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          content_type: string
+          content_url: string
+          course_id: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_free_preview?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          content_type?: string
+          content_url?: string
+          course_id?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_free_preview?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          course_id: string | null
+          id: string
+          last_position: number | null
+          lesson_id: string
+          progress_pct: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id?: string | null
+          id?: string
+          last_position?: number | null
+          lesson_id: string
+          progress_pct?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_id?: string | null
+          id?: string
+          last_position?: number | null
+          lesson_id?: string
+          progress_pct?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academy_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_subscriptions: {
+        Row: {
+          asaas_customer_id: string | null
+          asaas_subscription_id: string | null
+          billing_cycle: string | null
+          cancelled_at: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          price: number | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          asaas_customer_id?: string | null
+          asaas_subscription_id?: string | null
+          billing_cycle?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          price?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          asaas_customer_id?: string | null
+          asaas_subscription_id?: string | null
+          billing_cycle?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          price?: number | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -4577,6 +4893,7 @@ export type Database = {
         Returns: string
       }
       deactivate_expired_businesses: { Args: never; Returns: number }
+      enroll_as_free_student: { Args: { _user_id: string }; Returns: undefined }
       evolve_newsletter_to_profile: {
         Args: {
           full_name?: string
@@ -4946,6 +5263,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_academy_access: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5161,6 +5479,7 @@ export type Database = {
         | "staff"
         | "partner"
         | "project_client"
+        | "student"
       business_category:
         | "alimentacao"
         | "beleza"
@@ -5340,6 +5659,7 @@ export const Constants = {
         "staff",
         "partner",
         "project_client",
+        "student",
       ],
       business_category: [
         "alimentacao",
