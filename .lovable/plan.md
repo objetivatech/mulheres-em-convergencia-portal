@@ -1,148 +1,119 @@
 
-# Plano de Otimizacao SEO e Visibilidade para IA Generativa
+# Migracao de Storage: Supabase para Cloudflare R2
 
-## Diagnostico Atual
+## Contexto
 
-Apos uma varredura completa do site, identifiquei problemas e oportunidades em 7 areas. Tudo pode ser feito sem servicos externos pagos.
+O projeto usa 4 buckets no Supabase Storage:
+- **blog-images**: imagens dos posts do blog (maior volume esperado)
+- **branding**: logos do portal (3 arquivos)
+- **ambassador-materials**: materiais das embaixadoras (banners, PDFs, fotos)
+- **partner-logos**: logos de parceiros do diretorio
 
----
-
-## 1. Bug Critico: URL Errada no SchemaOrg
-
-O componente `SchemaOrg.tsx` usa a URL base `https://mulhereemconvergeencia.com.br` (com "ee" duplicado), que esta **incorreta**. A URL correta e `https://mulheresemconvergencia.com.br`. Isso afeta todos os dados estruturados dos posts.
-
-**Correcao:** Alterar o default de `baseUrl` para usar `PRODUCTION_DOMAIN` da constante ja existente.
+A migracao mantera o Supabase para DB, Auth e Edge Functions. O Cloudflare R2 assumira todo o armazenamento de arquivos.
 
 ---
 
-## 2. Paginas Publicas sem Meta Tags (Helmet)
+## Estrategia: Edge Function como Proxy de Upload
 
-Varias paginas publicas estao com meta tags incompletas ou ausentes:
+A abordagem mais simples e funcional e criar uma **unica Edge Function** (`r2-storage`) que faz o papel de proxy para o R2, usando a API S3-compativel do Cloudflare. Toda a logica de upload/delete fica centralizada nessa funcao.
 
-| Pagina | Problema |
-|--------|----------|
-| `/convergindo` (listagem do blog) | Sem `<Helmet>` nenhum - sem title, description, canonical, OG |
-| `/diretorio` | Sem canonical, sem OG |
-| `/embaixadoras` | Sem canonical, sem OG |
-| `/eventos` | Tem canonical mas sem OG image |
-| `/planos` | Verificar se tem meta tags completas |
-| `/comunidades` | Tem canonical mas sem OG image |
-| `Index (/)` | Sem canonical |
-| `NotFound (404)` | Sem Helmet, texto em ingles ("Page not found") |
+No lado do frontend, criamos um **unico hook** (`useR2Storage`) que substitui as chamadas ao `supabase.storage` por chamadas a essa Edge Function. Os demais hooks (`useImageUpload`, `useAmbassadorMaterials`, etc.) passam a usar o novo hook.
 
-**Correcao:** Adicionar `<Helmet>` completo (title, description, canonical, og:title, og:description, og:image, og:url, twitter cards) em todas as paginas publicas.
+```text
++------------------+       +---------------------+       +----------------+
+|   Frontend       | ----> |  Edge Function      | ----> |  Cloudflare R2 |
+|   useR2Storage   |       |  r2-storage         |       |  (S3 API)      |
++------------------+       +---------------------+       +----------------+
+```
 
 ---
 
-## 3. Sitemap Incompleto
+## Requisitos do Cloudflare R2
 
-O sitemap atual so inclui: Home, Sobre, Convergindo, Contato, Planos + posts do blog + categorias.
+O usuario precisara configurar no painel do Cloudflare:
 
-**Paginas faltando no sitemap:**
-- `/diretorio` (e paginas individuais `/diretorio/:slug`)
-- `/embaixadoras`
-- `/eventos` (e paginas individuais `/eventos/:slug`)
-- `/comunidades`
-- `/criar-converter` (landing page)
-- `/termos-de-uso`
-- `/politica-de-privacidade`
-- `/politica-de-cookies`
+1. **Criar um bucket R2** (ex: `mulheres-convergencia-storage`)
+2. **Gerar credenciais de API R2** (Access Key ID + Secret Access Key) em R2 > Manage R2 API Tokens
+3. **Habilitar acesso publico** no bucket (R2 > bucket > Settings > Public Access) para que as URLs das imagens sejam acessiveis sem autenticacao
+4. **Anotar o Account ID** do Cloudflare e o **endpoint S3** (formato: `https://<account-id>.r2.cloudflarestorage.com`)
 
-**Correcao:** Atualizar a edge function `generate-sitemap` para incluir todas as paginas publicas e buscar tambem negócios e eventos publicados do banco de dados.
+Nenhuma assinatura paga e necessaria - o plano gratuito do R2 inclui 10GB de armazenamento e 10 milhoes de leituras/mes.
 
 ---
 
-## 4. Robots.txt Melhorado
+## Implementacao
 
-O robots.txt atual e muito basico. Pode ser melhorado para:
-- Bloquear rotas admin (`/admin/*`)
-- Bloquear rotas privadas (`/painel/*`, `/configuracoes/*`)
-- Adicionar referencia ao `llms.txt` (para IAs)
-- Confirmar o sitemap
+### 1. Secrets no Supabase
 
----
+Adicionar 4 secrets nas Edge Functions:
+- `R2_ACCESS_KEY_ID` - chave de acesso
+- `R2_SECRET_ACCESS_KEY` - chave secreta
+- `R2_ENDPOINT` - endpoint S3 (ex: `https://<account-id>.r2.cloudflarestorage.com`)
+- `R2_PUBLIC_URL` - URL publica do bucket (ex: `https://pub-xxxx.r2.dev` ou dominio customizado)
+- `R2_BUCKET_NAME` - nome do bucket (ex: `mulheres-convergencia-storage`)
 
-## 5. Arquivos para IA Generativa (llms.txt e llms-full.txt)
+### 2. Edge Function: `r2-storage`
 
-Este e o ponto mais importante para que ferramentas como ChatGPT, Gemini, Perplexity e outras IAs consigam acessar e referenciar o conteudo do site.
+Uma funcao que aceita 3 operacoes:
+- **upload**: recebe o arquivo via FormData, faz upload para o R2 usando a API S3 (via `aws4fetch` para assinar requests), retorna a URL publica
+- **delete**: recebe o path do arquivo e remove do R2
+- **list**: lista arquivos em um prefixo (opcional, util para admin)
 
-### O que e o llms.txt?
+A funcao usa a biblioteca `aws4fetch` (disponivel via esm.sh) que assina requests para APIs compativeis com S3.
 
-E um padrao emergente (similar ao robots.txt) que permite que IAs entendam o que o site oferece e acessem conteudo de forma estruturada. Nenhum servico externo e necessario.
+### 3. Hook: `useR2Storage`
 
-**Criar dois arquivos estaticos e uma edge function:**
+Novo hook que substitui as chamadas diretas ao `supabase.storage`:
+- `uploadFile(file, folder)` - envia arquivo para a Edge Function, retorna URL publica
+- `deleteFile(url)` - extrai o path da URL e solicita exclusao
+- `uploading` - estado de loading
 
-### `public/llms.txt` (resumo para IAs)
-Conteudo em markdown com:
-- Nome e descricao do portal
-- Links para as principais secoes
-- Instrucoes sobre como acessar conteudo dinamico
-- Link para o `llms-full.txt`
+### 4. Atualizacao dos Hooks Existentes
 
-### Edge Function `generate-llms-full`
-Gera dinamicamente o conteudo completo dos posts do blog em formato markdown, acessivel via `/llms-full.txt`. Assim as IAs podem ler todos os artigos publicados.
+| Hook/Componente | Mudanca |
+|---|---|
+| `useImageUpload.ts` | Substituir `supabase.storage.from('blog-images')` por `useR2Storage` |
+| `useAmbassadorMaterials.ts` | Substituir `uploadFile`/`deleteFile` por `useR2Storage` |
+| `AdminPublicPageManager.tsx` | Substituir upload de fotos por `useR2Storage` |
+| `LogoComponent.tsx` | Apontar URLs para R2 ao inves de `supabase.storage.from('branding')` |
+| `optimize-image/index.ts` | Redirecionar uploads para R2 ao inves do Supabase Storage |
 
-### Redirect em `_redirects`
-Adicionar redirect de `/llms-full.txt` para a edge function.
+### 5. Migracao dos Arquivos Existentes
 
----
+Para migrar os arquivos ja existentes no Supabase Storage para o R2:
+- Criar uma Edge Function auxiliar (`migrate-to-r2`) que lista todos os objetos dos buckets do Supabase, baixa cada um e faz upload para o R2 mantendo a mesma estrutura de pastas
+- Apos a migracao, uma query SQL atualiza todas as URLs no banco de dados (colunas `file_url`, `photo_url`, `image_url`, etc.) substituindo o dominio do Supabase pelo dominio do R2
+- Essa funcao sera executada uma unica vez e pode ser removida depois
 
-## 6. Schema.org para Paginas Alem do Blog
+### 6. Compatibilidade de URLs
 
-Atualmente, Schema.org so existe nos posts individuais do blog. Paginas importantes como Home, Sobre, Diretorio e Eventos nao possuem dados estruturados.
-
-**Adicionar Schema.org para:**
-
-- **Home**: `WebSite` + `Organization` + `SearchAction`
-- **Diretorio**: `ItemList` com `LocalBusiness` para cada negocio
-- **DiretorioEmpresa**: `LocalBusiness` individual com endereco, categoria, reviews
-- **Eventos**: `Event` schema com data, local, preco
-- **Convergindo (listagem)**: `CollectionPage` + `Blog`
-
-Criar um componente reutilizavel `SiteSchemaOrg.tsx` para o schema global (Organization + WebSite) e incluir no Layout.
-
----
-
-## 7. Melhorias Tecnicas Adicionais
-
-### 7a. Pagina 404 em portugues
-A pagina NotFound atual esta em ingles. Corrigir para portugues e adicionar Helmet com `noindex`.
-
-### 7b. Alt text nas imagens
-Verificar e garantir que todas as imagens do blog e diretorio tenham `alt` descritivo (ja existe na maioria, mas padronizar).
-
-### 7c. Link RSS no `<head>`
-Adicionar `<link rel="alternate" type="application/rss+xml">` no `index.html` para que leitores RSS descubram o feed automaticamente.
-
-### 7d. Open Graph image padrao
-Varias paginas referenciam `og-default.jpg` que pode nao existir no `public/`. Garantir que exista uma imagem padrao OG.
+Para evitar links quebrados durante a transicao:
+- As URLs novas usarao o formato: `{R2_PUBLIC_URL}/{folder}/{filename}`
+- O folder replica a estrutura dos buckets: `blog-images/`, `branding/`, `ambassador-materials/`, `partner-logos/`
+- URLs antigas (Supabase) continuam funcionando enquanto os arquivos existirem la
 
 ---
 
-## Resumo de Arquivos
+## Arquivos
 
-### Novos arquivos
-- `public/llms.txt` - Arquivo de descoberta para IAs
-- `supabase/functions/generate-llms-full/index.ts` - Conteudo completo para IAs
-- `src/components/seo/SiteSchemaOrg.tsx` - Schema.org global
-- `src/components/seo/PageSchemaOrg.tsx` - Schema.org por tipo de pagina
+### Novos
+- `supabase/functions/r2-storage/index.ts` - Edge Function proxy para R2
+- `supabase/functions/migrate-to-r2/index.ts` - Funcao de migracao unica
+- `src/hooks/useR2Storage.ts` - Hook centralizado de storage
+- `src/lib/storage.ts` - Utilitarios de URL do storage
 
-### Arquivos modificados
-- `public/robots.txt` - Adicionar bloqueios e referencia llms.txt
-- `public/_redirects` - Adicionar redirect para llms-full.txt
-- `index.html` - Adicionar link RSS no head
-- `src/components/blog/SchemaOrg.tsx` - Corrigir URL base
-- `src/components/layout/Layout.tsx` - Incluir SiteSchemaOrg
-- `src/pages/Convergindo.tsx` - Adicionar Helmet completo
-- `src/pages/NotFound.tsx` - Traduzir para portugues + Helmet
-- `src/pages/Index.tsx` - Adicionar canonical e OG completo
-- `src/pages/Diretorio.tsx` - Adicionar canonical e OG
-- `src/pages/Embaixadoras.tsx` - Adicionar canonical e OG
-- `src/pages/DiretorioEmpresa.tsx` - Adicionar Schema.org LocalBusiness
-- `src/pages/EventsPage.tsx` - Adicionar OG image
-- `src/pages/EventDetailPage.tsx` - Adicionar Schema.org Event
-- `supabase/functions/generate-sitemap/index.ts` - Adicionar paginas faltantes
-- `docs/_active/06-funcionalidades/rss-sitemap-schema.md` - Atualizar documentacao
+### Modificados
+- `supabase/config.toml` - Adicionar configuracao das novas funcoes
+- `src/hooks/useImageUpload.ts` - Usar R2 ao inves de Supabase Storage
+- `src/hooks/useAmbassadorMaterials.ts` - Usar R2 para upload/delete
+- `src/components/admin/ambassadors/AdminPublicPageManager.tsx` - Usar R2
+- `src/components/layout/LogoComponent.tsx` - URLs do R2
+- `supabase/functions/optimize-image/index.ts` - Upload para R2
 
-### Nenhum servico externo necessario
-Todas as melhorias utilizam apenas arquivos estaticos, edge functions existentes e padrao web abertos.
+### Passos do Usuario (manual)
+1. Criar bucket no Cloudflare R2 e habilitar acesso publico
+2. Gerar credenciais de API R2
+3. Adicionar os 5 secrets no Supabase (via painel)
+4. Apos deploy, executar a funcao de migracao uma vez
+5. Verificar que as imagens estao funcionando
+6. (Opcional) Remover arquivos do Supabase Storage apos confirmar
