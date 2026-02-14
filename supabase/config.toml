@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.r2-storage]
 verify_jwt = true
+
+[functions.create-academy-subscription]
+verify_jwt = false

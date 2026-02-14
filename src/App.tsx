@@ -55,6 +55,10 @@ import EmbaixadoraDashboard from './pages/EmbaixadoraDashboard';
 import Embaixadoras from './pages/Embaixadoras';
 import QuemEElisangelaAranda from './pages/QuemEElisangelaAranda';
 import AdminTimeline from './pages/admin/AdminTimeline';
+import Academy from './pages/Academy';
+import AcademyCatalogo from './pages/AcademyCatalogo';
+import AcademyCurso from './pages/AcademyCurso';
+import AdminAcademy from './pages/admin/AdminAcademy';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -129,6 +133,9 @@ function AppContent() {
         <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
         <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
         <Route path="/quem-e-elisangela-aranda" element={<QuemEElisangelaAranda />} />
+        <Route path="/academy" element={<Academy />} />
+        <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
+        <Route path="/academy/curso/:slug" element={<AcademyCurso />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
@@ -257,6 +264,11 @@ function AppContent() {
         <Route path="/admin/timeline" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminTimeline />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/academy" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminAcademy />
           </ProtectedRoute>
         } />
         {/* Redirect alternativo */}
