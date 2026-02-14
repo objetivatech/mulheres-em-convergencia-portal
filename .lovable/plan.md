@@ -1,119 +1,153 @@
 
-# Migracao de Storage: Supabase para Cloudflare R2
 
-## Contexto
+# Plano de Implementacao - Correcoes e Novos Recursos
 
-O projeto usa 4 buckets no Supabase Storage:
-- **blog-images**: imagens dos posts do blog (maior volume esperado)
-- **branding**: logos do portal (3 arquivos)
-- **ambassador-materials**: materiais das embaixadoras (banners, PDFs, fotos)
-- **partner-logos**: logos de parceiros do diretorio
-
-A migracao mantera o Supabase para DB, Auth e Edge Functions. O Cloudflare R2 assumira todo o armazenamento de arquivos.
+Este plano cobre 4 demandas principais, mais sugestoes de melhorias adicionais identificadas durante a analise.
 
 ---
 
-## Estrategia: Edge Function como Proxy de Upload
+## 1. Correcao do Carousel de Parceiros (Desktop + Mobile)
 
-A abordagem mais simples e funcional e criar uma **unica Edge Function** (`r2-storage`) que faz o papel de proxy para o R2, usando a API S3-compativel do Cloudflare. Toda a logica de upload/delete fica centralizada nessa funcao.
+**Problema identificado:** O componente `PartnersCarousel.tsx` usa Embla Carousel com `loop: true` e `dragFree: true`, mas com poucos parceiros os itens nao preenchem a tela no desktop, fazendo o slider parecer estatico. No mobile, a ultima imagem fica "colada" na primeira.
 
-No lado do frontend, criamos um **unico hook** (`useR2Storage`) que substitui as chamadas ao `supabase.storage` por chamadas a essa Edge Function. Os demais hooks (`useImageUpload`, `useAmbassadorMaterials`, etc.) passam a usar o novo hook.
+**Solucao:**
+- Duplicar o array de parceiros (renderizar `[...partners, ...partners]`) para garantir que haja itens suficientes para o loop funcionar suavemente em todas as resolucoes
+- Adicionar `gap` via CSS nos slides para garantir espacamento entre o ultimo e o primeiro item
+- Ajustar os flex-basis dos slides para garantir que sempre haja itens fora da viewport, permitindo a animacao fluida
 
+**Arquivos afetados:**
+- `src/components/partners/PartnersCarousel.tsx`
+
+---
+
+## 2. Timeline Dinamica com Filtro por Ano e Painel Admin
+
+**Problema identificado:** A timeline atual tem 23 itens hardcoded no componente `Timeline.tsx`, sem filtro por ano. Na pagina `/sobre`, fica visualmente sobrecarregado.
+
+**Solucao em 3 partes:**
+
+### 2a. Tabela no banco de dados
+- Criar tabela `timeline_items` com campos: `id`, `year`, `date_label`, `title`, `description`, `image_url`, `display_order`, `active`, `created_at`, `updated_at`
+- Migrar os 23 itens hardcoded para esta tabela
+- RLS: leitura publica para itens ativos, gerenciamento por admins
+
+### 2b. Filtro por ano na pagina /sobre
+- Adicionar seletor horizontal de anos (ex: 2015, 2017, 2018, 2019, 2020, 2021, 2022, 2023) acima do slider
+- Ao selecionar um ano, filtrar apenas os itens daquele ano
+- Botao "Todos" para exibir a timeline completa
+- Design responsivo com scroll horizontal no mobile
+
+### 2c. Painel Admin para Timeline
+- Nova pagina `/admin/timeline` com CRUD completo
+- Formulario com: titulo, data/periodo, descricao, imagem (upload para R2), ano, ordem de exibicao, ativo/inativo
+- Lista com drag-and-drop para reordenar
+- Link no painel admin principal
+
+**Arquivos a criar:**
+- `src/pages/admin/AdminTimeline.tsx` - Pagina de gerenciamento
+- `src/hooks/useTimeline.ts` - Hook para dados da timeline
+- Migracao SQL para tabela e dados iniciais
+
+**Arquivos a modificar:**
+- `src/components/timeline/Timeline.tsx` - Buscar do banco + aceitar filtro por ano
+- `src/pages/Sobre.tsx` - Adicionar seletor de ano
+- `src/App.tsx` - Nova rota `/admin/timeline`
+- `src/pages/Admin.tsx` - Card de acesso rapido
+
+---
+
+## 3. Pagina "Quem e Elisangela Aranda"
+
+**Solucao:**
+- Criar pagina estatica `/quem-e-elisangela-aranda` com o texto fornecido
+- Upload das 5 imagens para R2 (pasta `site-assets/`)
+- Layout editorial com imagens distribuidas ao longo do texto (alternando lado esquerdo/direito)
+- Hero com a imagem principal (foto com camiseta do projeto)
+- SEO completo com meta tags e Open Graph
+- Design responsivo com tipografia elegante
+
+**Arquivos a criar:**
+- `src/pages/QuemEElisangelaAranda.tsx`
+
+**Arquivos a modificar:**
+- `src/App.tsx` - Rota `/quem-e-elisangela-aranda`
+
+**Rota final para adicionar ao menu:** `/quem-e-elisangela-aranda`
+
+---
+
+## 4. Modal de Imagens na Pagina de Negocios
+
+**Problema identificado:** Na `DiretorioEmpresa.tsx`, o clique em imagens da galeria executa `window.open(image, '_blank')`, abrindo em nova aba.
+
+**Solucao:**
+- Criar componente `ImageLightbox` reutilizavel com Dialog/modal
+- Suporte a navegacao entre imagens (setas esquerda/direita)
+- Gestos de swipe no mobile
+- Zoom pinch-to-zoom opcional
+- Contador "3 de 12"
+- Botao de fechar e clique fora para fechar
+- Aplicar na galeria e em qualquer imagem linkada da pagina de negocios
+
+**Arquivos a criar:**
+- `src/components/ui/ImageLightbox.tsx`
+
+**Arquivos a modificar:**
+- `src/pages/DiretorioEmpresa.tsx` - Substituir `window.open` pelo modal
+
+---
+
+## 5. Melhorias Adicionais Identificadas
+
+### 5a. Cover image da pagina de negocios tambem abre em modal
+- A imagem de capa do negocio tambem pode ser clicada para abrir no lightbox, reutilizando o mesmo componente
+
+### 5b. Acessibilidade no carousel de parceiros
+- Adicionar `aria-label` nos botoes do carousel
+- Pausar animacao quando o usuario usa `prefers-reduced-motion`
+
+### 5c. Skeleton loading na timeline
+- Ao carregar dados do banco, exibir skeleton cards em vez de tela vazia
+
+---
+
+## 6. Documentacao
+
+Criar/atualizar os seguintes documentos:
+- `docs/_active/CHANGELOG-2026-02-14.md` - Registro de todas as alteracoes
+- `docs/_active/06-funcionalidades/timeline-dinamica.md` - Documentacao da timeline e painel admin
+- `docs/_active/06-funcionalidades/image-lightbox.md` - Documentacao do componente de lightbox
+
+---
+
+## Detalhes Tecnicos
+
+### Ordem de implementacao recomendada
+1. Carousel de parceiros (correcao rapida, impacto visual imediato)
+2. Modal de imagens (componente reutilizavel necessario para outros itens)
+3. Pagina Elisangela Aranda (conteudo independente)
+4. Timeline dinamica (mais complexo: banco + admin + frontend)
+5. Documentacao (consolidar tudo ao final)
+
+### Tabela SQL `timeline_items`
 ```text
-+------------------+       +---------------------+       +----------------+
-|   Frontend       | ----> |  Edge Function      | ----> |  Cloudflare R2 |
-|   useR2Storage   |       |  r2-storage         |       |  (S3 API)      |
-+------------------+       +---------------------+       +----------------+
+id              UUID PRIMARY KEY
+year            INTEGER NOT NULL
+date_label      TEXT NOT NULL          -- ex: "Maio 2015", "2019 - 2022"
+title           TEXT NOT NULL
+description     TEXT NOT NULL
+image_url       TEXT
+display_order   INTEGER DEFAULT 0
+active          BOOLEAN DEFAULT true
+created_at      TIMESTAMPTZ DEFAULT now()
+updated_at      TIMESTAMPTZ DEFAULT now()
 ```
 
----
+### Componente ImageLightbox - Props
+```text
+images: string[]          -- Array de URLs
+initialIndex: number      -- Indice inicial
+open: boolean
+onOpenChange: (open: boolean) => void
+```
 
-## Requisitos do Cloudflare R2
-
-O usuario precisara configurar no painel do Cloudflare:
-
-1. **Criar um bucket R2** (ex: `mulheres-convergencia-storage`)
-2. **Gerar credenciais de API R2** (Access Key ID + Secret Access Key) em R2 > Manage R2 API Tokens
-3. **Habilitar acesso publico** no bucket (R2 > bucket > Settings > Public Access) para que as URLs das imagens sejam acessiveis sem autenticacao
-4. **Anotar o Account ID** do Cloudflare e o **endpoint S3** (formato: `https://<account-id>.r2.cloudflarestorage.com`)
-
-Nenhuma assinatura paga e necessaria - o plano gratuito do R2 inclui 10GB de armazenamento e 10 milhoes de leituras/mes.
-
----
-
-## Implementacao
-
-### 1. Secrets no Supabase
-
-Adicionar 4 secrets nas Edge Functions:
-- `R2_ACCESS_KEY_ID` - chave de acesso
-- `R2_SECRET_ACCESS_KEY` - chave secreta
-- `R2_ENDPOINT` - endpoint S3 (ex: `https://<account-id>.r2.cloudflarestorage.com`)
-- `R2_PUBLIC_URL` - URL publica do bucket (ex: `https://pub-xxxx.r2.dev` ou dominio customizado)
-- `R2_BUCKET_NAME` - nome do bucket (ex: `mulheres-convergencia-storage`)
-
-### 2. Edge Function: `r2-storage`
-
-Uma funcao que aceita 3 operacoes:
-- **upload**: recebe o arquivo via FormData, faz upload para o R2 usando a API S3 (via `aws4fetch` para assinar requests), retorna a URL publica
-- **delete**: recebe o path do arquivo e remove do R2
-- **list**: lista arquivos em um prefixo (opcional, util para admin)
-
-A funcao usa a biblioteca `aws4fetch` (disponivel via esm.sh) que assina requests para APIs compativeis com S3.
-
-### 3. Hook: `useR2Storage`
-
-Novo hook que substitui as chamadas diretas ao `supabase.storage`:
-- `uploadFile(file, folder)` - envia arquivo para a Edge Function, retorna URL publica
-- `deleteFile(url)` - extrai o path da URL e solicita exclusao
-- `uploading` - estado de loading
-
-### 4. Atualizacao dos Hooks Existentes
-
-| Hook/Componente | Mudanca |
-|---|---|
-| `useImageUpload.ts` | Substituir `supabase.storage.from('blog-images')` por `useR2Storage` |
-| `useAmbassadorMaterials.ts` | Substituir `uploadFile`/`deleteFile` por `useR2Storage` |
-| `AdminPublicPageManager.tsx` | Substituir upload de fotos por `useR2Storage` |
-| `LogoComponent.tsx` | Apontar URLs para R2 ao inves de `supabase.storage.from('branding')` |
-| `optimize-image/index.ts` | Redirecionar uploads para R2 ao inves do Supabase Storage |
-
-### 5. Migracao dos Arquivos Existentes
-
-Para migrar os arquivos ja existentes no Supabase Storage para o R2:
-- Criar uma Edge Function auxiliar (`migrate-to-r2`) que lista todos os objetos dos buckets do Supabase, baixa cada um e faz upload para o R2 mantendo a mesma estrutura de pastas
-- Apos a migracao, uma query SQL atualiza todas as URLs no banco de dados (colunas `file_url`, `photo_url`, `image_url`, etc.) substituindo o dominio do Supabase pelo dominio do R2
-- Essa funcao sera executada uma unica vez e pode ser removida depois
-
-### 6. Compatibilidade de URLs
-
-Para evitar links quebrados durante a transicao:
-- As URLs novas usarao o formato: `{R2_PUBLIC_URL}/{folder}/{filename}`
-- O folder replica a estrutura dos buckets: `blog-images/`, `branding/`, `ambassador-materials/`, `partner-logos/`
-- URLs antigas (Supabase) continuam funcionando enquanto os arquivos existirem la
-
----
-
-## Arquivos
-
-### Novos
-- `supabase/functions/r2-storage/index.ts` - Edge Function proxy para R2
-- `supabase/functions/migrate-to-r2/index.ts` - Funcao de migracao unica
-- `src/hooks/useR2Storage.ts` - Hook centralizado de storage
-- `src/lib/storage.ts` - Utilitarios de URL do storage
-
-### Modificados
-- `supabase/config.toml` - Adicionar configuracao das novas funcoes
-- `src/hooks/useImageUpload.ts` - Usar R2 ao inves de Supabase Storage
-- `src/hooks/useAmbassadorMaterials.ts` - Usar R2 para upload/delete
-- `src/components/admin/ambassadors/AdminPublicPageManager.tsx` - Usar R2
-- `src/components/layout/LogoComponent.tsx` - URLs do R2
-- `supabase/functions/optimize-image/index.ts` - Upload para R2
-
-### Passos do Usuario (manual)
-1. Criar bucket no Cloudflare R2 e habilitar acesso publico
-2. Gerar credenciais de API R2
-3. Adicionar os 5 secrets no Supabase (via painel)
-4. Apos deploy, executar a funcao de migracao uma vez
-5. Verificar que as imagens estao funcionando
-6. (Opcional) Remover arquivos do Supabase Storage apos confirmar
