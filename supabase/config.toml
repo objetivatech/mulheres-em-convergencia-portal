@@ -118,4 +118,4 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.migrate-to-r2]
-verify_jwt = true
+verify_jwt = false
