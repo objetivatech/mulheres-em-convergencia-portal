@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from "@/components/layout/Layout";
 import { Timeline } from '@/components/timeline/Timeline';
@@ -7,9 +7,13 @@ import { CheckCircle, Users, Target, Heart } from "lucide-react";
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { useTimeline } from '@/hooks/useTimeline';
+import { Button } from '@/components/ui/button';
 
 const Sobre = () => {
   const { pageContent, loading } = usePageBuilder('sobre');
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const { years } = useTimeline();
 
   // Se existe conteúdo do Page Builder publicado, usa ele
   if (pageContent && !loading) {
@@ -108,8 +112,34 @@ const Sobre = () => {
         </div>
       </section>
 
-      {/* Timeline Interativa */}
-      <Timeline />
+      {/* Year Filter + Timeline */}
+      {years.length > 0 && (
+        <div className="container mx-auto px-4 mb-4">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap">
+            <Button
+              variant={selectedYear === null ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedYear(null)}
+              className="rounded-full whitespace-nowrap"
+            >
+              Todos
+            </Button>
+            {years.map(year => (
+              <Button
+                key={year}
+                variant={selectedYear === year ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedYear(year)}
+                className="rounded-full whitespace-nowrap"
+              >
+                {year}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Timeline yearFilter={selectedYear} />
 
       {/* Valores */}
       <section className="py-16">

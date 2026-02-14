@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -194,6 +194,14 @@ const Admin = () => {
           icon: Users,
           available: isAdmin,
           href: '/admin/comunidades',
+          comingSoon: false
+        },
+        {
+          title: 'Linha do Tempo',
+          description: 'Gerenciar marcos históricos do projeto',
+          icon: Clock,
+          available: isAdmin,
+          href: '/admin/timeline',
           comingSoon: false
         }
       ]

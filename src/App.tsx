@@ -53,6 +53,8 @@ import ConfirmacaoPagamento from './pages/ConfirmacaoPagamento';
 import ConvitePage from './pages/ConvitePage';
 import EmbaixadoraDashboard from './pages/EmbaixadoraDashboard';
 import Embaixadoras from './pages/Embaixadoras';
+import QuemEElisangelaAranda from './pages/QuemEElisangelaAranda';
+import AdminTimeline from './pages/admin/AdminTimeline';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -126,6 +128,7 @@ function AppContent() {
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
         <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
+        <Route path="/quem-e-elisangela-aranda" element={<QuemEElisangelaAranda />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
@@ -249,6 +252,11 @@ function AppContent() {
         <Route path="/admin/embaixadoras" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminAmbassadors />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/timeline" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminTimeline />
           </ProtectedRoute>
         } />
         {/* Redirect alternativo */}

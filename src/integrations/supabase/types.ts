@@ -3936,6 +3936,45 @@ export type Database = {
         }
         Relationships: []
       }
+      timeline_items: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          date_label: string
+          description: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          date_label: string
+          description: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          date_label?: string
+          description?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           ambassador_id: string | null

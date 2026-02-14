@@ -108,21 +108,22 @@ export const PartnersCarousel = ({
           </div>
 
           <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-6">
-              {partners.map((partner) => {
-                const isHovered = hoveredPartnerId === partner.id;
+            <div className="flex">
+              {[...partners, ...partners].map((partner, idx) => {
+                const isHovered = hoveredPartnerId === `${partner.id}-${idx}`;
                 const isSelected = selectedPartner?.id === partner.id;
                 const isActive = isHovered || isSelected;
                 
                 return (
                   <div
-                    key={partner.id}
-                    className="flex-[0_0_28%] sm:flex-[0_0_22%] md:flex-[0_0_16%] lg:flex-[0_0_12%] min-w-0"
+                    key={`${partner.id}-${idx}`}
+                    className="flex-[0_0_28%] sm:flex-[0_0_22%] md:flex-[0_0_16%] lg:flex-[0_0_12%] min-w-0 pl-6"
                   >
                     <button
                       onClick={() => handlePartnerClick(partner)}
-                      onMouseEnter={() => setHoveredPartnerId(partner.id)}
+                      onMouseEnter={() => setHoveredPartnerId(`${partner.id}-${idx}`)}
                       onMouseLeave={() => setHoveredPartnerId(null)}
+                      aria-label={`Ver detalhes de ${partner.name}`}
                       className="w-full h-20 md:h-24 bg-card border border-border rounded-lg p-3 md:p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       <img
