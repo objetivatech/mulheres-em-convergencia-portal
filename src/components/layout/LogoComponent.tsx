@@ -1,6 +1,5 @@
 
 import React, { useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import logoHorizontalLocal from '@/assets/logo-horizontal.png';
 import logoCircularLocal from '@/assets/logo-circular.png';
 import logoVerticalLocal from '@/assets/logo-vertical.png';
@@ -17,11 +16,6 @@ const sizeClasses = {
   lg: 'h-16',
 };
 
-const getStoragePublicUrl = (path: string) => {
-  const { data } = supabase.storage.from('branding').getPublicUrl(path);
-  return data.publicUrl;
-};
-
 const LogoComponent: React.FC<LogoComponentProps> = ({
   variant = 'horizontal',
   size = 'md',
@@ -32,36 +26,27 @@ const LogoComponent: React.FC<LogoComponentProps> = ({
   const { src, alt } = useMemo(() => {
     const mapping = {
       horizontal: {
-        storage: getStoragePublicUrl('logo-horizontal.png'),
         local: logoHorizontalLocal,
         alt: 'Mulheres em Convergência - Logo horizontal',
       },
       circular: {
-        storage: getStoragePublicUrl('logo-circular.png'),
         local: logoCircularLocal,
         alt: 'Mulheres em Convergência - Símbolo',
       },
       vertical: {
-        storage: getStoragePublicUrl('logo-vertical.png'),
         local: logoVerticalLocal,
         alt: 'Mulheres em Convergência - Logo vertical',
       },
     } as const;
 
     const item = mapping[variant];
-    const shouldFallback = useFallback[variant];
+    // Always use local assets for logos — they're small and bundled with the app
     return {
-      src: shouldFallback ? item.local : item.storage,
+      src: item.local,
       alt: item.alt,
     };
-  }, [variant, useFallback]);
+  }, [variant]);
 
-  const onError = () => {
-    // Se a imagem do Storage não existir, cai para o arquivo local do projeto
-    setUseFallback(prev => ({ ...prev, [variant]: true }));
-  };
-
-  // Aplica tamanho de altura e mantém proporção
   const sizeClass = sizeClasses[size];
 
   return (
@@ -69,7 +54,6 @@ const LogoComponent: React.FC<LogoComponentProps> = ({
       <img
         src={src}
         alt={alt}
-        onError={onError}
         className={`${sizeClass} w-auto object-contain`}
         loading="lazy"
       />

@@ -142,21 +142,18 @@ export function AdminPublicPageManager() {
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${editingAmbassador.id}-${Date.now()}.${fileExt}`;
-      const filePath = `public-photos/${fileName}`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'ambassador-materials/public-photos');
 
-      const { error: uploadError } = await supabase.storage
-        .from('ambassador-materials')
-        .upload(filePath, file, { upsert: true });
+      const { data, error } = await supabase.functions.invoke('r2-storage', {
+        body: formData,
+      });
 
-      if (uploadError) throw uploadError;
+      if (error) throw error;
+      if (!data?.success || !data?.url) throw new Error('Upload failed');
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('ambassador-materials')
-        .getPublicUrl(filePath);
-
-      setEditingAmbassador(prev => prev ? { ...prev, public_photo_url: publicUrl } : null);
+      setEditingAmbassador(prev => prev ? { ...prev, public_photo_url: data.url } : null);
       toast.success('Foto enviada com sucesso!');
     } catch (error) {
       console.error('Error uploading file:', error);
