@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useR2Storage } from '@/hooks/useR2Storage';
+import { extractR2KeyFromUrl } from '@/lib/storage';
 
 export type MaterialType = 'banner' | 'pdf' | 'whatsapp_template' | 'instagram_template';
 
@@ -119,11 +121,17 @@ export const useAmbassadorMaterials = () => {
           .eq('id', id)
           .single();
 
-        // If has file, delete from storage
+        // If has file, delete from R2
         if (material?.file_url) {
-          const path = material.file_url.split('/ambassador-materials/')[1];
-          if (path) {
-            await supabase.storage.from('ambassador-materials').remove([path]);
+          try {
+            const key = extractR2KeyFromUrl(material.file_url);
+            if (key) {
+              await supabase.functions.invoke('r2-storage', {
+                body: JSON.stringify({ action: 'delete', key }),
+              });
+            }
+          } catch (e) {
+            console.warn('Failed to delete file from R2:', e);
           }
         }
 
@@ -146,32 +154,31 @@ export const useAmbassadorMaterials = () => {
     });
   };
 
-  // Upload file to storage
+  // Upload file to R2 storage
   const uploadFile = async (file: File, folder: string = 'banners'): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', `ambassador-materials/${folder}`);
 
-    const { data, error } = await supabase.storage
-      .from('ambassador-materials')
-      .upload(fileName, file);
+    const { data, error } = await supabase.functions.invoke('r2-storage', {
+      body: formData,
+    });
 
     if (error) throw error;
+    if (!data?.success || !data?.url) {
+      throw new Error(data?.error || 'Upload failed');
+    }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('ambassador-materials')
-      .getPublicUrl(fileName);
-
-    return publicUrl;
+    return data.url;
   };
 
-  // Delete file from storage
+  // Delete file from R2 storage
   const deleteFile = async (fileUrl: string): Promise<void> => {
-    const path = fileUrl.split('/ambassador-materials/')[1];
-    if (path) {
-      const { error } = await supabase.storage
-        .from('ambassador-materials')
-        .remove([path]);
-      if (error) throw error;
+    const key = extractR2KeyFromUrl(fileUrl);
+    if (key) {
+      await supabase.functions.invoke('r2-storage', {
+        body: JSON.stringify({ action: 'delete', key }),
+      });
     }
   };
 

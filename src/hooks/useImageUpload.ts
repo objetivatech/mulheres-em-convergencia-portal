@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useR2Storage } from '@/hooks/useR2Storage';
 
 export const useImageUpload = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { uploadFile: r2Upload, deleteFile: r2Delete } = useR2Storage();
 
   const uploadImage = async (file: File, bucket: string = 'blog-images'): Promise<string | null> => {
     try {
@@ -20,7 +22,7 @@ export const useImageUpload = () => {
         throw new Error('Imagem deve ter no máximo 5MB');
       }
 
-      // Try to use optimization function first
+      // Try optimization edge function first (which now also uploads to R2)
       try {
         const formData = new FormData();
         formData.append('file', file);
@@ -36,38 +38,23 @@ export const useImageUpload = () => {
             title: 'Sucesso',
             description: 'Imagem otimizada e enviada com sucesso!'
           });
-          return data.urls.medium; // Return optimized medium size
+          return data.urls.medium;
         }
       } catch (optimizeError) {
-        console.warn('Image optimization failed, falling back to direct upload:', optimizeError);
+        console.warn('Image optimization failed, falling back to direct R2 upload:', optimizeError);
       }
 
-      // Fallback to direct upload if optimization fails
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Fallback: direct upload to R2 via the r2-storage edge function
+      const url = await r2Upload(file, bucket);
 
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+      if (url) {
+        toast({
+          title: 'Sucesso',
+          description: 'Imagem enviada com sucesso!'
         });
-
-      if (uploadError) {
-        throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-
-      toast({
-        title: 'Sucesso',
-        description: 'Imagem enviada com sucesso!'
-      });
-
-      return data.publicUrl;
+      return url;
 
     } catch (error: any) {
       console.error('Error uploading image:', error);
@@ -82,26 +69,18 @@ export const useImageUpload = () => {
     }
   };
 
-  const deleteImage = async (url: string, bucket: string = 'blog-images'): Promise<boolean> => {
+  const deleteImage = async (url: string, _bucket: string = 'blog-images'): Promise<boolean> => {
     try {
-      // Extract filename from URL
-      const urlParts = url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      const success = await r2Delete(url);
 
-      const { error } = await supabase.storage
-        .from(bucket)
-        .remove([fileName]);
-
-      if (error) {
-        throw error;
+      if (success) {
+        toast({
+          title: 'Sucesso',
+          description: 'Imagem removida com sucesso!'
+        });
       }
 
-      toast({
-        title: 'Sucesso',
-        description: 'Imagem removida com sucesso!'
-      });
-
-      return true;
+      return success;
     } catch (error: any) {
       console.error('Error deleting image:', error);
       toast({
