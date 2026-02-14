@@ -7,6 +7,16 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
 }
 
+// Per-folder upload rules (replicating old Supabase Storage policies)
+const FOLDER_RULES: Record<string, { maxSizeMB: number; allowedMimeTypes: string[] }> = {
+  'ambassador-materials': {
+    maxSizeMB: 10,
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'],
+  },
+}
+
+const DEFAULT_RULES = { maxSizeMB: 50, allowedMimeTypes: [] as string[] } // empty = any
+
 function getR2Config() {
   const accessKeyId = Deno.env.get('R2_ACCESS_KEY_ID')
   const secretAccessKey = Deno.env.get('R2_SECRET_ACCESS_KEY')
@@ -53,6 +63,22 @@ serve(async (req) => {
         if (!file) {
           return new Response(
             JSON.stringify({ error: 'No file provided' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Apply folder-specific rules
+        const rules = FOLDER_RULES[folder] || DEFAULT_RULES
+        const fileSizeMB = file.size / (1024 * 1024)
+        if (fileSizeMB > rules.maxSizeMB) {
+          return new Response(
+            JSON.stringify({ error: `File too large. Max ${rules.maxSizeMB}MB for folder "${folder}", got ${fileSizeMB.toFixed(1)}MB` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        if (rules.allowedMimeTypes.length > 0 && !rules.allowedMimeTypes.includes(file.type)) {
+          return new Response(
+            JSON.stringify({ error: `File type "${file.type}" not allowed for folder "${folder}". Allowed: ${rules.allowedMimeTypes.join(', ')}` }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
