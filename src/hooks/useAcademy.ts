@@ -176,15 +176,17 @@ export const useUpdateCourse = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<AcademyCourse> & { id: string }) => {
-      if (updates.title) {
-        (updates as any).slug = slugify(updates.title, { lower: true, strict: true });
+      // Strip joined/virtual fields that are not real columns
+      const { material_type, subject, lessons, enrollment_count, ...cleanUpdates } = updates as any;
+      if (cleanUpdates.title) {
+        cleanUpdates.slug = slugify(cleanUpdates.title, { lower: true, strict: true });
       }
-      if (updates.status === 'published') {
-        updates.published_at = updates.published_at || new Date().toISOString();
+      if (cleanUpdates.status === 'published') {
+        cleanUpdates.published_at = cleanUpdates.published_at || new Date().toISOString();
       }
       const { data, error } = await supabase
         .from('academy_courses')
-        .update(updates as any)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
