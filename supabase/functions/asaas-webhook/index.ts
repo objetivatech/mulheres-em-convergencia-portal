@@ -466,7 +466,92 @@ serve(async (req) => {
         }
 
         // ==========================================
-        // SUBSCRIPTION PAYMENT
+        // ACADEMY SUBSCRIPTION PAYMENT
+        // ==========================================
+        if (externalReference.startsWith('academy_')) {
+          logStep("Processing Academy subscription payment", { paymentId: payment.id, externalReference });
+
+          // Find academy subscription by asaas_subscription_id
+          let academySub = null;
+          if (payment.subscription) {
+            const { data } = await supabaseClient
+              .from("academy_subscriptions")
+              .select("*")
+              .eq("asaas_subscription_id", payment.subscription)
+              .maybeSingle();
+            academySub = data;
+          }
+
+          if (academySub) {
+            // Activate subscription
+            await supabaseClient
+              .from("academy_subscriptions")
+              .update({
+                status: "active",
+                started_at: academySub.started_at || new Date().toISOString(),
+                expires_at: new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", academySub.id);
+            logStep("Academy subscription activated", { subId: academySub.id });
+
+            // Ensure student role
+            const { data: existingRole } = await supabaseClient
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", academySub.user_id)
+              .eq("role", "student")
+              .maybeSingle();
+
+            if (!existingRole) {
+              await supabaseClient
+                .from("user_roles")
+                .insert({ user_id: academySub.user_id, role: "student" });
+              logStep("Student role assigned", { userId: academySub.user_id });
+            }
+
+            // CRM: update deal to won
+            const { data: academyDeal } = await supabaseClient
+              .from("crm_deals")
+              .select("id, lead_id")
+              .eq("product_type", "academy")
+              .or(`metadata->subscription_id.eq.${payment.subscription}`)
+              .maybeSingle();
+
+            if (academyDeal) {
+              await supabaseClient.from("crm_deals").update({
+                stage: "won",
+                won: true,
+                closed_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }).eq("id", academyDeal.id);
+
+              await supabaseClient.from("crm_interactions").insert({
+                lead_id: academyDeal.lead_id,
+                interaction_type: "academy_payment_confirmed",
+                channel: "payment_gateway",
+                description: `Pagamento Academy confirmado - R$ ${payment.value?.toFixed(2)}`,
+                activity_paid: true,
+                form_source: "asaas_webhook",
+                metadata: { payment_id: payment.id, subscription_id: payment.subscription },
+              });
+            }
+          } else {
+            logStep("No Academy subscription found for payment", { paymentId: payment.id });
+          }
+
+          await markEventAsProcessed(supabaseClient, eventId, payment.id, webhookData.event, webhookData);
+          return new Response(JSON.stringify({
+            success: true,
+            message: "Academy subscription payment processed",
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+
+        // ==========================================
+        // SUBSCRIPTION PAYMENT (Business Plans)
         // ==========================================
         // Buscar assinatura pelo payment.subscription
         let subscription = null;
@@ -611,49 +696,101 @@ serve(async (req) => {
         event: webhookData.event
       });
 
-      const { data: localSub } = await supabaseClient
-        .from("user_subscriptions")
+      // Check if it's an Academy subscription
+      const { data: academySub } = await supabaseClient
+        .from("academy_subscriptions")
         .select("*")
-        .eq("external_subscription_id", subscription.id)
+        .eq("asaas_subscription_id", subscription.id)
         .maybeSingle();
 
-      if (localSub && subscription.status === "ACTIVE") {
-        await supabaseClient
+      if (academySub) {
+        if (subscription.status === "ACTIVE") {
+          await supabaseClient
+            .from("academy_subscriptions")
+            .update({ status: "active", updated_at: new Date().toISOString() })
+            .eq("id", academySub.id);
+          logStep("Academy subscription confirmed active", { subId: academySub.id });
+        }
+      } else {
+        // Business subscription
+        const { data: localSub } = await supabaseClient
           .from("user_subscriptions")
-          .update({ 
-            status: "active",
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", localSub.id);
-
-        await supabaseClient
-          .from("businesses")
-          .update({
-            subscription_active: true,
-            subscription_expires_at: localSub.expires_at,
-            updated_at: new Date().toISOString()
-          })
-          .eq("owner_id", localSub.user_id);
-
-        // Assign business_owner role
-        const { data: existingRole } = await supabaseClient
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', localSub.user_id)
-          .eq('role', 'business_owner')
+          .select("*")
+          .eq("external_subscription_id", subscription.id)
           .maybeSingle();
 
-        if (!existingRole) {
+        if (localSub && subscription.status === "ACTIVE") {
           await supabaseClient
-            .from('user_roles')
-            .insert({
-              user_id: localSub.user_id,
-              role: 'business_owner'
-            });
-          logStep("Role business_owner assigned", { userId: localSub.user_id });
-        }
+            .from("user_subscriptions")
+            .update({ 
+              status: "active",
+              updated_at: new Date().toISOString()
+            })
+            .eq("id", localSub.id);
 
-        logStep("Subscription activated", { subscriptionId: localSub.id });
+          await supabaseClient
+            .from("businesses")
+            .update({
+              subscription_active: true,
+              subscription_expires_at: localSub.expires_at,
+              updated_at: new Date().toISOString()
+            })
+            .eq("owner_id", localSub.user_id);
+
+          // Assign business_owner role
+          const { data: existingRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', localSub.user_id)
+            .eq('role', 'business_owner')
+            .maybeSingle();
+
+          if (!existingRole) {
+            await supabaseClient
+              .from('user_roles')
+              .insert({
+                user_id: localSub.user_id,
+                role: 'business_owner'
+              });
+            logStep("Role business_owner assigned", { userId: localSub.user_id });
+          }
+
+          logStep("Subscription activated", { subscriptionId: localSub.id });
+        }
+      }
+    }
+
+    // Academy subscription cancellation
+    else if (webhookData.event === "SUBSCRIPTION_DELETED" || 
+             webhookData.event === "SUBSCRIPTION_EXPIRED") {
+      const subscription = webhookData.subscription;
+      if (subscription?.id) {
+        const { data: academySub } = await supabaseClient
+          .from("academy_subscriptions")
+          .select("id, user_id")
+          .eq("asaas_subscription_id", subscription.id)
+          .maybeSingle();
+
+        if (academySub) {
+          await supabaseClient
+            .from("academy_subscriptions")
+            .update({
+              status: webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelled" : "expired",
+              cancelled_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", academySub.id);
+          logStep("Academy subscription cancelled/expired", { subId: academySub.id });
+
+          // CRM interaction
+          await supabaseClient.from("crm_interactions").insert({
+            interaction_type: "academy_subscription_cancelled",
+            channel: "system",
+            description: `Assinatura MeC Academy ${webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelada" : "expirada"}`,
+            form_source: "asaas_webhook",
+            metadata: { subscription_id: subscription.id, user_id: academySub.user_id },
+          });
+        }
       }
     }
 
