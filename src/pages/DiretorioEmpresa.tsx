@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
@@ -28,6 +28,7 @@ import { OpeningHoursDisplay } from '@/components/business/OpeningHoursDisplay';
 import { AmenitiesDisplay } from '@/components/business/AmenitiesDisplay';
 import { MenuDisplay } from '@/components/business/MenuDisplay';
 import { useBusinessAmenities } from '@/hooks/useBusinessAmenities';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
 
 interface BusinessDetails {
   id: string;
@@ -83,6 +84,18 @@ const DiretorioEmpresa = () => {
   const [loading, setLoading] = useState(true);
   const [showAllImages, setShowAllImages] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // All gallery images including cover for lightbox
+  const allLightboxImages = useMemo(() => {
+    const imgs: string[] = [];
+    if (business?.cover_image_url) imgs.push(business.cover_image_url);
+    if (business?.gallery_images && Array.isArray(business.gallery_images)) {
+      imgs.push(...business.gallery_images);
+    }
+    return imgs;
+  }, [business]);
   
   // Hook para buscar amenidades - chamado com ID do business (pode ser undefined)
   const businessId = business?.id;
@@ -292,7 +305,13 @@ const DiretorioEmpresa = () => {
 
         {/* Cover Image */}
         {business.cover_image_url && (
-          <section className="relative h-64 md:h-80 overflow-hidden">
+          <section
+            className="relative h-64 md:h-80 overflow-hidden cursor-pointer"
+            onClick={() => {
+              setLightboxIndex(0);
+              setLightboxOpen(true);
+            }}
+          >
             <img 
               src={business.cover_image_url} 
               alt={business.name}
@@ -424,7 +443,11 @@ const DiretorioEmpresa = () => {
                           src={image}
                           alt={`${business.name} - Imagem ${index + 1}`}
                           className="w-full h-32 object-cover rounded-lg hover:opacity-80 transition-opacity cursor-pointer"
-                          onClick={() => window.open(image, '_blank')}
+                          onClick={() => {
+                            const coverOffset = business.cover_image_url ? 1 : 0;
+                            setLightboxIndex(index + coverOffset);
+                            setLightboxOpen(true);
+                          }}
                         />
                       ))}
                     </div>
@@ -673,6 +696,13 @@ const DiretorioEmpresa = () => {
           </div>
         </div>
       </div>
+      <ImageLightbox
+        images={allLightboxImages}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        altPrefix={business?.name || 'Imagem'}
+      />
       </ErrorBoundary>
     </Layout>
   );
