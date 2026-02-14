@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Play, Pause } from 'lucide-react';
+import { Button as ShadButton } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,9 +9,10 @@ import { useTimeline } from '@/hooks/useTimeline';
 
 interface TimelineProps {
   yearFilter?: number | null;
+  onYearChange?: (year: number | null) => void;
 }
 
-export const Timeline = ({ yearFilter }: TimelineProps) => {
+export const Timeline = ({ yearFilter, onYearChange }: TimelineProps) => {
   const { items: timelineData, years, loading } = useTimeline(yearFilter);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -105,6 +107,30 @@ export const Timeline = ({ yearFilter }: TimelineProps) => {
             Conheça os principais marcos da nossa história e como chegamos até aqui
           </p>
         </header>
+
+        {years.length > 0 && onYearChange && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap mb-8">
+            <ShadButton
+              variant={yearFilter === null ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onYearChange(null)}
+              className="rounded-full whitespace-nowrap"
+            >
+              Todos
+            </ShadButton>
+            {years.map(year => (
+              <ShadButton
+                key={year}
+                variant={yearFilter === year ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onYearChange(year)}
+                className="rounded-full whitespace-nowrap"
+              >
+                {year}
+              </ShadButton>
+            ))}
+          </div>
+        )}
 
         <div className="relative max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
