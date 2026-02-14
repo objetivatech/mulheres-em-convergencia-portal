@@ -45,9 +45,6 @@ verify_jwt = false
 [functions.sync-subscription-status]
 verify_jwt = false
 
-[functions.activate-raquel-subscription]
-verify_jwt = false
-
 [functions.subscription-management]
 verify_jwt = true
 
@@ -74,9 +71,6 @@ verify_jwt = true
 
 [functions.cleanup-complimentary-subscriptions]
 verify_jwt = true
-
-[functions.social-oauth-linkedin]
-verify_jwt = false
 
 [functions.mailrelay-subscribers]
 verify_jwt = true
@@ -116,6 +110,3 @@ verify_jwt = false
 
 [functions.r2-storage]
 verify_jwt = true
-
-[functions.migrate-to-r2]
-verify_jwt = false
