@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -7,8 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcademyCourses } from '@/hooks/useAcademy';
 import { useAcademyAccess, useEnrollAsFreeStudent } from '@/hooks/useAcademyEnrollment';
+import { createAcademySubscription } from '@/hooks/useAcademySubscription';
 import { CourseCard } from '@/components/academy/CourseCard';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import CustomerInfoDialog, { CustomerFormData, UserProfileData } from '@/components/subscriptions/CustomerInfoDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import {
   BookOpen, GraduationCap, Play, FileText, Users, Star,
   CheckCircle, ArrowRight, Sparkles, CreditCard, UserPlus,
@@ -17,17 +22,94 @@ import {
 const Academy = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { data: access } = useAcademyAccess();
   const { data: landingCourses } = useAcademyCourses({ status: 'published', showOnLanding: true });
   const enrollFree = useEnrollAsFreeStudent();
 
-  const handleCTA = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogLoading, setDialogLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, email, cpf, phone, city, state')
+        .eq('id', user.id)
+        .maybeSingle();
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Erro ao carregar perfil:', error);
+    }
+  };
+
+  // "Começar Grátis" — gives student role for free content
+  const handleFreeAccess = () => {
     if (!user) {
       navigate('/entrar?redirect=/academy/catalogo');
     } else if (access === 'none') {
       enrollFree.mutate();
     } else {
       navigate('/academy/catalogo');
+    }
+  };
+
+  // "Assinar Agora" — opens checkout flow
+  const handleSubscribe = () => {
+    if (!user) {
+      navigate('/entrar?redirect=/academy#planos');
+    } else {
+      setDialogOpen(true);
+    }
+  };
+
+  const handleSubscriptionSubmit = async (values: CustomerFormData) => {
+    setDialogLoading(true);
+    try {
+      const result = await createAcademySubscription({
+        name: values.name,
+        email: user?.email || values.email || '',
+        cpfCnpj: values.cpfCnpj,
+        phone: values.phone,
+        postalCode: values.postalCode,
+        address: values.address,
+        addressNumber: values.addressNumber,
+        complement: values.complement,
+        province: values.province,
+        city: values.city,
+        state: values.state,
+      });
+
+      setDialogOpen(false);
+
+      if (result.paymentUrl) {
+        window.open(result.paymentUrl, '_blank');
+        toast({
+          title: 'Assinatura criada!',
+          description: 'Complete o pagamento na página que foi aberta.',
+        });
+      } else {
+        toast({
+          title: 'Assinatura criada!',
+          description: 'Aguarde a confirmação do pagamento para liberar o acesso.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao criar assinatura',
+        description: error.message || 'Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDialogLoading(false);
     }
   };
 
@@ -69,7 +151,7 @@ const Academy = () => {
               Cursos, workshops e materiais exclusivos para impulsionar sua jornada empreendedora.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={handleCTA} className="text-lg px-8">
+              <Button size="lg" onClick={handleFreeAccess} className="text-lg px-8">
                 {access === 'none' || !user ? (
                   <>
                     <UserPlus className="h-5 w-5 mr-2" />
@@ -175,11 +257,11 @@ const Academy = () => {
                     </ul>
                   </div>
                   <div className="flex flex-col gap-3 md:min-w-[200px]">
-                    <Button size="lg" className="w-full" onClick={handleCTA}>
+                    <Button size="lg" className="w-full" onClick={handleSubscribe}>
                       <CreditCard className="h-4 w-4 mr-2" />
                       Assinar Agora
                     </Button>
-                    <Button size="lg" variant="ghost" className="w-full" onClick={handleCTA}>
+                    <Button size="lg" variant="ghost" className="w-full" onClick={handleFreeAccess}>
                       <UserPlus className="h-4 w-4 mr-2" />
                       Começar Grátis
                     </Button>
@@ -218,12 +300,20 @@ const Academy = () => {
             <p className="text-muted-foreground mb-8">
               Junte-se a centenas de empreendedoras que estão transformando seus negócios com o MeC Academy.
             </p>
-            <Button size="lg" onClick={handleCTA} className="text-lg px-8">
-              Comece Agora <ArrowRight className="h-5 w-5 ml-2" />
+            <Button size="lg" onClick={handleSubscribe} className="text-lg px-8">
+              Assinar Agora <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
           </div>
         </section>
       </Layout>
+
+      <CustomerInfoDialog
+        open={dialogOpen}
+        loading={dialogLoading}
+        userProfile={userProfile || undefined}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleSubscriptionSubmit}
+      />
     </>
   );
 };

@@ -171,8 +171,8 @@ serve(async (req) => {
       started_at: new Date().toISOString(),
     });
 
-    // Add student role
-    await supabaseService.rpc("enroll_as_free_student", { _user_id: user.id });
+    // NOTE: Student role is NOT granted here. It will be granted by the webhook
+    // only after payment is confirmed (PAYMENT_RECEIVED/PAYMENT_CONFIRMED).
 
     // CRM integration
     try {

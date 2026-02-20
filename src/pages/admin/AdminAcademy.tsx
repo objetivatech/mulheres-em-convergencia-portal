@@ -11,13 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { useAcademyCourses, useAcademyCategories, useCreateCourse, useUpdateCourse, useDeleteCourse, useAcademyLessons, useCreateLesson, useUpdateLesson, useDeleteLesson } from '@/hooks/useAcademy';
+import { useAllAcademySubscriptions, useAcademyStudents } from '@/hooks/useAcademySubscription';
 import { useR2Storage } from '@/hooks/useR2Storage';
 import { useNavigate } from 'react-router-dom';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
-import { Plus, Pencil, Trash2, BookOpen, ArrowLeft, Upload, GripVertical, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, BookOpen, ArrowLeft, Upload, GripVertical, Eye, Users, CreditCard, Clock, XCircle } from 'lucide-react';
 import type { AcademyCourse, AcademyLesson } from '@/hooks/useAcademy';
+import { format } from 'date-fns';
+
+const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  active: { label: 'Ativa', variant: 'default' },
+  pending: { label: 'Pendente', variant: 'secondary' },
+  cancelled: { label: 'Cancelada', variant: 'destructive' },
+  expired: { label: 'Expirada', variant: 'outline' },
+};
 
 const AdminAcademy = () => {
   const navigate = useNavigate();
@@ -32,6 +42,7 @@ const AdminAcademy = () => {
   const [editingCourse, setEditingCourse] = useState<Partial<AcademyCourse> | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [lessonsPanel, setLessonsPanel] = useState<string | null>(null);
+  const [subStatusFilter, setSubStatusFilter] = useState('all');
 
   const materialTypes = categories?.filter((c) => c.category_type === 'material_type') || [];
   const subjects = categories?.filter((c) => c.category_type === 'subject') || [];
@@ -94,63 +105,83 @@ const AdminAcademy = () => {
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold">MeC Academy</h1>
-                  <p className="text-sm text-muted-foreground">Gestão de cursos e aulas</p>
+                  <p className="text-sm text-muted-foreground">Gestão de cursos, aulas e assinantes</p>
                 </div>
               </div>
-              <Button onClick={openNewCourse}>
-                <Plus className="h-4 w-4 mr-2" /> Novo Curso
-              </Button>
             </div>
 
-            {/* Courses List */}
-            {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-            ) : !courses?.length ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-40" />
-                  <p>Nenhum curso cadastrado. Crie o primeiro!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {courses.map((course) => (
-                  <Card key={course.id}>
-                    <CardContent className="p-4 flex items-center gap-4">
-                      {course.thumbnail_url ? (
-                        <img src={course.thumbnail_url} alt="" className="w-20 h-14 object-cover rounded" />
-                      ) : (
-                        <div className="w-20 h-14 bg-muted rounded flex items-center justify-center">
-                          <BookOpen className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{course.title}</h3>
-                        <div className="flex gap-2 mt-1">
-                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'} className="text-xs">
-                            {course.status === 'published' ? 'Publicado' : course.status === 'archived' ? 'Arquivado' : 'Rascunho'}
-                          </Badge>
-                          {course.is_free && <Badge variant="outline" className="text-xs">Gratuito</Badge>}
-                          {course.is_standalone_lesson && <Badge variant="outline" className="text-xs">Aula Avulsa</Badge>}
-                          {course.show_on_landing && <Badge variant="outline" className="text-xs">Na Landing</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setLessonsPanel(course.id)}>
-                          Aulas
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingCourse(course); setIsDialogOpen(true); }}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteCourse(course.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+            <Tabs defaultValue="courses">
+              <TabsList className="mb-6">
+                <TabsTrigger value="courses">
+                  <BookOpen className="h-4 w-4 mr-2" /> Cursos
+                </TabsTrigger>
+                <TabsTrigger value="subscribers">
+                  <Users className="h-4 w-4 mr-2" /> Alunos e Assinantes
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="courses">
+                <div className="flex justify-end mb-4">
+                  <Button onClick={openNewCourse}>
+                    <Plus className="h-4 w-4 mr-2" /> Novo Curso
+                  </Button>
+                </div>
+
+                {/* Courses List */}
+                {isLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+                ) : !courses?.length ? (
+                  <Card>
+                    <CardContent className="py-12 text-center text-muted-foreground">
+                      <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-40" />
+                      <p>Nenhum curso cadastrado. Crie o primeiro!</p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            )}
+                ) : (
+                  <div className="space-y-3">
+                    {courses.map((course) => (
+                      <Card key={course.id}>
+                        <CardContent className="p-4 flex items-center gap-4">
+                          {course.thumbnail_url ? (
+                            <img src={course.thumbnail_url} alt="" className="w-20 h-14 object-cover rounded" />
+                          ) : (
+                            <div className="w-20 h-14 bg-muted rounded flex items-center justify-center">
+                              <BookOpen className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">{course.title}</h3>
+                            <div className="flex gap-2 mt-1">
+                              <Badge variant={course.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                                {course.status === 'published' ? 'Publicado' : course.status === 'archived' ? 'Arquivado' : 'Rascunho'}
+                              </Badge>
+                              {course.is_free && <Badge variant="outline" className="text-xs">Gratuito</Badge>}
+                              {course.is_standalone_lesson && <Badge variant="outline" className="text-xs">Aula Avulsa</Badge>}
+                              {course.show_on_landing && <Badge variant="outline" className="text-xs">Na Landing</Badge>}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setLessonsPanel(course.id)}>
+                              Aulas
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingCourse(course); setIsDialogOpen(true); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteCourse(course.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="subscribers">
+                <SubscribersTab statusFilter={subStatusFilter} onStatusFilterChange={setSubStatusFilter} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 
@@ -260,6 +291,172 @@ const AdminAcademy = () => {
         )}
       </Layout>
     </>
+  );
+};
+
+// Subscribers Tab
+const SubscribersTab = ({ statusFilter, onStatusFilterChange }: { statusFilter: string; onStatusFilterChange: (v: string) => void }) => {
+  const { data: subscriptions, isLoading: subsLoading } = useAllAcademySubscriptions(statusFilter);
+  const { data: students, isLoading: studentsLoading } = useAcademyStudents();
+
+  const activeSubs = subscriptions?.filter(s => s.status === 'active').length || 0;
+  const pendingSubs = subscriptions?.filter(s => s.status === 'pending').length || 0;
+  const cancelledSubs = subscriptions?.filter(s => s.status === 'cancelled' || s.status === 'expired').length || 0;
+  const totalStudents = students?.length || 0;
+
+  // Determine which students are free (have role but no active subscription)
+  const subUserIds = new Set(subscriptions?.filter(s => s.status === 'active').map(s => s.user_id) || []);
+
+  return (
+    <div className="space-y-6">
+      {/* Counters */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Users className="h-8 w-8 text-primary" />
+            <div>
+              <p className="text-2xl font-bold">{totalStudents}</p>
+              <p className="text-xs text-muted-foreground">Total Alunos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <CreditCard className="h-8 w-8 text-primary" />
+            <div>
+              <p className="text-2xl font-bold">{activeSubs}</p>
+              <p className="text-xs text-muted-foreground">Assinantes Ativos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Clock className="h-8 w-8 text-accent-foreground" />
+            <div>
+              <p className="text-2xl font-bold">{pendingSubs}</p>
+              <p className="text-xs text-muted-foreground">Pendentes</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <XCircle className="h-8 w-8 text-destructive" />
+            <div>
+              <p className="text-2xl font-bold">{cancelledSubs}</p>
+              <p className="text-xs text-muted-foreground">Cancelados/Expirados</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Subscriptions Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Assinaturas Academy</CardTitle>
+            <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filtrar status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Ativas</SelectItem>
+                <SelectItem value="pending">Pendentes</SelectItem>
+                <SelectItem value="cancelled">Canceladas</SelectItem>
+                <SelectItem value="expired">Expiradas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {subsLoading ? (
+            <p className="text-muted-foreground text-center py-8">Carregando...</p>
+          ) : !subscriptions?.length ? (
+            <p className="text-muted-foreground text-center py-8">Nenhuma assinatura encontrada.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Ciclo</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Início</TableHead>
+                  <TableHead>Asaas ID</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscriptions.map((sub) => {
+                  const st = statusLabels[sub.status] || { label: sub.status, variant: 'outline' as const };
+                  return (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-medium">{sub.profiles?.full_name || '—'}</TableCell>
+                      <TableCell>{sub.profiles?.email || '—'}</TableCell>
+                      <TableCell>
+                        <Badge variant={st.variant}>{st.label}</Badge>
+                      </TableCell>
+                      <TableCell className="capitalize">{sub.billing_cycle || 'Mensal'}</TableCell>
+                      <TableCell>R$ {(sub.price || 29.9).toFixed(2).replace('.', ',')}</TableCell>
+                      <TableCell>{sub.started_at ? format(new Date(sub.started_at), 'dd/MM/yyyy') : '—'}</TableCell>
+                      <TableCell>
+                        {sub.asaas_subscription_id ? (
+                          <a
+                            href={`https://www.asaas.com/subscriptions/${sub.asaas_subscription_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline text-xs"
+                          >
+                            {sub.asaas_subscription_id.slice(0, 12)}...
+                          </a>
+                        ) : '—'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Students List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Alunos (role student)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {studentsLoading ? (
+            <p className="text-muted-foreground text-center py-8">Carregando...</p>
+          ) : !students?.length ? (
+            <p className="text-muted-foreground text-center py-8">Nenhum aluno registrado.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Tipo</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student.user_id}>
+                    <TableCell className="font-medium">{student.full_name || '—'}</TableCell>
+                    <TableCell>{student.email || '—'}</TableCell>
+                    <TableCell>
+                      <Badge variant={subUserIds.has(student.user_id) ? 'default' : 'outline'}>
+                        {subUserIds.has(student.user_id) ? 'Assinante' : 'Gratuito'}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
