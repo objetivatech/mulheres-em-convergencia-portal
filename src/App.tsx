@@ -16,7 +16,7 @@ import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import Planos from './pages/Planos';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
-import CriarConverterPage from './pages/CriarConverterPage';
+
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
 import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
@@ -127,7 +127,7 @@ function AppContent() {
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
-        <Route path="/criar-converter" element={<CriarConverterPage />} />
+        <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
