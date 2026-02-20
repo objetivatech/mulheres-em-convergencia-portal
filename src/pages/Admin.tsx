@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, Wand2, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap, LayoutTemplate } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -164,6 +164,14 @@ const Admin = () => {
           icon: GraduationCap,
           available: isAdmin,
           href: '/admin/academy',
+          comingSoon: false
+        },
+        {
+          title: 'Landing Pages',
+          description: 'Criar e gerenciar páginas de venda e eventos',
+          icon: LayoutTemplate,
+          available: isAdmin,
+          href: '/admin/landing-pages',
           comingSoon: false
         }
       ]
