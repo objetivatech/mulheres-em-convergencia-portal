@@ -1,210 +1,151 @@
+# Plano: Correcao do Fluxo de Assinatura MeC Academy + Painel de Alunos/Assinantes
 
+## Problemas Identificados
 
-# Plano: Gerenciamento de Landing Pages pelo Painel Admin
+### Problema 1: Botao "Assinar Agora" nao abre checkout
 
-## Objetivo
+O `handleCTA` na pagina Academy funciona assim:
 
-Criar um sistema completo no painel administrativo para criar, editar, ativar/desativar e gerenciar Landing Pages usando a mesma estrutura de componentes ja existente (`LPHero`, `LPPainPoints`, etc.), porem com o conteudo armazenado no banco de dados em vez de arquivos estaticos.
+1. Se nao logado: redireciona para `/entrar?redirect=/academy/catalogo`
+2. Se logado com access `none`: chama `enrollFree.mutate()` (da a role `student` gratuitamente)
+3. Caso contrario: redireciona para `/academy/catalogo`
+
+O fluxo esta errado porque:
+
+- O botao "Assinar Agora" e "Comecar Gratis" usam o **mesmo** `handleCTA`
+- Ao se cadastrar e logar, o usuario cai no caso `access === 'none'`, que chama `enrollFree.mutate()` e da a role `student` automaticamente -- **sem nunca abrir o checkout do Asaas**
+- Apos receber a role `student`, o `has_academy_access` retorna `'free'`, e o AccessGate libera conteudos gratuitos. Porem, o usuario nunca passou pelo checkout
+- A funcao `createAcademySubscription` existe no hook mas **nunca e chamada** em nenhum componente -- nao ha nenhum formulario de dados para o checkout
+
+### Problema 2: Falta de painel admin para alunos/assinantes
+
+O admin atual (`/admin/academy`) so gerencia cursos e aulas. Nao ha nenhuma area para visualizar:
+
+- Quem tem a role `student`
+- Quem tem assinatura ativa no Academy
+- Status das assinaturas (pendente, ativa, cancelada)
 
 ---
 
-## Situacao Atual
+## Solucao
 
-- A estrutura de LP existe como **componentes React reutilizaveis** (`src/components/landing-page/`) que recebem dados via props tipadas (`LandingPageContent`).
-- O conteudo atual da unica LP ("Criar e Converter") esta hardcoded em `src/data/products/criar-converter.ts`.
-- A tabela `landing_pages` no banco ja existe, mas contem apenas metadados simples (titulo, slug, active, featured). Nao armazena o conteudo das secoes.
-- As LPs aparecem automaticamente no slider da homepage quando ativas.
+### 1. Separar os botoes "Assinar Agora" e "Comecar Gratis"
+
+Na pagina `Academy.tsx`, os botoes terao comportamentos diferentes:
+
+- **"Comecar Gratis"**: fluxo atual (cadastro + role student = acesso a conteudos gratuitos)
+- **"Assinar Agora"**: abre o formulario `CustomerInfoDialog` (ja existente no portal para assinaturas de planos), coleta dados do cliente e chama a edge function `create-academy-subscription`, redirecionando para o checkout Asaas
+
+O fluxo correto de assinatura sera:
+
+1. Usuario clica "Assinar Agora"
+2. Se nao logado, redireciona para login com `redirect=/academy#planos`
+3. Se logado, abre o `CustomerInfoDialog`
+4. Ao submeter, chama `create-academy-subscription` (edge function)
+5. Recebe a URL de pagamento do Asaas e redireciona
+6. Webhook processa pagamento e ativa a assinatura
+7. So entao o acesso premium e liberado
+
+### 2. Nao dar role student automaticamente na edge function
+
+Atualmente a edge function `create-academy-subscription` chama `enroll_as_free_student` na linha 175, dando a role `student` antes do pagamento. Isso sera removido. A role `student` so sera atribuida quando o webhook confirmar o pagamento (isso ja acontece no webhook existente).
+
+### 3. Aba "Alunos e Assinantes" no admin do Academy
+
+Adicionar uma nova aba na pagina `/admin/academy` com:
+
+- **Tabela de assinaturas Academy**: lista de todas as `academy_subscriptions` com nome do usuario, email, status, data de inicio, valor, ID Asaas
+- **Filtros**: por status (ativa, pendente, cancelada, expirada)
+- **Lista de alunos**: usuarios com role `student`, indicando se sao gratuitos ou assinantes
+- **Contadores resumo**: total de alunos, assinantes ativos, pendentes, cancelados
 
 ---
 
-## 1. Banco de Dados - Evolucao da tabela `landing_pages`
+## Arquivos a Modificar
 
-Adicionar uma coluna JSONB `content` para armazenar todo o conteudo da LP no formato `LandingPageContent`:
+### `src/pages/Academy.tsx`
+
+- Separar `handleCTA` em `handleSubscribe` e `handleFreeAccess`
+- Importar e usar o `CustomerInfoDialog`
+- Ao submeter o dialog, chamar `createAcademySubscription` e redirecionar para URL de pagamento
+
+### `supabase/functions/create-academy-subscription/index.ts`
+
+- Remover a linha 175 que chama `enroll_as_free_student` antes do pagamento (a role sera dada pelo webhook)
+
+### `src/pages/admin/AdminAcademy.tsx`
+
+- Adicionar aba "Alunos e Assinantes" com tabela de assinaturas e alunos
+- Incluir contadores resumo
+
+### `src/hooks/useAcademySubscription.ts`
+
+- Adicionar hook `useAllAcademySubscriptions()` para o admin listar todas as assinaturas com dados do perfil do usuario
+
+---
+
+## Detalhes Tecnicos
+
+### Fluxo do botao "Assinar Agora" (corrigido)
 
 ```text
-ALTER TABLE public.landing_pages
-  ADD COLUMN IF NOT EXISTS content JSONB,
-  ADD COLUMN IF NOT EXISTS seo_title TEXT,
-  ADD COLUMN IF NOT EXISTS seo_description TEXT,
-  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft',
-  ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
+Clique "Assinar Agora"
+  |
+  v
+Logado? --Nao--> navigate('/entrar?redirect=/academy')
+  |
+  Sim
+  v
+Abre CustomerInfoDialog (pre-preenche com perfil)
+  |
+  v
+Submit -> createAcademySubscription(customer)
+  |
+  v
+Edge Function cria cliente + assinatura no Asaas
+  |
+  v
+Retorna paymentUrl -> window.open(paymentUrl)
+  |
+  v
+Webhook confirma pagamento:
+  - academy_subscriptions.status = 'active'
+  - Adiciona role 'student'
+  - Atualiza CRM
 ```
 
-O campo `content` armazena a estrutura completa: hero, painPoints, method, pillars, included, targetAudience, transformation, eventDetails, investment, testimonials e product.
+### Hook admin para listar assinaturas
 
-Migrar o conteudo da LP "Criar e Converter" para a tabela via UPDATE com o JSON correspondente ao arquivo `criar-converter.ts`.
-
-A coluna `status` permite controle mais fino do que apenas `active` (draft, published, archived).
-
----
-
-## 2. Pagina Admin: Listagem de LPs (`/admin/landing-pages`)
-
-Tabela com todas as LPs cadastradas:
-- Colunas: Titulo, Slug, Status (badge colorido), Featured, Data criacao, Acoes
-- Acoes por LP: Editar, Duplicar, Visualizar (abre em nova aba), Toggle ativar/desativar, Excluir
-- Botao "Nova Landing Page" no topo
-- Filtros por status (Rascunho, Publicada, Arquivada)
-
----
-
-## 3. Editor de LP (`/admin/landing-pages/:id`)
-
-Formulario completo dividido em abas/accordion para cada secao da LP:
-
-### Aba "Configuracoes Gerais"
-- Titulo, slug (auto-gerado editavel), status
-- SEO: titulo e descricao meta
-- Imagem de capa (para o slider da homepage)
-- Toggles: featured, ativa
-- Dados do produto: nome, tagline, preco, descricao de pagamento
-- Formato do evento: online/presencial/hibrido, datas, duracao, local
-
-### Aba "Hero"
-- Headline, subheadline, descricao
-- Texto do CTA primario e secundario
-
-### Aba "Pontos de Dor"
-- Titulo da secao
-- Lista dinamica de pain points (adicionar/remover/reordenar)
-- Texto de fechamento + highlight
-
-### Aba "Metodo"
-- Titulo, descricao
-- Lista de beneficios (adicionar/remover)
-- Texto de fechamento
-
-### Aba "Pilares"
-- Titulo
-- Lista de pilares (max 4), cada um com: titulo, subtitulo, descricao, icone (select com opcoes lucide)
-
-### Aba "O Que Esta Incluido"
-- Titulo
-- Lista de itens com toggles: bonus, destaque
-
-### Aba "Publico-Alvo"
-- Titulo
-- Lista de perfis
-- CTA opcional
-
-### Aba "Transformacao"
-- Titulo
-- Lista de transformacoes
-- CTA opcional
-
-### Aba "Detalhes do Evento"
-- Titulo, datas, duracao, formato, local
-
-### Aba "Investimento"
-- Titulo, preco formatado, valor numerico, descricao, texto do CTA
-
-### Aba "Depoimentos"
-- Titulo, subtitulo
-- Lista de depoimentos: tipo (video/texto), URL YouTube ou quote, nome, role
-
-### Funcionalidades do Editor
-- **Preview em tempo real**: botao que abre a LP renderizada em nova aba/modal
-- **Salvar rascunho**: salva sem publicar
-- **Publicar**: ativa a LP e gera a rota publica
-- **Duplicar LP**: copia todo o conteudo para uma nova LP com slug diferente (ideal para criar LPs rapidamente)
-
----
-
-## 4. Renderizacao Dinamica da LP Publica
-
-Criar uma pagina generica `DynamicLandingPage` que:
-1. Recebe o slug via rota (`/:slug` - com prioridade menor que rotas fixas)
-2. Busca o conteudo da tabela `landing_pages` onde `slug = param` e `active = true`
-3. Renderiza os mesmos componentes LP existentes com os dados do banco
-4. Inclui meta tags SEO dinamicas
-
-A rota fixa `/criar-converter` sera mantida como fallback, mas a LP "Criar e Converter" tambem funcionara pela rota dinamica apos migrar o conteudo para o banco.
-
----
-
-## 5. Hook `useLandingPages`
-
-Novo hook com:
-- `useListLandingPages()` - listagem com filtros
-- `useGetLandingPage(id)` - buscar por ID
-- `useGetLandingPageBySlug(slug)` - buscar por slug (publico)
-- `useCreateLandingPage()` - criar
-- `useUpdateLandingPage()` - atualizar
-- `useDeleteLandingPage()` - excluir
-- `useDuplicateLandingPage()` - duplicar
-
----
-
-## 6. Melhorias Adicionais
-
-### 6a. Template inicial pre-preenchido
-Ao criar uma nova LP, o formulario vem pre-preenchido com textos placeholder em todas as secoes, facilitando a edicao (nao comeca do zero).
-
-### 6b. Secoes opcionais com toggle
-Cada secao (exceto Hero e Investimento) pode ser desabilitada via toggle, permitindo LPs com diferentes composicoes. Exemplo: uma LP sem "Pilares" ou sem "Depoimentos".
-
-### 6c. Preview responsivo
-O botao de preview permite alternar entre visualizacao desktop e mobile.
-
-### 6d. Historico de alteracoes
-Registro simples de quem editou e quando (usando `updated_at` e `created_by`).
-
----
-
-## 7. Atualizacao de Rotas
-
-```text
-/admin/landing-pages          -> Listagem de LPs
-/admin/landing-pages/nova     -> Criar nova LP
-/admin/landing-pages/:id      -> Editar LP existente
-/lp/:slug                     -> Renderizacao publica dinamica
+```typescript
+useAllAcademySubscriptions() {
+  // SELECT academy_subscriptions.*, profiles.full_name, profiles.email
+  // FROM academy_subscriptions
+  // JOIN profiles ON profiles.id = academy_subscriptions.user_id
+  // ORDER BY created_at DESC
+}
 ```
 
-A rota publica `/lp/:slug` sera o padrao para novas LPs. A rota `/criar-converter` continuara funcionando como alias.
+### Aba admin - informacoes exibidas
 
----
 
-## 8. Documentacao
+| Coluna   | Descricao                                          |
+| -------- | -------------------------------------------------- |
+| Nome     | full_name do perfil                                |
+| Email    | email do perfil                                    |
+| Status   | Badge colorido (ativa/pendente/cancelada/expirada) |
+| Ciclo    | Mensal                                             |
+| Valor    | R$ 29,90                                           |
+| Inicio   | Data de inicio                                     |
+| Asaas ID | Link para dashboard Asaas                          |
 
-Atualizar os seguintes documentos:
-- `docs/_active/08-landing-pages/criar-converter-lp.md` - Atualizar para refletir que o conteudo agora vive no banco
-- `docs/_active/09-navigation-and-slider/navigation-menus-slider.md` - Atualizar secao sobre LPs
-- Criar novo: `docs/_active/08-landing-pages/admin-landing-pages.md` - Guia completo do gerenciamento de LPs pelo painel
 
----
+Contadores no topo:
 
-## 9. Arquivos a Criar
+- Total de alunos (role student)
+- Assinantes ativos
+- Assinaturas pendentes
+- Cancelados/Expirados
 
-```text
-src/pages/admin/AdminLandingPages.tsx         -- Listagem
-src/pages/admin/AdminLandingPageEditor.tsx     -- Editor com abas
-src/pages/DynamicLandingPage.tsx               -- Renderizacao publica
-src/hooks/useLandingPages.ts                   -- Hook CRUD
-src/components/admin/lp-editor/LPEditorTabs.tsx       -- Container de abas
-src/components/admin/lp-editor/LPGeneralTab.tsx       -- Aba configuracoes gerais
-src/components/admin/lp-editor/LPContentTabs.tsx      -- Abas de conteudo (Hero, Dor, etc.)
-src/components/admin/lp-editor/LPListItemActions.tsx   -- Componente de itens dinamicos (add/remove/reorder)
-docs/_active/08-landing-pages/admin-landing-pages.md
-```
+&nbsp;
 
-## 10. Arquivos a Modificar
-
-```text
-src/App.tsx                                    -- Novas rotas
-src/pages/Admin.tsx                            -- Card de acesso ao gerenciamento de LPs
-docs/_active/08-landing-pages/criar-converter-lp.md
-docs/_active/09-navigation-and-slider/navigation-menus-slider.md
-```
-
----
-
-## 11. Ordem de Implementacao
-
-1. Migracao SQL (adicionar colunas + migrar conteudo Criar e Converter)
-2. Hook `useLandingPages`
-3. Pagina de listagem admin
-4. Editor com abas (formularios por secao)
-5. Pagina de renderizacao publica dinamica
-6. Rotas e menu admin
-7. Documentacao
-
+## **IMPORTANTE -** novas rotas, features e fluxos devem ser documentados. Se já houver documentação sobre o tópico, ela deve ser atualizada.
