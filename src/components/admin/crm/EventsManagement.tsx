@@ -186,7 +186,7 @@ export const EventsManagement: React.FC = () => {
     }
   };
 
-  const EventFormContent: React.FC = () => (
+  const eventFormContent = (
     <form onSubmit={handleFormSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
@@ -571,7 +571,7 @@ export const EventsManagement: React.FC = () => {
                 {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
               </DialogDescription>
             </DialogHeader>
-            <EventFormContent />
+            {eventFormContent}
           </DialogContent>
         </Dialog>
       </div>
