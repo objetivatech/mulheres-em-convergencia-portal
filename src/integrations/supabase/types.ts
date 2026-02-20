@@ -3352,43 +3352,61 @@ export type Database = {
       landing_pages: {
         Row: {
           active: boolean | null
+          content: Json | null
           created_at: string
+          created_by: string | null
           description: string | null
           end_date: string | null
           featured: boolean | null
           id: string
           image_url: string | null
           product_id: string | null
+          sections_enabled: Json | null
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           start_date: string | null
+          status: string
           title: string
           updated_at: string
         }
         Insert: {
           active?: boolean | null
+          content?: Json | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           featured?: boolean | null
           id?: string
           image_url?: string | null
           product_id?: string | null
+          sections_enabled?: Json | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           start_date?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
         Update: {
           active?: boolean | null
+          content?: Json | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           featured?: boolean | null
           id?: string
           image_url?: string | null
           product_id?: string | null
+          sections_enabled?: Json | null
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           start_date?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }

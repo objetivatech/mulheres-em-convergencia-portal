@@ -59,6 +59,9 @@ import Academy from './pages/Academy';
 import AcademyCatalogo from './pages/AcademyCatalogo';
 import AcademyCurso from './pages/AcademyCurso';
 import AdminAcademy from './pages/admin/AdminAcademy';
+import AdminLandingPages from './pages/admin/AdminLandingPages';
+import AdminLandingPageEditor from './pages/admin/AdminLandingPageEditor';
+import DynamicLandingPage from './pages/DynamicLandingPage';
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -136,6 +139,7 @@ function AppContent() {
         <Route path="/academy" element={<Academy />} />
         <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
         <Route path="/academy/curso/:slug" element={<AcademyCurso />} />
+        <Route path="/lp/:slug" element={<DynamicLandingPage />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
@@ -269,6 +273,16 @@ function AppContent() {
         <Route path="/admin/academy" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminAcademy />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/landing-pages" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminLandingPages />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/landing-pages/:id" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminLandingPageEditor />
           </ProtectedRoute>
         } />
         {/* Redirect alternativo */}
