@@ -1,151 +1,134 @@
-# Plano: Correcao do Fluxo de Assinatura MeC Academy + Painel de Alunos/Assinantes
 
-## Problemas Identificados
 
-### Problema 1: Botao "Assinar Agora" nao abre checkout
+# Redesign da Homepage - Estrategia de Conversao e SEO
 
-O `handleCTA` na pagina Academy funciona assim:
+## Diagnostico Atual
 
-1. Se nao logado: redireciona para `/entrar?redirect=/academy/catalogo`
-2. Se logado com access `none`: chama `enrollFree.mutate()` (da a role `student` gratuitamente)
-3. Caso contrario: redireciona para `/academy/catalogo`
+A homepage atual tem um problema claro de conversao: o Hero e generico e institucional ("Conheca Nossa Historia" / "Explore o Blog"), sem mencionar nenhum produto ou servico. O visitante nao descobre que existem **planos de associacao**, **MeC Academy**, **diretorio de negocios**, ou **eventos** sem navegar pelo menu. A jornada de conversao esta quebrada.
 
-O fluxo esta errado porque:
+### Estrutura atual da pagina (de cima para baixo):
+1. Hero (institucional, sem CTA de produto)
+2. Slider de Eventos e LPs
+3. Empreendedoras Destaque (featured businesses)
+4. Nossos Negocios (random businesses)
+5. Parceiros (carousel de logos)
+6. Ultimas do Blog
 
-- O botao "Assinar Agora" e "Comecar Gratis" usam o **mesmo** `handleCTA`
-- Ao se cadastrar e logar, o usuario cai no caso `access === 'none'`, que chama `enrollFree.mutate()` e da a role `student` automaticamente -- **sem nunca abrir o checkout do Asaas**
-- Apos receber a role `student`, o `has_academy_access` retorna `'free'`, e o AccessGate libera conteudos gratuitos. Porem, o usuario nunca passou pelo checkout
-- A funcao `createAcademySubscription` existe no hook mas **nunca e chamada** em nenhum componente -- nao ha nenhum formulario de dados para o checkout
-
-### Problema 2: Falta de painel admin para alunos/assinantes
-
-O admin atual (`/admin/academy`) so gerencia cursos e aulas. Nao ha nenhuma area para visualizar:
-
-- Quem tem a role `student`
-- Quem tem assinatura ativa no Academy
-- Status das assinaturas (pendente, ativa, cancelada)
+### O que falta:
+- Nenhuma mencao aos **planos de associacao** (Iniciante, Intermediario, Master)
+- Nenhuma mencao ao **MeC Academy** (R$ 29,90/mes)
+- Nenhum CTA direto para conversao/assinatura
+- Nenhuma prova social (numeros, depoimentos)
+- Nenhuma secao explicando a proposta de valor dos servicos
 
 ---
 
-## Solucao
+## Nova Estrutura Proposta
 
-### 1. Separar os botoes "Assinar Agora" e "Comecar Gratis"
+A ordem segue o modelo AIDA (Atencao > Interesse > Desejo > Acao), otimizado para conversao:
 
-Na pagina `Academy.tsx`, os botoes terao comportamentos diferentes:
+### 1. Hero Redesenhado (ATENCAO)
+- **Headline orientada a beneficio**: "Conecte-se, Aprenda e Cresca com a Maior Rede de Mulheres Empreendedoras"
+- **Subheadline**: frase curta sobre o que o portal oferece concretamente
+- **3 CTAs claros** em cards/botoes lado a lado:
+  - "Associe-se" -> `/planos`
+  - "Acesse o Academy" -> `/academy`
+  - "Encontre Negocios" -> `/diretorio`
+- **Prova social inline**: "Mais de X empreendedoras conectadas" (numero dinamico do banco)
+- Visual: manter gradiente/cores da marca, mas substituir o circulo MEC por algo mais impactante (ou manter menor, ao lado)
 
-- **"Comecar Gratis"**: fluxo atual (cadastro + role student = acesso a conteudos gratuitos)
-- **"Assinar Agora"**: abre o formulario `CustomerInfoDialog` (ja existente no portal para assinaturas de planos), coleta dados do cliente e chama a edge function `create-academy-subscription`, redirecionando para o checkout Asaas
+### 2. Barra de Proposta de Valor (INTERESSE)
+Secao compacta com 3-4 pilares em icones lado a lado:
+- "Rede de Networking" / "Cursos e Workshops" / "Visibilidade para seu Negocio" / "Eventos Exclusivos"
+- Cada pilar e clicavel e leva para a secao correspondente
 
-O fluxo correto de assinatura sera:
+### 3. Slider de Eventos e LPs (manter existente)
+Sem alteracoes, ja funciona bem.
 
-1. Usuario clica "Assinar Agora"
-2. Se nao logado, redireciona para login com `redirect=/academy#planos`
-3. Se logado, abre o `CustomerInfoDialog`
-4. Ao submeter, chama `create-academy-subscription` (edge function)
-5. Recebe a URL de pagamento do Asaas e redireciona
-6. Webhook processa pagamento e ativa a assinatura
-7. So entao o acesso premium e liberado
+### 4. Secao "MeC Academy" (DESEJO - novo)
+Bloco dedicado ao Academy com:
+- Titulo: "Aprenda com quem faz: MeC Academy"
+- Descricao curta do beneficio
+- 3 cards de cursos em destaque (reutilizar `CourseCard` existente)
+- CTA: "Assine por R$ 29,90/mes" -> `/academy`
+- Badge "Novo" para destacar
 
-### 2. Nao dar role student automaticamente na edge function
+### 5. Secao "Planos de Associacao" (DESEJO - novo)
+Resumo visual dos 3 planos lado a lado:
+- Cards compactos com nome, preco e 3 beneficios-chave de cada
+- CTA unico: "Ver Todos os Planos" -> `/planos`
+- Destaque no plano mais popular (is_featured)
 
-Atualmente a edge function `create-academy-subscription` chama `enroll_as_free_student` na linha 175, dando a role `student` antes do pagamento. Isso sera removido. A role `student` so sera atribuida quando o webhook confirmar o pagamento (isso ja acontece no webhook existente).
+### 6. Empreendedoras Destaque (manter existente)
+Sem alteracoes significativas.
 
-### 3. Aba "Alunos e Assinantes" no admin do Academy
+### 7. Nossos Negocios (manter existente)
+Sem alteracoes significativas.
 
-Adicionar uma nova aba na pagina `/admin/academy` com:
+### 8. Secao de Numeros / Prova Social (novo)
+Contadores animados:
+- Total de empreendedoras cadastradas
+- Total de negocios no diretorio
+- Total de cursos disponiveis
+- Total de eventos realizados
+Dados buscados do banco em tempo real.
 
-- **Tabela de assinaturas Academy**: lista de todas as `academy_subscriptions` com nome do usuario, email, status, data de inicio, valor, ID Asaas
-- **Filtros**: por status (ativa, pendente, cancelada, expirada)
-- **Lista de alunos**: usuarios com role `student`, indicando se sao gratuitos ou assinantes
-- **Contadores resumo**: total de alunos, assinantes ativos, pendentes, cancelados
+### 9. Parceiros (manter existente)
+Sem alteracoes.
+
+### 10. Blog (manter existente)
+Sem alteracoes.
+
+### 11. CTA Final / Footer CTA (novo)
+Bloco de fechamento antes do footer:
+- "Pronta para fazer parte?" com botao "Associe-se Agora"
+- Reforco de urgencia/beneficio
 
 ---
 
-## Arquivos a Modificar
+## Implementacao Tecnica
 
-### `src/pages/Academy.tsx`
-
-- Separar `handleCTA` em `handleSubscribe` e `handleFreeAccess`
-- Importar e usar o `CustomerInfoDialog`
-- Ao submeter o dialog, chamar `createAcademySubscription` e redirecionar para URL de pagamento
-
-### `supabase/functions/create-academy-subscription/index.ts`
-
-- Remover a linha 175 que chama `enroll_as_free_student` antes do pagamento (a role sera dada pelo webhook)
-
-### `src/pages/admin/AdminAcademy.tsx`
-
-- Adicionar aba "Alunos e Assinantes" com tabela de assinaturas e alunos
-- Incluir contadores resumo
-
-### `src/hooks/useAcademySubscription.ts`
-
-- Adicionar hook `useAllAcademySubscriptions()` para o admin listar todas as assinaturas com dados do perfil do usuario
-
----
-
-## Detalhes Tecnicos
-
-### Fluxo do botao "Assinar Agora" (corrigido)
-
+### Novos componentes a criar:
 ```text
-Clique "Assinar Agora"
-  |
-  v
-Logado? --Nao--> navigate('/entrar?redirect=/academy')
-  |
-  Sim
-  v
-Abre CustomerInfoDialog (pre-preenche com perfil)
-  |
-  v
-Submit -> createAcademySubscription(customer)
-  |
-  v
-Edge Function cria cliente + assinatura no Asaas
-  |
-  v
-Retorna paymentUrl -> window.open(paymentUrl)
-  |
-  v
-Webhook confirma pagamento:
-  - academy_subscriptions.status = 'active'
-  - Adiciona role 'student'
-  - Atualiza CRM
+src/components/home/ValueProposition.tsx   -- Barra de pilares (icones + links)
+src/components/home/AcademyShowcase.tsx    -- Bloco Academy com cursos
+src/components/home/PlansPreview.tsx       -- Resumo dos planos
+src/components/home/SocialProof.tsx        -- Contadores animados
+src/components/home/FinalCTA.tsx           -- CTA de fechamento
 ```
 
-### Hook admin para listar assinaturas
-
-```typescript
-useAllAcademySubscriptions() {
-  // SELECT academy_subscriptions.*, profiles.full_name, profiles.email
-  // FROM academy_subscriptions
-  // JOIN profiles ON profiles.id = academy_subscriptions.user_id
-  // ORDER BY created_at DESC
-}
+### Arquivos a modificar:
+```text
+src/components/home/Hero.tsx    -- Redesenho completo
+src/pages/Index.tsx             -- Nova ordem dos blocos
 ```
 
-### Aba admin - informacoes exibidas
+### Nova ordem no Index.tsx:
+```text
+<Hero />                    -- redesenhado
+<ValueProposition />        -- novo
+<EventsAndLPsSlider />      -- existente
+<AcademyShowcase />         -- novo
+<PlansPreview />            -- novo
+<BusinessShowcase featured />  -- existente
+<BusinessShowcase />           -- existente
+<SocialProof />             -- novo
+<PartnersCarousel />        -- existente
+<FeaturedPosts />           -- existente
+<FinalCTA />                -- novo
+```
 
+### Dados dinamicos necessarios:
+- **Contagem de empreendedoras**: `SELECT COUNT(*) FROM profiles WHERE role IN ('business_owner', 'student')`
+- **Contagem de negocios**: `SELECT COUNT(*) FROM businesses WHERE active = true`
+- **Cursos em destaque**: reutilizar hook `useAcademyCourses` com `showOnLanding: true`
+- **Planos ativos**: reutilizar query de `subscription_plans` com `is_active = true`
 
-| Coluna   | Descricao                                          |
-| -------- | -------------------------------------------------- |
-| Nome     | full_name do perfil                                |
-| Email    | email do perfil                                    |
-| Status   | Badge colorido (ativa/pendente/cancelada/expirada) |
-| Ciclo    | Mensal                                             |
-| Valor    | R$ 29,90                                           |
-| Inicio   | Data de inicio                                     |
-| Asaas ID | Link para dashboard Asaas                          |
+### SEO:
+- Atualizar meta description para incluir palavras-chave dos servicos
+- Manter structured data (Organization) e canonical
+- H1 unico no Hero, H2 em cada secao
 
+### Documentacao:
+- Atualizar documentacao da homepage para refletir os novos blocos e a estrategia de conversao
 
-Contadores no topo:
-
-- Total de alunos (role student)
-- Assinantes ativos
-- Assinaturas pendentes
-- Cancelados/Expirados
-
-&nbsp;
-
-## **IMPORTANTE -** novas rotas, features e fluxos devem ser documentados. Se já houver documentação sobre o tópico, ela deve ser atualizada.
