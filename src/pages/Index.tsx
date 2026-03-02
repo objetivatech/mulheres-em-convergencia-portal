@@ -40,7 +40,7 @@ const Index = () => {
     <Layout>
       <Helmet>
         <title>Mulheres em Convergência | Rede de Empreendedorismo Feminino, Cursos e Associação</title>
-        <meta name="description" content="Conecte-se à maior rede de mulheres empreendedoras. Planos de associação, MeC Academy com cursos exclusivos, diretório de negócios e eventos. Associe-se!" />
+        <meta name="description" content="Conecte-se à melhor rede de mulheres empreendedoras. Planos de associação, MeC Academy com cursos exclusivos, diretório de negócios e eventos. Associe-se!" />
         <link rel="canonical" href={PRODUCTION_DOMAIN} />
         <meta property="og:title" content="Mulheres em Convergência | Rede, Cursos e Associação" />
         <meta property="og:description" content="Planos de associação, MeC Academy, diretório de negócios e eventos para mulheres empreendedoras" />
@@ -50,9 +50,6 @@ const Index = () => {
 
       <Hero />
       <ValueProposition />
-      <EventsAndLPsSlider />
-      <AcademyShowcase />
-      <PlansPreview />
 
       <BusinessShowcase
         title="Empreendedoras Destaque"
@@ -66,6 +63,10 @@ const Index = () => {
         subtitle="Descubra a diversidade de empreendimentos em nossa rede"
         featured={false}
       />
+
+      <EventsAndLPsSlider />
+      <AcademyShowcase />
+      <PlansPreview />
 
       <SocialProof />
 
