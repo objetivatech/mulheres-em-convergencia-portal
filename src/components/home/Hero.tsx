@@ -39,9 +39,9 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight">
-            Conecte-se, Aprenda e Cresça com a{' '}
-            <span className="text-primary">Maior Rede</span> de{' '}
-            <span className="text-brand-secondary">Mulheres Empreendedoras</span>
+            Conecte-se à Inteligência Coletiva da{' '}
+            <span className="text-primary">Melhor Rede</span> de{' '}
+            <span className="text-brand-secondary">Mulheres Empreendedoras</span> e acelere seu crescimento.
           </h1>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Planos de associação, cursos exclusivos e um diretório completo de negócios
