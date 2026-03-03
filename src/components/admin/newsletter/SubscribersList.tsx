@@ -31,7 +31,7 @@ export function SubscribersList() {
       const result = await syncMutation.mutateAsync();
       toast({
         title: 'Sincronização concluída',
-        description: `${result.synced} contatos sincronizados, ${result.failed} falhas.`,
+        description: `${result.collected || 0} emails coletados das fontes do portal. ${result.synced} contatos enviados ao Mailrelay, ${result.failed} falhas. ${result.remaining || 0} pendentes.`,
       });
     } catch (error: any) {
       toast({ title: 'Erro na sincronização', description: error.message, variant: 'destructive' });

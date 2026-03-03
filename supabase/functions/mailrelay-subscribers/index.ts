@@ -135,20 +135,94 @@ async function createGroup(name: string, description?: string) {
   return await mailrelayRequest('/groups', 'POST', { name, description });
 }
 
-async function syncSubscribersFromSupabase(supabase: any) {
+async function collectEmailsFromAllSources(supabase: any) {
+  console.log('Collecting emails from all portal sources...');
+  let collected = 0;
+
+  // 1. Profiles (registered users)
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('email, full_name')
+    .not('email', 'is', null);
+
+  for (const p of profiles || []) {
+    if (!p.email) continue;
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .upsert({
+        email: p.email.toLowerCase().trim(),
+        name: p.full_name || null,
+        active: true,
+        origin: 'portal_profile',
+      }, { onConflict: 'email', ignoreDuplicates: true });
+    if (!error) collected++;
+  }
+
+  // 2. Event registrations
+  const { data: eventRegs } = await supabase
+    .from('event_registrations')
+    .select('email, name')
+    .not('email', 'is', null);
+
+  for (const er of eventRegs || []) {
+    if (!er.email) continue;
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .upsert({
+        email: er.email.toLowerCase().trim(),
+        name: er.name || null,
+        active: true,
+        origin: 'event_registration',
+      }, { onConflict: 'email', ignoreDuplicates: true });
+    if (!error) collected++;
+  }
+
+  // 3. CRM Leads
+  const { data: leads } = await supabase
+    .from('crm_leads')
+    .select('email, name')
+    .not('email', 'is', null);
+
+  for (const lead of leads || []) {
+    if (!lead.email) continue;
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .upsert({
+        email: lead.email.toLowerCase().trim(),
+        name: lead.name || null,
+        active: true,
+        origin: 'crm_lead',
+      }, { onConflict: 'email', ignoreDuplicates: true });
+    if (!error) collected++;
+  }
+
+  console.log(`Collected emails from all sources. Upsert attempts: ${collected}`);
+  return collected;
+}
+
+async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
   console.log('Starting sync from Supabase to Mailrelay...');
+
+  // Step 1: Collect emails from all portal sources into newsletter_subscribers
+  let collectedCount = 0;
+  if (collectFirst) {
+    collectedCount = await collectEmailsFromAllSources(supabase);
+    console.log(`Collected ${collectedCount} email upsert attempts from portal sources.`);
+  }
   
-  // Buscar assinantes locais que precisam ser sincronizados (limite de 50 por execução)
+  // Step 2: Sync newsletter_subscribers where synced_at IS NULL to Mailrelay
   const { data: localSubscribers, error } = await supabase
     .from('newsletter_subscribers')
     .select('*')
     .eq('active', true)
     .is('synced_at', null)
-    .limit(50);
+    .limit(100);
   
   if (error) throw error;
+
+  console.log(`Found ${localSubscribers?.length || 0} pending subscribers to sync to Mailrelay.`);
   
-  const results = { synced: 0, failed: 0, errors: [] as string[], remaining: 0 };
+  const results = { synced: 0, failed: 0, errors: [] as string[], remaining: 0, collected: collectedCount };
   
   for (const subscriber of localSubscribers || []) {
     try {
@@ -205,7 +279,7 @@ async function syncSubscribersFromSupabase(supabase: any) {
     .eq('active', true)
     .is('synced_at', null);
   
-  results.remaining = (count || 0) - results.synced;
+  results.remaining = (count || 0);
   
   // Log da sincronização
   await supabase.from('mailrelay_sync_log').insert({
@@ -213,7 +287,7 @@ async function syncSubscribersFromSupabase(supabase: any) {
     entity_type: 'subscriber',
     operation: 'bulk_sync',
     status: results.failed > 0 ? 'partial' : 'success',
-    request_data: { total: localSubscribers?.length, synced: results.synced, failed: results.failed },
+    request_data: { total: localSubscribers?.length, synced: results.synced, failed: results.failed, collected: collectedCount },
     response_data: results,
     processed_at: new Date().toISOString(),
   });
