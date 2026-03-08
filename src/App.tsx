@@ -97,6 +97,7 @@ import ConectaEstatisticas from '@/pages/conecta/ConectaEstatisticas';
 import ConectaConvites from '@/pages/conecta/ConectaConvites';
 import ConectaConteudos from '@/pages/conecta/ConectaConteudos';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
+import AdminConecta from '@/pages/admin/AdminConecta';
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
@@ -443,7 +444,7 @@ function AppContent() {
           <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaConteudos /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
-          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><ConectaPlaceholder title="Admin CONECTA+" /></ProtectedRoute>} />
+          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><AdminConecta /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
