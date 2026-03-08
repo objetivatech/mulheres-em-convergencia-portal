@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { SocioeconomicForm } from '@/components/user/SocioeconomicForm';
+import { ProfileEditForm } from '@/components/user/ProfileEditForm';
 import {
   LayoutDashboard,
   User,
@@ -249,27 +250,7 @@ export const UserDashboard = () => {
 
               {/* ====== MEUS DADOS ====== */}
               <TabsContent value="meus-dados" className="mt-6">
-                <div className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Informações Pessoais</CardTitle>
-                      <CardDescription>Gerencie suas informações básicas, endereços e contatos</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <InfoItem label="Nome" value={profile?.full_name} />
-                        <InfoItem label="Email" value={user.email} />
-                        <InfoItem label="CPF" value={profile?.cpf} />
-                        <InfoItem label="Telefone" value={profile?.phone} />
-                        <InfoItem label="Cidade" value={profile?.city} />
-                        <InfoItem label="Estado" value={profile?.state} />
-                      </div>
-                      <Button variant="outline" asChild>
-                        <Link to="/configuracoes/dados-pessoais">Editar Dados Pessoais</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
+                <ProfileEditForm profile={profile} onProfileUpdated={loadUserData} />
               </TabsContent>
 
               {/* ====== SOCIOECONÔMICO ====== */}

@@ -1,125 +1,126 @@
 
+# Plano: CONECTA+ - Ambiente de Networking Integrado ao Portal MeC
 
-# Plano: Unificação de Dados do Perfil e Integração Cross-Module
+## Status de Implementação
 
-## Diagnóstico: Silos de Dados Identificados
+### ✅ Etapa 1: Banco de Dados (CONCLUÍDA)
+- 15 tabelas criadas com prefixo `conecta_`
+- Enums: `conecta_role`, `conecta_rank`
+- RLS policies para todas as tabelas
+- Funções RPC: pontuação, ranking, convites, feed
+- Triggers automáticos para feed + pontos
+- Índices de performance
 
-Existem **5 locais** onde dados semelhantes são armazenados de forma independente:
+### ✅ Etapa 2: Layout e Navegação (CONCLUÍDA)
+- `ConectaLayout` com sidebar + header
+- `ConectaSidebar` com menu por nível de acesso
+- `ConectaHeader` com badge de nível
+- `useConectaAccess` hook para controle de acesso
+- Rotas `/conecta/*` registradas no App.tsx
+- Link "CONECTA+" no menu do usuário (Header)
+- Dashboard básico com cards e ações rápidas
+- Páginas placeholder para todos os módulos
 
-```text
-profiles          → avatar_url, bio, public_bio, city, state, phone, linkedin_url, instagram_url, website_url
-conecta_profiles  → bio, phone, linkedin_url, instagram_url, website_url, company, position, birthday
-ambassadors       → public_photo_url, public_bio, public_city, public_state, public_instagram_url
-businesses        → nome, setor, categoria (dados do negócio)
-user_socioeconomic_data → city, state, neighborhood, has_business, business_sector, business_formalization
-user_addresses    → city, state, neighborhood
-```
-
-Cada módulo pede dados que já existem em outro lugar. Isso causa inconsistências e retrabalho para a usuária.
-
----
-
-## Estratégia: `profiles` como Fonte Única de Verdade
-
-A tabela `profiles` já possui `avatar_url`, `bio`, `public_bio`, redes sociais. O plano é:
-1. **Dados pessoais centrais** (foto, bio, contato, redes) vivem em `profiles` e são **lidos** pelos outros módulos.
-2. **Dados específicos de módulo** (pontos Conecta+, tier embaixadora, setor do negócio) permanecem nas tabelas respectivas.
-3. **Dados derivados** (tem negócio? cidade?) são calculados automaticamente a partir das tabelas existentes, não perguntados novamente.
-
----
-
-## Etapa 1: Perfil Completo na aba "Meus Dados"
-
-### O que muda
-A aba "Meus Dados" no UserDashboard passa de exibição somente-leitura para um **formulário editável completo**:
-
-- **Upload de avatar** direto no painel (usando R2 Storage, mesma lógica do ConectaPerfil)
-- **Mini-bio** (campo `bio` no profiles) editável inline
-- **Bio pública** (`public_bio`) para uso em embaixadora/Conecta+
-- **Redes sociais**: LinkedIn, Instagram, Website (campos já existentes em `profiles`)
-- **Telefone, cidade, estado** editáveis
-
-### Componente novo: `ProfileEditForm`
-- Upload de foto com preview
-- Campos de bio (privada e pública)
-- Redes sociais
-- Dados de contato
-- Salva tudo em `profiles`
-
----
-
-## Etapa 2: Auto-preenchimento do Formulário Socioeconômico
-
-### Dados derivados automaticamente
-O `SocioeconomicForm` passa a consultar outras tabelas ao carregar:
-
-| Campo no formulário | Fonte automática | Comportamento |
-|---|---|---|
-| `has_business` | `businesses` (owner_id = user.id) | Se existe negócio, marca true e desabilita o checkbox |
-| `business_sector` | `businesses.category` / `businesses.description` | Pré-preenchido se tem negócio |
-| `business_formalization` | `businesses` (se tiver campo equivalente) | Pré-preenchido |
-| `city`, `state` | `profiles.city` / `profiles.state` | Pré-preenchido (editável para diferenças) |
-| `neighborhood` | `user_addresses` (primary residential) | Pré-preenchido |
-
-### Indicadores visuais
-- Campos derivados mostram um badge "Dados do Diretório" ou "Dados do Perfil"
-- Usuária pode sobrescrever se necessário (o dado socioeconômico pode divergir do perfil comercial)
+### ✅ Etapa 3: Dashboard + Perfil + Membros (CONCLUÍDA)
+- Dashboard completo com stats reais, feed de atividades em tempo real, próximos encontros, sistema de pontuação com ranks
+- Perfil CONECTA+ com edição de empresa, cargo, bio, redes sociais, banner, aniversário
+- Diretório de membros com busca, filtros por grupo/rank, modal de perfil completo
+- Componentes: RankBadge, ConectaActivityFeed, ScoringRulesCard
+- Hooks: useConectaStats, useConectaActivityFeed, useConectaMembers, useConectaProfile
+### ✅ Etapa 4: Encontros + Reuniões 1-a-1 + Presenças (CONCLUÍDA)
+- Encontros: lista com próximos/anteriores, confirmação de presença, criação (admin), lista de confirmadas
+- Reuniões 1-a-1: registro com tipo membro/convidada, seleção de membro, upload de foto com compressão, notas
+- Hooks: useConectaMeetings, useConectaOneOnOnes
+- Componentes: ConectaMemberSelect, ConectaEncontros, ConectaReunioes
+### ✅ Etapa 5: Depoimentos + Negócios + Indicações (CONCLUÍDA)
+- Depoimentos: enviar/receber entre membros, listagem com abas
+- Negócios: registro com valor, cliente, membro indicador
+- Indicações: compartilhar leads com dados de contato
+### ✅ Etapa 6: Ranking + Estatísticas + Pontuação (CONCLUÍDA)
+- Ranking mensal com pódio Top 3, filtro por mês, destaque do usuário
+- Estatísticas pessoais com gráficos de barra e pizza (recharts)
+### ✅ Etapa 7: Convites + Conteúdos (CONCLUÍDA)
+- Convites: criação com código único, listagem com status, copiar código
+- Conteúdos: biblioteca com tipos (vídeo, documento, artigo, link), thumbnails
+### ✅ Etapa 8: Painel Admin CONECTA+ (CONCLUÍDA)
+- Dashboard admin com visão geral (membros, encontros, negócios, indicações, convites)
+- Listagem de grupos com contagem de membros
+- Feed de atividades recentes da comunidade
+### ✅ Etapa 9: Documentação (CONCLUÍDA)
+- conecta-overview.md: visão geral completa
+- conecta-database.md: esquema detalhado do banco
+- conecta-access-levels.md: níveis de acesso e permissões
 
 ---
 
-## Etapa 3: Sincronização Cross-Module (profiles → módulos)
+# Plano: Integração de Roles, Newsletter Opt-in e Remodelação do Meu Painel
 
-### Conecta+ lê do profiles
-Alterar `ConectaPerfil.tsx` e `useConectaProfile` para:
-- **Avatar**: usar `profiles.avatar_url` como fallback (conecta_profiles não tem avatar_url próprio, já usa via join)
-- **Bio**: ao criar o perfil Conecta+, copiar `profiles.bio` como valor inicial
-- **Redes sociais**: ao editar no Conecta+, salvar **também** em `profiles` (sincronização bidirecional)
+## Status de Implementação
 
-### Embaixadora lê do profiles
-Alterar `AdminPublicPageManager` para:
-- `public_photo_url` → fallback para `profiles.avatar_url`
-- `public_bio` → fallback para `profiles.public_bio`
-- `public_city` → fallback para `profiles.city`
+### ✅ Etapa 1: Triggers de Atribuição Automática de Roles (CONCLUÍDA)
+- Trigger `assign_default_role`: atribui `community_member` a todo novo usuário (via profiles INSERT)
+- Trigger `sync_newsletter_subscriber_role`: sincroniza role `subscriber` com `newsletter_subscribed`
+- Migração retroativa: todos usuários existentes receberam `community_member` e `subscriber` conforme aplicável
+- RPC `get_user_roles(_user_id)`: retorna array de roles para uso no frontend
 
-### Trigger de sincronização (banco)
-Criar trigger `sync_profile_to_modules` que, ao atualizar `profiles.avatar_url` ou `profiles.bio`:
-- Atualiza `conecta_profiles.bio` se existir registro
-- Mantém `ambassadors.public_*` inalterado (dados públicos são curados pelo admin)
+### ✅ Etapa 6: Validação de Consistência de Roles (CONCLUÍDA)
+- Trigger `validate_role_consistency`: garante `community_member` ao inserir roles dependentes
+- Impede remoção de `community_member` se existem roles dependentes (business_owner, ambassador, student, blog_editor, admin)
 
----
+### ✅ Etapa 2: Unificar useRoles/useAuth/useConectaAccess (CONCLUÍDA)
+- Novo hook centralizado `useUserRoles.ts` com cache React Query (5 min) usando RPC `get_user_roles`
+- `useRoles.hasRole()` agora usa `useUserRoles` internamente (antes só verificava admin/blog_editor)
+- `useConectaAccess` usa `has_role('business_owner')` ao invés de `user_subscriptions` para determinar nível "membro"
 
-## Etapa 4: Dados Socioeconômicos → CRM Impacto Social
+### ✅ Etapa 3: Newsletter Opt-in nos Formulários de Cadastro (CONCLUÍDA)
+- Checkbox "Desejo receber a newsletter" no formulário de cadastro (Auth.tsx), pré-marcado
+- `signUp` atualiza `profiles.newsletter_subscribed` que dispara trigger para adicionar role `subscriber`
 
-### Mecanismo
-Criar trigger `sync_socioeconomic_to_impact` que, ao inserir/atualizar `user_socioeconomic_data`:
-- Gera/atualiza registros em `social_impact_metrics` com métricas agregadas:
-  - **demographic**: JSON com `{ race_ethnicity, gender_identity, education_level, age_range }`
-  - **region**: `city + state`
-  - **metric_name**: ex: "perfil_socioeconomico_preenchido"
-  - **metric_type**: "demographic_profile"
+### ✅ Etapa 4: Tabela de Dados Socioeconômicos (CONCLUÍDA)
+- Tabela `user_socioeconomic_data` com 20+ campos: raça/etnia, gênero, educação, renda, moradia, empreendedorismo, engajamento
+- RLS: usuário edita próprios dados, admin visualiza todos
+- Trigger `handle_updated_at` para atualização automática
 
-### Dashboard CRM
-O `SocialImpactDashboard` já lê `social_impact_metrics`. Com os novos dados, poderá exibir:
-- Distribuição por raça/etnia, gênero, faixa de renda
-- Mapa de cobertura geográfica
-- Perfil demográfico da base
+### ✅ Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo (CONCLUÍDA)
+- Header com avatar, nome, badges de roles ativas
+- Abas condicionais: Visão Geral, Meus Dados, Socioeconômico, Meu Negócio, Embaixadora, CONECTA+, Academy, Blog, Assinatura
+- Formulário socioeconômico integrado (SocioeconomicForm.tsx)
+- Cards de acesso rápido na visão geral por role
 
----
-
-## Etapa 5: Documentação
-
-- Criar `docs/_active/04-usuarios/unificacao-perfil-dados.md` documentando a hierarquia de dados e regras de sincronização.
-- Atualizar documentação existente do CRM com os novos indicadores de impacto social.
+### ✅ Etapa 7: Documentação (CONCLUÍDA)
+- `docs/_active/04-usuarios/matriz-roles-permissoes.md` com tabela completa de roles × acessos
+- Regras de consistência, atribuição automática e verificação no frontend documentadas
 
 ---
 
-## Resumo Técnico
+## Arquitetura Original (CONECTA+)
 
-| Etapa | Escopo | Tipo |
-|---|---|---|
-| 1 | ProfileEditForm com avatar + bio + redes no Meu Painel | Frontend |
-| 2 | SocioeconomicForm auto-preenchido via businesses/profiles/addresses | Frontend |
-| 3 | Sincronização profiles ↔ conecta_profiles / ambassadors | Frontend + Trigger DB |
-| 4 | Trigger socioeconomic → social_impact_metrics | Trigger DB |
-| 5 | Documentação | Docs |
+### Tabelas do banco (prefixo `conecta_`):
+- conecta_profiles, conecta_teams, conecta_team_members
+- conecta_meetings, conecta_attendances, conecta_one_on_ones
+- conecta_testimonials, conecta_business_deals, conecta_referrals
+- conecta_invitations, conecta_contents, conecta_activity_feed
+- conecta_monthly_points, conecta_points_history
 
+### Níveis de Acesso CONECTA+:
+- **Admin**: role `admin` na tabela `user_roles`
+- **Membro**: role `business_owner` (Associada)
+- **Convidado**: Qualquer usuário logado (community_member)
+
+### Rotas:
+- `/conecta` - Dashboard
+- `/conecta/perfil|membros|grupos|encontros|reunioes|depoimentos|negocios|indicacoes|ranking|estatisticas|convites|conteudos`
+- `/admin/conecta` - Painel administrativo
+
+## Matriz de Roles × Acessos
+
+| Funcionalidade | community_member | subscriber | ambassador | business_owner | student | admin |
+|---|---|---|---|---|---|---|
+| Portal básico | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Newsletter | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Painel Embaixadora | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Diretório de Negócios | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| CONECTA+ (membro) | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| CONECTA+ (convidado) | ✅ | ✅ | ✅ | - | ✅ | - |
+| MeC Academy | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Admin completo | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
