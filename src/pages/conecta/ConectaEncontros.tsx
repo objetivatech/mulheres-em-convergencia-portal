@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaMeetings, useConectaMeetingAttendees } from '@/hooks/useConectaMeetings';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,9 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2 } from 'lucide-react';
-import { format, isPast, isToday, isFuture } from 'date-fns';
+import MeetingGuestsList from '@/components/conecta/MeetingGuestsList';
+import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2, Globe, Ticket } from 'lucide-react';
+import { format, isPast, isToday, isFuture, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 function AttendeesList({ meetingId, canRemove, onRemove }: { meetingId: string; canRemove?: boolean; onRemove?: (userId: string) => void }) {
   const { data: attendees, isLoading } = useConectaMeetingAttendees(meetingId);
@@ -64,11 +68,66 @@ function AttendeesList({ meetingId, canRemove, onRemove }: { meetingId: string; 
   );
 }
 
+interface PortalEvent {
+  id: string;
+  title: string;
+  date_start: string;
+  date_end: string | null;
+  location: string | null;
+  location_url: string | null;
+  format: string;
+  type: string;
+  status: string;
+  image_url: string | null;
+  description: string | null;
+  max_participants: number | null;
+  current_participants: number | null;
+  slug: string;
+  is_registered?: boolean;
+  registration_id?: string;
+}
+
+function useConectaEvents(userId?: string) {
+  return useQuery({
+    queryKey: ['conecta-synced-events', userId],
+    queryFn: async () => {
+      const { data: events, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('conecta_sync', true)
+        .eq('status', 'published')
+        .order('date_start', { ascending: true });
+      if (error) throw error;
+
+      // Check user registrations
+      let registrations: Record<string, string> = {};
+      if (userId) {
+        const { data: regs } = await supabase
+          .from('event_registrations')
+          .select('id, event_id')
+          .eq('user_id', userId)
+          .in('event_id', events.map(e => e.id));
+        regs?.forEach(r => { registrations[r.event_id] = r.id; });
+      }
+
+      return events.map(e => ({
+        ...e,
+        is_registered: !!registrations[e.id],
+        registration_id: registrations[e.id] || undefined,
+      })) as PortalEvent[];
+    },
+    enabled: true,
+  });
+}
+
 export default function ConectaEncontros() {
   const { meetings, isLoading, toggleAttendance, removeAttendance, createMeeting, deleteMeeting } = useConectaMeetings();
-  const { isAdmin } = useConectaAccess();
+  const { user, isAdmin, isMemberOrAbove } = useConectaAccess();
+  const { data: portalEvents = [], isLoading: eventsLoading } = useConectaEvents(user?.id);
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<string | null>(null);
+  const [selectedGuestsMeeting, setSelectedGuestsMeeting] = useState<string | null>(null);
   const [formData, setFormData] = useState({ title: '', description: '', meeting_date: '', meeting_time: '', location: '' });
 
   const parseDate = (dateStr: string) => new Date(dateStr + 'T12:00:00');
@@ -80,8 +139,43 @@ export default function ConectaEncontros() {
     setFormData({ title: '', description: '', meeting_date: '', meeting_time: '', location: '' });
   };
 
+  // Register/unregister for portal events
+  const toggleEventRegistration = useMutation({
+    mutationFn: async ({ event, isRegistered, registrationId }: { event: PortalEvent; isRegistered: boolean; registrationId?: string }) => {
+      if (!user?.id) throw new Error('Não autenticada');
+
+      if (isRegistered && registrationId) {
+        const { error } = await supabase.from('event_registrations').delete().eq('id', registrationId);
+        if (error) throw error;
+      } else {
+        // Get user profile for pre-filling
+        const { data: profile } = await supabase.from('profiles').select('full_name, email, phone, cpf').eq('id', user.id).single();
+        if (!profile) throw new Error('Perfil não encontrado');
+
+        const { error } = await supabase.from('event_registrations').insert({
+          event_id: event.id,
+          user_id: user.id,
+          full_name: profile.full_name,
+          email: profile.email || '',
+          phone: profile.phone || null,
+          cpf: profile.cpf || null,
+          status: 'confirmed',
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['conecta-synced-events'] });
+      toast.success(vars.isRegistered ? 'Inscrição cancelada' : 'Inscrição confirmada!');
+    },
+    onError: () => toast.error('Erro ao atualizar inscrição'),
+  });
+
   const upcomingMeetings = meetings.filter(m => isFuture(parseDate(m.meeting_date)) || isToday(parseDate(m.meeting_date)));
   const pastMeetings = meetings.filter(m => isPast(parseDate(m.meeting_date)) && !isToday(parseDate(m.meeting_date)));
+
+  const upcomingEvents = portalEvents.filter(e => isFuture(parseISO(e.date_start)) || isToday(parseISO(e.date_start)));
+  const pastEvents = portalEvents.filter(e => isPast(parseISO(e.date_start)) && !isToday(parseISO(e.date_start)));
 
   const MeetingCard = ({ meeting }: { meeting: typeof meetings[0] }) => {
     const isPastMeeting = isPast(parseDate(meeting.meeting_date)) && !isToday(parseDate(meeting.meeting_date));
@@ -139,6 +233,69 @@ export default function ConectaEncontros() {
           {selectedMeeting === meeting.id && (
             <AttendeesList meetingId={meeting.id} canRemove={isAdmin} onRemove={(userId) => removeAttendance.mutate({ meetingId: meeting.id, userId })} />
           )}
+          {/* Guests list - visible only to members+ */}
+          {isMemberOrAbove && (
+            <MeetingGuestsList meetingId={meeting.id} meetingTitle={meeting.title} />
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const EventCard = ({ event }: { event: PortalEvent }) => {
+    const isPastEvent = isPast(parseISO(event.date_start)) && !isToday(parseISO(event.date_start));
+
+    return (
+      <Card className={`transition-all ${isPastEvent ? 'opacity-70' : 'hover:shadow-md'}`}>
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            {event.image_url && (
+              <img src={event.image_url} alt={event.title} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <h3 className="font-semibold">{event.title}</h3>
+                <Badge variant="secondary" className="text-xs">
+                  <Globe className="w-3 h-3 mr-1" />Portal
+                </Badge>
+                <Badge variant="outline" className="text-xs">{event.type}</Badge>
+                {isToday(parseISO(event.date_start)) && <Badge>Hoje</Badge>}
+              </div>
+              {event.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{event.description}</p>}
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  {format(parseISO(event.date_start), "EEEE, dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                </div>
+                {event.location && (
+                  <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{event.location}</div>
+                )}
+                <div className="flex items-center gap-1"><Ticket className="w-4 h-4" />{event.format}</div>
+                {event.max_participants && (
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    {event.current_participants || 0}/{event.max_participants}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="shrink-0">
+              {!isPastEvent && isMemberOrAbove && (
+                <Button
+                  variant={event.is_registered ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleEventRegistration.mutate({
+                    event,
+                    isRegistered: event.is_registered || false,
+                    registrationId: event.registration_id,
+                  })}
+                  disabled={toggleEventRegistration.isPending}
+                >
+                  {event.is_registered ? <><Check className="w-4 h-4 mr-1" />Inscrita</> : 'Inscrever-se'}
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -192,26 +349,37 @@ export default function ConectaEncontros() {
           )}
         </div>
 
-        {isLoading ? (
+        {isLoading || eventsLoading ? (
           <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : (
           <>
+            {/* Upcoming section */}
             <div>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" />Próximos Encontros ({upcomingMeetings.length})
+                <Calendar className="w-5 h-5 text-primary" />Próximos ({upcomingMeetings.length + upcomingEvents.length})
               </h2>
-              {upcomingMeetings.length === 0 ? (
+              {upcomingMeetings.length === 0 && upcomingEvents.length === 0 ? (
                 <Card><CardContent className="py-12 text-center text-muted-foreground">
                   <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>Nenhum encontro agendado</p>
                 </CardContent></Card>
               ) : (
-                <div className="space-y-4">{upcomingMeetings.map(m => <MeetingCard key={m.id} meeting={m} />)}</div>
+                <div className="space-y-4">
+                  {upcomingEvents.map(e => <EventCard key={`event-${e.id}`} event={e} />)}
+                  {upcomingMeetings.map(m => <MeetingCard key={m.id} meeting={m} />)}
+                </div>
               )}
             </div>
-            {pastMeetings.length > 0 && (
+
+            {/* Past section */}
+            {(pastMeetings.length > 0 || pastEvents.length > 0) && (
               <div>
-                <h2 className="text-lg font-semibold mb-4 text-muted-foreground">Encontros Anteriores ({pastMeetings.length})</h2>
-                <div className="space-y-4">{pastMeetings.slice(0, 5).map(m => <MeetingCard key={m.id} meeting={m} />)}</div>
+                <h2 className="text-lg font-semibold mb-4 text-muted-foreground">
+                  Anteriores ({pastMeetings.length + pastEvents.length})
+                </h2>
+                <div className="space-y-4">
+                  {pastMeetings.slice(0, 5).map(m => <MeetingCard key={m.id} meeting={m} />)}
+                  {pastEvents.slice(0, 5).map(e => <EventCard key={`event-${e.id}`} event={e} />)}
+                </div>
               </div>
             )}
           </>

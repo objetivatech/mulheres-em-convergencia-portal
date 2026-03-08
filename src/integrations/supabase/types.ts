@@ -2541,58 +2541,76 @@ export type Database = {
       }
       conecta_profiles: {
         Row: {
+          area_of_expertise: string | null
           banner_url: string | null
           bio: string | null
           birthday: string | null
           company: string | null
           conecta_role: Database["public"]["Enums"]["conecta_role"]
+          contact_email: string | null
           created_at: string
           id: string
           instagram_url: string | null
           is_active: boolean
           linkedin_url: string | null
           phone: string | null
+          pitch_how_to_refer: string | null
+          pitch_ideal_client: string | null
+          pitch_what_i_do: string | null
           points: number
           position: string | null
           rank: Database["public"]["Enums"]["conecta_rank"]
+          skills_tags: string[] | null
           slug: string | null
           updated_at: string
           website_url: string | null
         }
         Insert: {
+          area_of_expertise?: string | null
           banner_url?: string | null
           bio?: string | null
           birthday?: string | null
           company?: string | null
           conecta_role?: Database["public"]["Enums"]["conecta_role"]
+          contact_email?: string | null
           created_at?: string
           id: string
           instagram_url?: string | null
           is_active?: boolean
           linkedin_url?: string | null
           phone?: string | null
+          pitch_how_to_refer?: string | null
+          pitch_ideal_client?: string | null
+          pitch_what_i_do?: string | null
           points?: number
           position?: string | null
           rank?: Database["public"]["Enums"]["conecta_rank"]
+          skills_tags?: string[] | null
           slug?: string | null
           updated_at?: string
           website_url?: string | null
         }
         Update: {
+          area_of_expertise?: string | null
           banner_url?: string | null
           bio?: string | null
           birthday?: string | null
           company?: string | null
           conecta_role?: Database["public"]["Enums"]["conecta_role"]
+          contact_email?: string | null
           created_at?: string
           id?: string
           instagram_url?: string | null
           is_active?: boolean
           linkedin_url?: string | null
           phone?: string | null
+          pitch_how_to_refer?: string | null
+          pitch_ideal_client?: string | null
+          pitch_what_i_do?: string | null
           points?: number
           position?: string | null
           rank?: Database["public"]["Enums"]["conecta_rank"]
+          skills_tags?: string[] | null
           slug?: string | null
           updated_at?: string
           website_url?: string | null
@@ -3854,6 +3872,7 @@ export type Database = {
       }
       events: {
         Row: {
+          conecta_sync: boolean
           cost_center_id: string | null
           created_at: string
           created_by: string | null
@@ -3881,6 +3900,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          conecta_sync?: boolean
           cost_center_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -3908,6 +3928,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          conecta_sync?: boolean
           cost_center_id?: string | null
           created_at?: string
           created_by?: string | null

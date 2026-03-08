@@ -5,47 +5,32 @@
 
 ### ✅ Rodada 1: Correções Urgentes + Quick Wins (CONCLUÍDA)
 
-#### Etapa 1: Correções Urgentes
-- **Fix do hook de convites**: `useConectaInvitations.ts` corrigido para usar `name`/`email` (campos reais da tabela) em vez de `guest_name`/`guest_email`
-- **ConectaConvites.tsx**: atualizado para exibir `inv.name`/`inv.email`
-- **Migração de uploads para R2**:
-  - `ConectaPerfil.tsx`: banner upload migrado de `supabase.storage` para `useR2Storage` (pasta `conecta/banners`)
-  - `ConectaReunioes.tsx`: foto 1-a-1 migrado para `useR2Storage` (pasta `conecta/one-on-one`)
+- Fix do hook de convites (`name`/`email` corrigidos)
+- Uploads migrados para R2 (banner + fotos 1-a-1)
+- Edge Function `send-conecta-email` com 5 tipos de email via Mailrelay
+- Temperatura nas indicações (cold/warm/hot com seletor visual)
+- Coluna `meeting_id` em `conecta_invitations`
 
-#### Etapa 2: Sistema de Emails via Mailrelay
-- **Edge Function `send-conecta-email`** criada com 5 ações:
-  - `invitation` — email ao convidado com código
-  - `new_referral` — email ao membro destinatário com temperatura do lead
-  - `new_testimonial` — email ao membro que recebeu depoimento
-  - `deal_from_referral` — email a quem indicou com valor do negócio
-  - `guest_registered` — email ao membro quando convidado se cadastra
-- Templates com identidade visual MeC (cores `#7c3aed`, logo, gradientes)
-- Hooks `useConectaInvitations`, `useConectaReferrals`, `useConectaTestimonials`, `useConectaBusinessDeals` atualizados para enviar emails
-
-#### Etapa 7: Temperatura nas Indicações
-- Coluna `temperature` adicionada em `conecta_referrals` (cold/warm/hot, default 'warm')
-- Coluna `meeting_id` adicionada em `conecta_invitations` (FK → conecta_meetings)
-- Seletor visual de temperatura com 3 botões coloridos (❄️ Frio/🔥 Morno/🔥🔥 Quente)
-- Badge colorido de temperatura exibido em cada indicação
-- Hook `useConectaReferrals` aceita e persiste o campo `temperature`
-
----
-
-### 🔲 Rodada 2: Funcionalidades Core (PENDENTE)
+### ✅ Rodada 2: Funcionalidades Core (CONCLUÍDA)
 
 #### Etapa 3: Lista de Convidados por Encontro
-- Componente `MeetingGuestsList` com convidados agrupados por encontro
-- Acesso restrito para membros/facilitadores/admin
-- Nome do convidado como link para perfil público
+- Hook `useMeetingGuests` busca convites vinculados a cada encontro
+- Componente `MeetingGuestsList` com lista expansível de convidadas
+- Visível apenas para membros/facilitadores/admin (`isMemberOrAbove`)
+- Nome do convidado como link para perfil se cadastrado
 
 #### Etapa 4: Sincronização Encontros ↔ Eventos do Portal
-- Campo `conecta_sync` na tabela `events`
-- Listar eventos do portal na interface Conecta+
-- Inscrição/desinscrição direta com dados pré-preenchidos
+- Coluna `conecta_sync` (boolean) adicionada à tabela `events`
+- Eventos marcados com `conecta_sync=true` aparecem na timeline do Conecta+
+- Inscrição/desinscrição direta com dados pré-preenchidos do perfil
+- Badge "Portal" distingue eventos sincronizados dos encontros manuais
 
 #### Etapa 5: Perfil Enriquecido com Pitch
-- Novos campos: area_of_expertise, skills_tags, pitch_what_i_do, pitch_ideal_client, pitch_how_to_refer, contact_email
-- Edge Function `generate-conecta-pitch` com IA
+- Novos campos: `area_of_expertise`, `skills_tags`, `pitch_what_i_do`, `pitch_ideal_client`, `pitch_how_to_refer`, `contact_email`
+- Formulário organizado em 3 seções: Info Básica, Contato & Redes, Elevator Pitch
+- Sistema de tags com adição/remoção dinâmica
+- Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
+- Visualização rica do pitch no modo leitura
 
 ---
 
@@ -67,21 +52,20 @@
 
 ---
 
-## Arquitetura Original (CONECTA+)
+## Arquitetura CONECTA+
 
-### Tabelas do banco (prefixo `conecta_`):
+### Tabelas (prefixo `conecta_`):
 - conecta_profiles, conecta_teams, conecta_team_members
 - conecta_meetings, conecta_attendances, conecta_one_on_ones
 - conecta_testimonials, conecta_business_deals, conecta_referrals
 - conecta_invitations, conecta_contents, conecta_activity_feed
 - conecta_monthly_points, conecta_points_history
 
-### Níveis de Acesso CONECTA+:
-- **Admin**: role `admin` na tabela `user_roles`
-- **Membro**: role `business_owner` (Associada)
-- **Convidado**: Qualquer usuário logado (community_member)
+### Edge Functions:
+- `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
+- `generate-conecta-pitch` — Gerador de pitch com IA (Perplexity)
 
-### Rotas:
-- `/conecta` - Dashboard
-- `/conecta/perfil|membros|grupos|encontros|reunioes|depoimentos|negocios|indicacoes|ranking|estatisticas|convites|conteudos`
-- `/admin/conecta` - Painel administrativo
+### Níveis de Acesso:
+- **Admin**: role `admin`
+- **Membro**: role `business_owner`
+- **Convidado**: `community_member`
