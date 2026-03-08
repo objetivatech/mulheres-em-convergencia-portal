@@ -2102,6 +2102,657 @@ export type Database = {
           },
         ]
       }
+      conecta_activity_feed: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_activity_feed_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_attendances: {
+        Row: {
+          id: string
+          meeting_id: string
+          registered_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          meeting_id: string
+          registered_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          meeting_id?: string
+          registered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_attendances_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_attendances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_business_deals: {
+        Row: {
+          client_name: string | null
+          closed_by_user_id: string
+          created_at: string
+          deal_date: string
+          description: string | null
+          id: string
+          referred_by_user_id: string | null
+          value: number
+        }
+        Insert: {
+          client_name?: string | null
+          closed_by_user_id: string
+          created_at?: string
+          deal_date: string
+          description?: string | null
+          id?: string
+          referred_by_user_id?: string | null
+          value?: number
+        }
+        Update: {
+          client_name?: string | null
+          closed_by_user_id?: string
+          created_at?: string
+          deal_date?: string
+          description?: string | null
+          id?: string
+          referred_by_user_id?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_business_deals_closed_by_user_id_fkey"
+            columns: ["closed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_business_deals_referred_by_user_id_fkey"
+            columns: ["referred_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_contents: {
+        Row: {
+          active: boolean
+          content_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          active?: boolean
+          content_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          active?: boolean
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_contents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          code: string
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invited_by: string
+          metadata: Json | null
+          name: string | null
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          code: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by: string
+          metadata?: Json | null
+          name?: string | null
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          code?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          metadata?: Json | null
+          name?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_meetings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_time: string | null
+          team_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_time?: string | null
+          team_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_time?: string | null
+          team_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_meetings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_monthly_points: {
+        Row: {
+          created_at: string | null
+          id: string
+          points: number
+          rank: Database["public"]["Enums"]["conecta_rank"]
+          team_id: string
+          updated_at: string | null
+          user_id: string
+          year_month: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points?: number
+          rank?: Database["public"]["Enums"]["conecta_rank"]
+          team_id: string
+          updated_at?: string | null
+          user_id: string
+          year_month: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points?: number
+          rank?: Database["public"]["Enums"]["conecta_rank"]
+          team_id?: string
+          updated_at?: string | null
+          user_id?: string
+          year_month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_monthly_points_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_monthly_points_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_one_on_ones: {
+        Row: {
+          created_at: string
+          guest_company: string | null
+          guest_name: string | null
+          id: string
+          meeting_date: string
+          meeting_type: string
+          notes: string | null
+          partner_id: string | null
+          photo_url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guest_company?: string | null
+          guest_name?: string | null
+          id?: string
+          meeting_date: string
+          meeting_type: string
+          notes?: string | null
+          partner_id?: string | null
+          photo_url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guest_company?: string | null
+          guest_name?: string | null
+          id?: string
+          meeting_date?: string
+          meeting_type?: string
+          notes?: string | null
+          partner_id?: string | null
+          photo_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_one_on_ones_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_one_on_ones_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_points_history: {
+        Row: {
+          created_at: string
+          id: string
+          points_change: number
+          reason: string | null
+          team_id: string | null
+          user_id: string
+          year_month: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_change: number
+          reason?: string | null
+          team_id?: string | null
+          user_id: string
+          year_month?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_change?: number
+          reason?: string | null
+          team_id?: string | null
+          user_id?: string
+          year_month?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_points_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_points_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_profiles: {
+        Row: {
+          banner_url: string | null
+          bio: string | null
+          birthday: string | null
+          company: string | null
+          conecta_role: Database["public"]["Enums"]["conecta_role"]
+          created_at: string
+          id: string
+          instagram_url: string | null
+          is_active: boolean
+          linkedin_url: string | null
+          phone: string | null
+          points: number
+          position: string | null
+          rank: Database["public"]["Enums"]["conecta_rank"]
+          slug: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          bio?: string | null
+          birthday?: string | null
+          company?: string | null
+          conecta_role?: Database["public"]["Enums"]["conecta_role"]
+          created_at?: string
+          id: string
+          instagram_url?: string | null
+          is_active?: boolean
+          linkedin_url?: string | null
+          phone?: string | null
+          points?: number
+          position?: string | null
+          rank?: Database["public"]["Enums"]["conecta_rank"]
+          slug?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          bio?: string | null
+          birthday?: string | null
+          company?: string | null
+          conecta_role?: Database["public"]["Enums"]["conecta_role"]
+          created_at?: string
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean
+          linkedin_url?: string | null
+          phone?: string | null
+          points?: number
+          position?: string | null
+          rank?: Database["public"]["Enums"]["conecta_rank"]
+          slug?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_referrals: {
+        Row: {
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          from_user_id: string
+          id: string
+          notes: string | null
+          to_user_id: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          from_user_id: string
+          id?: string
+          notes?: string | null
+          to_user_id: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          notes?: string | null
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_referrals_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_referrals_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_team_members: {
+        Row: {
+          id: string
+          is_facilitator: boolean
+          joined_at: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_facilitator?: boolean
+          joined_at?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_facilitator?: boolean
+          joined_at?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_teams: {
+        Row: {
+          active: boolean
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conecta_testimonials: {
+        Row: {
+          content: string
+          created_at: string
+          from_user_id: string
+          id: string
+          to_user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          from_user_id: string
+          id?: string
+          to_user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_testimonials_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_testimonials_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           admin_notes: string | null
@@ -4883,6 +5534,63 @@ export type Database = {
       cleanup_expired_email_tokens: { Args: never; Returns: undefined }
       cleanup_old_activity_logs: { Args: never; Returns: undefined }
       cleanup_security_logs: { Args: never; Returns: number }
+      conecta_accept_invitation: {
+        Args: { _code: string; _user_id: string }
+        Returns: Json
+      }
+      conecta_add_activity_feed: {
+        Args: {
+          _activity_type: string
+          _description?: string
+          _metadata?: Json
+          _reference_id?: string
+          _title: string
+          _user_id: string
+        }
+        Returns: string
+      }
+      conecta_are_same_team: {
+        Args: { _user_id1: string; _user_id2: string }
+        Returns: boolean
+      }
+      conecta_calculate_monthly_points: {
+        Args: { _team_id: string; _user_id: string; _year_month: string }
+        Returns: number
+      }
+      conecta_get_current_year_month: { Args: never; Returns: string }
+      conecta_get_monthly_ranking: {
+        Args: { _team_id?: string; _year_month?: string }
+        Returns: {
+          avatar_url: string
+          company: string
+          full_name: string
+          member_position: string
+          points: number
+          position_rank: number
+          rank: Database["public"]["Enums"]["conecta_rank"]
+          team_id: string
+          team_name: string
+          user_id: string
+        }[]
+      }
+      conecta_get_rank_from_points: {
+        Args: { _points: number }
+        Returns: Database["public"]["Enums"]["conecta_rank"]
+      }
+      conecta_get_year_month_from_date: { Args: { d: string }; Returns: string }
+      conecta_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      conecta_is_team_facilitator: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      conecta_update_all_user_points: {
+        Args: { _user_id: string; _year_month?: string }
+        Returns: undefined
+      }
+      conecta_update_monthly_points: {
+        Args: { _team_id: string; _user_id: string; _year_month?: string }
+        Returns: undefined
+      }
       cpf_exists: { Args: { cpf_to_check: string }; Returns: boolean }
       create_ambassador_referral: {
         Args: {
@@ -5512,6 +6220,8 @@ export type Database = {
         | "eventos"
         | "marketing"
       comment_status: "pending" | "approved" | "rejected"
+      conecta_rank: "iniciante" | "bronze" | "prata" | "ouro" | "diamante"
+      conecta_role: "admin" | "facilitadora" | "membro" | "convidado"
       post_status: "draft" | "published" | "archived" | "scheduled"
       subscription_type:
         | "newsletter"
@@ -5694,6 +6404,8 @@ export const Constants = {
         "marketing",
       ],
       comment_status: ["pending", "approved", "rejected"],
+      conecta_rank: ["iniciante", "bronze", "prata", "ouro", "diamante"],
+      conecta_role: ["admin", "facilitadora", "membro", "convidado"],
       post_status: ["draft", "published", "archived", "scheduled"],
       subscription_type: [
         "newsletter",
