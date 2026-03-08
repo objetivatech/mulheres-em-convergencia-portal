@@ -38,6 +38,7 @@ interface EventFormData {
   max_participants: number | null;
   instructor_name: string;
   status: string;
+  conecta_sync: boolean;
 }
 
 const getDefaultFormData = (): EventFormData => ({
@@ -54,6 +55,7 @@ const getDefaultFormData = (): EventFormData => ({
   max_participants: null,
   instructor_name: '',
   status: 'draft',
+  conecta_sync: false,
 });
 
 const eventToFormData = (event: Event): EventFormData => ({
