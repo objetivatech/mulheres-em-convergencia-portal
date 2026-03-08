@@ -56,7 +56,7 @@ export default function ConectaRanking() {
         {top3.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {top3.map((entry, idx) => (
-              <Card key={entry.user_id} className={`text-center ${idx === 0 ? 'border-yellow-500 border-2 sm:order-2 sm:-mt-4' : idx === 1 ? 'sm:order-1' : 'sm:order-3'}`}>
+              <Card key={entry.user_id} className={`text-center ${idx === 0 ? 'border-primary border-2 sm:order-2 sm:-mt-4' : idx === 1 ? 'sm:order-1' : 'sm:order-3'}`}>
                 <CardContent className="pt-6 pb-4 flex flex-col items-center gap-2">
                   <div>{podiumIcons[idx]}</div>
                   <Avatar className="h-16 w-16">
