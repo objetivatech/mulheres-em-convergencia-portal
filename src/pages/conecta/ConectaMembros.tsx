@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import RankBadge from '@/components/conecta/RankBadge';
 import { 
   Users, Search, Building2, Mail, Phone, Globe, Linkedin, Instagram,
-  User, ExternalLink, ChevronDown, UsersRound, X
+  User, ExternalLink, ChevronDown, UsersRound, X, Store
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function MemberCard({ member, onViewProfile }: { member: ConectaMember; onViewProfile: () => void }) {
   const initials = member.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
