@@ -201,8 +201,14 @@ export function Header() {
                       <span>🏠 Meu Painel</span>
                     </Link>
                   </DropdownMenuItem>
+                  
+                  {/* CONECTA+ - Para todos logados */}
+                  <DropdownMenuItem asChild>
+                    <Link to="/conecta" className="flex items-center">
+                      <span>🤝 CONECTA+</span>
+                    </Link>
+                  </DropdownMenuItem>
 
-                  {/* Meus Acessos - Condicionais por Role */}
                   {(hasBusiness || isAmbassador) && (
                     <>
                       <DropdownMenuSeparator />
