@@ -38,14 +38,31 @@ export function useConectaReferrals() {
   });
 
   const createReferral = useMutation({
-    mutationFn: async (input: { to_user_id: string; contact_name: string; contact_phone?: string; contact_email?: string; notes?: string }) => {
+    mutationFn: async (input: { to_user_id: string; contact_name: string; contact_phone?: string; contact_email?: string; notes?: string; temperature?: string }) => {
       if (!user?.id) throw new Error('Não autenticada');
       const { error } = await supabase.from('conecta_referrals').insert({
         from_user_id: user.id, to_user_id: input.to_user_id,
         contact_name: input.contact_name, contact_phone: input.contact_phone || null,
         contact_email: input.contact_email || null, notes: input.notes || null,
+        temperature: input.temperature || 'warm',
       });
       if (error) throw error;
+
+      // Send email notification
+      try {
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+        await supabase.functions.invoke('send-conecta-email', {
+          body: {
+            action: 'new_referral',
+            to_user_id: input.to_user_id,
+            from_user_name: profile?.full_name || 'Uma membro',
+            contact_name: input.contact_name,
+            temperature: input.temperature || 'warm',
+          },
+        });
+      } catch (e) {
+        console.error('Failed to send referral email:', e);
+      }
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['conecta-referrals'] }); queryClient.invalidateQueries({ queryKey: ['conecta-stats'] }); toast.success('Indicação enviada!'); },
     onError: () => toast.error('Erro ao enviar indicação'),

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaProfile } from '@/hooks/useConectaProfile';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
+import { useR2Storage } from '@/hooks/useR2Storage';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,14 @@ import RankBadge from '@/components/conecta/RankBadge';
 import { toast } from 'sonner';
 import { 
   Loader2, Save, Building, Phone, Mail, Globe, Linkedin, Instagram, 
-  Camera, ImagePlus, Cake 
+  ImagePlus, Cake 
 } from 'lucide-react';
 
 export default function ConectaPerfil() {
   const { user } = useConectaAccess();
   const { profile, isLoading, updateProfile, isUpdating } = useConectaProfile();
+  const { uploadFile, uploading: isUploadingBanner } = useR2Storage();
   const [isEditing, setIsEditing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     company: '',
@@ -53,10 +52,9 @@ export default function ConectaPerfil() {
   };
 
   const handleSave = async () => {
-    // Save to conecta_profiles
     updateProfile(formData);
 
-    // Also sync social links back to profiles (bidirectional sync)
+    // Sync social links back to profiles (bidirectional sync)
     if (user?.id) {
       await supabase.from('profiles').update({
         phone: formData.phone || null,
@@ -76,19 +74,10 @@ export default function ConectaPerfil() {
     if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem válida'); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error('A imagem deve ter no máximo 5MB'); return; }
 
-    setIsUploadingBanner(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `conecta/${user.id}/banner.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
-      updateProfile({ banner_url: `${publicUrl}?t=${Date.now()}` });
+    const url = await uploadFile(file, 'conecta/banners');
+    if (url) {
+      updateProfile({ banner_url: url });
       toast.success('Capa atualizada!');
-    } catch {
-      toast.error('Erro ao fazer upload da capa');
-    } finally {
-      setIsUploadingBanner(false);
     }
   };
 

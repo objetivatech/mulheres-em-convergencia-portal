@@ -28,13 +28,31 @@ export function useConectaInvitations() {
         .from('conecta_invitations')
         .insert({
           invited_by: user!.id,
-          guest_name: guestName,
-          guest_email: guestEmail || null,
+          name: guestName,
+          email: guestEmail || null,
           meeting_id: meetingId || null,
           code,
           status: 'pending',
         });
       if (error) throw error;
+
+      // Send invitation email if email provided
+      if (guestEmail) {
+        try {
+          await supabase.functions.invoke('send-conecta-email', {
+            body: {
+              action: 'invitation',
+              guest_name: guestName,
+              guest_email: guestEmail,
+              code,
+              inviter_id: user!.id,
+            },
+          });
+        } catch (e) {
+          console.error('Failed to send invitation email:', e);
+        }
+      }
+
       return code;
     },
     onSuccess: (code) => {

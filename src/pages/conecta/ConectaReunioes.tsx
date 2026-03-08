@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaOneOnOnes } from '@/hooks/useConectaOneOnOnes';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
-import { supabase } from '@/integrations/supabase/client';
+import { useR2Storage } from '@/hooks/useR2Storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,6 +45,7 @@ async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promis
 export default function ConectaReunioes() {
   const { user } = useConectaAccess();
   const { meetings, isLoading, createOneOnOne, deleteOneOnOne } = useConectaOneOnOnes();
+  const { uploadFile, uploading } = useR2Storage();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     meeting_type: 'membro' as 'membro' | 'convidado',
@@ -56,7 +57,6 @@ export default function ConectaReunioes() {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,13 +75,13 @@ export default function ConectaReunioes() {
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile || !user?.id) return null;
     try {
-      setUploading(true);
       const compressed = await compressImage(imageFile);
-      const fileName = `conecta/one-on-one/${user.id}/${Date.now()}.jpg`;
-      const { error } = await supabase.storage.from('avatars').upload(fileName, compressed, { contentType: 'image/jpeg', upsert: true });
-      if (error) throw error;
-      return supabase.storage.from('avatars').getPublicUrl(fileName).data.publicUrl;
-    } catch { toast.error('Erro ao enviar imagem'); return null; } finally { setUploading(false); }
+      const compressedFile = new File([compressed], `${Date.now()}.jpg`, { type: 'image/jpeg' });
+      return await uploadFile(compressedFile, 'conecta/one-on-one');
+    } catch { 
+      toast.error('Erro ao enviar imagem'); 
+      return null; 
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

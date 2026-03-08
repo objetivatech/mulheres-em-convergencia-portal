@@ -46,6 +46,23 @@ export function useConectaBusinessDeals() {
         value: input.value, deal_date: input.deal_date,
       });
       if (error) throw error;
+
+      // Notify referrer if deal came from a referral
+      if (input.referred_by_user_id) {
+        try {
+          const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+          await supabase.functions.invoke('send-conecta-email', {
+            body: {
+              action: 'deal_from_referral',
+              referred_by_user_id: input.referred_by_user_id,
+              closed_by_name: profile?.full_name || 'Uma membro',
+              deal_value: input.value,
+            },
+          });
+        } catch (e) {
+          console.error('Failed to send deal email:', e);
+        }
+      }
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['conecta-deals'] }); queryClient.invalidateQueries({ queryKey: ['conecta-stats'] }); toast.success('Negócio registrado!'); },
     onError: () => toast.error('Erro ao registrar negócio'),

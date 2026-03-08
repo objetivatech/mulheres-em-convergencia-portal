@@ -42,6 +42,20 @@ export function useConectaTestimonials() {
       if (!user?.id) throw new Error('Não autenticada');
       const { error } = await supabase.from('conecta_testimonials').insert({ from_user_id: user.id, to_user_id: input.to_user_id, content: input.content });
       if (error) throw error;
+
+      // Send email notification
+      try {
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+        await supabase.functions.invoke('send-conecta-email', {
+          body: {
+            action: 'new_testimonial',
+            to_user_id: input.to_user_id,
+            from_user_name: profile?.full_name || 'Uma membro',
+          },
+        });
+      } catch (e) {
+        console.error('Failed to send testimonial email:', e);
+      }
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['conecta-testimonials'] }); queryClient.invalidateQueries({ queryKey: ['conecta-stats'] }); toast.success('Depoimento enviado!'); },
     onError: () => toast.error('Erro ao enviar depoimento'),
