@@ -32,23 +32,26 @@
 - Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
 - Visualização rica do pitch no modo leitura
 
----
-
-### 🔲 Rodada 3: Notificações + Helpdesk + Docs (PENDENTE)
+### ✅ Rodada 3: Notificações + Helpdesk + Docs (CONCLUÍDA)
 
 #### Etapa 8: Sistema de Notificações
-- Tabela `conecta_notifications`
-- Sino no header com badge de contagem
-- Emails + preferências de notificação
+- Tabela `conecta_notifications` com RLS e real-time
+- Sino no header com badge de contagem (vermelho)
+- Dropdown com lista de notificações e marcar como lida
+- Real-time via Supabase Realtime (INSERT listener)
 
 #### Etapa 6: Conselho de Administração 24/7 (Helpdesk)
-- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies`
-- Kanban com 3 colunas + vista de lista
-- Pontuação por responder posts
+- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies` com RLS
+- Visualização Kanban com 3 colunas (Aberto → Em Discussão → Resolvido)
+- Vista de lista alternativa com filtros por categoria
+- Thread de discussão com respostas e marcação de solução
+- Trigger automático: `reply_count` + mudança de status para "Em Discussão"
+- 8 categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia, Geral
+- Rota: `/conecta/helpdesk`
 
 #### Etapa 9: Documentação
-- `conecta-fluxos-revisados.md`
-- Atualizar `conecta-access-levels.md`
+- `conecta-fluxos-revisados.md` com todos os fluxos detalhados
+- `conecta-access-levels.md` atualizado com Conselho 24/7 e Notificações
 
 ---
 
@@ -60,6 +63,7 @@
 - conecta_testimonials, conecta_business_deals, conecta_referrals
 - conecta_invitations, conecta_contents, conecta_activity_feed
 - conecta_monthly_points, conecta_points_history
+- conecta_notifications, conecta_helpdesk_posts, conecta_helpdesk_replies
 
 ### Edge Functions:
 - `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
