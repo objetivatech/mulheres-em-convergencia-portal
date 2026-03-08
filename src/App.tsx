@@ -89,6 +89,9 @@ import ConectaPerfil from '@/pages/conecta/ConectaPerfil';
 import ConectaMembros from '@/pages/conecta/ConectaMembros';
 import ConectaEncontros from '@/pages/conecta/ConectaEncontros';
 import ConectaReunioes from '@/pages/conecta/ConectaReunioes';
+import ConectaDepoimentos from '@/pages/conecta/ConectaDepoimentos';
+import ConectaNegocios from '@/pages/conecta/ConectaNegocios';
+import ConectaIndicacoes from '@/pages/conecta/ConectaIndicacoes';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 const queryClient = new QueryClient();
 
