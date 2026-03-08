@@ -93,7 +93,7 @@ export default function ConectaRanking() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{entry.full_name}</p>
                   </div>
-                  <RankBadge rank={entry.rank} size="sm" />
+                  <RankBadge rank={entry.rank as any} size="sm" />
                   <span className="font-semibold text-primary">{entry.total_points} pts</span>
                 </div>
               ))}

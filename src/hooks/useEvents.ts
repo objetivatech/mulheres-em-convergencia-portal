@@ -149,7 +149,6 @@ export const useEvents = () => {
           slugify(normalized.title || 'evento', {
             lower: true,
             strict: true,
-            locale: 'pt',
           });
         const slug = `${baseSlug}-${Date.now()}`;
 
