@@ -20,6 +20,13 @@ export interface ConectaMember {
   team_id: string | null;
   team_name: string | null;
   team_color: string | null;
+  business?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    category: string;
+  } | null;
 }
 
 export interface ConectaMembersByTeam {
