@@ -134,6 +134,29 @@ function MemberProfileModal({ member }: { member: ConectaMember }) {
         </div>
       )}
 
+      {member.business && (
+        <div className="pt-4 border-t">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Guia</h4>
+          <Link 
+            to={`/guia/${member.business.slug}`}
+            className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-primary/5 transition-colors"
+          >
+            {member.business.logo_url ? (
+              <img src={member.business.logo_url} alt={member.business.name} className="w-10 h-10 rounded-lg object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Store className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{member.business.name}</p>
+              <p className="text-xs text-muted-foreground capitalize">{member.business.category.replace(/_/g, ' ')}</p>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+          </Link>
+        </div>
+      )}
+
       {member.points > 0 && (
         <div className="pt-4 border-t">
           <div className="flex items-center justify-between text-sm">
