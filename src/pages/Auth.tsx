@@ -334,6 +334,17 @@ const Auth = () => {
                       </div>
                     </div>
 
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="newsletter-opt-in"
+                        checked={newsletterOptIn}
+                        onCheckedChange={(checked) => setNewsletterOptIn(!!checked)}
+                      />
+                      <Label htmlFor="newsletter-opt-in" className="text-sm font-normal cursor-pointer">
+                        Desejo receber a newsletter com novidades e conteúdos
+                      </Label>
+                    </div>
+
                     <Button 
                       type="submit" 
                       className="w-full" 
