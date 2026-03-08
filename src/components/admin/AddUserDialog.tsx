@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2, Shield, Store, User, Mail, Crown, Users, Edit3 } from 'lucide-react';
 import { CpfUserForm } from '@/components/cpf/CpfUserForm';
 
-const roleIcons: Record<UserRole, any> = {
+const roleIcons: Partial<Record<UserRole, any>> = {
   admin: Shield,
   blog_editor: Edit3,
   business_owner: Store,
@@ -21,7 +21,7 @@ const roleIcons: Record<UserRole, any> = {
   student: User,
 };
 
-const roleLabels: Record<UserRole, string> = {
+const roleLabels: Partial<Record<UserRole, string>> = {
   admin: 'Administrador',
   blog_editor: 'Editor de Blog',
   business_owner: 'Associada',

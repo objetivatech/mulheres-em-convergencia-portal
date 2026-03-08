@@ -82,7 +82,7 @@ export const useConectaAccess = () => {
   // Ensure conecta profile exists (upsert on first access)
   const ensureProfile = async () => {
     if (!user || conectaProfile) return;
-    const role = isAdmin ? 'admin' : hasActiveSubscription ? 'membro' : 'convidado';
+    const role = isAdmin ? 'admin' : hasBusinessOwnerRole ? 'membro' : 'convidado';
     await supabase
       .from('conecta_profiles')
       .upsert({

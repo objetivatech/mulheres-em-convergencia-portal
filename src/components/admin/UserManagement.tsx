@@ -14,7 +14,7 @@ import { ComplimentaryBusinessManager } from './ComplimentaryBusinessManager';
 import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const roleIcons: Record<UserRole, any> = {
+const roleIcons: Partial<Record<UserRole, any>> = {
   admin: Shield,
   blog_editor: Edit3,
   business_owner: Store,
@@ -25,7 +25,7 @@ const roleIcons: Record<UserRole, any> = {
   student: User,
 };
 
-const roleLabels: Record<UserRole, string> = {
+const roleLabels: Partial<Record<UserRole, string>> = {
   admin: 'Administrador',
   blog_editor: 'Editor de Blog',
   business_owner: 'Associada',
@@ -36,7 +36,7 @@ const roleLabels: Record<UserRole, string> = {
   student: 'Aluno(a) Academy',
 };
 
-const roleColors: Record<UserRole, string> = {
+const roleColors: Partial<Record<UserRole, string>> = {
   admin: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   blog_editor: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
   business_owner: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',

@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 
 // Re-export for backward compatibility
