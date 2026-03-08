@@ -53,7 +53,33 @@
 
 ---
 
-## Arquitetura
+# Plano: Integração de Roles, Newsletter Opt-in e Remodelação do Meu Painel
+
+## Status de Implementação
+
+### ✅ Etapa 1: Triggers de Atribuição Automática de Roles (CONCLUÍDA)
+- Trigger `assign_default_role`: atribui `community_member` a todo novo usuário (via profiles INSERT)
+- Trigger `sync_newsletter_subscriber_role`: sincroniza role `subscriber` com `newsletter_subscribed`
+- Migração retroativa: todos usuários existentes receberam `community_member` e `subscriber` conforme aplicável
+- RPC `get_user_roles(_user_id)`: retorna array de roles para uso no frontend
+
+### ✅ Etapa 6: Validação de Consistência de Roles (CONCLUÍDA)
+- Trigger `validate_role_consistency`: garante `community_member` ao inserir roles dependentes
+- Impede remoção de `community_member` se existem roles dependentes (business_owner, ambassador, student, blog_editor, admin)
+
+### ✅ Etapa 2: Unificar useRoles/useAuth/useConectaAccess (CONCLUÍDA)
+- Novo hook centralizado `useUserRoles.ts` com cache React Query (5 min) usando RPC `get_user_roles`
+- `useRoles.hasRole()` agora usa `useUserRoles` internamente (antes só verificava admin/blog_editor)
+- `useConectaAccess` usa `has_role('business_owner')` ao invés de `user_subscriptions` para determinar nível "membro"
+
+### 🔲 Etapa 3: Newsletter Opt-in nos Formulários de Cadastro
+### 🔲 Etapa 4: Tabela de Dados Socioeconômicos
+### 🔲 Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo
+### 🔲 Etapa 7: Documentação Completa
+
+---
+
+## Arquitetura Original (CONECTA+)
 
 ### Tabelas do banco (prefixo `conecta_`):
 - conecta_profiles, conecta_teams, conecta_team_members
@@ -62,12 +88,25 @@
 - conecta_invitations, conecta_contents, conecta_activity_feed
 - conecta_monthly_points, conecta_points_history
 
-### Níveis de Acesso:
-- **Admin**: Usuários com `is_admin = true` no MeC
-- **Membro**: Assinantes com plano ativo (`user_subscriptions`)
-- **Convidado**: Qualquer usuário logado
+### Níveis de Acesso CONECTA+:
+- **Admin**: role `admin` na tabela `user_roles`
+- **Membro**: role `business_owner` (Associada)
+- **Convidado**: Qualquer usuário logado (community_member)
 
 ### Rotas:
 - `/conecta` - Dashboard
 - `/conecta/perfil|membros|grupos|encontros|reunioes|depoimentos|negocios|indicacoes|ranking|estatisticas|convites|conteudos`
 - `/admin/conecta` - Painel administrativo
+
+## Matriz de Roles × Acessos
+
+| Funcionalidade | community_member | subscriber | ambassador | business_owner | student | admin |
+|---|---|---|---|---|---|---|
+| Portal básico | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Newsletter | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Painel Embaixadora | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Diretório de Negócios | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| CONECTA+ (membro) | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| CONECTA+ (convidado) | ✅ | ✅ | ✅ | - | ✅ | - |
+| MeC Academy | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Admin completo | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
