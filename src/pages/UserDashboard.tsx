@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/hooks/useAuth';
-import { useRoles } from '@/hooks/useRoles';
-import { Navigate } from 'react-router-dom';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { Navigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  User, 
-  Settings, 
+import { SocioeconomicForm } from '@/components/user/SocioeconomicForm';
+import {
+  LayoutDashboard,
+  User,
+  ClipboardList,
   Store,
-  ShoppingBag,
   Crown,
+  Network,
+  GraduationCap,
+  CreditCard,
+  Settings,
+  Eye,
+  Mail,
+  BarChart3,
+  Shield,
   Users,
   Edit3,
-  BarChart3,
   FileText,
-  Heart,
-  MessageCircle,
-  CreditCard,
-  Eye,
-  Calendar,
-  Mail
+  ExternalLink,
 } from 'lucide-react';
 
 interface UserSubscription {
@@ -43,52 +46,60 @@ interface UserSubscription {
 interface BusinessProfile {
   id: string;
   name: string;
+  slug: string;
   subscription_active: boolean;
   views_count: number;
   clicks_count: number;
   contacts_count: number;
 }
 
+const roleBadgeConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  admin: { label: 'Administradora', variant: 'destructive' },
+  business_owner: { label: 'Associada', variant: 'default' },
+  ambassador: { label: 'Embaixadora', variant: 'secondary' },
+  student: { label: 'Aluna Academy', variant: 'secondary' },
+  blog_editor: { label: 'Editora Blog', variant: 'outline' },
+  subscriber: { label: 'Newsletter', variant: 'outline' },
+  community_member: { label: 'Membro', variant: 'outline' },
+};
+
 export const UserDashboard = () => {
-  const { user, loading, canEditBlog } = useAuth();
-  const { hasRole } = useRoles();
-  const { toast } = useToast();
+  const { user, loading: authLoading, canEditBlog } = useAuth();
+  const { roles, isAdmin, isBusinessOwner, isAmbassador, isStudent, isBlogEditor, isLoading: rolesLoading } = useUserRoles();
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
+    if (user) loadUserData();
   }, [user]);
 
   const loadUserData = async () => {
     setLoadingData(true);
     try {
-      // Load subscription data
-      const { data: subscription } = await supabase
-        .from('user_subscriptions')
-        .select(`
-          *,
-          subscription_plans(display_name, name)
-        `)
-        .eq('user_id', user!.id)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      setUserSubscription(subscription);
-
-      // Load business profile if user is an associate
-      if (hasRole('business_owner')) {
-        const { data: business } = await supabase
+      const [subRes, profileRes, bizRes] = await Promise.all([
+        supabase
+          .from('user_subscriptions')
+          .select('*, subscription_plans(display_name, name)')
+          .eq('user_id', user!.id)
+          .eq('status', 'active')
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user!.id)
+          .single(),
+        supabase
           .from('businesses')
-          .select('id, name, subscription_active, views_count, clicks_count, contacts_count')
+          .select('id, name, slug, subscription_active, views_count, clicks_count, contacts_count')
           .eq('owner_id', user!.id)
-          .maybeSingle();
+          .maybeSingle(),
+      ]);
 
-        setBusinessProfile(business);
-      }
+      setUserSubscription(subRes.data);
+      setProfile(profileRes.data);
+      setBusinessProfile(bizRes.data);
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -96,7 +107,7 @@ export const UserDashboard = () => {
     }
   };
 
-  if (loading || loadingData) {
+  if (authLoading || loadingData || rolesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -108,307 +119,315 @@ export const UserDashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Available modules based on user roles and subscriptions
-  const modules = [];
+  const displayName = profile?.full_name || user.user_metadata?.full_name || user.email;
+  const initials = (displayName || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
-  // Profile management (always available)
-  modules.push({
-    category: 'Perfil',
-    items: [
-      {
-        title: 'Configurações da Conta',
-        description: 'Editar dados pessoais e preferências',  
-        icon: Settings,
-        href: '/configuracoes/conta',
-        available: true,
-      },
-      {
-        title: 'Dados Pessoais',
-        description: 'Atualizar CPF, telefone e endereço',
-        icon: User,
-        href: '/configuracoes/dados-pessoais',
-        available: true,
-      }
-    ]
-  });
-
-  // Business management (for associates)
-  if (hasRole('business_owner')) {
-    modules.push({
-      category: 'Negócios',
-      items: [
-        {
-          title: 'Meu Negócio',
-          description: businessProfile ? `Gerenciar ${businessProfile.name}` : 'Cadastrar negócio',
-          icon: Store,
-          href: '/dashboard/empresa',
-          available: true,
-        },
-        {
-          title: 'Estatísticas',
-          description: businessProfile ? 
-            `${businessProfile.views_count} visualizações este mês` : 
-            'Ver métricas do negócio',
-          icon: BarChart3,
-          href: '/estatisticas',
-          available: !!businessProfile,
-        },
-        {
-          title: 'Assinatura',
-          description: userSubscription ? 
-            `Plano ${userSubscription.subscription_plans?.display_name}` : 
-            'Gerenciar assinatura',
-          icon: CreditCard,
-          href: '/planos',
-          available: true,
-        }
-      ]
-    });
-  }
-
-  // Client features
-  if (hasRole('customer')) {
-    modules.push({
-      category: 'Loja',
-      items: [
-        {
-          title: 'Meus Pedidos',
-          description: 'Histórico de compras e entregas',
-          icon: ShoppingBag,
-          href: '/meus-pedidos',
-          available: false, // Coming soon
-        },
-        {
-          title: 'Lista de Desejos',
-          description: 'Produtos salvos para comprar depois',
-          icon: Heart,
-          href: '/favoritos',
-          available: false, // Coming soon
-        }
-      ]
-    });
-  }
-
-  // Ambassador features
-  if (hasRole('ambassador')) {
-    modules.push({
-      category: 'Embaixadora',
-      items: [
-        {
-          title: 'Minhas Indicações',
-          description: 'Acompanhar conversões e ganhos',
-          icon: Crown,
-          href: '/indicacoes',
-          available: false, // Coming soon
-        },
-        {
-          title: 'Material Promocional',
-          description: 'Links e banners para divulgação',
-          icon: FileText,
-          href: '/material-promocional',
-          available: false, // Coming soon
-        }
-      ]
-    });
-  }
-
-  // Community features
-  if (hasRole('community_member')) {
-    modules.push({
-      category: 'Comunidade',
-      items: [
-        {
-          title: 'Meus Grupos',
-          description: 'Participar de discussões e eventos',
-          icon: Users,
-          href: '/grupos',
-          available: false, // Coming soon
-        },
-        {
-          title: 'Mensagens',
-          description: 'Conversar com outros membros',
-          icon: MessageCircle,
-          href: '/mensagens',
-          available: false, // Coming soon
-        }
-      ]
-    });
-  }
-
-  // Blog features - usando blog_editor ou canEditBlog para edição de blog
-  if (hasRole('blog_editor') || canEditBlog) {
-    modules.push({
-      category: 'Blog',
-      items: [
-        {
-          title: 'Meus Artigos',
-          description: 'Gerenciar posts publicados',
-          icon: Edit3,
-          href: '/admin/blog',
-          available: true,
-        },
-        {
-          title: 'Criar Post',
-          description: 'Escrever novo artigo',
-          icon: FileText,
-          href: '/admin/blog/novo',
-          available: true,
-        }
-      ]
-    });
-  }
+  // Build visible roles for badges (filter out common ones for cleaner display)
+  const displayRoles = roles.filter(r => r !== 'community_member' && r !== 'customer');
 
   return (
     <>
       <Helmet>
-        <title>Meu Dashboard - Mulheres em Convergência</title>
+        <title>Meu Painel - Mulheres em Convergência</title>
         <meta name="description" content="Painel pessoal com suas funcionalidades e acessos" />
       </Helmet>
 
       <Layout>
         <main className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Welcome Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                Bem-vinda, {user.user_metadata?.full_name || user.email}!
-              </h1>
-              <p className="text-muted-foreground">
-                Gerencie todos os seus acessos e funcionalidades da plataforma
-              </p>
-            </div>
+          <div className="max-w-5xl mx-auto">
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium">Conta Ativa</span>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {userSubscription && (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <CreditCard className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">
-                        {userSubscription.subscription_plans?.display_name}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {businessProfile && (
-                <>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <Eye className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm font-medium">
-                          {businessProfile.views_count} visualizações
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-purple-500" />
-                        <span className="text-sm font-medium">
-                          {businessProfile.contacts_count} contatos
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-            </div>
-
-            {/* Modules by Category */}
-            {modules.map((moduleGroup, groupIndex) => (
-              <div key={moduleGroup.category} className="mb-8">
-                <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
-                  <span>{moduleGroup.category}</span>
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {moduleGroup.items.map((item) => {
-                    const Icon = item.icon;
+            {/* Profile Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8 p-6 rounded-xl bg-card border">
+              <Avatar className="h-16 w-16 border-2 border-primary/20">
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">{initials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold">{displayName}</h1>
+                <p className="text-muted-foreground text-sm">{user.email}</p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {displayRoles.map(role => {
+                    const config = roleBadgeConfig[role];
+                    if (!config) return null;
                     return (
-                      <Card 
-                        key={item.title}
-                        className={`transition-all hover:shadow-lg ${
-                          item.available ? 'cursor-pointer' : 'opacity-60'
-                        }`}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center space-x-3">
-                            <div className={`p-2 rounded-lg ${
-                              item.available ? 'bg-primary/10' : 'bg-muted'
-                            }`}>
-                              <Icon className={`h-5 w-5 ${
-                                item.available ? 'text-primary' : 'text-muted-foreground'
-                              }`} />
-                            </div>
-                            <div>
-                              <CardTitle className="text-lg">{item.title}</CardTitle>
-                              {!item.available && (
-                                <Badge variant="outline" className="text-xs mt-1">
-                                  Em Breve
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </CardHeader>
-                        
-                        <CardContent className="pt-0">
-                          <CardDescription className="mb-4">
-                            {item.description}
-                          </CardDescription>
-                          
-                          <Button 
-                            variant={item.available ? "default" : "secondary"}
-                            size="sm"
-                            className="w-full"
-                            disabled={!item.available}
-                            onClick={() => item.available && item.href && (window.location.href = item.href)}
-                          >
-                            {item.available ? 'Acessar' : 'Em Desenvolvimento'}
-                          </Button>
-                        </CardContent>
-                      </Card>
+                      <Badge key={role} variant={config.variant} className="text-xs">
+                        {config.label}
+                      </Badge>
                     );
                   })}
                 </div>
-                
-                {groupIndex < modules.length - 1 && <Separator className="mt-8" />}
               </div>
-            ))}
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/configuracoes/conta"><Settings className="h-4 w-4 mr-1" /> Configurações</Link>
+              </Button>
+            </div>
 
-            {/* Help Section */}
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>Precisa de Ajuda?</CardTitle>
-                <CardDescription>
-                  Entre em contato conosco se tiver dúvidas sobre alguma funcionalidade
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" asChild>
-                  <a href="/contato">Falar Conosco</a>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Tabs */}
+            <Tabs defaultValue="visao-geral" className="w-full">
+              <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+                <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">
+                  <LayoutDashboard className="h-4 w-4 mr-1" /> Visão Geral
+                </TabsTrigger>
+                <TabsTrigger value="meus-dados" className="text-xs sm:text-sm">
+                  <User className="h-4 w-4 mr-1" /> Meus Dados
+                </TabsTrigger>
+                <TabsTrigger value="socioeconomico" className="text-xs sm:text-sm">
+                  <ClipboardList className="h-4 w-4 mr-1" /> Socioeconômico
+                </TabsTrigger>
+                {isBusinessOwner && (
+                  <TabsTrigger value="meu-negocio" className="text-xs sm:text-sm">
+                    <Store className="h-4 w-4 mr-1" /> Meu Negócio
+                  </TabsTrigger>
+                )}
+                {isAmbassador && (
+                  <TabsTrigger value="embaixadora" className="text-xs sm:text-sm">
+                    <Crown className="h-4 w-4 mr-1" /> Embaixadora
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="conecta" className="text-xs sm:text-sm">
+                  <Network className="h-4 w-4 mr-1" /> CONECTA+
+                </TabsTrigger>
+                {(isStudent || isBusinessOwner || isAmbassador || isAdmin) && (
+                  <TabsTrigger value="academy" className="text-xs sm:text-sm">
+                    <GraduationCap className="h-4 w-4 mr-1" /> Academy
+                  </TabsTrigger>
+                )}
+                {(isBlogEditor || canEditBlog) && (
+                  <TabsTrigger value="blog" className="text-xs sm:text-sm">
+                    <Edit3 className="h-4 w-4 mr-1" /> Blog
+                  </TabsTrigger>
+                )}
+                {userSubscription && (
+                  <TabsTrigger value="assinatura" className="text-xs sm:text-sm">
+                    <CreditCard className="h-4 w-4 mr-1" /> Assinatura
+                  </TabsTrigger>
+                )}
+              </TabsList>
 
+              {/* ====== VISÃO GERAL ====== */}
+              <TabsContent value="visao-geral" className="mt-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <QuickCard icon={User} title="Meus Dados" desc="Editar perfil e contatos" href="/configuracoes/dados-pessoais" />
+                  <QuickCard icon={Network} title="CONECTA+" desc="Acessar networking" href="/conecta" />
+                  {isBusinessOwner && businessProfile && (
+                    <QuickCard icon={Store} title={businessProfile.name} desc={`${businessProfile.views_count} visualizações`} href="/dashboard/empresa" />
+                  )}
+                  {isAmbassador && (
+                    <QuickCard icon={Crown} title="Painel Embaixadora" desc="Indicações e comissões" href="/embaixadora" />
+                  )}
+                  {(isStudent || isBusinessOwner || isAdmin) && (
+                    <QuickCard icon={GraduationCap} title="MeC Academy" desc="Cursos e conteúdos" href="/academy" />
+                  )}
+                  {isAdmin && (
+                    <QuickCard icon={Shield} title="Administração" desc="Painel administrativo" href="/admin" />
+                  )}
+                </div>
+
+                {/* Quick Stats */}
+                {businessProfile && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg">Estatísticas do Negócio</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-2xl font-bold text-primary">{businessProfile.views_count}</p>
+                          <p className="text-xs text-muted-foreground">Visualizações</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-primary">{businessProfile.clicks_count}</p>
+                          <p className="text-xs text-muted-foreground">Cliques</p>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-primary">{businessProfile.contacts_count}</p>
+                          <p className="text-xs text-muted-foreground">Contatos</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* ====== MEUS DADOS ====== */}
+              <TabsContent value="meus-dados" className="mt-6">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Informações Pessoais</CardTitle>
+                      <CardDescription>Gerencie suas informações básicas, endereços e contatos</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <InfoItem label="Nome" value={profile?.full_name} />
+                        <InfoItem label="Email" value={user.email} />
+                        <InfoItem label="CPF" value={profile?.cpf} />
+                        <InfoItem label="Telefone" value={profile?.phone} />
+                        <InfoItem label="Cidade" value={profile?.city} />
+                        <InfoItem label="Estado" value={profile?.state} />
+                      </div>
+                      <Button variant="outline" asChild>
+                        <Link to="/configuracoes/dados-pessoais">Editar Dados Pessoais</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* ====== SOCIOECONÔMICO ====== */}
+              <TabsContent value="socioeconomico" className="mt-6">
+                <SocioeconomicForm />
+              </TabsContent>
+
+              {/* ====== MEU NEGÓCIO ====== */}
+              {isBusinessOwner && (
+                <TabsContent value="meu-negocio" className="mt-6 space-y-4">
+                  {businessProfile ? (
+                    <>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>{businessProfile.name}</CardTitle>
+                          <CardDescription>
+                            Status: {businessProfile.subscription_active ? 
+                              <Badge variant="default">Ativa</Badge> : 
+                              <Badge variant="outline">Inativa</Badge>}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-3 gap-4 text-center mb-4">
+                            <div><p className="text-xl font-bold">{businessProfile.views_count}</p><p className="text-xs text-muted-foreground">Visualizações</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.clicks_count}</p><p className="text-xs text-muted-foreground">Cliques</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.contacts_count}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button asChild><Link to="/dashboard/empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
+                            <Button variant="outline" asChild><Link to={`/diretorio/${businessProfile.slug}`}><ExternalLink className="h-4 w-4 mr-1" /> Ver Página</Link></Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <Store className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground mb-4">Você ainda não cadastrou um negócio</p>
+                        <Button asChild><Link to="/dashboard/empresa">Cadastrar Negócio</Link></Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+              )}
+
+              {/* ====== EMBAIXADORA ====== */}
+              {isAmbassador && (
+                <TabsContent value="embaixadora" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Painel da Embaixadora</CardTitle>
+                      <CardDescription>Acompanhe suas indicações, comissões e materiais</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button asChild><Link to="/embaixadora"><Crown className="h-4 w-4 mr-1" /> Acessar Painel Completo</Link></Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {/* ====== CONECTA+ ====== */}
+              <TabsContent value="conecta" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>CONECTA+</CardTitle>
+                    <CardDescription>
+                      {isBusinessOwner || isAdmin
+                        ? 'Você tem acesso completo como membro do CONECTA+'
+                        : 'Você tem acesso como convidada. Torne-se associada para acesso completo!'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild><Link to="/conecta"><Network className="h-4 w-4 mr-1" /> Acessar CONECTA+</Link></Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ====== ACADEMY ====== */}
+              {(isStudent || isBusinessOwner || isAmbassador || isAdmin) && (
+                <TabsContent value="academy" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>MeC Academy</CardTitle>
+                      <CardDescription>Cursos, aulas e conteúdos exclusivos para sua capacitação</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button asChild><Link to="/academy"><GraduationCap className="h-4 w-4 mr-1" /> Acessar Academy</Link></Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {/* ====== BLOG ====== */}
+              {(isBlogEditor || canEditBlog) && (
+                <TabsContent value="blog" className="mt-6 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Gerenciamento do Blog</CardTitle>
+                      <CardDescription>Crie e gerencie artigos no blog</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex gap-2 flex-wrap">
+                      <Button asChild><Link to="/admin/blog"><Edit3 className="h-4 w-4 mr-1" /> Meus Artigos</Link></Button>
+                      <Button variant="outline" asChild><Link to="/admin/blog/novo"><FileText className="h-4 w-4 mr-1" /> Criar Post</Link></Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+
+              {/* ====== ASSINATURA ====== */}
+              {userSubscription && (
+                <TabsContent value="assinatura" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Minha Assinatura</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <InfoItem label="Plano" value={userSubscription.subscription_plans?.display_name} />
+                        <InfoItem label="Status" value={userSubscription.status === 'active' ? 'Ativa' : userSubscription.status} />
+                        <InfoItem label="Ciclo" value={userSubscription.billing_cycle} />
+                        {userSubscription.expires_at && (
+                          <InfoItem label="Expira em" value={new Date(userSubscription.expires_at).toLocaleDateString('pt-BR')} />
+                        )}
+                      </div>
+                      <Button variant="outline" asChild><Link to="/planos">Gerenciar Assinatura</Link></Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
+            </Tabs>
           </div>
         </main>
       </Layout>
     </>
   );
 };
+
+// Helper components
+const QuickCard = ({ icon: Icon, title, desc, href }: { icon: any; title: string; desc: string; href: string }) => (
+  <Card className="hover:shadow-md transition-shadow">
+    <CardContent className="p-4">
+      <Link to={href} className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <p className="font-medium text-sm truncate">{title}</p>
+          <p className="text-xs text-muted-foreground truncate">{desc}</p>
+        </div>
+      </Link>
+    </CardContent>
+  </Card>
+);
+
+const InfoItem = ({ label, value }: { label: string; value?: string | null }) => (
+  <div>
+    <p className="text-xs text-muted-foreground">{label}</p>
+    <p className="font-medium text-sm">{value || '—'}</p>
+  </div>
+);
