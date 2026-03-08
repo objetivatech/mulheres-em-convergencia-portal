@@ -2284,6 +2284,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
+          meeting_id: string | null
           metadata: Json | null
           name: string | null
           status: string
@@ -2297,6 +2298,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by: string
+          meeting_id?: string | null
           metadata?: Json | null
           name?: string | null
           status?: string
@@ -2310,6 +2312,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
+          meeting_id?: string | null
           metadata?: Json | null
           name?: string | null
           status?: string
@@ -2327,6 +2330,13 @@ export type Database = {
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_invitations_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_meetings"
             referencedColumns: ["id"]
           },
         ]
@@ -2606,6 +2616,7 @@ export type Database = {
           from_user_id: string
           id: string
           notes: string | null
+          temperature: string
           to_user_id: string
         }
         Insert: {
@@ -2616,6 +2627,7 @@ export type Database = {
           from_user_id: string
           id?: string
           notes?: string | null
+          temperature?: string
           to_user_id: string
         }
         Update: {
@@ -2626,6 +2638,7 @@ export type Database = {
           from_user_id?: string
           id?: string
           notes?: string | null
+          temperature?: string
           to_user_id?: string
         }
         Relationships: [
