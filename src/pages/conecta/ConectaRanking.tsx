@@ -21,9 +21,9 @@ const getMonthOptions = () => {
 };
 
 const podiumIcons = [
-  <Trophy className="h-8 w-8 text-yellow-500" />,
-  <Medal className="h-7 w-7 text-gray-400" />,
-  <Award className="h-6 w-6 text-amber-600" />,
+  <Trophy key="1" className="h-8 w-8 text-primary" />,
+  <Medal key="2" className="h-7 w-7 text-muted-foreground" />,
+  <Award key="3" className="h-6 w-6 text-primary/70" />,
 ];
 
 export default function ConectaRanking() {
