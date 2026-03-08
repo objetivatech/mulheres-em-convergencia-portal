@@ -66,7 +66,7 @@ export default function ConectaRanking() {
                     </AvatarFallback>
                   </Avatar>
                   <p className="font-semibold text-foreground">{entry.full_name}</p>
-                  <RankBadge rank={entry.rank} />
+                  <RankBadge rank={entry.rank as any} />
                   <p className="text-2xl font-bold text-primary">{entry.total_points}</p>
                   <p className="text-xs text-muted-foreground">pontos</p>
                 </CardContent>
