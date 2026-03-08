@@ -416,6 +416,24 @@ function AppContent() {
           </ProtectedRoute>
         } />
           
+          {/* CONECTA+ Routes */}
+          <Route path="/conecta" element={<ProtectedRoute><ConectaDashboard /></ProtectedRoute>} />
+          <Route path="/conecta/perfil" element={<ProtectedRoute><ConectaPlaceholder title="Meu Perfil" /></ProtectedRoute>} />
+          <Route path="/conecta/membros" element={<ProtectedRoute><ConectaPlaceholder title="Membros" /></ProtectedRoute>} />
+          <Route path="/conecta/grupos" element={<ProtectedRoute><ConectaPlaceholder title="Grupos" /></ProtectedRoute>} />
+          <Route path="/conecta/encontros" element={<ProtectedRoute><ConectaPlaceholder title="Encontros" /></ProtectedRoute>} />
+          <Route path="/conecta/reunioes" element={<ProtectedRoute><ConectaPlaceholder title="Reuniões 1-a-1" requireMember /></ProtectedRoute>} />
+          <Route path="/conecta/depoimentos" element={<ProtectedRoute><ConectaPlaceholder title="Depoimentos" requireMember /></ProtectedRoute>} />
+          <Route path="/conecta/negocios" element={<ProtectedRoute><ConectaPlaceholder title="Negócios" requireMember /></ProtectedRoute>} />
+          <Route path="/conecta/indicacoes" element={<ProtectedRoute><ConectaPlaceholder title="Indicações" requireMember /></ProtectedRoute>} />
+          <Route path="/conecta/ranking" element={<ProtectedRoute><ConectaPlaceholder title="Ranking" /></ProtectedRoute>} />
+          <Route path="/conecta/estatisticas" element={<ProtectedRoute><ConectaPlaceholder title="Estatísticas" /></ProtectedRoute>} />
+          <Route path="/conecta/convites" element={<ProtectedRoute><ConectaPlaceholder title="Convites" requireMember /></ProtectedRoute>} />
+          <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaPlaceholder title="Conteúdos" /></ProtectedRoute>} />
+          
+          {/* Admin CONECTA+ */}
+          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><ConectaPlaceholder title="Admin CONECTA+" /></ProtectedRoute>} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
