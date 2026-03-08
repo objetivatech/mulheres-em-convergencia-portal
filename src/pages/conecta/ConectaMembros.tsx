@@ -35,12 +35,19 @@ function MemberCard({ member, onViewProfile }: { member: ConectaMember; onViewPr
               <h3 className="font-semibold text-foreground truncate">{member.full_name}</h3>
               <RankBadge rank={member.rank as any} size="sm" />
             </div>
-            {member.position && <p className="text-sm text-muted-foreground truncate">{member.position}</p>}
-            {member.company && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                <Building2 className="h-3 w-3" /><span className="truncate">{member.company}</span>
-              </div>
-            )}
+             {member.position && <p className="text-sm text-muted-foreground truncate">{member.position}</p>}
+             {member.company && (
+               <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                 <Building2 className="h-3 w-3" /><span className="truncate">{member.company}</span>
+               </div>
+             )}
+             {member.business && (
+               <Link to={`/guia/${member.business.slug}`} className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+                 <Store className="h-3 w-3" />
+                 <span className="truncate max-w-[140px]">{member.business.name}</span>
+                 <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+               </Link>
+             )}
           </div>
         </div>
         <Button variant="outline" size="sm" className="w-full mt-4" onClick={onViewProfile}>
