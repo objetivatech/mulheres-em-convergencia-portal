@@ -52,8 +52,21 @@ export default function ConectaPerfil() {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Save to conecta_profiles
     updateProfile(formData);
+
+    // Also sync social links back to profiles (bidirectional sync)
+    if (user?.id) {
+      await supabase.from('profiles').update({
+        phone: formData.phone || null,
+        linkedin_url: formData.linkedin_url || null,
+        instagram_url: formData.instagram_url || null,
+        website_url: formData.website_url || null,
+        bio: formData.bio || null,
+      }).eq('id', user.id);
+    }
+
     setIsEditing(false);
   };
 
