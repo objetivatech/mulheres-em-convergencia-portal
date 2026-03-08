@@ -65,7 +65,7 @@ export function ConectaSidebar() {
         </div>
 
         {/* Main Navigation */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -96,7 +96,7 @@ export function ConectaSidebar() {
 
         {/* Activities - members only */}
         {isMemberOrAbove && (
-          <SidebarGroup defaultOpen>
+          <SidebarGroup>
             <SidebarGroupLabel>Atividades</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -126,7 +126,7 @@ export function ConectaSidebar() {
         )}
 
         {/* Community */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>Comunidade</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

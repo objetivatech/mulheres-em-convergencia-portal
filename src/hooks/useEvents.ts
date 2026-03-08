@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { crmIntegration } from '@/hooks/useCRMIntegration';
-import slugify from 'slugify';
+import slugify from '@/lib/slugify';
 
 export interface Event {
   id: string;
@@ -149,7 +149,6 @@ export const useEvents = () => {
           slugify(normalized.title || 'evento', {
             lower: true,
             strict: true,
-            locale: 'pt',
           });
         const slug = `${baseSlug}-${Date.now()}`;
 
