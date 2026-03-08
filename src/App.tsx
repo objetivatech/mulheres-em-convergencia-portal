@@ -85,6 +85,8 @@ import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
 import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
 import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
+import ConectaPerfil from '@/pages/conecta/ConectaPerfil';
+import ConectaMembros from '@/pages/conecta/ConectaMembros';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 const queryClient = new QueryClient();
 
