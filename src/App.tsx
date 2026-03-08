@@ -443,7 +443,7 @@ function AppContent() {
           <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaConteudos /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
-          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><ConectaPlaceholder title="Admin CONECTA+" /></ProtectedRoute>} />
+          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><AdminConecta /></ProtectedRoute>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
