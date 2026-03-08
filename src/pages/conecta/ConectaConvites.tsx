@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,14 +74,14 @@ export default function ConectaConvites() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {invitations.map((inv: any) => {
+            {invitations.map((inv) => {
               const status = statusMap[inv.status] || statusMap.pending;
               return (
                 <Card key={inv.id}>
                   <CardContent className="py-4 flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground truncate">{inv.guest_name}</p>
-                      {inv.guest_email && <p className="text-xs text-muted-foreground">{inv.guest_email}</p>}
+                      <p className="font-medium text-foreground truncate">{inv.name}</p>
+                      {inv.email && <p className="text-xs text-muted-foreground">{inv.email}</p>}
                       <p className="text-xs text-muted-foreground mt-1">
                         {format(new Date(inv.created_at), "dd 'de' MMM, yyyy", { locale: ptBR })}
                       </p>

@@ -10,25 +10,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import ConectaMemberSelect from '@/components/conecta/ConectaMemberSelect';
-import { Loader2, Plus, Send, Inbox, Trash2, Phone, Mail, User } from 'lucide-react';
+import { Loader2, Plus, Send, Inbox, Trash2, Phone, Mail, User, Thermometer } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+
+const temperatureConfig: Record<string, { label: string; emoji: string; color: string; bgColor: string }> = {
+  cold: { label: 'Frio', emoji: '❄️', color: 'text-blue-600', bgColor: 'bg-blue-100 border-blue-300' },
+  warm: { label: 'Morno', emoji: '🔥', color: 'text-amber-600', bgColor: 'bg-amber-100 border-amber-300' },
+  hot: { label: 'Quente', emoji: '🔥🔥', color: 'text-red-600', bgColor: 'bg-red-100 border-red-300' },
+};
 
 export default function ConectaIndicacoes() {
   const { sentReferrals, receivedReferrals, isLoading, createReferral, deleteReferral } = useConectaReferrals();
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ to_user_id: '', contact_name: '', contact_phone: '', contact_email: '', notes: '' });
+  const [formData, setFormData] = useState({ to_user_id: '', contact_name: '', contact_phone: '', contact_email: '', notes: '', temperature: 'warm' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.to_user_id || !formData.contact_name.trim()) return;
     await createReferral.mutateAsync(formData);
     setOpen(false);
-    setFormData({ to_user_id: '', contact_name: '', contact_phone: '', contact_email: '', notes: '' });
+    setFormData({ to_user_id: '', contact_name: '', contact_phone: '', contact_email: '', notes: '', temperature: 'warm' });
   };
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const TemperatureBadge = ({ temp }: { temp: string }) => {
+    const config = temperatureConfig[temp] || temperatureConfig.warm;
+    return (
+      <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border', config.bgColor, config.color)}>
+        {config.emoji} {config.label}
+      </span>
+    );
+  };
 
   const ReferralCard = ({ referral, type }: { referral: any; type: 'sent' | 'received' }) => {
     const user = type === 'sent' ? referral.to_user : referral.from_user;
@@ -41,7 +58,11 @@ export default function ConectaIndicacoes() {
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div><span className="text-xs text-muted-foreground">{type === 'sent' ? 'Para' : 'De'}: </span><span className="font-medium">{user?.full_name}</span></div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{type === 'sent' ? 'Para' : 'De'}: </span>
+                <span className="font-medium">{user?.full_name}</span>
+                <TemperatureBadge temp={referral.temperature || 'warm'} />
+              </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{format(new Date(referral.created_at), 'dd/MM/yyyy', { locale: ptBR })}</span>
                 {type === 'sent' && <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteReferral.mutate(referral.id)}><Trash2 className="w-3.5 h-3.5" /></Button>}
@@ -81,6 +102,30 @@ export default function ConectaIndicacoes() {
                   <div className="space-y-2"><Label>Telefone</Label><Input value={formData.contact_phone} onChange={e => setFormData({ ...formData, contact_phone: e.target.value })} placeholder="(11) 99999-9999" /></div>
                   <div className="space-y-2"><Label>Email</Label><Input type="email" value={formData.contact_email} onChange={e => setFormData({ ...formData, contact_email: e.target.value })} /></div>
                 </div>
+
+                {/* Temperature selector */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Thermometer className="w-4 h-4" />Temperatura do Lead</Label>
+                  <div className="flex gap-2">
+                    {Object.entries(temperatureConfig).map(([key, config]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, temperature: key })}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all',
+                          formData.temperature === key
+                            ? `${config.bgColor} ${config.color} ring-2 ring-offset-1`
+                            : 'border-muted bg-background text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        <span>{config.emoji}</span>
+                        <span>{config.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-2"><Label>Observações (opcional)</Label><Textarea value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} rows={3} maxLength={500} /></div>
                 <Button type="submit" className="w-full" disabled={createReferral.isPending}>{createReferral.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</> : <><Send className="mr-2 h-4 w-4" />Enviar Indicação</>}</Button>
               </form>
