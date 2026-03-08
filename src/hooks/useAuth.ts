@@ -210,6 +210,18 @@ export const useAuthProvider = () => {
         }
       }
 
+      // Update newsletter preference on profile (trigger will sync subscriber role)
+      if (newsletterOptIn) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ newsletter_subscribed: true })
+            .eq('id', authData.user.id);
+        } catch (nlError) {
+          console.error('[Auth] Error updating newsletter preference:', nlError);
+        }
+      }
+
       toast({
         title: "Cadastro realizado!",
         description: "Verifique seu email para confirmar a conta. O link expira em 24 horas.",
