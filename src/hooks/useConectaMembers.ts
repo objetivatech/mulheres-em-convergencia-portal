@@ -20,6 +20,13 @@ export interface ConectaMember {
   team_id: string | null;
   team_name: string | null;
   team_color: string | null;
+  business?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    category: string;
+  } | null;
 }
 
 export interface ConectaMembersByTeam {
@@ -80,6 +87,20 @@ export function useConectaMembers() {
         teamsMap[t.id] = { name: t.name, color: t.color || '#22c55e' };
       });
 
+      // 5. Get published online businesses owned by members
+      const { data: businesses } = await supabase
+        .from('businesses')
+        .select('id, name, slug, logo_url, category, owner_id')
+        .in('owner_id', userIds)
+        .not('owner_id', 'is', null);
+
+      const businessMap: Record<string, { id: string; name: string; slug: string; logo_url: string | null; category: string }> = {};
+      (businesses || []).forEach(b => {
+        if (b.owner_id) {
+          businessMap[b.owner_id] = { id: b.id, name: b.name, slug: b.slug, logo_url: b.logo_url, category: b.category };
+        }
+      });
+
       // 5. Build member entries - exclude convidados from directory
       const membersWithTeam: ConectaMember[] = [];
 
@@ -104,6 +125,7 @@ export function useConectaMembers() {
           rank: cp.rank,
           points: cp.points,
           slug: cp.slug,
+          business: businessMap[cp.id] || null,
         };
 
         const userTeamIds = teamMembershipMap[cp.id] || [];

@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import RankBadge from '@/components/conecta/RankBadge';
 import { 
   Users, Search, Building2, Mail, Phone, Globe, Linkedin, Instagram,
-  User, ExternalLink, ChevronDown, UsersRound, X
+  User, ExternalLink, ChevronDown, UsersRound, X, Store
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function MemberCard({ member, onViewProfile }: { member: ConectaMember; onViewProfile: () => void }) {
   const initials = member.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -34,12 +35,19 @@ function MemberCard({ member, onViewProfile }: { member: ConectaMember; onViewPr
               <h3 className="font-semibold text-foreground truncate">{member.full_name}</h3>
               <RankBadge rank={member.rank as any} size="sm" />
             </div>
-            {member.position && <p className="text-sm text-muted-foreground truncate">{member.position}</p>}
-            {member.company && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                <Building2 className="h-3 w-3" /><span className="truncate">{member.company}</span>
-              </div>
-            )}
+             {member.position && <p className="text-sm text-muted-foreground truncate">{member.position}</p>}
+             {member.company && (
+               <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                 <Building2 className="h-3 w-3" /><span className="truncate">{member.company}</span>
+               </div>
+             )}
+             {member.business && (
+               <Link to={`/guia/${member.business.slug}`} className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+                 <Store className="h-3 w-3" />
+                 <span className="truncate max-w-[140px]">{member.business.name}</span>
+                 <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+               </Link>
+             )}
           </div>
         </div>
         <Button variant="outline" size="sm" className="w-full mt-4" onClick={onViewProfile}>
@@ -123,6 +131,29 @@ function MemberProfileModal({ member }: { member: ConectaMember }) {
               <Globe className="h-4 w-4" />Website<ExternalLink className="h-3 w-3" />
             </a>
           )}
+        </div>
+      )}
+
+      {member.business && (
+        <div className="pt-4 border-t">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Guia</h4>
+          <Link 
+            to={`/guia/${member.business.slug}`}
+            className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-primary/5 transition-colors"
+          >
+            {member.business.logo_url ? (
+              <img src={member.business.logo_url} alt={member.business.name} className="w-10 h-10 rounded-lg object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Store className="h-5 w-5 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{member.business.name}</p>
+              <p className="text-xs text-muted-foreground capitalize">{member.business.category.replace(/_/g, ' ')}</p>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+          </Link>
         </div>
       )}
 

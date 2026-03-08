@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -38,6 +39,7 @@ interface EventFormData {
   max_participants: number | null;
   instructor_name: string;
   status: string;
+  conecta_sync: boolean;
 }
 
 const getDefaultFormData = (): EventFormData => ({
@@ -54,6 +56,7 @@ const getDefaultFormData = (): EventFormData => ({
   max_participants: null,
   instructor_name: '',
   status: 'draft',
+  conecta_sync: false,
 });
 
 const eventToFormData = (event: Event): EventFormData => ({
@@ -70,6 +73,7 @@ const eventToFormData = (event: Event): EventFormData => ({
   max_participants: event.max_participants || null,
   instructor_name: event.instructor_name || '',
   status: event.status || 'draft',
+  conecta_sync: (event as any).conecta_sync ?? false,
 });
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -299,6 +303,19 @@ export const EventsManagement: React.FC = () => {
               <SelectItem value="completed">Concluído</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="col-span-2 flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="conecta_sync" className="text-base">Exibir no CONECTA+</Label>
+            <p className="text-sm text-muted-foreground">
+              Quando ativado, este evento aparecerá na seção Encontros do CONECTA+ e membros poderão se inscrever diretamente.
+            </p>
+          </div>
+          <Switch
+            id="conecta_sync"
+            checked={formData.conecta_sync}
+            onCheckedChange={(checked) => setFormData({ ...formData, conecta_sync: checked })}
+          />
         </div>
       </div>
       <div className="flex justify-end gap-2">

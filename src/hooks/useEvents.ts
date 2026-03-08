@@ -26,6 +26,7 @@ export interface Event {
   instructor_name: string | null;
   instructor_id: string | null;
   cost_center_id: string | null;
+  conecta_sync: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
