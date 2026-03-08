@@ -16,7 +16,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string, newsletterOptIn?: boolean) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   // null = not yet checked, false = checked and not admin, true = is admin
   isAdmin: boolean | null;
