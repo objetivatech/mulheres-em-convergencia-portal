@@ -136,7 +136,7 @@ export const useAuthProvider = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string, newsletterOptIn?: boolean) => {
     try {
       // Check for referral code before signup
       const referralCode = getReferralCodeFromCookie();
