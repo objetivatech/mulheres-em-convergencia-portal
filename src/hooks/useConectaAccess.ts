@@ -41,34 +41,31 @@ export const useConectaAccess = () => {
     enabled: !!user,
   });
 
-  // Check if user has active subscription (membro level)
-  const { data: hasActiveSubscription, isLoading: subLoading } = useQuery({
-    queryKey: ['conecta-subscription-check', user?.id],
+  // Use centralized role check for membro level (business_owner role)
+  const { data: hasBusinessOwnerRole, isLoading: roleLoading } = useQuery({
+    queryKey: ['conecta-role-check', user?.id],
     queryFn: async () => {
       if (!user) return false;
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .limit(1);
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'business_owner',
+      });
       if (error) return false;
-      return (data?.length ?? 0) > 0;
+      return !!data;
     },
     enabled: !!user,
   });
 
-  // Determine access level
+  // Determine access level based on roles
   const getAccessLevel = (): ConectaAccessLevel => {
     if (!user) return null;
     if (isAdmin) return 'admin';
-    if (hasActiveSubscription) return 'membro';
-    if (user) return 'convidado'; // Any logged-in user is at least convidado
-    return null;
+    if (hasBusinessOwnerRole) return 'membro';
+    return 'convidado';
   };
 
   const accessLevel = getAccessLevel();
-  const loading = profileLoading || subLoading;
+  const loading = profileLoading || roleLoading;
   const hasAccess = !!user; // Any logged-in user has some access
 
   // Permission helpers
@@ -85,7 +82,7 @@ export const useConectaAccess = () => {
   // Ensure conecta profile exists (upsert on first access)
   const ensureProfile = async () => {
     if (!user || conectaProfile) return;
-    const role = isAdmin ? 'admin' : hasActiveSubscription ? 'membro' : 'convidado';
+    const role = isAdmin ? 'admin' : hasBusinessOwnerRole ? 'membro' : 'convidado';
     await supabase
       .from('conecta_profiles')
       .upsert({
