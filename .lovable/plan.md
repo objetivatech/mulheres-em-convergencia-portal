@@ -32,9 +32,16 @@
 - Reuniões 1-a-1: registro com tipo membro/convidada, seleção de membro, upload de foto com compressão, notas
 - Hooks: useConectaMeetings, useConectaOneOnOnes
 - Componentes: ConectaMemberSelect, ConectaEncontros, ConectaReunioes
-### 🔲 Etapa 5: Depoimentos + Negócios + Indicações
-### 🔲 Etapa 6: Ranking + Estatísticas + Pontuação
-### 🔲 Etapa 7: Convites + Conteúdos
+### ✅ Etapa 5: Depoimentos + Negócios + Indicações (CONCLUÍDA)
+- Depoimentos: enviar/receber entre membros, listagem com abas
+- Negócios: registro com valor, cliente, membro indicador
+- Indicações: compartilhar leads com dados de contato
+### ✅ Etapa 6: Ranking + Estatísticas + Pontuação (CONCLUÍDA)
+- Ranking mensal com pódio Top 3, filtro por mês, destaque do usuário
+- Estatísticas pessoais com gráficos de barra e pizza (recharts)
+### ✅ Etapa 7: Convites + Conteúdos (CONCLUÍDA)
+- Convites: criação com código único, listagem com status, copiar código
+- Conteúdos: biblioteca com tipos (vídeo, documento, artigo, link), thumbnails
 ### 🔲 Etapa 8: Painel Admin CONECTA+
 ### 🔲 Etapa 9: Documentação
 

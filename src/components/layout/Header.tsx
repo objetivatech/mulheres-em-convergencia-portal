@@ -204,8 +204,9 @@ export function Header() {
                   
                   {/* CONECTA+ - Para todos logados */}
                   <DropdownMenuItem asChild>
-                    <Link to="/conecta" className="flex items-center">
-                      <span>🤝 CONECTA+</span>
+                    <Link to="/conecta" className="flex items-center gap-2">
+                      <span className="text-base">🔗</span>
+                      <span>CONECTA+</span>
                     </Link>
                   </DropdownMenuItem>
 
