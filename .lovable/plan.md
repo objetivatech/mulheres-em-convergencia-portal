@@ -81,8 +81,15 @@
 - RLS: usuário edita próprios dados, admin visualiza todos
 - Trigger `handle_updated_at` para atualização automática
 
-### 🔲 Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo
-### 🔲 Etapa 7: Documentação Completa
+### ✅ Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo (CONCLUÍDA)
+- Header com avatar, nome, badges de roles ativas
+- Abas condicionais: Visão Geral, Meus Dados, Socioeconômico, Meu Negócio, Embaixadora, CONECTA+, Academy, Blog, Assinatura
+- Formulário socioeconômico integrado (SocioeconomicForm.tsx)
+- Cards de acesso rápido na visão geral por role
+
+### ✅ Etapa 7: Documentação (CONCLUÍDA)
+- `docs/_active/04-usuarios/matriz-roles-permissoes.md` com tabela completa de roles × acessos
+- Regras de consistência, atribuição automática e verificação no frontend documentadas
 
 ---
 
