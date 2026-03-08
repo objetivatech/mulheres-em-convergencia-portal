@@ -84,6 +84,8 @@ import AdminCostCenters from '@/pages/admin/AdminCostCenters';
 import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
 import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
+import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
+import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
