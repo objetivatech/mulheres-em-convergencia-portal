@@ -27,7 +27,11 @@
 - Diretório de membros com busca, filtros por grupo/rank, modal de perfil completo
 - Componentes: RankBadge, ConectaActivityFeed, ScoringRulesCard
 - Hooks: useConectaStats, useConectaActivityFeed, useConectaMembers, useConectaProfile
-### 🔲 Etapa 4: Encontros + Reuniões 1-a-1 + Presenças
+### ✅ Etapa 4: Encontros + Reuniões 1-a-1 + Presenças (CONCLUÍDA)
+- Encontros: lista com próximos/anteriores, confirmação de presença, criação (admin), lista de confirmadas
+- Reuniões 1-a-1: registro com tipo membro/convidada, seleção de membro, upload de foto com compressão, notas
+- Hooks: useConectaMeetings, useConectaOneOnOnes
+- Componentes: ConectaMemberSelect, ConectaEncontros, ConectaReunioes
 ### 🔲 Etapa 5: Depoimentos + Negócios + Indicações
 ### 🔲 Etapa 6: Ranking + Estatísticas + Pontuação
 ### 🔲 Etapa 7: Convites + Conteúdos
