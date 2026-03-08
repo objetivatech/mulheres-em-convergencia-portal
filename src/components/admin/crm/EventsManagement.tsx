@@ -304,6 +304,19 @@ export const EventsManagement: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
+        <div className="col-span-2 flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="conecta_sync" className="text-base">Exibir no CONECTA+</Label>
+            <p className="text-sm text-muted-foreground">
+              Quando ativado, este evento aparecerá na seção Encontros do CONECTA+ e membros poderão se inscrever diretamente.
+            </p>
+          </div>
+          <Switch
+            id="conecta_sync"
+            checked={formData.conecta_sync}
+            onCheckedChange={(checked) => setFormData({ ...formData, conecta_sync: checked })}
+          />
+        </div>
       </div>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>
