@@ -72,6 +72,7 @@ const eventToFormData = (event: Event): EventFormData => ({
   max_participants: event.max_participants || null,
   instructor_name: event.instructor_name || '',
   status: event.status || 'draft',
+  conecta_sync: (event as any).conecta_sync ?? false,
 });
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
