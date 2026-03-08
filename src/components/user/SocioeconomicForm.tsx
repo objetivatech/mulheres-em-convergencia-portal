@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRoles } from '@/hooks/useUserRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
@@ -13,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Save, Info } from 'lucide-react';
 
 const socioeconomicSchema = z.object({
   race_ethnicity: z.string().optional(),
@@ -39,59 +39,53 @@ const socioeconomicSchema = z.object({
 
 type SocioeconomicFormData = z.infer<typeof socioeconomicSchema>;
 
-const raceOptions = [
-  'Branca', 'Preta', 'Parda', 'Amarela', 'Indígena', 'Prefiro não informar'
-];
+interface DerivedData {
+  hasBusinessFromDirectory: boolean;
+  businessNameFromDirectory: string | null;
+  businessCategoryFromDirectory: string | null;
+  cityFromProfile: string | null;
+  stateFromProfile: string | null;
+}
 
-const genderOptions = [
-  'Mulher cisgênero', 'Mulher transgênero', 'Não-binário', 'Prefiro não informar'
-];
-
-const maritalOptions = [
-  'Solteira', 'Casada', 'União estável', 'Divorciada', 'Viúva', 'Prefiro não informar'
-];
-
+const raceOptions = ['Branca', 'Preta', 'Parda', 'Amarela', 'Indígena', 'Prefiro não informar'];
+const genderOptions = ['Mulher cisgênero', 'Mulher transgênero', 'Não-binário', 'Prefiro não informar'];
+const maritalOptions = ['Solteira', 'Casada', 'União estável', 'Divorciada', 'Viúva', 'Prefiro não informar'];
 const educationOptions = [
   'Ensino fundamental incompleto', 'Ensino fundamental completo',
   'Ensino médio incompleto', 'Ensino médio completo',
   'Ensino superior incompleto', 'Ensino superior completo',
-  'Pós-graduação', 'Mestrado', 'Doutorado'
+  'Pós-graduação', 'Mestrado', 'Doutorado',
 ];
-
 const employmentOptions = [
   'Empregada CLT', 'Servidora pública', 'Autônoma/Freelancer',
-  'Empreendedora', 'Desempregada', 'Aposentada', 'Estudante', 'Outro'
+  'Empreendedora', 'Desempregada', 'Aposentada', 'Estudante', 'Outro',
 ];
-
 const incomeOptions = [
   'Até R$ 1.412', 'R$ 1.413 a R$ 2.824', 'R$ 2.825 a R$ 5.648',
   'R$ 5.649 a R$ 11.296', 'R$ 11.297 a R$ 22.592', 'Acima de R$ 22.592',
-  'Prefiro não informar'
+  'Prefiro não informar',
 ];
-
-const housingOptions = [
-  'Casa própria', 'Aluguel', 'Financiamento', 'Cedida/Emprestada', 'Outro'
-];
-
-const formalizationOptions = [
-  'MEI', 'ME', 'EPP', 'LTDA', 'SA', 'Informal', 'Outro'
-];
-
+const housingOptions = ['Casa própria', 'Aluguel', 'Financiamento', 'Cedida/Emprestada', 'Outro'];
+const formalizationOptions = ['MEI', 'ME', 'EPP', 'LTDA', 'SA', 'Informal', 'Outro'];
 const revenueOptions = [
   'Até R$ 5.000', 'R$ 5.001 a R$ 15.000', 'R$ 15.001 a R$ 30.000',
-  'R$ 30.001 a R$ 81.000', 'Acima de R$ 81.000', 'Prefiro não informar'
+  'R$ 30.001 a R$ 81.000', 'Acima de R$ 81.000', 'Prefiro não informar',
 ];
-
 const challengeOptions = [
   'Acesso a crédito', 'Gestão financeira', 'Marketing e vendas',
   'Capacitação técnica', 'Networking', 'Mentoria',
-  'Formalização', 'Tecnologia', 'Equilíbrio vida pessoal/profissional'
+  'Formalização', 'Tecnologia', 'Equilíbrio vida pessoal/profissional',
 ];
-
 const howDiscoveredOptions = [
   'Redes sociais', 'Indicação de amiga', 'Google/Busca',
-  'Evento', 'Imprensa', 'Outro'
+  'Evento', 'Imprensa', 'Outro',
 ];
+
+const SourceBadge = ({ source }: { source: string }) => (
+  <Badge variant="outline" className="text-[10px] ml-2 gap-1 font-normal">
+    <Info className="h-3 w-3" /> {source}
+  </Badge>
+);
 
 export const SocioeconomicForm = () => {
   const { user } = useAuth();
@@ -99,7 +93,13 @@ export const SocioeconomicForm = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
-  const [areasOfInterest, setAreasOfInterest] = useState<string[]>([]);
+  const [derived, setDerived] = useState<DerivedData>({
+    hasBusinessFromDirectory: false,
+    businessNameFromDirectory: null,
+    businessCategoryFromDirectory: null,
+    cityFromProfile: null,
+    stateFromProfile: null,
+  });
 
   const { register, handleSubmit, setValue, watch, reset } = useForm<SocioeconomicFormData>({
     resolver: zodResolver(socioeconomicSchema),
@@ -108,43 +108,61 @@ export const SocioeconomicForm = () => {
   const hasBusiness = watch('has_business');
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) fetchAllData();
   }, [user]);
 
-  const fetchData = async () => {
+  const fetchAllData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('user_socioeconomic_data')
-        .select('*')
-        .eq('user_id', user!.id)
-        .maybeSingle();
+      const [socioRes, profileRes, bizRes] = await Promise.all([
+        supabase.from('user_socioeconomic_data').select('*').eq('user_id', user!.id).maybeSingle(),
+        supabase.from('profiles').select('city, state').eq('id', user!.id).single(),
+        supabase.from('businesses').select('id, name, category, subcategory').eq('owner_id', user!.id).maybeSingle(),
+      ]);
 
-      if (error && error.code !== 'PGRST116') throw error;
+      const profileData = profileRes.data;
+      const bizData = bizRes.data;
+      const socioData = socioRes.data;
 
-      if (data) {
+      const derivedState: DerivedData = {
+        hasBusinessFromDirectory: !!bizData,
+        businessNameFromDirectory: bizData?.name || null,
+        businessCategoryFromDirectory: bizData?.subcategory || bizData?.category || null,
+        cityFromProfile: profileData?.city || null,
+        stateFromProfile: profileData?.state || null,
+      };
+      setDerived(derivedState);
+
+      if (socioData) {
         reset({
-          race_ethnicity: data.race_ethnicity || '',
-          gender_identity: data.gender_identity || '',
-          date_of_birth: data.date_of_birth || '',
-          marital_status: data.marital_status || '',
-          education_level: data.education_level || '',
-          employment_status: data.employment_status || '',
-          monthly_income: data.monthly_income || '',
-          housing_situation: data.housing_situation || '',
-          household_size: data.household_size || undefined,
-          city: data.city || '',
-          state: data.state || '',
-          neighborhood: data.neighborhood || '',
-          has_business: data.has_business || false,
-          business_sector: data.business_sector || '',
-          business_formalization: data.business_formalization || '',
-          business_monthly_revenue: data.business_monthly_revenue || '',
-          years_in_business: data.years_in_business || undefined,
-          how_discovered: data.how_discovered || '',
-          motivation: data.motivation || '',
+          race_ethnicity: socioData.race_ethnicity || '',
+          gender_identity: socioData.gender_identity || '',
+          date_of_birth: socioData.date_of_birth || '',
+          marital_status: socioData.marital_status || '',
+          education_level: socioData.education_level || '',
+          employment_status: socioData.employment_status || '',
+          monthly_income: socioData.monthly_income || '',
+          housing_situation: socioData.housing_situation || '',
+          household_size: socioData.household_size || undefined,
+          city: socioData.city || derivedState.cityFromProfile || '',
+          state: socioData.state || derivedState.stateFromProfile || '',
+          neighborhood: socioData.neighborhood || '',
+          has_business: derivedState.hasBusinessFromDirectory || socioData.has_business || false,
+          business_sector: socioData.business_sector || derivedState.businessCategoryFromDirectory || '',
+          business_formalization: socioData.business_formalization || '',
+          business_monthly_revenue: socioData.business_monthly_revenue || '',
+          years_in_business: socioData.years_in_business || undefined,
+          how_discovered: socioData.how_discovered || '',
+          motivation: socioData.motivation || '',
         });
-        setSelectedChallenges(data.main_challenges || []);
-        setAreasOfInterest(data.areas_of_interest || []);
+        setSelectedChallenges(socioData.main_challenges || []);
+      } else {
+        // Pre-fill from derived sources even if no socio data exists yet
+        reset({
+          city: derivedState.cityFromProfile || '',
+          state: derivedState.stateFromProfile || '',
+          has_business: derivedState.hasBusinessFromDirectory,
+          business_sector: derivedState.businessCategoryFromDirectory || '',
+        });
       }
     } catch (error) {
       console.error('Error fetching socioeconomic data:', error);
@@ -163,7 +181,6 @@ export const SocioeconomicForm = () => {
         household_size: formData.household_size || null,
         years_in_business: formData.years_in_business || null,
         main_challenges: selectedChallenges,
-        areas_of_interest: areasOfInterest,
       };
 
       const { error } = await supabase
@@ -171,7 +188,6 @@ export const SocioeconomicForm = () => {
         .upsert(payload, { onConflict: 'user_id' });
 
       if (error) throw error;
-
       toast({ title: 'Sucesso', description: 'Dados socioeconômicos salvos com sucesso!' });
     } catch (error: any) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
@@ -194,9 +210,14 @@ export const SocioeconomicForm = () => {
     );
   }
 
-  const SelectField = ({ label, name, options }: { label: string; name: keyof SocioeconomicFormData; options: string[] }) => (
+  const SelectField = ({ label, name, options, sourceBadge }: {
+    label: string; name: keyof SocioeconomicFormData; options: string[]; sourceBadge?: string;
+  }) => (
     <div className="space-y-1">
-      <Label>{label}</Label>
+      <Label className="flex items-center">
+        {label}
+        {sourceBadge && <SourceBadge source={sourceBadge} />}
+      </Label>
       <Select value={watch(name) as string || ''} onValueChange={(v) => setValue(name, v)}>
         <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
         <SelectContent>
@@ -251,11 +272,17 @@ export const SocioeconomicForm = () => {
             <Input type="number" min={1} max={20} {...register('household_size')} />
           </div>
           <div className="space-y-1">
-            <Label>Cidade</Label>
+            <Label className="flex items-center">
+              Cidade
+              {derived.cityFromProfile && <SourceBadge source="Dados do Perfil" />}
+            </Label>
             <Input {...register('city')} placeholder="Sua cidade" />
           </div>
           <div className="space-y-1">
-            <Label>Estado</Label>
+            <Label className="flex items-center">
+              Estado
+              {derived.stateFromProfile && <SourceBadge source="Dados do Perfil" />}
+            </Label>
             <Input {...register('state')} placeholder="UF" maxLength={2} />
           </div>
           <div className="space-y-1">
@@ -276,14 +303,31 @@ export const SocioeconomicForm = () => {
               id="has_business"
               checked={!!hasBusiness}
               onCheckedChange={(checked) => setValue('has_business', !!checked)}
+              disabled={derived.hasBusinessFromDirectory}
             />
-            <Label htmlFor="has_business" className="cursor-pointer">Possuo um negócio</Label>
+            <Label htmlFor="has_business" className="cursor-pointer flex items-center">
+              Possuo um negócio
+              {derived.hasBusinessFromDirectory && <SourceBadge source="Diretório" />}
+            </Label>
           </div>
+
+          {derived.hasBusinessFromDirectory && derived.businessNameFromDirectory && (
+            <div className="p-3 rounded-lg bg-muted/50 border text-sm">
+              <p className="font-medium">{derived.businessNameFromDirectory}</p>
+              {derived.businessCategoryFromDirectory && (
+                <p className="text-muted-foreground text-xs mt-0.5">Setor: {derived.businessCategoryFromDirectory}</p>
+              )}
+              <p className="text-muted-foreground text-xs mt-1">Dados vinculados ao seu cadastro no Diretório MeC</p>
+            </div>
+          )}
 
           {hasBusiness && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="space-y-1">
-                <Label>Setor do Negócio</Label>
+                <Label className="flex items-center">
+                  Setor do Negócio
+                  {derived.businessCategoryFromDirectory && <SourceBadge source="Diretório" />}
+                </Label>
                 <Input {...register('business_sector')} placeholder="Ex: Alimentação, Moda, Tecnologia..." />
               </div>
               <SelectField label="Formalização" name="business_formalization" options={formalizationOptions} />
