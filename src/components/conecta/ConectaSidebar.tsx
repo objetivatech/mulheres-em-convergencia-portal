@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Users, Calendar, Handshake, MessageSquareHeart,
   TrendingUp, Trophy, BarChart3, Share2, BookOpen, Send, UserCircle,
-  Settings
+  Settings, Lightbulb
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -31,6 +31,7 @@ const activityItems = [
   { title: 'Depoimentos', url: '/conecta/depoimentos', icon: MessageSquareHeart },
   { title: 'Negócios', url: '/conecta/negocios', icon: TrendingUp },
   { title: 'Indicações', url: '/conecta/indicacoes', icon: Share2 },
+  { title: 'Conselho 24/7', url: '/conecta/helpdesk', icon: Lightbulb },
 ];
 
 const communityItems = [

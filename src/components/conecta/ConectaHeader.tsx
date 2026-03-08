@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
 import { Badge } from '@/components/ui/badge';
+import { ConectaNotificationsDropdown } from './ConectaNotificationsDropdown';
 
 const levelLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   admin: { label: 'Admin', variant: 'default' },
@@ -12,7 +13,7 @@ const levelLabels: Record<string, { label: string; variant: 'default' | 'seconda
 };
 
 export function ConectaHeader() {
-  const { user, accessLevel } = useConectaAccess();
+  const { user, accessLevel, isMemberOrAbove } = useConectaAccess();
   const levelInfo = accessLevel ? levelLabels[accessLevel] : null;
 
   return (
@@ -30,6 +31,7 @@ export function ConectaHeader() {
       </div>
       
       <div className="flex items-center gap-3">
+        {isMemberOrAbove && <ConectaNotificationsDropdown />}
         {levelInfo && (
           <Badge variant={levelInfo.variant} className="text-xs">
             {levelInfo.label}

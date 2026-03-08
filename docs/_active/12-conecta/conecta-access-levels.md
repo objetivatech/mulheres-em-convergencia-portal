@@ -35,10 +35,12 @@ O nível de acesso no CONECTA+ é determinado automaticamente pelo hook `useCone
 | Depoimentos | ✅ | ✅ | ❌ |
 | Negócios | ✅ | ✅ | ❌ |
 | Indicações | ✅ | ✅ | ❌ |
+| Conselho 24/7 | ✅ | ✅ | ❌ |
 | Ranking | ✅ | ✅ | ✅ |
 | Estatísticas | ✅ | ✅ | ✅ |
 | Convites | ✅ | ✅ | ❌ |
 | Conteúdos | ✅ | ✅ | ✅ |
+| Notificações (sino) | ✅ | ✅ | ❌ |
 | Painel Admin | ✅ | ❌ | ❌ |
 
 ## Implementação no Sidebar
@@ -46,7 +48,7 @@ O nível de acesso no CONECTA+ é determinado automaticamente pelo hook `useCone
 O `ConectaSidebar.tsx` usa a propriedade `isMemberOrAbove` do hook para mostrar/ocultar seções:
 
 - **Principal**: Visível para todos (Dashboard, Perfil, Membros, Grupos)
-- **Atividades**: Visível para membros e admins (Encontros, Reuniões, Depoimentos, Negócios, Indicações)
+- **Atividades**: Visível para membros e admins (Encontros, Reuniões, Depoimentos, Negócios, Indicações, Conselho 24/7)
 - **Comunidade**: Visível para todos (Ranking, Estatísticas, Convites, Conteúdos)
 - **Administração**: Visível apenas para admins (Admin CONECTA+)
 
