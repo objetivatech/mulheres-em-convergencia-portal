@@ -16,6 +16,7 @@ const Auth = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true);
   const formStartRef = useRef<number>(Date.now());
   const [error, setError] = useState<string | null>(null);
 
