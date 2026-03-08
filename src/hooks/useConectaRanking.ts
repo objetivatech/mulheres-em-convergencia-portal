@@ -20,55 +20,38 @@ export function useConectaRanking(month?: string, teamId?: string) {
   const rankingQuery = useQuery({
     queryKey: ['conecta-ranking', currentMonth, teamId],
     queryFn: async (): Promise<RankingEntry[]> => {
-      // Get monthly points
       let query = supabase
         .from('conecta_monthly_points')
-        .select('user_id, total_points')
-        .eq('month', currentMonth)
-        .order('total_points', { ascending: false });
+        .select('user_id, points, rank')
+        .eq('year_month', currentMonth)
+        .order('points', { ascending: false });
 
       if (teamId) {
-        // Filter by team members
-        const { data: teamMembers } = await supabase
-          .from('conecta_team_members')
-          .select('user_id')
-          .eq('team_id', teamId);
-        
-        if (teamMembers && teamMembers.length > 0) {
-          const memberIds = teamMembers.map(m => m.user_id);
-          query = query.in('user_id', memberIds);
-        }
+        query = query.eq('team_id', teamId);
       }
 
       const { data: points, error } = await query;
       if (error) throw error;
       if (!points || points.length === 0) return [];
 
-      // Get profiles for these users
-      const userIds = points.map(p => p.user_id);
-      const { data: profiles } = await supabase
-        .from('conecta_profiles')
-        .select('user_id, rank')
-        .in('user_id', userIds);
+      const userIds = points.map((p: any) => p.user_id);
 
       const { data: authProfiles } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url')
         .in('id', userIds);
 
-      const profileMap = new Map(authProfiles?.map(p => [p.id, p]) || []);
-      const conectaMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      const profileMap = new Map((authProfiles || []).map((p: any) => [p.id, p]));
 
-      return points.map((p, idx) => {
+      return points.map((p: any, idx: number) => {
         const profile = profileMap.get(p.user_id);
-        const conectaProfile = conectaMap.get(p.user_id);
         return {
           user_id: p.user_id,
-          full_name: profile?.full_name || 'Membro',
-          avatar_url: profile?.avatar_url || null,
+          full_name: (profile as any)?.full_name || 'Membro',
+          avatar_url: (profile as any)?.avatar_url || null,
           company: null,
-          total_points: p.total_points,
-          rank: conectaProfile?.rank || 'iniciante',
+          total_points: p.points,
+          rank: p.rank || 'iniciante',
           position: idx + 1,
         };
       });

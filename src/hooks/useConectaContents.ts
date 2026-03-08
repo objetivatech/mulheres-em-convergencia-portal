@@ -11,7 +11,7 @@ export function useConectaContents() {
       const { data, error } = await supabase
         .from('conecta_contents')
         .select('*')
-        .eq('published', true)
+        .eq('active', true)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;

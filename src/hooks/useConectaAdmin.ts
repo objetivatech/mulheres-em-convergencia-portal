@@ -9,17 +9,17 @@ export function useConectaAdmin() {
     queryKey: ['conecta-admin-overview'],
     queryFn: async () => {
       const [members, meetings, deals, referrals, testimonials, invitations, oneOnOnes] = await Promise.all([
-        supabase.from('conecta_profiles').select('user_id', { count: 'exact', head: true }),
+        supabase.from('conecta_profiles').select('id', { count: 'exact', head: true }),
         supabase.from('conecta_meetings').select('id', { count: 'exact', head: true }),
-        supabase.from('conecta_business_deals').select('id, deal_value', { count: 'exact' }),
+        supabase.from('conecta_business_deals').select('id, value', { count: 'exact' }),
         supabase.from('conecta_referrals').select('id', { count: 'exact', head: true }),
         supabase.from('conecta_testimonials').select('id', { count: 'exact', head: true }),
         supabase.from('conecta_invitations').select('id, status', { count: 'exact' }),
         supabase.from('conecta_one_on_ones').select('id', { count: 'exact', head: true }),
       ]);
 
-      const totalDealValue = deals.data?.reduce((sum, d) => sum + (Number(d.deal_value) || 0), 0) || 0;
-      const acceptedInvites = invitations.data?.filter((i: any) => i.status === 'accepted').length || 0;
+      const totalDealValue = (deals.data as any[])?.reduce((sum: number, d: any) => sum + (Number(d.value) || 0), 0) || 0;
+      const acceptedInvites = (invitations.data as any[])?.filter((i: any) => i.status === 'accepted').length || 0;
 
       return {
         totalMembers: members.count || 0,
@@ -59,17 +59,16 @@ export function useConectaAdmin() {
         .order('name');
       if (error) throw error;
 
-      // Get member counts per team
       const { data: teamMembers } = await supabase
         .from('conecta_team_members')
         .select('team_id');
 
       const countMap = new Map<string, number>();
-      teamMembers?.forEach((tm: any) => {
+      (teamMembers as any[])?.forEach((tm: any) => {
         countMap.set(tm.team_id, (countMap.get(tm.team_id) || 0) + 1);
       });
 
-      return teams?.map(t => ({ ...t, memberCount: countMap.get(t.id) || 0 })) || [];
+      return (teams || []).map((t: any) => ({ ...t, memberCount: countMap.get(t.id) || 0 }));
     },
     enabled: !!user,
   });

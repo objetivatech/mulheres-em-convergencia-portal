@@ -1,19 +1,27 @@
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useConectaStats } from '@/hooks/useConectaStats';
+import { useConectaStats, ConectaStats } from '@/hooks/useConectaStats';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Handshake, MessageSquareHeart, TrendingUp, Share2 } from 'lucide-react';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', '#f59e0b'];
 
 export default function ConectaEstatisticas() {
-  const { stats, isLoading } = useConectaStats();
+  const { data: stats, isLoading } = useConectaStats();
+
+  const safeStats: ConectaStats = stats || {
+    oneOnOnes: { total: 0, withMembers: 0, withGuests: 0 },
+    testimonials: { sent: 0, received: 0 },
+    businessDeals: { total: 0, value: 0 },
+    referrals: { sent: 0, received: 0 },
+    attendances: 0,
+  };
 
   const barData = [
-    { name: 'Reuniões 1-a-1', value: stats.oneOnOnes, icon: '🤝' },
-    { name: 'Depoimentos', value: stats.testimonials, icon: '💬' },
-    { name: 'Negócios', value: stats.businessDeals, icon: '📈' },
-    { name: 'Indicações', value: stats.referrals, icon: '🔗' },
+    { name: 'Reuniões 1-a-1', value: safeStats.oneOnOnes.total },
+    { name: 'Depoimentos', value: safeStats.testimonials.sent + safeStats.testimonials.received },
+    { name: 'Negócios', value: safeStats.businessDeals.total },
+    { name: 'Indicações', value: safeStats.referrals.sent + safeStats.referrals.received },
   ];
 
   const pieData = barData.filter(d => d.value > 0);
@@ -24,13 +32,12 @@ export default function ConectaEstatisticas() {
       <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground">📊 Minhas Estatísticas</h1>
 
-        {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Reuniões 1-a-1', value: stats.oneOnOnes, icon: Handshake, color: 'text-blue-500' },
-            { label: 'Depoimentos', value: stats.testimonials, icon: MessageSquareHeart, color: 'text-pink-500' },
-            { label: 'Negócios', value: stats.businessDeals, icon: TrendingUp, color: 'text-green-500' },
-            { label: 'Indicações', value: stats.referrals, icon: Share2, color: 'text-amber-500' },
+            { label: 'Reuniões 1-a-1', value: safeStats.oneOnOnes.total, icon: Handshake, color: 'text-primary' },
+            { label: 'Depoimentos', value: safeStats.testimonials.sent + safeStats.testimonials.received, icon: MessageSquareHeart, color: 'text-primary' },
+            { label: 'Negócios', value: safeStats.businessDeals.total, icon: TrendingUp, color: 'text-primary' },
+            { label: 'Indicações', value: safeStats.referrals.sent + safeStats.referrals.received, icon: Share2, color: 'text-primary' },
           ].map(item => (
             <Card key={item.label}>
               <CardContent className="pt-4 pb-3 flex flex-col items-center text-center gap-1">
@@ -43,7 +50,6 @@ export default function ConectaEstatisticas() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Bar chart */}
           <Card>
             <CardHeader><CardTitle className="text-base">Atividades por Tipo</CardTitle></CardHeader>
             <CardContent>
@@ -63,7 +69,6 @@ export default function ConectaEstatisticas() {
             </CardContent>
           </Card>
 
-          {/* Pie chart */}
           <Card>
             <CardHeader><CardTitle className="text-base">Distribuição</CardTitle></CardHeader>
             <CardContent>
