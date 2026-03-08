@@ -1,126 +1,186 @@
 
-# Plano: CONECTA+ - Ambiente de Networking Integrado ao Portal MeC
 
-## Status de Implementação
+# Plano: Revisão Completa do CONECTA+ e Novos Recursos
 
-### ✅ Etapa 1: Banco de Dados (CONCLUÍDA)
-- 15 tabelas criadas com prefixo `conecta_`
-- Enums: `conecta_role`, `conecta_rank`
-- RLS policies para todas as tabelas
-- Funções RPC: pontuação, ranking, convites, feed
-- Triggers automáticos para feed + pontos
-- Índices de performance
+## Diagnóstico dos Problemas Encontrados
 
-### ✅ Etapa 2: Layout e Navegação (CONCLUÍDA)
-- `ConectaLayout` com sidebar + header
-- `ConectaSidebar` com menu por nível de acesso
-- `ConectaHeader` com badge de nível
-- `useConectaAccess` hook para controle de acesso
-- Rotas `/conecta/*` registradas no App.tsx
-- Link "CONECTA+" no menu do usuário (Header)
-- Dashboard básico com cards e ações rápidas
-- Páginas placeholder para todos os módulos
+### Bug do Convite (crítico)
+O hook `useConectaInvitations.ts` insere campos inexistentes na tabela:
+- Usa `guest_name` → tabela espera `name`
+- Usa `guest_email` → tabela espera `email`  
+- Usa `meeting_id` → coluna não existe na tabela `conecta_invitations`
 
-### ✅ Etapa 3: Dashboard + Perfil + Membros (CONCLUÍDA)
-- Dashboard completo com stats reais, feed de atividades em tempo real, próximos encontros, sistema de pontuação com ranks
-- Perfil CONECTA+ com edição de empresa, cargo, bio, redes sociais, banner, aniversário
-- Diretório de membros com busca, filtros por grupo/rank, modal de perfil completo
-- Componentes: RankBadge, ConectaActivityFeed, ScoringRulesCard
-- Hooks: useConectaStats, useConectaActivityFeed, useConectaMembers, useConectaProfile
-### ✅ Etapa 4: Encontros + Reuniões 1-a-1 + Presenças (CONCLUÍDA)
-- Encontros: lista com próximos/anteriores, confirmação de presença, criação (admin), lista de confirmadas
-- Reuniões 1-a-1: registro com tipo membro/convidada, seleção de membro, upload de foto com compressão, notas
-- Hooks: useConectaMeetings, useConectaOneOnOnes
-- Componentes: ConectaMemberSelect, ConectaEncontros, ConectaReunioes
-### ✅ Etapa 5: Depoimentos + Negócios + Indicações (CONCLUÍDA)
-- Depoimentos: enviar/receber entre membros, listagem com abas
-- Negócios: registro com valor, cliente, membro indicador
-- Indicações: compartilhar leads com dados de contato
-### ✅ Etapa 6: Ranking + Estatísticas + Pontuação (CONCLUÍDA)
-- Ranking mensal com pódio Top 3, filtro por mês, destaque do usuário
-- Estatísticas pessoais com gráficos de barra e pizza (recharts)
-### ✅ Etapa 7: Convites + Conteúdos (CONCLUÍDA)
-- Convites: criação com código único, listagem com status, copiar código
-- Conteúdos: biblioteca com tipos (vídeo, documento, artigo, link), thumbnails
-### ✅ Etapa 8: Painel Admin CONECTA+ (CONCLUÍDA)
-- Dashboard admin com visão geral (membros, encontros, negócios, indicações, convites)
-- Listagem de grupos com contagem de membros
-- Feed de atividades recentes da comunidade
-### ✅ Etapa 9: Documentação (CONCLUÍDA)
-- conecta-overview.md: visão geral completa
-- conecta-database.md: esquema detalhado do banco
-- conecta-access-levels.md: níveis de acesso e permissões
+### Uploads usando Supabase Storage em vez de R2
+Dois arquivos usam `supabase.storage` diretamente:
+- `ConectaPerfil.tsx` (banner upload)
+- `ConectaReunioes.tsx` (foto do 1-a-1)
+
+### Emails sem Mailrelay
+Nenhum fluxo do Conecta+ envia emails via Mailrelay (convites, indicações, depoimentos, negócios fechados). Outros módulos já usam Mailrelay corretamente (eventos, embaixadoras, contato).
 
 ---
 
-# Plano: Integração de Roles, Newsletter Opt-in e Remodelação do Meu Painel
+## Etapas de Implementação
 
-## Status de Implementação
+### Etapa 1: Correções Urgentes
 
-### ✅ Etapa 1: Triggers de Atribuição Automática de Roles (CONCLUÍDA)
-- Trigger `assign_default_role`: atribui `community_member` a todo novo usuário (via profiles INSERT)
-- Trigger `sync_newsletter_subscriber_role`: sincroniza role `subscriber` com `newsletter_subscribed`
-- Migração retroativa: todos usuários existentes receberam `community_member` e `subscriber` conforme aplicável
-- RPC `get_user_roles(_user_id)`: retorna array de roles para uso no frontend
+**1a. Fix do hook de convites** — Corrigir `useConectaInvitations.ts` para usar `name`/`email` em vez de `guest_name`/`guest_email`, remover `meeting_id`.
 
-### ✅ Etapa 6: Validação de Consistência de Roles (CONCLUÍDA)
-- Trigger `validate_role_consistency`: garante `community_member` ao inserir roles dependentes
-- Impede remoção de `community_member` se existem roles dependentes (business_owner, ambassador, student, blog_editor, admin)
+**1b. Migrar uploads para R2** — Substituir `supabase.storage` por `useR2Storage` em:
+- `ConectaPerfil.tsx` (banner) → pasta `conecta/banners`
+- `ConectaReunioes.tsx` (fotos 1-a-1) → pasta `conecta/one-on-one`
 
-### ✅ Etapa 2: Unificar useRoles/useAuth/useConectaAccess (CONCLUÍDA)
-- Novo hook centralizado `useUserRoles.ts` com cache React Query (5 min) usando RPC `get_user_roles`
-- `useRoles.hasRole()` agora usa `useUserRoles` internamente (antes só verificava admin/blog_editor)
-- `useConectaAccess` usa `has_role('business_owner')` ao invés de `user_subscriptions` para determinar nível "membro"
+### Etapa 2: Sistema de Emails via Mailrelay para CONECTA+
 
-### ✅ Etapa 3: Newsletter Opt-in nos Formulários de Cadastro (CONCLUÍDA)
-- Checkbox "Desejo receber a newsletter" no formulário de cadastro (Auth.tsx), pré-marcado
-- `signUp` atualiza `profiles.newsletter_subscribed` que dispara trigger para adicionar role `subscriber`
+Criar Edge Function `send-conecta-email` com templates MeC para:
+- **Convite criado** → email ao convidado com código
+- **Nova indicação recebida** → email ao membro destinatário
+- **Novo depoimento recebido** → email ao membro
+- **Negócio fechado via indicação** → email a quem indicou
+- **Convidado cadastrado** → email ao membro que convidou
 
-### ✅ Etapa 4: Tabela de Dados Socioeconômicos (CONCLUÍDA)
-- Tabela `user_socioeconomic_data` com 20+ campos: raça/etnia, gênero, educação, renda, moradia, empreendedorismo, engajamento
-- RLS: usuário edita próprios dados, admin visualiza todos
-- Trigger `handle_updated_at` para atualização automática
+Templates seguem identidade visual MeC (cores `#7C3AED` primary, logo, rodapé padrão). Chamar a Edge Function a partir dos hooks `useConectaInvitations`, `useConectaReferrals`, `useConectaTestimonials`, `useConectaBusinessDeals`.
 
-### ✅ Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo (CONCLUÍDA)
-- Header com avatar, nome, badges de roles ativas
-- Abas condicionais: Visão Geral, Meus Dados, Socioeconômico, Meu Negócio, Embaixadora, CONECTA+, Academy, Blog, Assinatura
-- Formulário socioeconômico integrado (SocioeconomicForm.tsx)
-- Cards de acesso rápido na visão geral por role
+### Etapa 3: Lista de Convidados por Encontro (item 1 e 2)
 
-### ✅ Etapa 7: Documentação (CONCLUÍDA)
-- `docs/_active/04-usuarios/matriz-roles-permissoes.md` com tabela completa de roles × acessos
-- Regras de consistência, atribuição automática e verificação no frontend documentadas
+**Banco de dados:**
+- Adicionar coluna `meeting_id` (nullable, FK → `conecta_meetings`) na tabela `conecta_invitations` via migration
+- Criar view ou query que agrupa convidados por encontro
+
+**Frontend:**
+- Criar componente `MeetingGuestsList` que lista convidados de um encontro específico, visível apenas para membros/facilitadores/admin
+- Na página `ConectaEncontros`, cada encontro passado exibe um botão "Ver Convidados" que expande a lista
+- Nome do convidado é um link para o perfil público (se existir `accepted_by`)
+- Restringir visibilidade via `useConectaAccess.isMemberOrAbove`
+
+### Etapa 4: Sincronizar Encontros com Eventos do Portal (item 3)
+
+**Lógica:**
+- Na página `ConectaEncontros`, além dos encontros criados manualmente, listar eventos da tabela `events` que tenham tag/tipo "CONECTA+" ou "Encontro de Networking"
+- Permitir que membros se inscrevam/desinscrevam diretamente da interface Conecta+, usando a mesma lógica de `event_registrations`
+- Dados do perfil já existentes (nome, email, CPF) são pré-preenchidos automaticamente
+
+**Implementação:**
+- Criar campo `conecta_sync` (boolean) na tabela `events` via migration, ou usar tag/categoria existente
+- Hook `useConectaMeetings` passa a buscar também de `events` quando marcados como Conecta+
+- Unificar exibição: meetings manuais + eventos sincronizados na mesma timeline
+
+### Etapa 5: Perfil Conecta+ Enriquecido com Pitch (item 4)
+
+Baseado no print de referência, adicionar ao perfil Conecta+:
+
+**Novos campos em `conecta_profiles` (migration):**
+- `area_of_expertise` (text) — Área de atuação
+- `skills_tags` (text[]) — Tags/Habilidades
+- `pitch_what_i_do` (text) — "O que eu faço"
+- `pitch_ideal_client` (text) — "Meu cliente ideal"
+- `pitch_how_to_refer` (text) — "Como me indicar"
+- `contact_email` (text) — Email de contato profissional
+
+**Seções no formulário de perfil:**
+1. Informações Básicas (foto, nome, empresa, cargo — já existem)
+2. Bio + Área de atuação + Tags
+3. Contato & Redes (telefone, email de contato, website, LinkedIn, Instagram)
+4. Apresentação / Elevator Pitch (3 campos de texto)
+
+**Gerador de Pitch com IA:**
+- Botão "Gerar Pitch" que usa os campos preenchidos (empresa, cargo, área, o que faz, cliente ideal) para gerar um elevator pitch formatado
+- Edge Function `generate-conecta-pitch` que usa Perplexity/OpenAI para gerar texto contextualizado para o negócio da membra
+- Resultado editável antes de salvar
+
+### Etapa 6: Conselho de Administração 24/7 — Help Desk (item 5)
+
+**Conceito sugerido: Quadro Kanban de Desafios de Negócio**
+
+Funciona como um fórum estruturado onde membros postam desafios e a comunidade contribui:
+
+**Tabelas (migration):**
+```text
+conecta_helpdesk_posts
+├── id, user_id, title, description, category
+├── status: 'aberto' | 'em_discussao' | 'resolvido'
+├── priority: 'baixa' | 'media' | 'alta'
+├── created_at, resolved_at
+
+conecta_helpdesk_replies
+├── id, post_id, user_id, content
+├── is_solution (boolean) — marcado pelo autor
+├── created_at
+```
+
+**Interface:**
+- Visualização Kanban com 3 colunas: Aberto → Em Discussão → Resolvido
+- Card mostra: título, autor (avatar+nome), categoria, número de respostas
+- Ao clicar, abre thread de discussão
+- Autor pode marcar uma resposta como "solução" e mover para Resolvido
+- Categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia
+
+**Alternativa ao Kanban (sugestão extra):** Vista de lista com filtros por categoria e status, mais simples e funcional para mobile. Recomendo implementar ambas as vistas com toggle.
+
+**Pontuação:** Responder a um post = pontos no ranking CONECTA+
+
+### Etapa 7: Status de Temperatura nas Indicações (item 7)
+
+**Banco de dados:**
+- Adicionar coluna `temperature` (text: 'cold' | 'warm' | 'hot') na tabela `conecta_referrals` via migration, default 'warm'
+
+**Frontend:**
+- No formulário de indicação, adicionar seletor visual de temperatura com cores:
+  - Frio (azul `#3B82F6`) — ❄️ Lead frio
+  - Morno (amarelo `#F59E0B`) — 🔥 Lead morno  
+  - Quente (vermelho `#EF4444`) — 🔥🔥 Lead quente
+- No card de indicação, badge colorido com a temperatura
+- Filtro por temperatura na listagem
+
+### Etapa 8: Sistema de Notificações (item 8)
+
+**Banco de dados:**
+```text
+conecta_notifications
+├── id, user_id, type, title, message
+├── reference_id, reference_type (polimórfico)
+├── read (boolean), read_at
+├── created_at
+```
+
+**Tipos de notificação:**
+- `new_referral` — Nova indicação recebida
+- `new_testimonial` — Novo depoimento recebido
+- `deal_from_referral` — Negócio fechado a partir de indicação sua
+- `guest_registered` — Convidado(a) se cadastrou
+
+**Frontend:**
+- Ícone de sino no header do Conecta+ com badge de contagem
+- Dropdown/painel com lista de notificações
+- Marcar como lida individualmente ou todas
+
+**Email:**
+- Cada notificação dispara email via `send-conecta-email` (Mailrelay)
+- Configuração de preferências: email on/off por tipo
+
+**Push (futuro):**
+- Preparar estrutura para Web Push Notifications (service worker + subscription table)
+- Implementação inicial com `Notification API` do browser para quem autorizar
+
+### Etapa 9: Documentação
+
+- Criar `docs/_active/12-conecta/conecta-fluxos-revisados.md`
+- Atualizar `docs/_active/12-conecta/conecta-access-levels.md`
+- Documentar sistema de notificações, helpdesk, e pitch
 
 ---
 
-## Arquitetura Original (CONECTA+)
+## Ordem de Implementação
 
-### Tabelas do banco (prefixo `conecta_`):
-- conecta_profiles, conecta_teams, conecta_team_members
-- conecta_meetings, conecta_attendances, conecta_one_on_ones
-- conecta_testimonials, conecta_business_deals, conecta_referrals
-- conecta_invitations, conecta_contents, conecta_activity_feed
-- conecta_monthly_points, conecta_points_history
+1. **Etapa 1** — Correções urgentes (convites + R2)
+2. **Etapa 2** — Emails Mailrelay para Conecta+
+3. **Etapa 7** — Temperatura nas indicações (simples)
+4. **Etapa 3** — Lista de convidados por encontro
+5. **Etapa 4** — Sincronização encontros ↔ eventos
+6. **Etapa 5** — Perfil enriquecido com pitch
+7. **Etapa 8** — Sistema de notificações
+8. **Etapa 6** — Helpdesk / Conselho 24/7
+9. **Etapa 9** — Documentação
 
-### Níveis de Acesso CONECTA+:
-- **Admin**: role `admin` na tabela `user_roles`
-- **Membro**: role `business_owner` (Associada)
-- **Convidado**: Qualquer usuário logado (community_member)
+Devido ao volume, sugiro implementar em **3 rodadas**: Etapas 1-3 (correções + quick wins), Etapas 4-6 (funcionalidades core), Etapas 7-9 (notificações + helpdesk + docs).
 
-### Rotas:
-- `/conecta` - Dashboard
-- `/conecta/perfil|membros|grupos|encontros|reunioes|depoimentos|negocios|indicacoes|ranking|estatisticas|convites|conteudos`
-- `/admin/conecta` - Painel administrativo
-
-## Matriz de Roles × Acessos
-
-| Funcionalidade | community_member | subscriber | ambassador | business_owner | student | admin |
-|---|---|---|---|---|---|---|
-| Portal básico | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Newsletter | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Painel Embaixadora | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| Diretório de Negócios | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| CONECTA+ (membro) | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| CONECTA+ (convidado) | ✅ | ✅ | ✅ | - | ✅ | - |
-| MeC Academy | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| Admin completo | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
