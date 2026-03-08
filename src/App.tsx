@@ -85,6 +85,8 @@ import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
 import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
 import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
+import ConectaPerfil from '@/pages/conecta/ConectaPerfil';
+import ConectaMembros from '@/pages/conecta/ConectaMembros';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 const queryClient = new QueryClient();
 
@@ -418,8 +420,8 @@ function AppContent() {
           
           {/* CONECTA+ Routes */}
           <Route path="/conecta" element={<ProtectedRoute><ConectaDashboard /></ProtectedRoute>} />
-          <Route path="/conecta/perfil" element={<ProtectedRoute><ConectaPlaceholder title="Meu Perfil" /></ProtectedRoute>} />
-          <Route path="/conecta/membros" element={<ProtectedRoute><ConectaPlaceholder title="Membros" /></ProtectedRoute>} />
+          <Route path="/conecta/perfil" element={<ProtectedRoute><ConectaPerfil /></ProtectedRoute>} />
+          <Route path="/conecta/membros" element={<ProtectedRoute><ConectaMembros /></ProtectedRoute>} />
           <Route path="/conecta/grupos" element={<ProtectedRoute><ConectaPlaceholder title="Grupos" /></ProtectedRoute>} />
           <Route path="/conecta/encontros" element={<ProtectedRoute><ConectaPlaceholder title="Encontros" /></ProtectedRoute>} />
           <Route path="/conecta/reunioes" element={<ProtectedRoute><ConectaPlaceholder title="Reuniões 1-a-1" requireMember /></ProtectedRoute>} />

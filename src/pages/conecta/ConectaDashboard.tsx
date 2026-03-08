@@ -1,13 +1,21 @@
 import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useConectaStats } from '@/hooks/useConectaStats';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { 
   Handshake, MessageSquareHeart, TrendingUp, Share2, 
-  Calendar, Trophy, ArrowRight, Sparkles 
+  Calendar, Trophy, ArrowRight, Sparkles, Users, DollarSign, Send
 } from 'lucide-react';
+import ConectaActivityFeed from '@/components/conecta/ConectaActivityFeed';
+import RankBadge from '@/components/conecta/RankBadge';
+import ScoringRulesCard from '@/components/conecta/ScoringRulesCard';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { isFuture, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const quickActions = [
   { title: 'Reunião 1-a-1', icon: Handshake, href: '/conecta/reunioes', color: 'text-blue-500' },
@@ -17,7 +25,30 @@ const quickActions = [
 ];
 
 export default function ConectaDashboard() {
-  const { accessLevel, isMemberOrAbove, conectaProfile } = useConectaAccess();
+  const { accessLevel, isMemberOrAbove, conectaProfile, user } = useConectaAccess();
+  const { data: stats } = useConectaStats();
+
+  // Upcoming meetings
+  const { data: meetings } = useQuery({
+    queryKey: ['conecta-upcoming-meetings'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('conecta_meetings')
+        .select('id, title, meeting_date, meeting_time, location')
+        .gte('meeting_date', new Date().toISOString().split('T')[0])
+        .order('meeting_date', { ascending: true })
+        .limit(3);
+      return data || [];
+    },
+  });
+
+  const statsCards = [
+    { icon: Handshake, label: 'Reuniões 1-a-1', value: stats?.oneOnOnes?.total || 0, color: 'text-blue-600' },
+    { icon: MessageSquareHeart, label: 'Depoimentos', value: stats?.testimonials?.sent || 0, color: 'text-purple-600' },
+    { icon: DollarSign, label: 'Negócios', value: `R$ ${((stats?.businessDeals?.value || 0) / 1000).toFixed(1)}k`, color: 'text-green-600' },
+    { icon: Send, label: 'Indicações', value: stats?.referrals?.sent || 0, color: 'text-orange-600' },
+    { icon: Calendar, label: 'Presenças', value: stats?.attendances || 0, color: 'text-pink-600' },
+  ];
 
   return (
     <ConectaLayout>
@@ -28,13 +59,22 @@ export default function ConectaDashboard() {
 
       <div className="space-y-6">
         {/* Welcome */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Bem-vinda ao CONECTA+ 🌟
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Sua rede de networking e crescimento profissional
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Olá, {user?.user_metadata?.full_name?.split(' ')[0] || 'Empreendedora'}! 👋
+            </h1>
+            <p className="text-muted-foreground">
+              Bem-vinda ao CONECTA+. Acompanhe suas atividades e conexões.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-2xl font-bold text-foreground">{conectaProfile?.points ?? 0}</p>
+              <p className="text-xs text-muted-foreground">pontos</p>
+            </div>
+            <RankBadge rank={conectaProfile?.rank as any} />
+          </div>
         </div>
 
         {/* Guest upgrade banner */}
@@ -57,6 +97,27 @@ export default function ConectaDashboard() {
           </Card>
         )}
 
+        {/* Stats Cards - members only */}
+        {isMemberOrAbove && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {statsCards.map((stat) => (
+              <Card key={stat.label} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
+                      <stat.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions - members only */}
         {isMemberOrAbove && (
           <div>
@@ -76,75 +137,81 @@ export default function ConectaDashboard() {
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Meus Pontos
-              </CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{conectaProfile?.points ?? 0}</div>
-              <p className="text-xs text-muted-foreground capitalize">
-                Rank: {conectaProfile?.rank ?? 'iniciante'}
-              </p>
-            </CardContent>
-          </Card>
+        {/* Main Grid: Feed + Upcoming */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ConectaActivityFeed limit={15} />
+          </div>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
                 Próximos Encontros
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardDescription>Agenda da comunidade</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">—</div>
-              <p className="text-xs text-muted-foreground">Em breve</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Ranking
-              </CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <Link to="/conecta/ranking" className="flex items-center gap-1 text-primary text-sm hover:underline">
-                Ver ranking <ArrowRight className="h-3 w-3" />
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Placeholder sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Atividades Recentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Nenhuma atividade registrada ainda. Comece registrando uma reunião 1-a-1!
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Meus Grupos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Você ainda não faz parte de nenhum grupo.
-              </p>
+              {meetings && meetings.length > 0 ? (
+                <div className="space-y-3">
+                  {meetings.map((meeting) => (
+                    <div key={meeting.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                      <h4 className="font-medium text-sm">{meeting.title}</h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(meeting.meeting_date + 'T12:00:00'), "dd 'de' MMM", { locale: ptBR })}
+                        {meeting.meeting_time && (
+                          <span className="ml-2">{meeting.meeting_time.slice(0, 5)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full mt-2" asChild>
+                    <Link to="/conecta/encontros">Ver todos</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-40 border-2 border-dashed rounded-lg bg-muted/50">
+                  <div className="text-center text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="font-medium">Nenhum encontro agendado</p>
+                    <p className="text-sm">Os encontros aparecerão aqui</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Scoring Rules */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Sistema de Pontuação
+            </CardTitle>
+            <CardDescription>
+              Acumule pontos e suba de rank participando da comunidade
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {(['iniciante', 'bronze', 'prata', 'ouro', 'diamante'] as const).map((rank) => (
+                <div key={rank} className="text-center p-4 rounded-lg bg-muted/50">
+                  <RankBadge rank={rank} size="lg" />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {rank === 'iniciante' && '0 - 49 pts'}
+                    {rank === 'bronze' && '50 - 199 pts'}
+                    {rank === 'prata' && '200 - 499 pts'}
+                    {rank === 'ouro' && '500 - 999 pts'}
+                    {rank === 'diamante' && '1000+ pts'}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <ScoringRulesCard compact />
+          </CardContent>
+        </Card>
       </div>
     </ConectaLayout>
   );

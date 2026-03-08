@@ -21,7 +21,12 @@
 - Dashboard básico com cards e ações rápidas
 - Páginas placeholder para todos os módulos
 
-### 🔲 Etapa 3: Dashboard + Perfil + Membros
+### ✅ Etapa 3: Dashboard + Perfil + Membros (CONCLUÍDA)
+- Dashboard completo com stats reais, feed de atividades em tempo real, próximos encontros, sistema de pontuação com ranks
+- Perfil CONECTA+ com edição de empresa, cargo, bio, redes sociais, banner, aniversário
+- Diretório de membros com busca, filtros por grupo/rank, modal de perfil completo
+- Componentes: RankBadge, ConectaActivityFeed, ScoringRulesCard
+- Hooks: useConectaStats, useConectaActivityFeed, useConectaMembers, useConectaProfile
 ### 🔲 Etapa 4: Encontros + Reuniões 1-a-1 + Presenças
 ### 🔲 Etapa 5: Depoimentos + Negócios + Indicações
 ### 🔲 Etapa 6: Ranking + Estatísticas + Pontuação
