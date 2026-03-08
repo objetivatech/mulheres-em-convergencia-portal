@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Save, Eye, Send, Clock, Wand2 } from 'lucide-react';
-import slugify from 'slugify';
+import slugify from '@/lib/slugify';
 import DOMPurify from 'dompurify';
 import { useAuth } from '@/hooks/useAuth';
 

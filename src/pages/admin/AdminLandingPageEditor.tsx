@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, ExternalLink, Plus, Trash2, GripVertical } from 'lucide-react';
-import slugify from 'slugify';
+import slugify from '@/lib/slugify';
 import { toast } from 'sonner';
 
 const AdminLandingPageEditor = () => {
