@@ -125,6 +125,7 @@ export function useConectaMembers() {
           rank: cp.rank,
           points: cp.points,
           slug: cp.slug,
+          business: businessMap[cp.id] || null,
         };
 
         const userTeamIds = teamMembershipMap[cp.id] || [];
