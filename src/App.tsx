@@ -430,13 +430,13 @@ function AppContent() {
           <Route path="/conecta/grupos" element={<ProtectedRoute><ConectaPlaceholder title="Grupos" /></ProtectedRoute>} />
           <Route path="/conecta/encontros" element={<ProtectedRoute><ConectaEncontros /></ProtectedRoute>} />
           <Route path="/conecta/reunioes" element={<ProtectedRoute><ConectaReunioes /></ProtectedRoute>} />
-          <Route path="/conecta/depoimentos" element={<ProtectedRoute><ConectaPlaceholder title="Depoimentos" requireMember /></ProtectedRoute>} />
-          <Route path="/conecta/negocios" element={<ProtectedRoute><ConectaPlaceholder title="Negócios" requireMember /></ProtectedRoute>} />
-          <Route path="/conecta/indicacoes" element={<ProtectedRoute><ConectaPlaceholder title="Indicações" requireMember /></ProtectedRoute>} />
-          <Route path="/conecta/ranking" element={<ProtectedRoute><ConectaPlaceholder title="Ranking" /></ProtectedRoute>} />
-          <Route path="/conecta/estatisticas" element={<ProtectedRoute><ConectaPlaceholder title="Estatísticas" /></ProtectedRoute>} />
-          <Route path="/conecta/convites" element={<ProtectedRoute><ConectaPlaceholder title="Convites" requireMember /></ProtectedRoute>} />
-          <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaPlaceholder title="Conteúdos" /></ProtectedRoute>} />
+          <Route path="/conecta/depoimentos" element={<ProtectedRoute><ConectaDepoimentos /></ProtectedRoute>} />
+          <Route path="/conecta/negocios" element={<ProtectedRoute><ConectaNegocios /></ProtectedRoute>} />
+          <Route path="/conecta/indicacoes" element={<ProtectedRoute><ConectaIndicacoes /></ProtectedRoute>} />
+          <Route path="/conecta/ranking" element={<ProtectedRoute><ConectaRanking /></ProtectedRoute>} />
+          <Route path="/conecta/estatisticas" element={<ProtectedRoute><ConectaEstatisticas /></ProtectedRoute>} />
+          <Route path="/conecta/convites" element={<ProtectedRoute><ConectaConvites /></ProtectedRoute>} />
+          <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaConteudos /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
           <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><ConectaPlaceholder title="Admin CONECTA+" /></ProtectedRoute>} />
