@@ -5976,6 +5976,7 @@ export type Database = {
           id: string
         }[]
       }
+      get_user_roles: { Args: { _user_id: string }; Returns: string[] }
       get_users_by_journey_stage: {
         Args: { p_limit?: number; p_offset?: number; p_stage?: string }
         Returns: {
