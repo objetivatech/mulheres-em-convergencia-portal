@@ -42,8 +42,14 @@
 ### ✅ Etapa 7: Convites + Conteúdos (CONCLUÍDA)
 - Convites: criação com código único, listagem com status, copiar código
 - Conteúdos: biblioteca com tipos (vídeo, documento, artigo, link), thumbnails
-### 🔲 Etapa 8: Painel Admin CONECTA+
-### 🔲 Etapa 9: Documentação
+### ✅ Etapa 8: Painel Admin CONECTA+ (CONCLUÍDA)
+- Dashboard admin com visão geral (membros, encontros, negócios, indicações, convites)
+- Listagem de grupos com contagem de membros
+- Feed de atividades recentes da comunidade
+### ✅ Etapa 9: Documentação (CONCLUÍDA)
+- conecta-overview.md: visão geral completa
+- conecta-database.md: esquema detalhado do banco
+- conecta-access-levels.md: níveis de acesso e permissões
 
 ---
 
