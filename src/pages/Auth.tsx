@@ -142,7 +142,7 @@ const Auth = () => {
     recordAttempt('auth:signup');
 
     try {
-      await signUp(email, password, fullName, cpf);
+      await signUp(email, password, fullName, cpf, undefined, newsletterOptIn);
       saveAttempts('auth:signup', []);
     } catch (err: any) {
       setError(err?.message || 'Falha ao cadastrar. Tente novamente.');
