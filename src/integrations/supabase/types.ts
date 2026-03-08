@@ -5281,6 +5281,98 @@ export type Database = {
         }
         Relationships: []
       }
+      user_socioeconomic_data: {
+        Row: {
+          areas_of_interest: string[] | null
+          business_formalization: string | null
+          business_monthly_revenue: string | null
+          business_sector: string | null
+          city: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          education_level: string | null
+          employment_status: string | null
+          gender_identity: string | null
+          has_business: boolean | null
+          household_size: number | null
+          housing_situation: string | null
+          how_discovered: string | null
+          id: string
+          main_challenges: string[] | null
+          marital_status: string | null
+          monthly_income: string | null
+          motivation: string | null
+          neighborhood: string | null
+          race_ethnicity: string | null
+          state: string | null
+          updated_at: string | null
+          user_id: string
+          years_in_business: number | null
+        }
+        Insert: {
+          areas_of_interest?: string[] | null
+          business_formalization?: string | null
+          business_monthly_revenue?: string | null
+          business_sector?: string | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          education_level?: string | null
+          employment_status?: string | null
+          gender_identity?: string | null
+          has_business?: boolean | null
+          household_size?: number | null
+          housing_situation?: string | null
+          how_discovered?: string | null
+          id?: string
+          main_challenges?: string[] | null
+          marital_status?: string | null
+          monthly_income?: string | null
+          motivation?: string | null
+          neighborhood?: string | null
+          race_ethnicity?: string | null
+          state?: string | null
+          updated_at?: string | null
+          user_id: string
+          years_in_business?: number | null
+        }
+        Update: {
+          areas_of_interest?: string[] | null
+          business_formalization?: string | null
+          business_monthly_revenue?: string | null
+          business_sector?: string | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          education_level?: string | null
+          employment_status?: string | null
+          gender_identity?: string | null
+          has_business?: boolean | null
+          household_size?: number | null
+          housing_situation?: string | null
+          how_discovered?: string | null
+          id?: string
+          main_challenges?: string[] | null
+          marital_status?: string | null
+          monthly_income?: string | null
+          motivation?: string | null
+          neighborhood?: string | null
+          race_ethnicity?: string | null
+          state?: string | null
+          updated_at?: string | null
+          user_id?: string
+          years_in_business?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_socioeconomic_data_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_subscriptions: {
         Row: {
           ambassador_id: string | null

@@ -6,6 +6,7 @@ import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Mail, Lock, User, CreditCard } from 'lucide-react';
@@ -15,6 +16,7 @@ const Auth = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true);
   const formStartRef = useRef<number>(Date.now());
   const [error, setError] = useState<string | null>(null);
 
@@ -140,7 +142,7 @@ const Auth = () => {
     recordAttempt('auth:signup');
 
     try {
-      await signUp(email, password, fullName, cpf);
+      await signUp(email, password, fullName, cpf, undefined, newsletterOptIn);
       saveAttempts('auth:signup', []);
     } catch (err: any) {
       setError(err?.message || 'Falha ao cadastrar. Tente novamente.');
@@ -330,6 +332,17 @@ const Auth = () => {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="newsletter-opt-in"
+                        checked={newsletterOptIn}
+                        onCheckedChange={(checked) => setNewsletterOptIn(!!checked)}
+                      />
+                      <Label htmlFor="newsletter-opt-in" className="text-sm font-normal cursor-pointer">
+                        Desejo receber a newsletter com novidades e conteúdos
+                      </Label>
                     </div>
 
                     <Button 

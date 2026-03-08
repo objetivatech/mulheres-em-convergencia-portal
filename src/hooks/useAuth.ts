@@ -16,7 +16,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string, newsletterOptIn?: boolean) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   // null = not yet checked, false = checked and not admin, true = is admin
   isAdmin: boolean | null;
@@ -136,7 +136,7 @@ export const useAuthProvider = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string, cpf?: string, captchaToken?: string, newsletterOptIn?: boolean) => {
     try {
       // Check for referral code before signup
       const referralCode = getReferralCodeFromCookie();
@@ -207,6 +207,18 @@ export const useAuthProvider = () => {
         } catch (crmError) {
           console.error('[Auth] Error registering referral in CRM:', crmError);
           // Don't fail signup if CRM fails
+        }
+      }
+
+      // Update newsletter preference on profile (trigger will sync subscriber role)
+      if (newsletterOptIn) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ newsletter_subscribed: true })
+            .eq('id', authData.user.id);
+        } catch (nlError) {
+          console.error('[Auth] Error updating newsletter preference:', nlError);
         }
       }
 

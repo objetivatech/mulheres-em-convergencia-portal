@@ -72,8 +72,15 @@
 - `useRoles.hasRole()` agora usa `useUserRoles` internamente (antes só verificava admin/blog_editor)
 - `useConectaAccess` usa `has_role('business_owner')` ao invés de `user_subscriptions` para determinar nível "membro"
 
-### 🔲 Etapa 3: Newsletter Opt-in nos Formulários de Cadastro
-### 🔲 Etapa 4: Tabela de Dados Socioeconômicos
+### ✅ Etapa 3: Newsletter Opt-in nos Formulários de Cadastro (CONCLUÍDA)
+- Checkbox "Desejo receber a newsletter" no formulário de cadastro (Auth.tsx), pré-marcado
+- `signUp` atualiza `profiles.newsletter_subscribed` que dispara trigger para adicionar role `subscriber`
+
+### ✅ Etapa 4: Tabela de Dados Socioeconômicos (CONCLUÍDA)
+- Tabela `user_socioeconomic_data` com 20+ campos: raça/etnia, gênero, educação, renda, moradia, empreendedorismo, engajamento
+- RLS: usuário edita próprios dados, admin visualiza todos
+- Trigger `handle_updated_at` para atualização automática
+
 ### 🔲 Etapa 5: Remodelar "Meu Painel" com Abas e Perfil Completo
 ### 🔲 Etapa 7: Documentação Completa
 
