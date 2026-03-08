@@ -87,6 +87,8 @@ import { CookieConsent } from '@/components/CookieConsent';
 import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
 import ConectaPerfil from '@/pages/conecta/ConectaPerfil';
 import ConectaMembros from '@/pages/conecta/ConectaMembros';
+import ConectaEncontros from '@/pages/conecta/ConectaEncontros';
+import ConectaReunioes from '@/pages/conecta/ConectaReunioes';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 const queryClient = new QueryClient();
 
