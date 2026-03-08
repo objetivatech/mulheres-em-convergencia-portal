@@ -1,18 +1,10 @@
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 
-// Roles alinhados com app_role enum do banco de dados
-// NOTA: 'author' foi removido pois 'blog_editor' é o role efetivo para edição de blog
-export type UserRole = 
-  | 'admin' 
-  | 'blog_editor'       // Editor de Blog (role principal para edição de conteúdo)
-  | 'business_owner'    // Associada/Dona de Negócio
-  | 'customer'          // Cliente da Loja
-  | 'subscriber'        // Assinante Newsletter
-  | 'ambassador'        // Embaixadora
-  | 'community_member'  // Membro da Comunidade
-  | 'student';          // Aluno(a) do MeC Academy
+// Re-export for backward compatibility
+export type UserRole = AppRole;
 
 export type UserType = 'individual' | 'business' | 'community';
 export type SubscriptionType = 'newsletter' | 'loja' | 'comunidade' | 'negocio' | 'embaixadora';
@@ -31,16 +23,14 @@ export interface UserProfile {
 }
 
 export const useRoles = () => {
-  const { user, isAdmin, canEditBlog } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { hasRole: hasRoleFromHook } = useUserRoles();
   const queryClient = useQueryClient();
 
-  // Verificar se usuário tem role específico
+  // Unified role check via centralized hook (uses get_user_roles RPC)
   const hasRole = (role: UserRole): boolean => {
     if (!user) return false;
-    if (role === 'admin') return !!isAdmin;
-    if (role === 'blog_editor') return !!canEditBlog || !!isAdmin;
-    // TODO: Implementar verificação completa para outros roles via user_roles table
-    return false;
+    return hasRoleFromHook(role);
   };
 
   // Verificar se usuário pode acessar dashboard específico
