@@ -96,7 +96,7 @@ export function ConectaSidebar() {
 
         {/* Activities - members only */}
         {isMemberOrAbove && (
-          <SidebarGroup defaultOpen>
+          <SidebarGroup>
             <SidebarGroupLabel>Atividades</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
