@@ -126,7 +126,7 @@ export function ConectaSidebar() {
         )}
 
         {/* Community */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>Comunidade</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
