@@ -26,6 +26,7 @@ const podiumIcons = [
   <Award key="3" className="h-6 w-6 text-primary/70" />,
 ];
 
+// ConectaRanking page component
 export default function ConectaRanking() {
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const { ranking, isLoading } = useConectaRanking(month);
