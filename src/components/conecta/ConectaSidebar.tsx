@@ -65,7 +65,7 @@ export function ConectaSidebar() {
         </div>
 
         {/* Main Navigation */}
-        <SidebarGroup defaultOpen>
+        <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
