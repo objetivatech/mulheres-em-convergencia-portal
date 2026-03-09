@@ -191,16 +191,26 @@ export default function ConectaDashboard() {
               <CardDescription>Agenda da comunidade</CardDescription>
             </CardHeader>
             <CardContent>
-              {meetings && meetings.length > 0 ? (
+              {upcomingItems && upcomingItems.length > 0 ? (
                 <div className="space-y-3">
-                  {meetings.map((meeting) => (
-                    <div key={meeting.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <h4 className="font-medium text-sm">{meeting.title}</h4>
+                  {upcomingItems.map((item) => (
+                    <div key={item.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-sm">{item.title}</h4>
+                        {item.type === 'event' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                            Portal
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(meeting.meeting_date + 'T12:00:00'), "dd 'de' MMM", { locale: ptBR })}
-                        {meeting.meeting_time && (
-                          <span className="ml-2">{meeting.meeting_time.slice(0, 5)}</span>
+                        {format(item.date, "dd 'de' MMM", { locale: ptBR })}
+                        {item.time && (
+                          <span className="ml-2">{item.time.slice(0, 5)}</span>
+                        )}
+                        {item.type === 'event' && (
+                          <span className="ml-2">{format(item.date, 'HH:mm')}</span>
                         )}
                       </div>
                     </div>
