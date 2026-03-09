@@ -28,17 +28,56 @@ export default function ConectaDashboard() {
   const { accessLevel, isMemberOrAbove, conectaProfile, user } = useConectaAccess();
   const { data: stats } = useConectaStats();
 
-  // Upcoming meetings
-  const { data: meetings } = useQuery({
-    queryKey: ['conecta-upcoming-meetings'],
+  // Unified upcoming items: meetings + synced events
+  const { data: upcomingItems } = useQuery({
+    queryKey: ['conecta-upcoming-all'],
     queryFn: async () => {
-      const { data } = await supabase
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
+
+      // 1. Fetch conecta_meetings
+      const { data: meetings } = await supabase
         .from('conecta_meetings')
         .select('id, title, meeting_date, meeting_time, location')
-        .gte('meeting_date', new Date().toISOString().split('T')[0])
+        .gte('meeting_date', today)
         .order('meeting_date', { ascending: true })
-        .limit(3);
-      return data || [];
+        .limit(5);
+
+      // 2. Fetch synced events from portal
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, title, date_start, location, format, slug')
+        .eq('conecta_sync', true)
+        .eq('status', 'published')
+        .gte('date_start', now)
+        .order('date_start', { ascending: true })
+        .limit(5);
+
+      // 3. Normalize and merge
+      const normalizedMeetings = (meetings || []).map(m => ({
+        id: m.id,
+        title: m.title,
+        date: new Date(m.meeting_date + 'T12:00:00'),
+        time: m.meeting_time,
+        location: m.location,
+        type: 'meeting' as const,
+      }));
+
+      const normalizedEvents = (events || []).map(e => ({
+        id: e.id,
+        title: e.title,
+        date: new Date(e.date_start),
+        time: null,
+        location: e.location,
+        type: 'event' as const,
+        format: e.format,
+        slug: e.slug,
+      }));
+
+      // 4. Sort by date and take first 3
+      return [...normalizedMeetings, ...normalizedEvents]
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(0, 3);
     },
   });
 
@@ -152,16 +191,26 @@ export default function ConectaDashboard() {
               <CardDescription>Agenda da comunidade</CardDescription>
             </CardHeader>
             <CardContent>
-              {meetings && meetings.length > 0 ? (
+              {upcomingItems && upcomingItems.length > 0 ? (
                 <div className="space-y-3">
-                  {meetings.map((meeting) => (
-                    <div key={meeting.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <h4 className="font-medium text-sm">{meeting.title}</h4>
+                  {upcomingItems.map((item) => (
+                    <div key={item.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-sm">{item.title}</h4>
+                        {item.type === 'event' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                            Portal
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(meeting.meeting_date + 'T12:00:00'), "dd 'de' MMM", { locale: ptBR })}
-                        {meeting.meeting_time && (
-                          <span className="ml-2">{meeting.meeting_time.slice(0, 5)}</span>
+                        {format(item.date, "dd 'de' MMM", { locale: ptBR })}
+                        {item.time && (
+                          <span className="ml-2">{item.time.slice(0, 5)}</span>
+                        )}
+                        {item.type === 'event' && (
+                          <span className="ml-2">{format(item.date, 'HH:mm')}</span>
                         )}
                       </div>
                     </div>

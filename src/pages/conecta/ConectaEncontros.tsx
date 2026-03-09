@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import MeetingGuestsList from '@/components/conecta/MeetingGuestsList';
-import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2, Globe, Ticket } from 'lucide-react';
+import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2, Globe, Ticket, CheckCircle2 } from 'lucide-react';
 import { format, isPast, isToday, isFuture, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -85,6 +85,7 @@ interface PortalEvent {
   slug: string;
   is_registered?: boolean;
   registration_id?: string;
+  checked_in_at?: string | null;
 }
 
 function useConectaEvents(userId?: string) {
@@ -99,21 +100,24 @@ function useConectaEvents(userId?: string) {
         .order('date_start', { ascending: true });
       if (error) throw error;
 
-      // Check user registrations
-      let registrations: Record<string, string> = {};
+      // Check user registrations with check-in status
+      let registrations: Record<string, { id: string; checked_in_at: string | null }> = {};
       if (userId) {
         const { data: regs } = await supabase
           .from('event_registrations')
-          .select('id, event_id')
+          .select('id, event_id, checked_in_at')
           .eq('user_id', userId)
           .in('event_id', events.map(e => e.id));
-        regs?.forEach(r => { registrations[r.event_id] = r.id; });
+        regs?.forEach(r => { 
+          registrations[r.event_id] = { id: r.id, checked_in_at: r.checked_in_at }; 
+        });
       }
 
       return events.map(e => ({
         ...e,
         is_registered: !!registrations[e.id],
-        registration_id: registrations[e.id] || undefined,
+        registration_id: registrations[e.id]?.id || undefined,
+        checked_in_at: registrations[e.id]?.checked_in_at || null,
       })) as PortalEvent[];
     },
     enabled: true,
@@ -244,6 +248,7 @@ export default function ConectaEncontros() {
 
   const EventCard = ({ event }: { event: PortalEvent }) => {
     const isPastEvent = isPast(parseISO(event.date_start)) && !isToday(parseISO(event.date_start));
+    const hasCheckedIn = !!event.checked_in_at;
 
     return (
       <Card className={`transition-all ${isPastEvent ? 'opacity-70' : 'hover:shadow-md'}`}>
@@ -260,6 +265,18 @@ export default function ConectaEncontros() {
                 </Badge>
                 <Badge variant="outline" className="text-xs">{event.type}</Badge>
                 {isToday(parseISO(event.date_start)) && <Badge>Hoje</Badge>}
+                {/* Status badges */}
+                {hasCheckedIn && (
+                  <Badge variant="default" className="bg-emerald-600/90 hover:bg-emerald-600">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Presença Confirmada
+                  </Badge>
+                )}
+                {event.is_registered && !hasCheckedIn && (
+                  <Badge variant="default" className="text-xs">
+                    <Check className="w-3 h-3 mr-1" />Inscrita
+                  </Badge>
+                )}
               </div>
               {event.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{event.description}</p>}
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -279,10 +296,10 @@ export default function ConectaEncontros() {
                 )}
               </div>
             </div>
-            <div className="shrink-0">
-              {!isPastEvent && isMemberOrAbove && (
+            <div className="shrink-0 flex flex-col gap-2">
+              {!isPastEvent && isMemberOrAbove && !hasCheckedIn && (
                 <Button
-                  variant={event.is_registered ? "default" : "outline"}
+                  variant={event.is_registered ? "outline" : "default"}
                   size="sm"
                   onClick={() => toggleEventRegistration.mutate({
                     event,
@@ -291,8 +308,18 @@ export default function ConectaEncontros() {
                   })}
                   disabled={toggleEventRegistration.isPending}
                 >
-                  {event.is_registered ? <><Check className="w-4 h-4 mr-1" />Inscrita</> : 'Inscrever-se'}
+                  {event.is_registered ? (
+                    <><X className="w-4 h-4 mr-1" />Cancelar</>
+                  ) : (
+                    'Inscrever-se'
+                  )}
                 </Button>
+              )}
+              {hasCheckedIn && (
+                <span className="text-xs text-muted-foreground text-center">
+                  Check-in em<br/>
+                  {format(parseISO(event.checked_in_at!), "dd/MM 'às' HH:mm")}
+                </span>
               )}
             </div>
           </div>
