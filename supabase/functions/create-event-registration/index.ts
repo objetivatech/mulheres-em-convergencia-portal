@@ -96,22 +96,22 @@ serve(async (req) => {
       }
     }
 
-    // === STEP 2: Check guest access limit for existing users ===
-    if (userId) {
+    // === STEP 2: Check guest access limit for ONLINE events only ===
+    if (userId && event.format === 'online') {
       const { data: conectaProfile } = await supabaseClient
         .from('conecta_profiles')
         .select('conecta_role, first_event_attended_at')
         .eq('id', userId)
         .maybeSingle();
 
-      // If user is a guest AND has already attended an event, block registration
+      // If user is a guest AND has already attended an online event, block registration
       if (conectaProfile?.conecta_role === 'convidado' && conectaProfile?.first_event_attended_at) {
-        logStep("Guest event limit reached", { userId, first_event_attended_at: conectaProfile.first_event_attended_at });
+        logStep("Guest online event limit reached", { userId, first_event_attended_at: conectaProfile.first_event_attended_at });
         return new Response(
           JSON.stringify({
             success: false,
             error: "GUEST_EVENT_LIMIT_REACHED",
-            message: "Você já participou de um evento como convidada. Para participar de mais eventos, torne-se membro!",
+            message: "Você já participou de um evento online como convidada. Para participar de mais eventos online, torne-se membro!",
           }),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -200,6 +200,137 @@ async function collectEmailsFromAllSources(supabase: any) {
   return collected;
 }
 
+// Map of app roles to human-readable segment names for Mailrelay
+const ROLE_SEGMENT_MAP: Record<string, string> = {
+  admin: 'Administradoras',
+  blog_editor: 'Editoras do Blog',
+  business_owner: 'Empresárias (Membros)',
+  subscriber: 'Assinantes',
+  ambassador: 'Embaixadoras',
+  student: 'Alunas',
+  customer: 'Clientes',
+  community_member: 'Comunidade',
+  donor: 'Doadoras',
+  sponsor: 'Patrocinadoras',
+  mentor: 'Mentoras',
+  volunteer: 'Voluntárias',
+  staff: 'Equipe',
+  partner: 'Parceiras',
+  project_client: 'Clientes de Projeto',
+};
+
+async function getOrCreateRoleGroups(supabase: any): Promise<Map<string, number>> {
+  console.log('Fetching/creating Mailrelay groups for roles...');
+  const roleGroupMap = new Map<string, number>();
+
+  // Get existing groups from Mailrelay
+  const existingGroups = await getGroups();
+  const groupList = existingGroups?.data || existingGroups || [];
+  
+  // Index existing groups by name
+  const existingByName = new Map<string, number>();
+  for (const g of groupList) {
+    existingByName.set(g.name, g.id);
+  }
+
+  // Ensure each role has a corresponding group
+  for (const [role, segmentName] of Object.entries(ROLE_SEGMENT_MAP)) {
+    const groupName = `[Role] ${segmentName}`;
+    if (existingByName.has(groupName)) {
+      roleGroupMap.set(role, existingByName.get(groupName)!);
+    } else {
+      try {
+        const newGroup = await createGroup(groupName, `Segmento automático para role: ${role}`);
+        if (newGroup?.id) {
+          roleGroupMap.set(role, newGroup.id);
+          console.log(`Created Mailrelay group "${groupName}" (ID: ${newGroup.id})`);
+        }
+      } catch (err: any) {
+        console.error(`Failed to create group for role ${role}: ${err.message}`);
+      }
+    }
+  }
+
+  return roleGroupMap;
+}
+
+async function syncRoleSegments(supabase: any) {
+  console.log('Syncing role segments to Mailrelay...');
+  
+  const roleGroupMap = await getOrCreateRoleGroups(supabase);
+  
+  // Get all users with roles and their emails
+  const { data: userRoles, error: rolesError } = await supabase
+    .from('user_roles')
+    .select('user_id, role');
+  
+  if (rolesError) throw rolesError;
+  
+  // Group roles by user_id
+  const userRolesMap = new Map<string, string[]>();
+  for (const ur of userRoles || []) {
+    if (!userRolesMap.has(ur.user_id)) userRolesMap.set(ur.user_id, []);
+    userRolesMap.get(ur.user_id)!.push(ur.role);
+  }
+
+  // Get emails for these users
+  const userIds = Array.from(userRolesMap.keys());
+  if (userIds.length === 0) return { synced: 0, message: 'No users with roles found' };
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, email, full_name')
+    .in('id', userIds)
+    .not('email', 'is', null);
+
+  const results = { synced: 0, failed: 0, errors: [] as string[], groups_created: roleGroupMap.size };
+
+  for (const profile of profiles || []) {
+    const roles = userRolesMap.get(profile.id) || [];
+    const groupIds: number[] = [];
+    for (const role of roles) {
+      const gid = roleGroupMap.get(role);
+      if (gid) groupIds.push(gid);
+    }
+    if (groupIds.length === 0) continue;
+
+    try {
+      const existing = await getSubscriberByEmail(profile.email).catch(() => null);
+      if (existing) {
+        // Merge existing group_ids with role group_ids
+        const currentGroupIds = existing.group_ids || [];
+        const mergedGroupIds = [...new Set([...currentGroupIds, ...groupIds])];
+        await updateSubscriber(existing.id, { group_ids: mergedGroupIds });
+        results.synced++;
+      } else {
+        await createSubscriber({
+          email: profile.email,
+          name: profile.full_name || '',
+          status: 'active',
+          group_ids: groupIds,
+        });
+        results.synced++;
+      }
+    } catch (err: any) {
+      results.failed++;
+      results.errors.push(`${profile.email}: ${err.message}`);
+    }
+  }
+
+  // Log
+  await supabase.from('mailrelay_sync_log').insert({
+    operation_type: 'sync_segments',
+    entity_type: 'subscriber',
+    operation: 'role_segments',
+    status: results.failed > 0 ? 'partial' : 'success',
+    request_data: { total_users: profiles?.length, roles_mapped: roleGroupMap.size },
+    response_data: results,
+    processed_at: new Date().toISOString(),
+  });
+
+  return results;
+}
+
 async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
   console.log('Starting sync from Supabase to Mailrelay...');
 
@@ -208,6 +339,15 @@ async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
   if (collectFirst) {
     collectedCount = await collectEmailsFromAllSources(supabase);
     console.log(`Collected ${collectedCount} email upsert attempts from portal sources.`);
+  }
+
+  // Step 1.5: Get role→group mapping for segment assignment
+  let roleGroupMap: Map<string, number>;
+  try {
+    roleGroupMap = await getOrCreateRoleGroups(supabase);
+  } catch {
+    roleGroupMap = new Map();
+    console.warn('Could not fetch role groups, syncing without segments');
   }
   
   // Step 2: Sync newsletter_subscribers where synced_at IS NULL to Mailrelay
@@ -223,14 +363,51 @@ async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
   console.log(`Found ${localSubscribers?.length || 0} pending subscribers to sync to Mailrelay.`);
   
   const results = { synced: 0, failed: 0, errors: [] as string[], remaining: 0, collected: collectedCount };
+
+  // Pre-fetch all user roles for batch efficiency
+  const allEmails = (localSubscribers || []).map((s: any) => s.email);
+  const { data: profilesWithRoles } = await supabase
+    .from('profiles')
+    .select('id, email')
+    .in('email', allEmails);
+  
+  const emailToUserId = new Map<string, string>();
+  for (const p of profilesWithRoles || []) {
+    emailToUserId.set(p.email.toLowerCase(), p.id);
+  }
+
+  const userIdsToFetch = Array.from(emailToUserId.values());
+  const { data: allUserRoles } = userIdsToFetch.length > 0
+    ? await supabase.from('user_roles').select('user_id, role').in('user_id', userIdsToFetch)
+    : { data: [] };
+
+  const userRolesMap = new Map<string, string[]>();
+  for (const ur of allUserRoles || []) {
+    if (!userRolesMap.has(ur.user_id)) userRolesMap.set(ur.user_id, []);
+    userRolesMap.get(ur.user_id)!.push(ur.role);
+  }
   
   for (const subscriber of localSubscribers || []) {
     try {
+      // Determine group_ids from roles
+      const userId = emailToUserId.get(subscriber.email.toLowerCase());
+      const roles = userId ? (userRolesMap.get(userId) || []) : [];
+      const groupIds: number[] = [];
+      for (const role of roles) {
+        const gid = roleGroupMap.get(role);
+        if (gid) groupIds.push(gid);
+      }
+
       // Check if already exists in Mailrelay
       const existing = await getSubscriberByEmail(subscriber.email).catch(() => null);
       
       if (existing) {
-        // Update local record with Mailrelay ID
+        // Merge groups
+        const currentGroupIds = existing.group_ids || [];
+        const mergedGroupIds = [...new Set([...currentGroupIds, ...groupIds])];
+        if (groupIds.length > 0) {
+          await updateSubscriber(existing.id, { group_ids: mergedGroupIds });
+        }
         await supabase
           .from('newsletter_subscribers')
           .update({
@@ -241,14 +418,14 @@ async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
           .eq('id', subscriber.id);
         results.synced++;
       } else {
-        // Create in Mailrelay
+        // Create in Mailrelay with role groups
         const mailrelayData = await createSubscriber({
           email: subscriber.email,
           name: subscriber.name || '',
           status: subscriber.active ? 'active' : 'inactive',
+          group_ids: groupIds.length > 0 ? groupIds : undefined,
         });
         
-        // Update local record with Mailrelay ID
         await supabase
           .from('newsletter_subscribers')
           .update({
@@ -264,7 +441,6 @@ async function syncSubscribersFromSupabase(supabase: any, collectFirst = true) {
       results.failed++;
       results.errors.push(`${subscriber.email}: ${err.message}`);
       
-      // Registrar erro
       await supabase
         .from('newsletter_subscribers')
         .update({ last_sync_error: err.message })

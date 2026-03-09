@@ -446,6 +446,9 @@ export default function ConectaPerfil() {
                 </CardContent>
               </Card>
             )}
+
+            {/* View Mode: Points & Stats */}
+            <ConectaProfileStats />
           </>
         )}
       </div>
