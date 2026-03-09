@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -21,6 +20,7 @@ import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { EventFormBuilder } from './EventFormBuilder';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { TinyMCESelfHosted } from '@/components/blog/TinyMCESelfHosted';
 
 // Storage key for form persistence
 const FORM_STORAGE_KEY = 'crm_event_form_draft';
