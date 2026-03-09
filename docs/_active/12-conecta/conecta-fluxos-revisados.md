@@ -167,10 +167,12 @@ Ao se inscrever em evento via `/eventos`:
 - Erro `GUEST_EVENT_LIMIT_REACHED` retorna mensagem mencionando "eventos online"
 
 **Fluxo de bloqueio:**
-1. Convidado tenta se inscrever em novo evento
-2. Sistema verifica `conecta_role = 'convidado'` E `first_event_attended_at IS NOT NULL`
-3. Se ambos verdadeiros → retorna erro 403 com mensagem:
-   > "Você já participou de um evento como convidada. Para participar de mais eventos, torne-se membro!"
+1. Convidado tenta se inscrever em novo evento **online**
+2. Sistema verifica `event.format === 'online'` E `conecta_role = 'convidado'` E `first_event_attended_at IS NOT NULL`
+3. Se todas verdadeiras → retorna erro 403 com mensagem:
+   > "Você já participou de um evento online como convidada. Para participar de mais eventos online, torne-se membro!"
+
+**Nota:** Inscrições em eventos presenciais NUNCA são bloqueadas para convidados.
 
 ---
 
