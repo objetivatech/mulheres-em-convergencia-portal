@@ -83,6 +83,7 @@ export default function BlogEditor() {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { data: post, isLoading: postLoading } = useBlogPost(id || '');
   const { data: categories } = useBlogCategories();
