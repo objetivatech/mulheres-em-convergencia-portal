@@ -4,12 +4,13 @@ import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Mail, Users, Send, BarChart3 } from 'lucide-react';
+import { Mail, Users, Send, BarChart3, Tag } from 'lucide-react';
 import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { NewsletterDashboard } from '@/components/admin/newsletter/NewsletterDashboard';
 import { SubscribersList } from '@/components/admin/newsletter/SubscribersList';
 import { CampaignsList } from '@/components/admin/newsletter/CampaignsList';
 import { CampaignReports } from '@/components/admin/newsletter/CampaignReports';
+import { NewsletterSegments } from '@/components/admin/newsletter/NewsletterSegments';
 
 const AdminNewsletter = () => {
   const { user, loading, isAdmin } = useAuth();
