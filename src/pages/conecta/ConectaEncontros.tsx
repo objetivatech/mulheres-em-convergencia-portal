@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import MeetingGuestsList from '@/components/conecta/MeetingGuestsList';
-import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2, Globe, Ticket } from 'lucide-react';
+import { Loader2, Plus, Calendar, MapPin, Clock, Users, Check, X, Trash2, Globe, Ticket, CheckCircle2 } from 'lucide-react';
 import { format, isPast, isToday, isFuture, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
