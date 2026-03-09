@@ -267,7 +267,7 @@ export default function ConectaEncontros() {
                 {isToday(parseISO(event.date_start)) && <Badge>Hoje</Badge>}
                 {/* Status badges */}
                 {hasCheckedIn && (
-                  <Badge className="bg-green-600 text-white">
+                  <Badge variant="default" className="bg-emerald-600/90 hover:bg-emerald-600">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     Presença Confirmada
                   </Badge>

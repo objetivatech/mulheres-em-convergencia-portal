@@ -20,6 +20,18 @@ interface RegistrationRequest {
   metadata?: Record<string, unknown>;
 }
 
+// Generate a temporary password for guest accounts
+function generateTempPassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  const array = new Uint8Array(12);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 12; i++) {
+    password += chars[array[i] % chars.length];
+  }
+  return password;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -66,6 +78,49 @@ serve(async (req) => {
       }
     }
 
+    const cleanCpf = cpf?.replace(/\D/g, '') || null;
+    let userId: string | null = null;
+    let isNewUser = false;
+    let tempPassword: string | null = null;
+
+    // === STEP 1: Check if user already exists ===
+    logStep("Checking for existing user by email");
+    
+    const { data: existingUsers, error: listError } = await supabaseClient.auth.admin.listUsers();
+    
+    if (!listError && existingUsers?.users) {
+      const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      if (existingUser) {
+        userId = existingUser.id;
+        logStep("Found existing user", { userId });
+      }
+    }
+
+    // === STEP 2: Check guest access limit for existing users ===
+    if (userId) {
+      const { data: conectaProfile } = await supabaseClient
+        .from('conecta_profiles')
+        .select('conecta_role, first_event_attended_at')
+        .eq('id', userId)
+        .maybeSingle();
+
+      // If user is a guest AND has already attended an event, block registration
+      if (conectaProfile?.conecta_role === 'convidado' && conectaProfile?.first_event_attended_at) {
+        logStep("Guest event limit reached", { userId, first_event_attended_at: conectaProfile.first_event_attended_at });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "GUEST_EVENT_LIMIT_REACHED",
+            message: "Você já participou de um evento como convidada. Para participar de mais eventos, torne-se membro!",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 403,
+          }
+        );
+      }
+    }
+
     // Check if already registered (idempotent: return success)
     const { data: existingReg } = await supabaseClient
       .from('event_registrations')
@@ -90,13 +145,67 @@ serve(async (req) => {
       );
     }
 
-    const cleanCpf = cpf?.replace(/\D/g, '') || null;
+    // === STEP 3: Create user account if not exists ===
+    if (!userId) {
+      logStep("Creating new user account");
+      tempPassword = generateTempPassword();
+      
+      const { data: newUser, error: createUserError } = await supabaseClient.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: { 
+          full_name, 
+          phone: phone || null, 
+          cpf: cleanCpf,
+          source: 'event_registration',
+        },
+      });
+
+      if (createUserError) {
+        logStep("Failed to create user", { error: createUserError.message });
+        // Don't block registration if user creation fails
+      } else if (newUser?.user) {
+        userId = newUser.user.id;
+        isNewUser = true;
+        logStep("New user created", { userId });
+
+        // Create profile
+        const { error: profileError } = await supabaseClient.from('profiles').insert({
+          id: userId,
+          email,
+          full_name,
+          phone: phone || null,
+          cpf: cleanCpf,
+        });
+
+        if (profileError) {
+          logStep("Failed to create profile", { error: profileError.message });
+        } else {
+          logStep("Profile created");
+        }
+
+        // Create conecta_profile as guest
+        const { error: conectaError } = await supabaseClient.from('conecta_profiles').insert({
+          id: userId,
+          conecta_role: 'convidado',
+          is_active: true,
+        });
+
+        if (conectaError) {
+          logStep("Failed to create conecta_profile", { error: conectaError.message });
+        } else {
+          logStep("Conecta profile created as guest");
+        }
+      }
+    }
 
     // Create registration
     const { data: registration, error: regError } = await supabaseClient
       .from('event_registrations')
       .insert({
         event_id,
+        user_id: userId,
         full_name,
         email,
         phone: phone || null,
@@ -283,10 +392,32 @@ serve(async (req) => {
       const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
       const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
       const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
+      const portalUrl = Deno.env.get('PORTAL_URL') || 'https://mulheresemconvergencia.com.br';
 
       if (mailrelayApiKey && mailrelayHost) {
         const eventDateFormatted = formatDateBrazil(event.date_start);
         const eventTimeFormatted = formatTimeBrazil(event.date_start);
+
+        // Different email for new users vs existing
+        let guestAccessSection = '';
+        if (isNewUser && tempPassword) {
+          guestAccessSection = `
+            <div style="background-color: #e0f2fe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0284c7;">
+              <h3 style="margin-top: 0; color: #0c4a6e;">🎉 Você também ganhou acesso ao CONECTA+!</h3>
+              <p style="margin-bottom: 10px;">Criamos uma conta para você em nosso portal exclusivo de networking:</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Senha temporária:</strong> ${tempPassword}</p>
+              <p style="margin-top: 15px;">
+                <a href="${portalUrl}/conecta" style="background-color: #7c3aed; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                  Acessar CONECTA+
+                </a>
+              </p>
+              <p style="font-size: 12px; color: #64748b; margin-top: 10px;">
+                Recomendamos alterar sua senha no primeiro acesso.
+              </p>
+            </div>
+          `;
+        }
 
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -300,6 +431,7 @@ serve(async (req) => {
                 ${event.location ? `<p><strong>📍 Local:</strong> ${event.location}</p>` : ''}
                 ${event.location_url ? `<p><strong>🔗 Link:</strong> <a href="${event.location_url}">${event.location_url}</a></p>` : ''}
               </div>
+              ${guestAccessSection}
               <p style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
                 <strong>⚠️ Importante:</strong> Você receberá emails pedindo confirmação de presença alguns dias antes do evento. 
                 Por favor, confirme sua presença para garantir sua vaga!
@@ -324,7 +456,7 @@ serve(async (req) => {
             html_part: emailHtml,
           }),
         });
-        logStep("Confirmation email sent", { email });
+        logStep("Confirmation email sent", { email, isNewUser });
       }
     } catch (emailError) {
       logStep("Email sending failed (non-blocking)", { error: String(emailError) });
@@ -335,6 +467,8 @@ serve(async (req) => {
         success: true,
         registration_id: registration.id,
         lead_id: leadId,
+        user_id: userId,
+        is_new_user: isNewUser,
         message: "Registration completed successfully",
       }),
       {
