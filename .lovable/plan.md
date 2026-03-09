@@ -1,103 +1,75 @@
 
-# Plano: 4 Melhorias no Portal
+# Plano: Revisão Completa do CONECTA+ e Novos Recursos
 
-## 1. Seção de Embaixadoras na Homepage
+## Status de Implementação
 
-**Localização:** Após `FeaturedPosts`, antes de `FinalCTA`
+### ✅ Rodada 1: Correções Urgentes + Quick Wins (CONCLUÍDA)
 
-**Novo componente:** `src/components/home/AmbassadorsShowcase.tsx`
-- Design inspirado em bloco de depoimentos/testemunhos
-- Carrossel horizontal com até 6 embaixadoras
-- Cada card simplificado: avatar circular + nome + localização (sem bio completa)
-- Botão CTA "Conheça nossas Embaixadoras" → `/embaixadoras`
-- Reutiliza `usePublicAmbassadors` hook existente
+- Fix do hook de convites (`name`/`email` corrigidos)
+- Uploads migrados para R2 (banner + fotos 1-a-1)
+- Edge Function `send-conecta-email` com 5 tipos de email via Mailrelay
+- Temperatura nas indicações (cold/warm/hot com seletor visual)
+- Coluna `meeting_id` em `conecta_invitations`
 
-**Alteração:** `src/pages/Index.tsx` - adicionar componente na ordem correta
+### ✅ Rodada 2: Funcionalidades Core (CONCLUÍDA)
 
----
+#### Etapa 3: Lista de Convidados por Encontro
+- Hook `useMeetingGuests` busca convites vinculados a cada encontro
+- Componente `MeetingGuestsList` com lista expansível de convidadas
+- Visível apenas para membros/facilitadores/admin (`isMemberOrAbove`)
+- Nome do convidado como link para perfil se cadastrado
 
-## 2. HTML no Campo de Descrição de Eventos
+#### Etapa 4: Sincronização Encontros ↔ Eventos do Portal
+- Coluna `conecta_sync` (boolean) adicionada à tabela `events`
+- Eventos marcados com `conecta_sync=true` aparecem na timeline do Conecta+
+- Inscrição/desinscrição direta com dados pré-preenchidos do perfil
+- Badge "Portal" distingue eventos sincronizados dos encontros manuais
 
-**Problema atual:** Descrição usa `<Textarea>` e renderiza como texto plano (`whitespace-pre-wrap`)
+#### Etapa 5: Perfil Enriquecido com Pitch
+- Novos campos: `area_of_expertise`, `skills_tags`, `pitch_what_i_do`, `pitch_ideal_client`, `pitch_how_to_refer`, `contact_email`
+- Formulário organizado em 3 seções: Info Básica, Contato & Redes, Elevator Pitch
+- Sistema de tags com adição/remoção dinâmica
+- Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
+- Visualização rica do pitch no modo leitura
 
-**Alterações:**
+### ✅ Rodada 3: Notificações + Helpdesk + Docs (CONCLUÍDA)
 
-| Arquivo | Mudança |
-|---------|---------|
-| `EventsManagement.tsx` | Substituir `Textarea` por `TinyMCESelfHosted` no campo descrição |
-| `EventDetailPage.tsx` | Renderizar com `dangerouslySetInnerHTML` + DOMPurify sanitização |
-| `ConectaEncontros.tsx` | Mesmo tratamento para exibição de descrição (se aplicável) |
+#### Etapa 8: Sistema de Notificações
+- Tabela `conecta_notifications` com RLS e real-time
+- Sino no header com badge de contagem (vermelho)
+- Dropdown com lista de notificações e marcar como lida
+- Real-time via Supabase Realtime (INSERT listener)
 
-**Segurança:** DOMPurify já está instalado no projeto e usado em BlogEditor
+#### Etapa 6: Conselho de Administração 24/7 (Helpdesk)
+- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies` com RLS
+- Visualização Kanban com 3 colunas (Aberto → Em Discussão → Resolvido)
+- Vista de lista alternativa com filtros por categoria
+- Thread de discussão com respostas e marcação de solução
+- Trigger automático: `reply_count` + mudança de status para "Em Discussão"
+- 8 categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia, Geral
+- Rota: `/conecta/helpdesk`
 
----
-
-## 3. Modal de Detalhes nos Itens do Cardápio
-
-**Arquivo:** `src/components/business/MenuDisplay.tsx`
-
-**Implementação:**
-- Adicionar estado `selectedItem` para controlar modal
-- Envolver `MenuItemCard` com `onClick` handler
-- Criar Dialog/Sheet com:
-  - Imagem em tamanho maior (se existir)
-  - Nome do item com badge de destaque
-  - Descrição completa (sem truncamento)
-  - Preço destacado
-  - Botão fechar
-
-```text
-┌─────────────────────────────────┐
-│          [X]                    │
-│   ┌─────────────────────┐      │
-│   │    📷 Imagem        │      │
-│   │    (300x200)        │      │
-│   └─────────────────────┘      │
-│   Nome do Produto [Novo]        │
-│   ─────────────────────         │
-│   Descrição completa do         │
-│   produto ou serviço sem        │
-│   limite de linhas...           │
-│                                 │
-│          R$ 99,90               │
-└─────────────────────────────────┘
-```
+#### Etapa 9: Documentação
+- `conecta-fluxos-revisados.md` com todos os fluxos detalhados
+- `conecta-access-levels.md` atualizado com Conselho 24/7 e Notificações
 
 ---
 
-## 4. Preview no Editor do Blog
+## Arquitetura CONECTA+
 
-**Arquivo:** `src/pages/BlogEditor.tsx`
+### Tabelas (prefixo `conecta_`):
+- conecta_profiles, conecta_teams, conecta_team_members
+- conecta_meetings, conecta_attendances, conecta_one_on_ones
+- conecta_testimonials, conecta_business_deals, conecta_referrals
+- conecta_invitations, conecta_contents, conecta_activity_feed
+- conecta_monthly_points, conecta_points_history
+- conecta_notifications, conecta_helpdesk_posts, conecta_helpdesk_replies
 
-**Implementação:**
-- Adicionar estado `showPreview` (boolean)
-- Botão "Pré-visualizar" (ícone Eye) ao lado de "Salvar"
-- Dialog/Sheet em fullscreen mostrando:
-  - Título do post
-  - Imagem destacada
-  - Conteúdo renderizado com mesma classe `prose` do Post.tsx
-  - Data e autor (se selecionado)
+### Edge Functions:
+- `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
+- `generate-conecta-pitch` — Gerador de pitch com IA (Perplexity)
 
-**Vantagem:** Autor vê exatamente como ficará o post antes de publicar
-
----
-
-## Resumo de Arquivos
-
-| Ação | Arquivo |
-|------|---------|
-| Criar | `src/components/home/AmbassadorsShowcase.tsx` |
-| Editar | `src/pages/Index.tsx` |
-| Editar | `src/components/admin/crm/EventsManagement.tsx` |
-| Editar | `src/pages/EventDetailPage.tsx` |
-| Editar | `src/components/business/MenuDisplay.tsx` |
-| Editar | `src/pages/BlogEditor.tsx` |
-| Criar | `docs/_active/06-funcionalidades/homepage-ambassadors.md` |
-
----
-
-## Sugestões Adicionais
-
-1. **Animação no carrossel de embaixadoras:** Usar Embla Carousel (já instalado) para auto-scroll suave
-2. **Contador de caracteres no TinyMCE de eventos:** Ajudar admin a não exceder limite visual
-3. **Responsividade do modal de cardápio:** Usar Sheet (bottom drawer) em mobile para melhor UX
+### Níveis de Acesso:
+- **Admin**: role `admin`
+- **Membro**: role `business_owner`
+- **Convidado**: `community_member`

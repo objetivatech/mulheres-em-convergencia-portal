@@ -2,13 +2,25 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { UtensilsCrossed, Image as ImageIcon, Tag, Loader2 } from 'lucide-react';
+import { UtensilsCrossed, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusinessMenu } from '@/hooks/useBusinessMenu';
+import { MenuItemDetailModal } from './MenuItemDetailModal';
 
 interface MenuDisplayProps {
   businessId: string;
   className?: string;
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  image_url: string | null;
+  is_highlighted: boolean;
+  highlight_label: string | null;
+  category_id?: string | null;
 }
 
 const highlightLabels: Record<string, { label: string; color: string }> = {
@@ -31,6 +43,13 @@ const formatPrice = (price: number | null) => {
 export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className }) => {
   const { categories, items, loading, hasMenu } = useBusinessMenu(businessId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleItemClick = (item: MenuItem) => {
+    setSelectedItem(item);
+    setModalOpen(true);
+  };
 
   // Não renderizar nada se não houver businessId
   if (!businessId) {
@@ -54,100 +73,124 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className 
   // Se não houver categorias, exibir todos os itens
   if (categories.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UtensilsCrossed className="w-5 h-5" />
-            Produtos e Serviços
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {items.map((item) => (
-              <MenuItemCard key={item.id} item={item} />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <>
+        <Card className={className}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UtensilsCrossed className="w-5 h-5" />
+              Produtos e Serviços
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {items.map((item) => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  onClick={() => handleItemClick(item as MenuItem)}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <MenuItemDetailModal
+          item={selectedItem}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+      </>
     );
   }
 
   // Obter itens da categoria selecionada ou todos se nenhuma selecionada
   const uncategorizedItems = items.filter(item => !item.category_id);
-  const allCategoryIds = categories.map(c => c.id);
   
   // Se nenhuma categoria selecionada, selecionar a primeira
   const activeCategory = selectedCategory || categories[0]?.id;
-  const filteredItems = items.filter(item => item.category_id === activeCategory);
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <UtensilsCrossed className="w-5 h-5 flex-shrink-0" />
-          Produtos e Serviços
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-3 sm:px-6">
-        <Tabs value={activeCategory} onValueChange={setSelectedCategory} className="w-full">
-          <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex gap-2 h-auto p-1 bg-transparent">
-              {categories.map((category) => {
-                const itemCount = items.filter(item => item.category_id === category.id).length;
-                return (
+    <>
+      <Card className={cn("overflow-hidden", className)}>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <UtensilsCrossed className="w-5 h-5 flex-shrink-0" />
+            Produtos e Serviços
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 sm:px-6">
+          <Tabs value={activeCategory} onValueChange={setSelectedCategory} className="w-full">
+            <div className="w-full overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
+              <TabsList className="inline-flex gap-2 h-auto p-1 bg-transparent">
+                {categories.map((category) => {
+                  const itemCount = items.filter(item => item.category_id === category.id).length;
+                  return (
+                    <TabsTrigger
+                      key={category.id}
+                      value={category.id}
+                      className="whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-3 py-1.5 text-sm min-h-[36px] flex-shrink-0"
+                    >
+                      {category.name}
+                      <Badge variant="secondary" className="ml-1.5 text-xs">
+                        {itemCount}
+                      </Badge>
+                    </TabsTrigger>
+                  );
+                })}
+                {uncategorizedItems.length > 0 && (
                   <TabsTrigger
-                    key={category.id}
-                    value={category.id}
+                    value="uncategorized"
                     className="whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-3 py-1.5 text-sm min-h-[36px] flex-shrink-0"
                   >
-                    {category.name}
+                    Outros
                     <Badge variant="secondary" className="ml-1.5 text-xs">
-                      {itemCount}
+                      {uncategorizedItems.length}
                     </Badge>
                   </TabsTrigger>
-                );
-              })}
-              {uncategorizedItems.length > 0 && (
-                <TabsTrigger
-                  value="uncategorized"
-                  className="whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-3 py-1.5 text-sm min-h-[36px] flex-shrink-0"
-                >
-                  Outros
-                  <Badge variant="secondary" className="ml-1.5 text-xs">
-                    {uncategorizedItems.length}
-                  </Badge>
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+                )}
+              </TabsList>
+            </div>
 
-          {categories.map((category) => (
-            <TabsContent key={category.id} value={category.id} className="mt-4">
-              {category.description && (
-                <p className="text-xs sm:text-sm text-muted-foreground mb-3">{category.description}</p>
-              )}
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-                {items
-                  .filter(item => item.category_id === category.id)
-                  .map((item) => (
-                    <MenuItemCard key={item.id} item={item} />
+            {categories.map((category) => (
+              <TabsContent key={category.id} value={category.id} className="mt-4">
+                {category.description && (
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">{category.description}</p>
+                )}
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                  {items
+                    .filter(item => item.category_id === category.id)
+                    .map((item) => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onClick={() => handleItemClick(item as MenuItem)}
+                      />
+                    ))}
+                </div>
+              </TabsContent>
+            ))}
+
+            {uncategorizedItems.length > 0 && (
+              <TabsContent value="uncategorized" className="mt-4">
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                  {uncategorizedItems.map((item) => (
+                    <MenuItemCard
+                      key={item.id}
+                      item={item}
+                      onClick={() => handleItemClick(item as MenuItem)}
+                    />
                   ))}
-              </div>
-            </TabsContent>
-          ))}
-
-          {uncategorizedItems.length > 0 && (
-            <TabsContent value="uncategorized" className="mt-4">
-              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-                {uncategorizedItems.map((item) => (
-                  <MenuItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            </TabsContent>
-          )}
-        </Tabs>
-      </CardContent>
-    </Card>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+        </CardContent>
+      </Card>
+      <MenuItemDetailModal
+        item={selectedItem}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
+    </>
   );
 };
 
@@ -162,11 +205,16 @@ const MenuItemCard: React.FC<{
     is_highlighted: boolean;
     highlight_label: string | null;
   };
-}> = ({ item }) => {
+  onClick: () => void;
+}> = ({ item, onClick }) => {
   const highlight = item.highlight_label ? highlightLabels[item.highlight_label] : null;
 
   return (
-    <div className="flex gap-3 p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md transition-shadow">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex gap-3 p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md hover:border-primary/30 transition-all text-left w-full cursor-pointer"
+    >
       {/* Imagem */}
       <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-muted">
         {item.image_url ? (
@@ -207,7 +255,7 @@ const MenuItemCard: React.FC<{
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

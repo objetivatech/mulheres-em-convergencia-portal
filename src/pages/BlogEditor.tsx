@@ -83,6 +83,7 @@ export default function BlogEditor() {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { data: post, isLoading: postLoading } = useBlogPost(id || '');
   const { data: categories } = useBlogCategories();
@@ -258,6 +259,16 @@ export default function BlogEditor() {
           </div>
           
           <div className="flex space-x-2">
+            {/* Botão Preview */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPreview(true)}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Pré-visualizar
+            </Button>
+            
             {/* Botão Salvar Rascunho - sempre disponível */}
             <Button
               type="button"
@@ -295,6 +306,71 @@ export default function BlogEditor() {
             )}
           </div>
         </div>
+
+        {/* Preview Dialog */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                Pré-visualização do Post
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              {/* Featured Image */}
+              {form.watch('featured_image_url') && (
+                <div className="aspect-video rounded-lg overflow-hidden mb-6">
+                  <img
+                    src={form.watch('featured_image_url')}
+                    alt={form.watch('title')}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
+              {/* Category Badge */}
+              {form.watch('category_id') && categories && (
+                <Badge variant="secondary" className="mb-4">
+                  {categories.find(c => c.id === form.watch('category_id'))?.name}
+                </Badge>
+              )}
+              
+              {/* Title */}
+              <h1 className="text-3xl font-nexa font-bold text-foreground mb-4">
+                {form.watch('title') || 'Sem título'}
+              </h1>
+              
+              {/* Excerpt */}
+              {form.watch('excerpt') && (
+                <p className="text-lg text-muted-foreground mb-6 italic">
+                  {form.watch('excerpt')}
+                </p>
+              )}
+              
+              {/* Content */}
+              <article 
+                className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-nexa prose-a:text-primary"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(form.watch('content') || '<p class="text-muted-foreground">Sem conteúdo ainda...</p>') 
+                }}
+              />
+              
+              {/* Tags */}
+              {selectedTags.length > 0 && tags && (
+                <div className="flex flex-wrap gap-2 mt-8 pt-4 border-t">
+                  {selectedTags.map(tagId => {
+                    const tag = tags.find(t => t.id === tagId);
+                    return tag ? (
+                      <Badge key={tagId} variant="outline">
+                        {tag.name}
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

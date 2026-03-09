@@ -10,6 +10,7 @@ import BusinessShowcase from "@/components/home/BusinessShowcase";
 import SocialProof from "@/components/home/SocialProof";
 import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
 import FeaturedPosts from "@/components/home/FeaturedPosts";
+import AmbassadorsShowcase from "@/components/home/AmbassadorsShowcase";
 import FinalCTA from "@/components/home/FinalCTA";
 import { usePageBuilder } from '@/hooks/usePageBuilder';
 import { PageRenderer } from '@/components/page-builder/PageRenderer';
@@ -76,6 +77,7 @@ const Index = () => {
       />
 
       <FeaturedPosts />
+      <AmbassadorsShowcase />
       <FinalCTA />
     </Layout>
   );
