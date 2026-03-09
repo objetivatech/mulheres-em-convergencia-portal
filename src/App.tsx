@@ -97,6 +97,7 @@ import ConectaEstatisticas from '@/pages/conecta/ConectaEstatisticas';
 import ConectaConvites from '@/pages/conecta/ConectaConvites';
 import ConectaConteudos from '@/pages/conecta/ConectaConteudos';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
+import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
 import AdminConecta from '@/pages/admin/AdminConecta';
 import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 const queryClient = new QueryClient();
