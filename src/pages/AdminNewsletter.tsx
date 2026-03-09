@@ -4,12 +4,13 @@ import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Mail, Users, Send, BarChart3 } from 'lucide-react';
+import { Mail, Users, Send, BarChart3, Tag } from 'lucide-react';
 import { AdminBackButton } from '@/components/admin/AdminBackButton';
 import { NewsletterDashboard } from '@/components/admin/newsletter/NewsletterDashboard';
 import { SubscribersList } from '@/components/admin/newsletter/SubscribersList';
 import { CampaignsList } from '@/components/admin/newsletter/CampaignsList';
 import { CampaignReports } from '@/components/admin/newsletter/CampaignReports';
+import { NewsletterSegments } from '@/components/admin/newsletter/NewsletterSegments';
 
 const AdminNewsletter = () => {
   const { user, loading, isAdmin } = useAuth();
@@ -49,7 +50,7 @@ const AdminNewsletter = () => {
             </header>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
                   Dashboard
@@ -57,6 +58,10 @@ const AdminNewsletter = () => {
                 <TabsTrigger value="subscribers" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Contatos
+                </TabsTrigger>
+                <TabsTrigger value="segments" className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Segmentos
                 </TabsTrigger>
                 <TabsTrigger value="campaigns" className="flex items-center gap-2">
                   <Send className="h-4 w-4" />
@@ -74,6 +79,10 @@ const AdminNewsletter = () => {
 
               <TabsContent value="subscribers">
                 <SubscribersList />
+              </TabsContent>
+
+              <TabsContent value="segments">
+                <NewsletterSegments />
               </TabsContent>
 
               <TabsContent value="campaigns">
