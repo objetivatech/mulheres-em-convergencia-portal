@@ -85,6 +85,7 @@ interface PortalEvent {
   slug: string;
   is_registered?: boolean;
   registration_id?: string;
+  checked_in_at?: string | null;
 }
 
 function useConectaEvents(userId?: string) {
