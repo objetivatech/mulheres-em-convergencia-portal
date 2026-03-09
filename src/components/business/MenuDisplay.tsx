@@ -43,6 +43,13 @@ const formatPrice = (price: number | null) => {
 export const MenuDisplay: React.FC<MenuDisplayProps> = ({ businessId, className }) => {
   const { categories, items, loading, hasMenu } = useBusinessMenu(businessId);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleItemClick = (item: MenuItem) => {
+    setSelectedItem(item);
+    setModalOpen(true);
+  };
 
   // Não renderizar nada se não houver businessId
   if (!businessId) {

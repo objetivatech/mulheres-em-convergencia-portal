@@ -283,9 +283,12 @@ const EventDetailPage = () => {
                   <Separator />
                   <div>
                     <h3 className="font-semibold mb-3">Sobre o evento</h3>
-                    <div className="prose prose-sm max-w-none text-muted-foreground">
-                      <p className="whitespace-pre-wrap">{event.description}</p>
-                    </div>
+                    <div 
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(event.description || '') 
+                      }}
+                    />
                   </div>
                 </CardContent>
               </Card>

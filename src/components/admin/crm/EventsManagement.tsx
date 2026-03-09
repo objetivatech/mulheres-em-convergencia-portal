@@ -203,10 +203,11 @@ export const EventsManagement: React.FC = () => {
         </div>
         <div className="col-span-2">
           <Label>Descrição</Label>
-          <Textarea
+          <TinyMCESelfHosted
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows={3}
+            onChange={(value) => setFormData({ ...formData, description: value })}
+            height={250}
+            placeholder="Descrição detalhada do evento..."
           />
         </div>
         <div>

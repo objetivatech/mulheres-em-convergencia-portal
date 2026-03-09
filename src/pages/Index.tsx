@@ -77,6 +77,7 @@ const Index = () => {
       />
 
       <FeaturedPosts />
+      <AmbassadorsShowcase />
       <FinalCTA />
     </Layout>
   );
