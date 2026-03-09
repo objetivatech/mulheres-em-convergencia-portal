@@ -28,17 +28,56 @@ export default function ConectaDashboard() {
   const { accessLevel, isMemberOrAbove, conectaProfile, user } = useConectaAccess();
   const { data: stats } = useConectaStats();
 
-  // Upcoming meetings
-  const { data: meetings } = useQuery({
-    queryKey: ['conecta-upcoming-meetings'],
+  // Unified upcoming items: meetings + synced events
+  const { data: upcomingItems } = useQuery({
+    queryKey: ['conecta-upcoming-all'],
     queryFn: async () => {
-      const { data } = await supabase
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
+
+      // 1. Fetch conecta_meetings
+      const { data: meetings } = await supabase
         .from('conecta_meetings')
         .select('id, title, meeting_date, meeting_time, location')
-        .gte('meeting_date', new Date().toISOString().split('T')[0])
+        .gte('meeting_date', today)
         .order('meeting_date', { ascending: true })
-        .limit(3);
-      return data || [];
+        .limit(5);
+
+      // 2. Fetch synced events from portal
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, title, date_start, location, format, slug')
+        .eq('conecta_sync', true)
+        .eq('status', 'published')
+        .gte('date_start', now)
+        .order('date_start', { ascending: true })
+        .limit(5);
+
+      // 3. Normalize and merge
+      const normalizedMeetings = (meetings || []).map(m => ({
+        id: m.id,
+        title: m.title,
+        date: new Date(m.meeting_date + 'T12:00:00'),
+        time: m.meeting_time,
+        location: m.location,
+        type: 'meeting' as const,
+      }));
+
+      const normalizedEvents = (events || []).map(e => ({
+        id: e.id,
+        title: e.title,
+        date: new Date(e.date_start),
+        time: null,
+        location: e.location,
+        type: 'event' as const,
+        format: e.format,
+        slug: e.slug,
+      }));
+
+      // 4. Sort by date and take first 3
+      return [...normalizedMeetings, ...normalizedEvents]
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(0, 3);
     },
   });
 
