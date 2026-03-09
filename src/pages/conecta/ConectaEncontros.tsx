@@ -100,21 +100,24 @@ function useConectaEvents(userId?: string) {
         .order('date_start', { ascending: true });
       if (error) throw error;
 
-      // Check user registrations
-      let registrations: Record<string, string> = {};
+      // Check user registrations with check-in status
+      let registrations: Record<string, { id: string; checked_in_at: string | null }> = {};
       if (userId) {
         const { data: regs } = await supabase
           .from('event_registrations')
-          .select('id, event_id')
+          .select('id, event_id, checked_in_at')
           .eq('user_id', userId)
           .in('event_id', events.map(e => e.id));
-        regs?.forEach(r => { registrations[r.event_id] = r.id; });
+        regs?.forEach(r => { 
+          registrations[r.event_id] = { id: r.id, checked_in_at: r.checked_in_at }; 
+        });
       }
 
       return events.map(e => ({
         ...e,
         is_registered: !!registrations[e.id],
-        registration_id: registrations[e.id] || undefined,
+        registration_id: registrations[e.id]?.id || undefined,
+        checked_in_at: registrations[e.id]?.checked_in_at || null,
       })) as PortalEvent[];
     },
     enabled: true,
