@@ -22,7 +22,7 @@ const memberItems = [
   { title: 'Dashboard', url: '/conecta', icon: LayoutDashboard },
   { title: 'Meu Perfil', url: '/conecta/perfil', icon: UserCircle },
   { title: 'Membros', url: '/conecta/membros', icon: Users },
-  { title: 'Grupos', url: '/conecta/grupos', icon: Users },
+  { title: 'Grupos', url: '/conecta/grupos', icon: Network },
 ];
 
 const activityItems = [
