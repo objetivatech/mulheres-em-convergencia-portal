@@ -50,7 +50,7 @@ const AdminNewsletter = () => {
             </header>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="dashboard" className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
                   Dashboard
@@ -58,6 +58,10 @@ const AdminNewsletter = () => {
                 <TabsTrigger value="subscribers" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Contatos
+                </TabsTrigger>
+                <TabsTrigger value="segments" className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Segmentos
                 </TabsTrigger>
                 <TabsTrigger value="campaigns" className="flex items-center gap-2">
                   <Send className="h-4 w-4" />
@@ -75,6 +79,10 @@ const AdminNewsletter = () => {
 
               <TabsContent value="subscribers">
                 <SubscribersList />
+              </TabsContent>
+
+              <TabsContent value="segments">
+                <NewsletterSegments />
               </TabsContent>
 
               <TabsContent value="campaigns">
