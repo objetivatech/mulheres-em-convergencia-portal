@@ -248,6 +248,7 @@ export default function ConectaEncontros() {
 
   const EventCard = ({ event }: { event: PortalEvent }) => {
     const isPastEvent = isPast(parseISO(event.date_start)) && !isToday(parseISO(event.date_start));
+    const hasCheckedIn = !!event.checked_in_at;
 
     return (
       <Card className={`transition-all ${isPastEvent ? 'opacity-70' : 'hover:shadow-md'}`}>
@@ -264,6 +265,18 @@ export default function ConectaEncontros() {
                 </Badge>
                 <Badge variant="outline" className="text-xs">{event.type}</Badge>
                 {isToday(parseISO(event.date_start)) && <Badge>Hoje</Badge>}
+                {/* Status badges */}
+                {hasCheckedIn && (
+                  <Badge className="bg-green-600 text-white">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Presença Confirmada
+                  </Badge>
+                )}
+                {event.is_registered && !hasCheckedIn && (
+                  <Badge variant="default" className="text-xs">
+                    <Check className="w-3 h-3 mr-1" />Inscrita
+                  </Badge>
+                )}
               </div>
               {event.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{event.description}</p>}
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -283,10 +296,10 @@ export default function ConectaEncontros() {
                 )}
               </div>
             </div>
-            <div className="shrink-0">
-              {!isPastEvent && isMemberOrAbove && (
+            <div className="shrink-0 flex flex-col gap-2">
+              {!isPastEvent && isMemberOrAbove && !hasCheckedIn && (
                 <Button
-                  variant={event.is_registered ? "default" : "outline"}
+                  variant={event.is_registered ? "outline" : "default"}
                   size="sm"
                   onClick={() => toggleEventRegistration.mutate({
                     event,
@@ -295,8 +308,18 @@ export default function ConectaEncontros() {
                   })}
                   disabled={toggleEventRegistration.isPending}
                 >
-                  {event.is_registered ? <><Check className="w-4 h-4 mr-1" />Inscrita</> : 'Inscrever-se'}
+                  {event.is_registered ? (
+                    <><X className="w-4 h-4 mr-1" />Cancelar</>
+                  ) : (
+                    'Inscrever-se'
+                  )}
                 </Button>
+              )}
+              {hasCheckedIn && (
+                <span className="text-xs text-muted-foreground text-center">
+                  Check-in em<br/>
+                  {format(parseISO(event.checked_in_at!), "dd/MM 'às' HH:mm")}
+                </span>
               )}
             </div>
           </div>
