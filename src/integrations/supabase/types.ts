@@ -2665,6 +2665,7 @@ export type Database = {
           conecta_role: Database["public"]["Enums"]["conecta_role"]
           contact_email: string | null
           created_at: string
+          first_event_attended_at: string | null
           id: string
           instagram_url: string | null
           is_active: boolean
@@ -2690,6 +2691,7 @@ export type Database = {
           conecta_role?: Database["public"]["Enums"]["conecta_role"]
           contact_email?: string | null
           created_at?: string
+          first_event_attended_at?: string | null
           id: string
           instagram_url?: string | null
           is_active?: boolean
@@ -2715,6 +2717,7 @@ export type Database = {
           conecta_role?: Database["public"]["Enums"]["conecta_role"]
           contact_email?: string | null
           created_at?: string
+          first_event_attended_at?: string | null
           id?: string
           instagram_url?: string | null
           is_active?: boolean
