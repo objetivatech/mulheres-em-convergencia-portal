@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import RankBadge from '@/components/conecta/RankBadge';
+import ConectaProfileStats from '@/components/conecta/ConectaProfileStats';
 import { toast } from 'sonner';
 import { 
   Loader2, Save, Building, Phone, Mail, Globe, Linkedin, Instagram, 
@@ -446,6 +447,9 @@ export default function ConectaPerfil() {
                 </CardContent>
               </Card>
             )}
+
+            {/* View Mode: Points & Stats */}
+            <ConectaProfileStats />
           </>
         )}
       </div>
