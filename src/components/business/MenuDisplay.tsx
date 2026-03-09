@@ -2,13 +2,25 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { UtensilsCrossed, Image as ImageIcon, Tag, Loader2 } from 'lucide-react';
+import { UtensilsCrossed, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusinessMenu } from '@/hooks/useBusinessMenu';
+import { MenuItemDetailModal } from './MenuItemDetailModal';
 
 interface MenuDisplayProps {
   businessId: string;
   className?: string;
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  image_url: string | null;
+  is_highlighted: boolean;
+  highlight_label: string | null;
+  category_id?: string | null;
 }
 
 const highlightLabels: Record<string, { label: string; color: string }> = {
