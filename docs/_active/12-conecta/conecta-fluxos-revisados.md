@@ -152,17 +152,19 @@ Ao se inscrever em evento via `/eventos`:
 - Conecta+ exibe badge "Presença Confirmada" em tempo real
 - Trigger `trg_update_guest_attendance` atualiza `first_event_attended_at` no primeiro check-in
 
-### Controle de Acesso Único para Convidados
+### Controle de Acesso Único para Convidados (APENAS EVENTOS ONLINE)
 
 **Regra de negócio:**
-- Convidados podem participar de **apenas 1 evento**
-- Após check-in confirmado, novos eventos são bloqueados
-- Membros pagantes têm acesso ilimitado
+- Convidados podem participar de **apenas 1 evento online**
+- Após check-in confirmado em evento online, novos eventos online são bloqueados
+- **Eventos presenciais NÃO são bloqueados** — convidados podem participar livremente
+- Membros pagantes têm acesso ilimitado a todos os formatos
 
 **Implementação:**
-- Campo `conecta_profiles.first_event_attended_at` marca primeiro check-in
-- Edge Function `create-event-registration` valida antes de criar inscrição
-- Erro `GUEST_EVENT_LIMIT_REACHED` retorna mensagem amigável
+- Campo `conecta_profiles.first_event_attended_at` marca primeiro check-in em evento online
+- Trigger `update_guest_first_attendance()` verifica `events.format = 'online'` antes de atualizar
+- Edge Function `create-event-registration` só aplica bloqueio se `event.format === 'online'`
+- Erro `GUEST_EVENT_LIMIT_REACHED` retorna mensagem mencionando "eventos online"
 
 **Fluxo de bloqueio:**
 1. Convidado tenta se inscrever em novo evento
