@@ -463,6 +463,11 @@ const handler = async (req: Request): Promise<Response> => {
         break;
       }
       
+      case 'sync_segments': {
+        result = await syncRoleSegments(supabase);
+        break;
+      }
+      
       case 'import_from_mailrelay': {
         result = await importFromMailrelay(supabase);
         break;
