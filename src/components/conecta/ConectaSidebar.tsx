@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Users, Calendar, Handshake, MessageSquareHeart,
   TrendingUp, Trophy, BarChart3, Share2, BookOpen, Send, UserCircle,
-  Settings, Lightbulb
+  Settings, Lightbulb, Network
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -22,7 +22,7 @@ const memberItems = [
   { title: 'Dashboard', url: '/conecta', icon: LayoutDashboard },
   { title: 'Meu Perfil', url: '/conecta/perfil', icon: UserCircle },
   { title: 'Membros', url: '/conecta/membros', icon: Users },
-  { title: 'Grupos', url: '/conecta/grupos', icon: Users },
+  { title: 'Grupos', url: '/conecta/grupos', icon: Network },
 ];
 
 const activityItems = [

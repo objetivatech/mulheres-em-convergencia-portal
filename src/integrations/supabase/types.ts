@@ -2274,6 +2274,165 @@ export type Database = {
           },
         ]
       }
+      conecta_group_meetings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          group_id: string
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_link: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          group_id: string
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_link?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          group_id?: string
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_link?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_group_meetings_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_group_posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          pinned: boolean
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          pinned?: boolean
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          pinned?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_group_posts_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conecta_groups: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          external_link: string | null
+          group_type: Database["public"]["Enums"]["conecta_group_type"]
+          id: string
+          image_url: string | null
+          is_private: boolean
+          max_members: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_link?: string | null
+          group_type?: Database["public"]["Enums"]["conecta_group_type"]
+          id?: string
+          image_url?: string | null
+          is_private?: boolean
+          max_members?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_link?: string | null
+          group_type?: Database["public"]["Enums"]["conecta_group_type"]
+          id?: string
+          image_url?: string | null
+          is_private?: boolean
+          max_members?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conecta_helpdesk_posts: {
         Row: {
           category: string
@@ -6466,6 +6625,7 @@ export type Database = {
         | "eventos"
         | "marketing"
       comment_status: "pending" | "approved" | "rejected"
+      conecta_group_type: "networking" | "encontro" | "mentoria" | "whatsapp"
       conecta_rank: "iniciante" | "bronze" | "prata" | "ouro" | "diamante"
       conecta_role: "admin" | "facilitadora" | "membro" | "convidado"
       post_status: "draft" | "published" | "archived" | "scheduled"
@@ -6650,6 +6810,7 @@ export const Constants = {
         "marketing",
       ],
       comment_status: ["pending", "approved", "rejected"],
+      conecta_group_type: ["networking", "encontro", "mentoria", "whatsapp"],
       conecta_rank: ["iniciante", "bronze", "prata", "ouro", "diamante"],
       conecta_role: ["admin", "facilitadora", "membro", "convidado"],
       post_status: ["draft", "published", "archived", "scheduled"],

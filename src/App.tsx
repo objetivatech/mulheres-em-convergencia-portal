@@ -97,6 +97,7 @@ import ConectaEstatisticas from '@/pages/conecta/ConectaEstatisticas';
 import ConectaConvites from '@/pages/conecta/ConectaConvites';
 import ConectaConteudos from '@/pages/conecta/ConectaConteudos';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
+import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
 import AdminConecta from '@/pages/admin/AdminConecta';
 import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 const queryClient = new QueryClient();
@@ -433,7 +434,8 @@ function AppContent() {
           <Route path="/conecta" element={<ProtectedRoute><ConectaDashboard /></ProtectedRoute>} />
           <Route path="/conecta/perfil" element={<ProtectedRoute><ConectaPerfil /></ProtectedRoute>} />
           <Route path="/conecta/membros" element={<ProtectedRoute><ConectaMembros /></ProtectedRoute>} />
-          <Route path="/conecta/grupos" element={<ProtectedRoute><ConectaPlaceholder title="Grupos" /></ProtectedRoute>} />
+          <Route path="/conecta/grupos" element={<ProtectedRoute><ConectaGrupos /></ProtectedRoute>} />
+          <Route path="/conecta/grupos/:groupId" element={<ProtectedRoute><ConectaGrupos /></ProtectedRoute>} />
           <Route path="/conecta/encontros" element={<ProtectedRoute><ConectaEncontros /></ProtectedRoute>} />
           <Route path="/conecta/reunioes" element={<ProtectedRoute><ConectaReunioes /></ProtectedRoute>} />
           <Route path="/conecta/depoimentos" element={<ProtectedRoute><ConectaDepoimentos /></ProtectedRoute>} />
