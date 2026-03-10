@@ -37,7 +37,6 @@ export default function EventoCheckin() {
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [checkinDone, setCheckinDone] = useState(false);
 
-  // Fetch event info
   const { data: event } = useQuery({
     queryKey: ['event-checkin', eventId],
     queryFn: async () => {
@@ -61,7 +60,6 @@ export default function EventoCheckin() {
     setCheckinDone(false);
 
     try {
-      // Search registration by CPF for this event
       const { data: reg, error } = await supabase
         .from('event_registrations')
         .select('id, full_name, email, checked_in_at, status, user_id')
@@ -94,7 +92,7 @@ export default function EventoCheckin() {
         email: reg.email,
         registrationId: reg.id,
       });
-    } catch (err) {
+    } catch {
       setResult({ found: false, error: 'Erro ao buscar inscrição. Tente novamente.' });
     } finally {
       setLoading(false);
@@ -106,7 +104,6 @@ export default function EventoCheckin() {
     setLoading(true);
 
     try {
-      // Update registration with check-in timestamp
       const { error } = await supabase
         .from('event_registrations')
         .update({
@@ -116,44 +113,6 @@ export default function EventoCheckin() {
         .eq('id', result.registrationId);
 
       if (error) throw error;
-
-      // Try to update CRM deal stage to "Participou"
-      try {
-        const { data: reg } = await supabase
-          .from('event_registrations')
-          .select('lead_id')
-          .eq('id', result.registrationId)
-          .single();
-
-        if (reg?.lead_id) {
-          // Find the deal for this event and move to "participou" stage
-          const { data: deals } = await supabase
-            .from('crm_deals')
-            .select('id, pipeline_id')
-            .eq('lead_id', reg.lead_id)
-            .eq('metadata->>event_id', eventId!)
-            .limit(1);
-
-          if (deals && deals.length > 0) {
-            const { data: stages } = await supabase
-              .from('crm_pipeline_stages')
-              .select('id')
-              .eq('pipeline_id', deals[0].pipeline_id)
-              .ilike('name', '%participou%')
-              .limit(1);
-
-            if (stages && stages.length > 0) {
-              await supabase
-                .from('crm_deals')
-                .update({ stage_id: stages[0].id })
-                .eq('id', deals[0].id);
-            }
-          }
-        }
-      } catch {
-        // CRM update is best-effort, don't fail the checkin
-      }
-
       setCheckinDone(true);
     } catch {
       setResult({ found: false, error: 'Erro ao realizar check-in. Tente novamente.' });
@@ -173,7 +132,6 @@ export default function EventoCheckin() {
       <Layout>
         <div className="container mx-auto py-12 px-4">
           <div className="max-w-md mx-auto space-y-6">
-            {/* Event Header */}
             <div className="text-center">
               <h1 className="text-2xl font-bold text-foreground">Check-in Presencial</h1>
               {event && (
@@ -181,21 +139,20 @@ export default function EventoCheckin() {
               )}
             </div>
 
-            {/* Check-in done state */}
             {checkinDone ? (
-              <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+              <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
                 <CardContent className="py-12 text-center">
                   <div className="relative inline-block mb-6">
                     <PartyPopper className="h-20 w-20 text-primary mx-auto" />
-                    <CheckCircle2 className="h-8 w-8 text-green-500 absolute -bottom-1 -right-1 bg-white rounded-full" />
+                    <CheckCircle2 className="h-8 w-8 text-green-500 absolute -bottom-1 -right-1 bg-background rounded-full" />
                   </div>
-                  <h2 className="text-2xl font-bold text-green-800 mb-2">
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
                     Check-in Realizado! 🎉
                   </h2>
-                  <p className="text-green-700 text-lg font-medium mb-2">
+                  <p className="text-foreground text-lg font-medium mb-2">
                     {result?.fullName}
                   </p>
-                  <p className="text-green-600 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Presença confirmada com sucesso!
                   </p>
                   <Button
@@ -212,7 +169,6 @@ export default function EventoCheckin() {
               </Card>
             ) : (
               <>
-                {/* CPF Input */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -247,19 +203,18 @@ export default function EventoCheckin() {
                   </CardContent>
                 </Card>
 
-                {/* Result */}
                 {result && (
                   <>
                     {result.found ? (
                       result.alreadyCheckedIn ? (
-                        <Card className="border-amber-200 bg-amber-50">
+                        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
                           <CardContent className="py-8 text-center">
                             <CheckCircle2 className="h-16 w-16 text-amber-500 mx-auto mb-4" />
-                            <h3 className="text-xl font-bold text-amber-800 mb-1">
+                            <h3 className="text-xl font-bold text-foreground mb-1">
                               Check-in já realizado
                             </h3>
-                            <p className="text-amber-700 font-medium">{result.fullName}</p>
-                            <p className="text-amber-600 text-sm mt-2">
+                            <p className="text-foreground font-medium">{result.fullName}</p>
+                            <p className="text-muted-foreground text-sm mt-2">
                               Você já fez check-in neste evento.
                             </p>
                           </CardContent>
@@ -289,13 +244,13 @@ export default function EventoCheckin() {
                         </Card>
                       )
                     ) : (
-                      <Card className="border-red-200 bg-red-50">
+                      <Card className="border-destructive/30 bg-destructive/5">
                         <CardContent className="py-8 text-center">
-                          <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                          <h3 className="text-xl font-bold text-red-800 mb-1">
+                          <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+                          <h3 className="text-xl font-bold text-foreground mb-1">
                             Inscrição não encontrada
                           </h3>
-                          <p className="text-red-600 text-sm">
+                          <p className="text-muted-foreground text-sm">
                             {result.error}
                           </p>
                         </CardContent>

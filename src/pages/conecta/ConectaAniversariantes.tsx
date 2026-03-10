@@ -22,39 +22,44 @@ interface BirthdayMember {
   avatar_url: string | null;
   company: string | null;
   position: string | null;
-  birthday: string; // YYYY-MM-DD
+  birthday: string;
 }
 
 export default function ConectaAniversariantes() {
   const { user } = useAuth();
-  const currentMonth = new Date().getMonth(); // 0-indexed
+  const currentMonth = new Date().getMonth();
 
   const { data: members, isLoading } = useQuery({
     queryKey: ['conecta-birthdays'],
     queryFn: async () => {
+      // conecta_profiles has birthday but not full_name/avatar_url — join with profiles
       const { data, error } = await supabase
         .from('conecta_profiles')
-        .select('id, full_name, avatar_url, company, position, birthday')
+        .select('id, company, position, birthday, profiles:id(full_name, avatar_url)')
         .eq('is_active', true)
-        .not('birthday', 'is', null)
-        .order('birthday');
+        .not('birthday', 'is', null);
       if (error) throw error;
-      return data as BirthdayMember[];
+      return (data || []).map((row: any) => ({
+        id: row.id,
+        full_name: row.profiles?.full_name || 'Sem nome',
+        avatar_url: row.profiles?.avatar_url || null,
+        company: row.company,
+        position: row.position,
+        birthday: row.birthday,
+      })) as BirthdayMember[];
     },
     enabled: !!user,
   });
 
-  // Group members by month
   const grouped = useMemo(() => {
     if (!members) return {};
     const map: Record<number, BirthdayMember[]> = {};
     for (const m of members) {
       if (!m.birthday) continue;
-      const month = parseInt(m.birthday.split('-')[1], 10) - 1; // 0-indexed
+      const month = parseInt(m.birthday.split('-')[1], 10) - 1;
       if (!map[month]) map[month] = [];
       map[month].push(m);
     }
-    // Sort each month by day
     for (const key of Object.keys(map)) {
       map[Number(key)].sort((a, b) => {
         const dayA = parseInt(a.birthday.split('-')[2], 10);
@@ -79,12 +84,10 @@ export default function ConectaAniversariantes() {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
   };
 
-  // Reorder months: current month first, then the rest
   const orderedMonths = useMemo(() => {
     const months = [];
     for (let i = 0; i < 12; i++) {
-      const idx = (currentMonth + i) % 12;
-      months.push(idx);
+      months.push((currentMonth + i) % 12);
     }
     return months;
   }, [currentMonth]);
@@ -152,7 +155,9 @@ export default function ConectaAniversariantes() {
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm truncate">{member.full_name}</p>
                             {member.company && (
-                              <p className="text-xs text-muted-foreground truncate">{member.position ? `${member.position} - ` : ''}{member.company}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {member.position ? `${member.position} - ` : ''}{member.company}
+                              </p>
                             )}
                           </div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
