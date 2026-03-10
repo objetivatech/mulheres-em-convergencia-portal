@@ -149,6 +149,7 @@ function AppContent() {
         <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
+        <Route path="/evento-checkin/:eventId" element={<EventoCheckin />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
