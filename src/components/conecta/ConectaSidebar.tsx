@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Users, Calendar, Handshake, MessageSquareHeart,
   TrendingUp, Trophy, BarChart3, Share2, BookOpen, Send, UserCircle,
-  Settings, Lightbulb, Network
+  Settings, Lightbulb, Network, Cake
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
