@@ -2769,6 +2769,39 @@ export type Database = {
           },
         ]
       }
+      conecta_partnerships: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          partner_a_id: string
+          partner_b_id: string
+          photo_url: string | null
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          partner_a_id: string
+          partner_b_id: string
+          photo_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          partner_a_id?: string
+          partner_b_id?: string
+          photo_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       conecta_points_history: {
         Row: {
           created_at: string

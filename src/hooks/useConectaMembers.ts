@@ -87,12 +87,13 @@ export function useConectaMembers() {
         teamsMap[t.id] = { name: t.name, color: t.color || '#22c55e' };
       });
 
-      // 5. Get published online businesses owned by members
+      // 5. Get published online businesses owned by members WITH active subscription
       const { data: businesses } = await supabase
         .from('businesses')
-        .select('id, name, slug, logo_url, category, owner_id')
+        .select('id, name, slug, logo_url, category, owner_id, subscription_active')
         .in('owner_id', userIds)
-        .not('owner_id', 'is', null);
+        .not('owner_id', 'is', null)
+        .eq('subscription_active', true);
 
       const businessMap: Record<string, { id: string; name: string; slug: string; logo_url: string | null; category: string }> = {};
       (businesses || []).forEach(b => {

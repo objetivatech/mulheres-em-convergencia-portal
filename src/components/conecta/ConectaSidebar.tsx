@@ -31,6 +31,7 @@ const activityItems = [
   { title: 'Depoimentos', url: '/conecta/depoimentos', icon: MessageSquareHeart },
   { title: 'Negócios', url: '/conecta/negocios', icon: TrendingUp },
   { title: 'Indicações', url: '/conecta/indicacoes', icon: Share2 },
+  { title: 'Parcerias', url: '/conecta/parcerias', icon: Users },
   { title: 'Conselho 24/7', url: '/conecta/helpdesk', icon: Lightbulb },
 ];
 

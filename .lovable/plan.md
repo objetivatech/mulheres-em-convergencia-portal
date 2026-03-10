@@ -81,11 +81,29 @@
 
 ---
 
-## 🔲 Próximos Sprints
+### ✅ Rodada 5 - Sprint 2: Funcionalidades CONECTA+ (CONCLUÍDA)
 
-### Sprint 2: Funcionalidades CONECTA+ (itens 4, 5, 7)
-- [ ] Card de negócio no perfil CONECTA+
-- [ ] Registro de parcerias entre membros (nova tabela + página)
+#### Item 4: Card de Negócio no Perfil CONECTA+
+- Componente `BusinessProfileCard` busca negócios com `subscription_active = true`
+- Exibe nome, logo, categoria, descrição e link para `/guia/{slug}`
+- Integrado no perfil (`ConectaPerfil.tsx`) em modo visualização
+- `useConectaMembers` atualizado para filtrar apenas negócios com assinatura ativa
+
+#### Item 5: Pontuação Conselho 24/7 (concluído no Sprint 1)
+
+#### Item 7: Registro de Parcerias entre Membros
+- Tabela `conecta_partnerships` com RLS e constraint de parceiros diferentes
+- Trigger `trg_conecta_partnership_insert` → +15 pts para ambas
+- Função `conecta_calculate_monthly_points` atualizada com parcerias
+- Hook `useConectaPartnerships.ts` com CRUD
+- Página `/conecta/parcerias` com formulário e listagem
+- Sidebar atualizado com item "Parcerias"
+- `ScoringRulesCard.tsx` atualizado com regra de parcerias
+- Documentação: `docs/_active/12-conecta/conecta-parcerias.md`
+
+---
+
+## 🔲 Próximos Sprints
 
 ### Sprint 3: Integrações e Automações (itens 8, 9, 10)
 - [ ] Check-in presencial via QR Code
