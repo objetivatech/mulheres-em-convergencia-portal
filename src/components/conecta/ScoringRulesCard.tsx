@@ -12,6 +12,7 @@ const scoringRules = [
   { icon: UserCheck, label: 'Presenças', points: '20 pts', description: 'por encontro' },
   { icon: DollarSign, label: 'Negócios', points: '5 pts', description: 'por R$ 100' },
   { icon: UserPlus, label: 'Convites', points: '15 pts', description: 'por convidada presente' },
+  { icon: MessageSquare, label: 'Conselho 24/7', points: '5 pts', description: 'por resposta' },
 ];
 
 export default function ScoringRulesCard({ compact = false }: ScoringRulesCardProps) {
