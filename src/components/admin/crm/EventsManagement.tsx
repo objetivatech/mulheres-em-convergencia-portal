@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, Calendar, Users, MapPin, Clock, 
   CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus, Archive
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
