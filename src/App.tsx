@@ -101,6 +101,8 @@ import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
 import AdminConecta from '@/pages/admin/AdminConecta';
 import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 import ConectaParcerias from '@/pages/conecta/ConectaParcerias';
+import ConectaAniversariantes from '@/pages/conecta/ConectaAniversariantes';
+import EventoCheckin from '@/pages/EventoCheckin';
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
