@@ -55,6 +55,48 @@
 
 ---
 
+### ✅ Rodada 4 - Sprint 1: Fundamentos e Correções (CONCLUÍDA)
+
+#### Item 1: Image Crop Tool + Dimensões Recomendadas
+- Componente `ImageCropUploader` com `react-image-crop`
+- Presets de dimensões para 7 contextos (blog, perfil, negócio, etc.)
+- Texto informativo de dimensão ideal em cada campo
+- Modal de recorte com aspect ratio fixo
+- Blog `ImageUploader` refatorado para usar novo componente
+- Documentação: `docs/_active/06-funcionalidades/image-crop-tool.md`
+
+#### Item 2: Revisão dos Contadores e Gamificação do CONECTA+
+- **Descoberta:** Funções de trigger existiam mas triggers NÃO estavam criados
+- Triggers criados para: one_on_ones, testimonials, business_deals, referrals, attendances
+- Novo trigger para respostas no Conselho 24/7 (+5 pts)
+- Função `conecta_calculate_monthly_points` atualizada com Conselho 24/7
+- `ScoringRulesCard.tsx` atualizado com regra do Conselho 24/7
+- Documentação: `docs/_active/12-conecta/conecta-gamificacao.md`
+
+#### Item 3: Arquivamento de Eventos no Admin
+- Tabs "Ativos" e "Arquivados" na gestão de eventos
+- Ativos ordenados por data ASC (próximos primeiro)
+- Arquivados ordenados por data DESC (recentes primeiro)
+- Botão "Arquivar" muda status para `completed`
+
+---
+
+## 🔲 Próximos Sprints
+
+### Sprint 2: Funcionalidades CONECTA+ (itens 4, 5, 7)
+- [ ] Card de negócio no perfil CONECTA+
+- [ ] Registro de parcerias entre membros (nova tabela + página)
+
+### Sprint 3: Integrações e Automações (itens 8, 9, 10)
+- [ ] Check-in presencial via QR Code
+- [ ] Integração CONECTA+ / MeC Academy (Conteúdos)
+- [ ] Aniversariantes do mês (página + automação e-mail)
+
+### Sprint 4: Performance (item 6)
+- [ ] Otimização PageSpeed (imagens, fontes, scripts, preconnects)
+
+---
+
 ## Arquitetura CONECTA+
 
 ### Tabelas (prefixo `conecta_`):
