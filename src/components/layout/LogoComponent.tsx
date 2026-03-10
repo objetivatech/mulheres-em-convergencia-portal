@@ -55,7 +55,11 @@ const LogoComponent: React.FC<LogoComponentProps> = ({
         src={src}
         alt={alt}
         className={`${sizeClass} w-auto object-contain`}
-        loading="lazy"
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
+        width={variant === 'horizontal' ? 200 : variant === 'circular' ? 48 : 120}
+        height={variant === 'horizontal' ? 48 : variant === 'circular' ? 48 : 80}
       />
     </div>
   );
