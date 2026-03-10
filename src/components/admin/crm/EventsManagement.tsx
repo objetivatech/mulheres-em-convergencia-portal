@@ -616,76 +616,111 @@ export const EventsManagement: React.FC = () => {
         </Dialog>
       </div>
 
-      {/* Events List */}
-      <Card>
-        <CardContent className="p-0">
-          {eventsLoading ? (
-            <p className="p-6">Carregando...</p>
-          ) : filteredEvents?.length === 0 ? (
-            <p className="p-6 text-muted-foreground">Nenhum evento encontrado.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Evento</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Formato</TableHead>
-                  <TableHead>Participantes</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEvents?.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{event.title}</div>
-                        <div className="text-sm text-muted-foreground">{event.type}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                    </TableCell>
-                    <TableCell>{formatBadge(event.format)}</TableCell>
-                    <TableCell>
-                      {event.current_participants}/{event.max_participants || '∞'}
-                    </TableCell>
-                    <TableCell>{formatStatusBadge(event.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-destructive"
-                          title="Excluir"
-                          onClick={async () => {
-                            if (confirm('Excluir evento?')) {
-                              await deleteEvent.mutateAsync(event.id);
-                              toast({ title: 'Evento excluído' });
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Events List with Tabs */}
+      <Tabs value={eventsTab} onValueChange={setEventsTab}>
+        <TabsList>
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Ativos ({activeEvents?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="flex items-center gap-2">
+            <Archive className="h-4 w-4" />
+            Arquivados ({archivedEvents?.length || 0})
+          </TabsTrigger>
+        </TabsList>
+
+        {(['active', 'archived'] as const).map((tab) => {
+          const list = tab === 'active' ? activeEvents : archivedEvents;
+          return (
+            <TabsContent key={tab} value={tab}>
+              <Card>
+                <CardContent className="p-0">
+                  {eventsLoading ? (
+                    <p className="p-6">Carregando...</p>
+                  ) : list?.length === 0 ? (
+                    <p className="p-6 text-muted-foreground">
+                      {tab === 'active' ? 'Nenhum evento ativo.' : 'Nenhum evento arquivado.'}
+                    </p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Evento</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Formato</TableHead>
+                          <TableHead>Participantes</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {list?.map((event) => (
+                          <TableRow key={event.id}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{event.title}</div>
+                                <div className="text-sm text-muted-foreground">{event.type}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                            </TableCell>
+                            <TableCell>{formatBadge(event.format)}</TableCell>
+                            <TableCell>
+                              {event.current_participants}/{event.max_participants || '∞'}
+                            </TableCell>
+                            <TableCell>{formatStatusBadge(event.status)}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                                {tab === 'active' && new Date(event.date_start) < now && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    title="Arquivar"
+                                    onClick={async () => {
+                                      await updateEvent.mutateAsync({ id: event.id, status: 'completed' } as any);
+                                      toast({ title: 'Evento arquivado' });
+                                    }}
+                                  >
+                                    <Archive className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="text-destructive"
+                                  title="Excluir"
+                                  onClick={async () => {
+                                    if (confirm('Excluir evento?')) {
+                                      await deleteEvent.mutateAsync(event.id);
+                                      toast({ title: 'Evento excluído' });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
     </div>
   );
 };
