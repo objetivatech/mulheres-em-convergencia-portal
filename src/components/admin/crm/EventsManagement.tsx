@@ -519,11 +519,33 @@ export const EventsManagement: React.FC = () => {
     );
   };
 
-  // Filter events by search
-  const filteredEvents = eventsList?.filter(e => 
-    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Separate events into active and archived
+  const now = new Date();
+  const activeEvents = eventsList
+    ?.filter(e => {
+      const isUpcoming = new Date(e.date_start) >= now;
+      const isNotCompleted = e.status !== 'completed';
+      return isUpcoming || isNotCompleted;
+    })
+    .filter(e => 
+      e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.type.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => new Date(a.date_start).getTime() - new Date(b.date_start).getTime());
+
+  const archivedEvents = eventsList
+    ?.filter(e => {
+      const isPast = new Date(e.date_start) < now;
+      const isCompleted = e.status === 'completed';
+      return isPast && isCompleted;
+    })
+    .filter(e => 
+      e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.type.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.date_start).getTime() - new Date(a.date_start).getTime());
+
+  const [eventsTab, setEventsTab] = useState('active');
 
   if (selectedEvent) {
     return <EventDetails event={selectedEvent} />;
