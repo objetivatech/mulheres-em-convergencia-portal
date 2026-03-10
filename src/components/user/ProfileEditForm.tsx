@@ -145,10 +145,6 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
             <Label>Mini-bio (privada)</Label>
             <Textarea value={form.bio} onChange={e => update('bio', e.target.value)} placeholder="Uma breve descrição sobre você..." rows={2} />
           </div>
-          <div className="space-y-1">
-            <Label>Bio pública</Label>
-            <Textarea value={form.public_bio} onChange={e => update('public_bio', e.target.value)} placeholder="Esta bio será visível para outras pessoas..." rows={3} />
-          </div>
         </CardContent>
       </Card>
 
