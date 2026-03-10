@@ -449,6 +449,9 @@ export default function ConectaPerfil() {
               </Card>
             )}
 
+            {/* View Mode: Business Card */}
+            {user?.id && <BusinessProfileCard userId={user.id} />}
+
             {/* View Mode: Points & Stats */}
             <ConectaProfileStats />
           </>
