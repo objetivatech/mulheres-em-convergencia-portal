@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaPartnerships } from '@/hooks/useConectaPartnerships';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
-import { ConectaMemberSelect } from '@/components/conecta/ConectaMemberSelect';
+import ConectaMemberSelect from '@/components/conecta/ConectaMemberSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
