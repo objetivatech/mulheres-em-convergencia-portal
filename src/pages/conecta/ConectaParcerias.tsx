@@ -71,7 +71,7 @@ export default function ConectaParcerias() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>Parceira</Label>
-                    <ConectaMemberSelect value={partnerId} onChange={setPartnerId} excludeUserId={user?.id} />
+                    <ConectaMemberSelect value={partnerId} onChange={setPartnerId} />
                   </div>
                   <div className="space-y-2">
                     <Label>Título da Parceria</Label>
