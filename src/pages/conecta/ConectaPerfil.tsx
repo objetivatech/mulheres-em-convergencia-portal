@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import RankBadge from '@/components/conecta/RankBadge';
 import ConectaProfileStats from '@/components/conecta/ConectaProfileStats';
+import BusinessProfileCard from '@/components/conecta/BusinessProfileCard';
 import { toast } from 'sonner';
 import { 
   Loader2, Save, Building, Phone, Mail, Globe, Linkedin, Instagram, 
