@@ -451,6 +451,7 @@ function AppContent() {
           <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaConteudos /></ProtectedRoute>} />
           <Route path="/conecta/helpdesk" element={<ProtectedRoute><ConectaHelpdesk /></ProtectedRoute>} />
           <Route path="/conecta/parcerias" element={<ProtectedRoute><ConectaParcerias /></ProtectedRoute>} />
+          <Route path="/conecta/aniversariantes" element={<ProtectedRoute><ConectaAniversariantes /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
           <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><AdminConecta /></ProtectedRoute>} />

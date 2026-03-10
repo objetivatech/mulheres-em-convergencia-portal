@@ -40,6 +40,7 @@ const communityItems = [
   { title: 'Estatísticas', url: '/conecta/estatisticas', icon: BarChart3 },
   { title: 'Convites', url: '/conecta/convites', icon: Send },
   { title: 'Conteúdos', url: '/conecta/conteudos', icon: BookOpen },
+  { title: 'Aniversariantes', url: '/conecta/aniversariantes', icon: Cake },
 ];
 
 const adminItems = [
