@@ -1,7 +1,7 @@
 import { 
   LayoutDashboard, Users, Calendar, Handshake, MessageSquareHeart,
   TrendingUp, Trophy, BarChart3, Share2, BookOpen, Send, UserCircle,
-  Settings, Lightbulb, Network
+  Settings, Lightbulb, Network, Cake
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -40,6 +40,7 @@ const communityItems = [
   { title: 'Estatísticas', url: '/conecta/estatisticas', icon: BarChart3 },
   { title: 'Convites', url: '/conecta/convites', icon: Send },
   { title: 'Conteúdos', url: '/conecta/conteudos', icon: BookOpen },
+  { title: 'Aniversariantes', url: '/conecta/aniversariantes', icon: Cake },
 ];
 
 const adminItems = [

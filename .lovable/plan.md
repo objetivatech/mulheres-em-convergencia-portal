@@ -103,12 +103,32 @@
 
 ---
 
-## 🔲 Próximos Sprints
+### ✅ Sprint 3: Integrações e Automações (CONCLUÍDA)
 
-### Sprint 3: Integrações e Automações (itens 8, 9, 10)
-- [ ] Check-in presencial via QR Code
-- [ ] Integração CONECTA+ / MeC Academy (Conteúdos)
-- [ ] Aniversariantes do mês (página + automação e-mail)
+- [x] **Check-in presencial via QR Code** (item 8)
+  - Página pública `/evento-checkin/:eventId` com busca por CPF
+  - Botão "QR Check-in" no admin para eventos presenciais/híbridos
+  - Trigger de gamificação: +10 pts para membros CONECTA+ ao fazer check-in
+  - Dependência `qrcode.react` instalada
+  - Documentação: `docs/_active/06-funcionalidades/evento-checkin-qrcode.md`
+
+- [x] **Integração CONECTA+ / MeC Academy** (item 9)
+  - `useConectaContents.ts` agora faz UNION de `conecta_contents` com `academy_lessons`
+  - Convidados veem apenas conteúdos gratuitos/free preview
+  - Badge "Academy" diferencia conteúdos do MeC Academy
+  - Link redireciona para `/academy/curso/:slug`
+
+- [x] **Aniversariantes do mês** (item 10)
+  - Página `/conecta/aniversariantes` com agrupamento por mês
+  - Mês atual em destaque (primeira posição, borda primária)
+  - Data de aniversário exibida sem ano (DD/mmm) no perfil público
+  - Edge Function `conecta-birthday-notify` para envio mensal via Mailrelay
+  - Item "Aniversariantes" no sidebar com ícone Cake
+  - Documentação: `docs/_active/12-conecta/conecta-aniversariantes.md`
+
+---
+
+## 🔲 Próximos Sprints
 
 ### Sprint 4: Performance (item 6)
 - [ ] Otimização PageSpeed (imagens, fontes, scripts, preconnects)

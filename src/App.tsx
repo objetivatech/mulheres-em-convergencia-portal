@@ -101,6 +101,8 @@ import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
 import AdminConecta from '@/pages/admin/AdminConecta';
 import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 import ConectaParcerias from '@/pages/conecta/ConectaParcerias';
+import ConectaAniversariantes from '@/pages/conecta/ConectaAniversariantes';
+import EventoCheckin from '@/pages/EventoCheckin';
 const queryClient = new QueryClient();
 
 // Hook para scroll ao topo quando a rota muda
@@ -147,6 +149,7 @@ function AppContent() {
         <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
+        <Route path="/evento-checkin/:eventId" element={<EventoCheckin />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/pagina/:slug" element={<PublicPage />} />
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
@@ -448,6 +451,7 @@ function AppContent() {
           <Route path="/conecta/conteudos" element={<ProtectedRoute><ConectaConteudos /></ProtectedRoute>} />
           <Route path="/conecta/helpdesk" element={<ProtectedRoute><ConectaHelpdesk /></ProtectedRoute>} />
           <Route path="/conecta/parcerias" element={<ProtectedRoute><ConectaParcerias /></ProtectedRoute>} />
+          <Route path="/conecta/aniversariantes" element={<ProtectedRoute><ConectaAniversariantes /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
           <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><AdminConecta /></ProtectedRoute>} />

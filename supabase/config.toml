@@ -113,3 +113,6 @@ verify_jwt = true
 
 [functions.create-academy-subscription]
 verify_jwt = false
+
+[functions.conecta-birthday-notify]
+verify_jwt = false

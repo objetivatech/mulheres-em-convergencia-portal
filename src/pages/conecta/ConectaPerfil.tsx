@@ -397,7 +397,18 @@ export default function ConectaPerfil() {
                     <div className="flex items-center gap-2 text-sm"><Building className="w-4 h-4 text-muted-foreground" /><span>{profile.company}</span></div>
                   )}
                   {profile?.birthday && (
-                    <div className="flex items-center gap-2 text-sm"><Cake className="w-4 h-4 text-muted-foreground" /><span>{profile.birthday}</span></div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Cake className="w-4 h-4 text-muted-foreground" />
+                      <span>
+                        {(() => {
+                          try {
+                            const [, m, d] = profile.birthday.split('-');
+                            const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+                            return `${parseInt(d, 10)}/${months[parseInt(m, 10) - 1]}`;
+                          } catch { return profile.birthday; }
+                        })()}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-3 mt-4">

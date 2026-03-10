@@ -13,8 +13,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, Calendar, Users, MapPin, Clock, 
   CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus, Archive
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus, Archive, QrCode
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -376,6 +377,32 @@ export const EventsManagement: React.FC = () => {
             <Button variant="outline" onClick={() => openEventForm(event, true)}>
               <Copy className="h-4 w-4 mr-2" />Duplicar
             </Button>
+            {(event.format === 'presencial' || event.format === 'hibrido') && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <QrCode className="h-4 w-4 mr-2" />QR Check-in
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>QR Code - Check-in</DialogTitle>
+                    <DialogDescription>{event.title}</DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center gap-4 py-4">
+                    <QRCodeSVG
+                      value={`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
+                      size={256}
+                      level="H"
+                      includeMargin
+                    />
+                    <p className="text-xs text-muted-foreground text-center break-all">
+                      {`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
 
