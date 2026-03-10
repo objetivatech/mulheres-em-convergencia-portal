@@ -128,10 +128,14 @@
 
 ---
 
-## 🔲 Próximos Sprints
+## ✅ Sprint 4: Performance (item 6) — CONCLUÍDO
 
-### Sprint 4: Performance (item 6)
-- [ ] Otimização PageSpeed (imagens, fontes, scripts, preconnects)
+- [x] GTM deferido para após page load (+2s delay)
+- [x] Preconnect para Supabase, Google Fonts, GTM, DNS-prefetch para Facebook/Google Ads
+- [x] Preload da fonte Montserrat
+- [x] Logo com `loading="eager"`, `fetchPriority="high"`, dimensões explícitas
+- [x] Componente `OptimizedImage` reutilizável com priority, srcset, fallback
+- [x] Documentação em `docs/_active/06-funcionalidades/performance-optimization.md`
 
 ---
 
