@@ -279,7 +279,7 @@ export const UserDashboard = () => {
                             <div><p className="text-xl font-bold">{businessProfile.contacts_count || 0}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
                           </div>
                           <div className="flex gap-2 flex-wrap">
-                            <Button asChild><Link to="/dashboard/empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
+                            <Button asChild><Link to="/painel-empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
                             <Button variant="outline" asChild><Link to={`/diretorio/${businessProfile.slug}`}><ExternalLink className="h-4 w-4 mr-1" /> Ver Página</Link></Button>
                           </div>
                         </CardContent>
