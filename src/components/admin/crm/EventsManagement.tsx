@@ -574,8 +574,33 @@ export const EventsManagement: React.FC = () => {
 
   const [eventsTab, setEventsTab] = useState('active');
 
+  // Event form dialog - rendered always so it works from EventDetails too
+  const eventFormDialog = (
+    <Dialog open={showEventForm} onOpenChange={(open) => {
+      if (!open) {
+        setEditingEvent(null);
+      }
+      setShowEventForm(open);
+    }}>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+          <DialogDescription>
+            {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
+          </DialogDescription>
+        </DialogHeader>
+        {eventFormContent}
+      </DialogContent>
+    </Dialog>
+  );
+
   if (selectedEvent) {
-    return <EventDetails event={selectedEvent} />;
+    return (
+      <>
+        <EventDetails event={selectedEvent} />
+        {eventFormDialog}
+      </>
+    );
   }
 
   return (
