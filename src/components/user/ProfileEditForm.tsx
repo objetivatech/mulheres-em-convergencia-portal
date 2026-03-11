@@ -90,28 +90,17 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Foto e Identificação</CardTitle>
-          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos. Recomendado: 400×400px, máx. 5MB.</CardDescription>
+          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row items-start gap-6">
-          <div className="relative group">
-            <Avatar className="h-24 w-24 border-2 border-primary/20">
-              <AvatarImage src={profile?.avatar_url || ''} />
-              <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">{initials}</AvatarFallback>
-            </Avatar>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer"
-            >
-              {uploading ? (
-                <Loader2 className="h-6 w-6 text-white animate-spin" />
-              ) : (
-                <Camera className="h-6 w-6 text-white" />
-              )}
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-          </div>
+          <ImageCropUploader
+            value={profile?.avatar_url || undefined}
+            onChange={handleAvatarChange}
+            dimensions={IMAGE_PRESETS.ambassadorPhoto}
+            folder={`avatars/${user?.id || 'unknown'}`}
+            label="Foto de perfil"
+            previewHeight="h-24"
+          />
           <div className="flex-1 space-y-1">
             <p className="font-semibold text-lg">{profile?.full_name || '—'}</p>
             <p className="text-sm text-muted-foreground">Nome cadastrado no CPF. Para alterar, entre em contato com o suporte.</p>
