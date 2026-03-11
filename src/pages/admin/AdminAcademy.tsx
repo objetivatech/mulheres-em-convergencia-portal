@@ -141,7 +141,7 @@ const AdminAcademy = () => {
                   <div className="space-y-3">
                     {courses.map((course) => (
                       <Card key={course.id}>
-                        <CardContent className="p-4 flex items-center gap-4">
+                        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           {course.thumbnail_url ? (
                             <img src={course.thumbnail_url} alt="" className="w-20 h-14 object-cover rounded" />
                           ) : (
