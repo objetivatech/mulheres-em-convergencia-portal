@@ -314,14 +314,14 @@ export const UserManagement = () => {
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                      <TableCell>
-                       <div className="flex flex-wrap gap-2">
+                       <div className="flex flex-wrap gap-1">
                          <Button
                            variant="outline"
                            size="sm"
                            onClick={() => handleEditUser(user)}
                          >
-                           <Edit className="h-4 w-4 mr-1" />
-                           Editar
+                           <Edit className="h-4 w-4 sm:mr-1" />
+                           <span className="hidden sm:inline">Editar</span>
                          </Button>
 
                          <Button
@@ -329,8 +329,8 @@ export const UserManagement = () => {
                            size="sm"
                            onClick={() => handleManageBusinesses(user)}
                          >
-                           <Gift className="h-4 w-4 mr-1" />
-                           Gerenciar Negócios
+                           <Gift className="h-4 w-4 sm:mr-1" />
+                           <span className="hidden sm:inline">Negócios</span>
                          </Button>
 
                          <AlertDialog>
