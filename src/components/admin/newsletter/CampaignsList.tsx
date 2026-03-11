@@ -137,7 +137,7 @@ export function CampaignsList() {
               Nova Campanha
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Criar Nova Campanha</DialogTitle>
               <DialogDescription>
