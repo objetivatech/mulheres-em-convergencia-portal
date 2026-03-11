@@ -52,10 +52,13 @@ No painel do Cloudflare Pages > Settings > Environment variables, adicione:
 #### Variáveis de Build (Production & Preview)
 ```
 NODE_VERSION=18
+SKIP_DEPENDENCY_INSTALL=true
 VITE_SUPABASE_PROJECT_ID=ngqymbjatenxztrjjdxa
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncXltYmphdGVueHp0cmpqZHhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxMDg5MDcsImV4cCI6MjA3MDY4NDkwN30.8CVsfliWGJiXjrCxkF28L9af_VPwnBZHipxfo76kgOQ
 VITE_SUPABASE_URL=https://ngqymbjatenxztrjjdxa.supabase.co
 ```
+
+> **IMPORTANTE:** A variável `SKIP_DEPENDENCY_INSTALL=true` pula o `npm ci` automático do Cloudflare, que falha quando o `package-lock.json` está dessincronizado. O build command (`npm install && npm run build`) cuida da instalação.
 
 ### Passo 3: Cloudflare Pages Function (RSS/Sitemap)
 
