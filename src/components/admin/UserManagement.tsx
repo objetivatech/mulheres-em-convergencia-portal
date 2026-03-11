@@ -387,9 +387,9 @@ export const UserManagement = () => {
 
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Excluir
+                             <Button variant="destructive" size="sm">
+                              <Trash2 className="h-4 w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Excluir</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
