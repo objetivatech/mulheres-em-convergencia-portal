@@ -136,9 +136,9 @@ function MemberProfileModal({ member }: { member: ConectaMember }) {
 
       {member.business && (
         <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Guia</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Diretório</h4>
           <Link 
-            to={`/guia/${member.business.slug}`}
+            to={`/diretorio/${member.business.slug}`}
             className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-primary/5 transition-colors"
           >
             {member.business.logo_url ? (

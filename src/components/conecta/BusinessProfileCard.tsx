@@ -38,7 +38,7 @@ export default function BusinessProfileCard({ userId }: BusinessProfileCardProps
       </CardHeader>
       <CardContent>
         <Link
-          to={`/guia/${business.slug}`}
+          to={`/diretorio/${business.slug}`}
           className="flex items-start gap-4 p-4 rounded-lg border bg-muted/30 hover:bg-accent/50 transition-colors group"
         >
           <Avatar className="h-14 w-14 rounded-lg">
