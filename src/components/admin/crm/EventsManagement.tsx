@@ -384,7 +384,7 @@ export const EventsManagement: React.FC = () => {
                     <QrCode className="h-4 w-4 mr-2" />QR Check-in
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-sm">
+                <DialogContent className="max-w-[90vw] sm:max-w-sm">
                   <DialogHeader>
                     <DialogTitle>QR Code - Check-in</DialogTitle>
                     <DialogDescription>{event.title}</DialogDescription>
