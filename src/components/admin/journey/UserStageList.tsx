@@ -79,10 +79,10 @@ export const UserStageList = ({ initialStage }: UserStageListProps) => {
   return (
     <>
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <h2 className="text-2xl font-bold">Usuários por Estágio</h2>
           <Select value={selectedStage} onValueChange={setSelectedStage}>
-            <SelectTrigger className="w-[250px]">
+            <SelectTrigger className="w-full sm:w-[250px]">
               <SelectValue placeholder="Selecione um estágio" />
             </SelectTrigger>
             <SelectContent>
