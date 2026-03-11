@@ -140,7 +140,7 @@ export default function ConectaAniversariantes() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {monthMembers.map((member) => (
                         <div
                           key={member.id}
