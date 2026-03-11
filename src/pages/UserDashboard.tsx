@@ -290,7 +290,7 @@ export const UserDashboard = () => {
                       <CardContent className="py-8 text-center">
                         <Store className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground mb-4">Você ainda não cadastrou um negócio</p>
-                        <Button asChild><Link to="/dashboard/empresa">Cadastrar Negócio</Link></Button>
+                        <Button asChild><Link to="/painel-empresa">Cadastrar Negócio</Link></Button>
                       </CardContent>
                     </Card>
                   )}
