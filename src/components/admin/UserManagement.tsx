@@ -273,7 +273,7 @@ export const UserManagement = () => {
           </div>
 
           {/* Tabela de usuários */}
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
