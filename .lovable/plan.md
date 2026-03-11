@@ -1,159 +1,116 @@
 
-# Plano: Revisão Completa do CONECTA+ e Novos Recursos
 
-## Status de Implementação
-
-### ✅ Rodada 1: Correções Urgentes + Quick Wins (CONCLUÍDA)
-
-- Fix do hook de convites (`name`/`email` corrigidos)
-- Uploads migrados para R2 (banner + fotos 1-a-1)
-- Edge Function `send-conecta-email` com 5 tipos de email via Mailrelay
-- Temperatura nas indicações (cold/warm/hot com seletor visual)
-- Coluna `meeting_id` em `conecta_invitations`
-
-### ✅ Rodada 2: Funcionalidades Core (CONCLUÍDA)
-
-#### Etapa 3: Lista de Convidados por Encontro
-- Hook `useMeetingGuests` busca convites vinculados a cada encontro
-- Componente `MeetingGuestsList` com lista expansível de convidadas
-- Visível apenas para membros/facilitadores/admin (`isMemberOrAbove`)
-- Nome do convidado como link para perfil se cadastrado
-
-#### Etapa 4: Sincronização Encontros ↔ Eventos do Portal
-- Coluna `conecta_sync` (boolean) adicionada à tabela `events`
-- Eventos marcados com `conecta_sync=true` aparecem na timeline do Conecta+
-- Inscrição/desinscrição direta com dados pré-preenchidos do perfil
-- Badge "Portal" distingue eventos sincronizados dos encontros manuais
-
-#### Etapa 5: Perfil Enriquecido com Pitch
-- Novos campos: `area_of_expertise`, `skills_tags`, `pitch_what_i_do`, `pitch_ideal_client`, `pitch_how_to_refer`, `contact_email`
-- Formulário organizado em 3 seções: Info Básica, Contato & Redes, Elevator Pitch
-- Sistema de tags com adição/remoção dinâmica
-- Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
-- Visualização rica do pitch no modo leitura
-
-### ✅ Rodada 3: Notificações + Helpdesk + Docs (CONCLUÍDA)
-
-#### Etapa 8: Sistema de Notificações
-- Tabela `conecta_notifications` com RLS e real-time
-- Sino no header com badge de contagem (vermelho)
-- Dropdown com lista de notificações e marcar como lida
-- Real-time via Supabase Realtime (INSERT listener)
-
-#### Etapa 6: Conselho de Administração 24/7 (Helpdesk)
-- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies` com RLS
-- Visualização Kanban com 3 colunas (Aberto → Em Discussão → Resolvido)
-- Vista de lista alternativa com filtros por categoria
-- Thread de discussão com respostas e marcação de solução
-- Trigger automático: `reply_count` + mudança de status para "Em Discussão"
-- 8 categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia, Geral
-- Rota: `/conecta/helpdesk`
-
-#### Etapa 9: Documentação
-- `conecta-fluxos-revisados.md` com todos os fluxos detalhados
-- `conecta-access-levels.md` atualizado com Conselho 24/7 e Notificações
+# Plano de Correções e Melhorias - Sprint Atual
 
 ---
 
-### ✅ Rodada 4 - Sprint 1: Fundamentos e Correções (CONCLUÍDA)
+## 1. Regra de Negócio: Embaixadora requer assinatura ativa de negócio
 
-#### Item 1: Image Crop Tool + Dimensões Recomendadas
-- Componente `ImageCropUploader` com `react-image-crop`
-- Presets de dimensões para 7 contextos (blog, perfil, negócio, etc.)
-- Texto informativo de dimensão ideal em cada campo
-- Modal de recorte com aspect ratio fixo
-- Blog `ImageUploader` refatorado para usar novo componente
-- Documentação: `docs/_active/06-funcionalidades/image-crop-tool.md`
+**Problema**: Atualmente qualquer usuário com role `ambassador` pode ter perfil ativo, sem vínculo obrigatório com assinatura de negócio no diretório.
 
-#### Item 2: Revisão dos Contadores e Gamificação do CONECTA+
-- **Descoberta:** Funções de trigger existiam mas triggers NÃO estavam criados
-- Triggers criados para: one_on_ones, testimonials, business_deals, referrals, attendances
-- Novo trigger para respostas no Conselho 24/7 (+5 pts)
-- Função `conecta_calculate_monthly_points` atualizada com Conselho 24/7
-- `ScoringRulesCard.tsx` atualizado com regra do Conselho 24/7
-- Documentação: `docs/_active/12-conecta/conecta-gamificacao.md`
-
-#### Item 3: Arquivamento de Eventos no Admin
-- Tabs "Ativos" e "Arquivados" na gestão de eventos
-- Ativos ordenados por data ASC (próximos primeiro)
-- Arquivados ordenados por data DESC (recentes primeiro)
-- Botão "Arquivar" muda status para `completed`
+**Solução**:
+- Criar uma validation trigger na tabela `ambassadors` que, ao inserir ou atualizar `active = true`, verifica se o `user_id` possui ao menos um registro em `businesses` com `subscription_active = true`.
+- No frontend (`EmbaixadoraDashboard.tsx` e admin), exibir alerta quando a embaixadora não tem negócio com assinatura ativa.
+- Na Edge Function de criação/ativação de embaixadora, adicionar validação equivalente.
+- No admin (`AmbassadorDetailsDialog`), mostrar status de assinatura do negócio vinculado.
 
 ---
 
-### ✅ Rodada 5 - Sprint 2: Funcionalidades CONECTA+ (CONCLUÍDA)
+## 2. Link do negócio no CONECTA+ está incorreto
 
-#### Item 4: Card de Negócio no Perfil CONECTA+
-- Componente `BusinessProfileCard` busca negócios com `subscription_active = true`
-- Exibe nome, logo, categoria, descrição e link para `/guia/{slug}`
-- Integrado no perfil (`ConectaPerfil.tsx`) em modo visualização
-- `useConectaMembers` atualizado para filtrar apenas negócios com assinatura ativa
+**Problema**: `BusinessProfileCard.tsx` e `MemberCard` em `ConectaMembros.tsx` usam `/guia/${slug}`, mas a rota correta é `/diretorio/${slug}`.
 
-#### Item 5: Pontuação Conselho 24/7 (concluído no Sprint 1)
-
-#### Item 7: Registro de Parcerias entre Membros
-- Tabela `conecta_partnerships` com RLS e constraint de parceiros diferentes
-- Trigger `trg_conecta_partnership_insert` → +15 pts para ambas
-- Função `conecta_calculate_monthly_points` atualizada com parcerias
-- Hook `useConectaPartnerships.ts` com CRUD
-- Página `/conecta/parcerias` com formulário e listagem
-- Sidebar atualizado com item "Parcerias"
-- `ScoringRulesCard.tsx` atualizado com regra de parcerias
-- Documentação: `docs/_active/12-conecta/conecta-parcerias.md`
+**Correção**: Trocar `/guia/` por `/diretorio/` em:
+- `src/components/conecta/BusinessProfileCard.tsx` (linha 41)
+- `src/pages/conecta/ConectaMembros.tsx` (linha 45)
 
 ---
 
-### ✅ Sprint 3: Integrações e Automações (CONCLUÍDA)
+## 3. Recorte de imagem no perfil (Meu Painel)
 
-- [x] **Check-in presencial via QR Code** (item 8)
-  - Página pública `/evento-checkin/:eventId` com busca por CPF
-  - Botão "QR Check-in" no admin para eventos presenciais/híbridos
-  - Trigger de gamificação: +10 pts para membros CONECTA+ ao fazer check-in
-  - Dependência `qrcode.react` instalada
-  - Documentação: `docs/_active/06-funcionalidades/evento-checkin-qrcode.md`
+**Problema**: `ProfileEditForm.tsx` usa upload direto via `<input type="file">` + `useR2Storage`, sem o componente `ImageCropUploader`.
 
-- [x] **Integração CONECTA+ / MeC Academy** (item 9)
-  - `useConectaContents.ts` agora faz UNION de `conecta_contents` com `academy_lessons`
-  - Convidados veem apenas conteúdos gratuitos/free preview
-  - Badge "Academy" diferencia conteúdos do MeC Academy
-  - Link redireciona para `/academy/curso/:slug`
+**Correção**: Substituir o upload de avatar manual pelo `ImageCropUploader` com `IMAGE_PRESETS.ambassadorPhoto` (400x400). O mesmo vale para o banner do `ConectaPerfil.tsx` que usa upload direto — substituir por `ImageCropUploader` com `IMAGE_PRESETS.conectaBanner`.
 
-- [x] **Aniversariantes do mês** (item 10)
-  - Página `/conecta/aniversariantes` com agrupamento por mês
-  - Mês atual em destaque (primeira posição, borda primária)
-  - Data de aniversário exibida sem ano (DD/mmm) no perfil público
-  - Edge Function `conecta-birthday-notify` para envio mensal via Mailrelay
-  - Item "Aniversariantes" no sidebar com ícone Cake
-  - Documentação: `docs/_active/12-conecta/conecta-aniversariantes.md`
+**Auditoria dos demais uploads**: Os únicos pontos que usam upload direto sem crop são:
+- `ProfileEditForm.tsx` (avatar) — corrigir
+- `ConectaPerfil.tsx` (banner) — corrigir
+- Os demais já usam `ImageCropUploader` (blog, negócios, academy).
 
 ---
 
-## ✅ Sprint 4: Performance (item 6) — CONCLUÍDO
+## 4. Conteúdos do CONECTA+: Exibir Academy como catálogo de cursos
 
-- [x] GTM deferido para após page load (+2s delay)
-- [x] Preconnect para Supabase, Google Fonts, GTM, DNS-prefetch para Facebook/Google Ads
-- [x] Preload da fonte Montserrat
-- [x] Logo com `loading="eager"`, `fetchPriority="high"`, dimensões explícitas
-- [x] Componente `OptimizedImage` reutilizável com priority, srcset, fallback
-- [x] Documentação em `docs/_active/06-funcionalidades/performance-optimization.md`
+**Problema**: A página `ConectaConteudos.tsx` exibe aulas individualmente via `useConectaContents`, não cursos completos.
+
+**Solução**: Refatorar a seção Academy dentro de `ConectaConteudos`:
+- Separar em duas seções: "Conteúdos CONECTA+" (da tabela `conecta_contents`) e "MeC Academy" (cursos).
+- A seção Academy replicará o layout do `AcademyCatalogo.tsx`: filtros por tipo/assunto, grid de `CourseCard`, link para `/academy/curso/:slug`.
+- Reutilizar os hooks `useAcademyCourses` e `useAcademyCategories` já existentes.
+- Remover a lógica de merge de aulas do `useConectaContents` (ou criar hook separado apenas para `conecta_contents`).
 
 ---
 
-## Arquitetura CONECTA+
+## 5. Emails de lembrete de eventos (3 dias e 1 dia antes)
 
-### Tabelas (prefixo `conecta_`):
-- conecta_profiles, conecta_teams, conecta_team_members
-- conecta_meetings, conecta_attendances, conecta_one_on_ones
-- conecta_testimonials, conecta_business_deals, conecta_referrals
-- conecta_invitations, conecta_contents, conecta_activity_feed
-- conecta_monthly_points, conecta_points_history
-- conecta_notifications, conecta_helpdesk_posts, conecta_helpdesk_replies
+**Problema**: O scheduler atual (`event-email-scheduler`) só envia lembretes de 1 dia antes (amanhã) e 2 horas antes. Falta o lembrete de 3 dias antes.
 
-### Edge Functions:
-- `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
-- `generate-conecta-pitch` — Gerador de pitch com IA (Perplexity)
+**Solução**:
+- Adicionar action `reminder_3d` no `event-email-scheduler/index.ts` com lógica similar ao `reminder_tomorrow`, filtrando eventos em 3 dias.
+- Criar templates HTML alinhados à identidade visual do MeC (cores roxo/dourado, gradientes, logo).
+- Atualizar o cron job para executar com ação `reminder_3d` diariamente (além do `reminder_tomorrow` já existente).
+- Registrar interação no CRM para cada lembrete enviado.
+- Os templates de 3 dias e 1 dia terão mensagens diferentes (antecipação vs urgência).
 
-### Níveis de Acesso:
-- **Admin**: role `admin`
-- **Membro**: role `business_owner`
-- **Convidado**: `community_member`
+---
+
+## 6. Mecânica de convites do CONECTA+
+
+**Problema atual**: O convite gera apenas um código (`CONECTA-XXXXXX`). Não há link de inscrição, e o fluxo de aceitação não está claro.
+
+**Solução completa**:
+
+### 6.1 Link de convite
+- Gerar um link único: `https://mulheresemconvergencia.com.br/conecta/convite/{code}`
+- Criar rota pública `/conecta/convite/:code` com página de landing do convite (nome da anfitriã, descrição do CONECTA+, formulário de cadastro/login).
+- Ao aceitar, o sistema cria conta (se necessário) e atualiza o convite (`accepted_by`, `accepted_at`, `status = 'accepted'`).
+
+### 6.2 Email do convite
+- Atualizar a Edge Function `send-conecta-email` para incluir o link no email de convite (além do código).
+- Template com identidade visual MeC.
+
+### 6.3 UI do ConectaConvites
+- Exibir o link do convite (além do código) com botão de copiar.
+- Adicionar botão de compartilhar (WhatsApp, Email).
+
+### 6.4 Acessos do convidado CONECTA+
+Conforme memória e código atual, o convidado (nível `convidado`) tem:
+- Acesso ao dashboard, perfil, membros, conteúdos (apenas gratuitos)
+- **Restrição de eventos**: pode fazer check-in em apenas 1 evento online
+- **Sem acesso**: a funcionalidades de membro como indicações, negócios fechados, ranking completo
+- **Academy**: vê apenas aulas marcadas como `is_free_preview` ou cursos `is_free`
+
+---
+
+## 7. Documentação
+
+Criar/atualizar:
+- `docs/_active/06-funcionalidades/embaixadora-regra-assinatura.md` — nova regra de vínculo
+- `docs/_active/12-conecta/conecta-convites.md` — mecânica completa de convites com link
+- `docs/_active/12-conecta/conecta-conteudos-academy.md` — integração catálogo Academy
+- `docs/_active/06-funcionalidades/image-crop-tool.md` — atualizar lista de locais que usam crop
+- `docs/_active/06-funcionalidades/eventos-lembretes-email.md` — lembretes 3d, 1d, 2h
+- Atualizar `docs/_active/12-conecta/conecta-layout-integracao.md` com correções de rotas
+
+---
+
+## Ordem de Execução
+
+1. Correção de links do negócio (item 2) — rápido
+2. Recorte de imagem no perfil (item 3)
+3. Regra embaixadora + assinatura (item 1) — migration + frontend + edge function
+4. Catálogo Academy no CONECTA+ (item 4)
+5. Lembretes de email 3 dias antes (item 5)
+6. Mecânica de convites com link (item 6)
+7. Documentação (item 7)
+
