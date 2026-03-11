@@ -15,10 +15,11 @@ import { Separator } from '@/components/ui/separator';
 import RankBadge from '@/components/conecta/RankBadge';
 import ConectaProfileStats from '@/components/conecta/ConectaProfileStats';
 import BusinessProfileCard from '@/components/conecta/BusinessProfileCard';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 import { toast } from 'sonner';
 import { 
   Loader2, Save, Building, Phone, Mail, Globe, Linkedin, Instagram, 
-  ImagePlus, Cake, Briefcase, Tag, Target, UserCheck, Megaphone, Sparkles, X
+  Cake, Briefcase, Tag, Target, UserCheck, Megaphone, Sparkles, X
 } from 'lucide-react';
 
 export default function ConectaPerfil() {
