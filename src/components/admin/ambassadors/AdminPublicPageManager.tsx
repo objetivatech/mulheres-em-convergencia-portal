@@ -351,7 +351,7 @@ export function AdminPublicPageManager() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingAmbassador} onOpenChange={(open) => !open && setEditingAmbassador(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Dados Públicos</DialogTitle>
             <DialogDescription>
