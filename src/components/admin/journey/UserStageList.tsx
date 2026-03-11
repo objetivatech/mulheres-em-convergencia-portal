@@ -99,7 +99,7 @@ export const UserStageList = ({ initialStage }: UserStageListProps) => {
           <div className="space-y-4">
             {users.map((user) => (
               <Card key={user.user_id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <User className="h-5 w-5 text-muted-foreground" />
