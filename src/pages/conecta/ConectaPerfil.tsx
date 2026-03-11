@@ -173,28 +173,15 @@ export default function ConectaPerfil() {
 
         {/* Banner + Avatar Card */}
         <Card className="overflow-hidden">
-          <div 
-            className="relative h-32 md:h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"
-            style={profile?.banner_url ? { 
-              backgroundImage: `url(${profile.banner_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            } : undefined}
-          >
-            <button
-              onClick={() => bannerInputRef.current?.click()}
-              disabled={isUploadingBanner}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              {isUploadingBanner ? (
-                <Loader2 className="h-8 w-8 text-white animate-spin" />
-              ) : (
-                <div className="flex items-center gap-2 text-white bg-black/50 px-4 py-2 rounded-lg">
-                  <ImagePlus className="h-5 w-5" /><span>Alterar capa</span>
-                </div>
-              )}
-            </button>
-            <input ref={bannerInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+          <div className="relative">
+            <ImageCropUploader
+              value={profile?.banner_url || undefined}
+              onChange={handleBannerChange}
+              dimensions={IMAGE_PRESETS.conectaBanner}
+              folder="conecta/banners"
+              label="Capa do perfil"
+              previewHeight="h-32 md:h-48"
+            />
           </div>
 
           <CardContent className="relative pt-6">
