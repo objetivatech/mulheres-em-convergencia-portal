@@ -160,7 +160,7 @@ const AdminAcademy = () => {
                               {course.show_on_landing && <Badge variant="outline" className="text-xs">Na Landing</Badge>}
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" onClick={() => setLessonsPanel(course.id)}>
                               Aulas
                             </Button>
