@@ -335,10 +335,10 @@ export const UserManagement = () => {
 
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
-                             <Button variant="outline" size="sm">
-                               <Shield className="h-4 w-4 mr-1" />
-                               Gerenciar Roles
-                             </Button>
+                              <Button variant="outline" size="sm">
+                                <Shield className="h-4 w-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Roles</span>
+                              </Button>
                            </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
