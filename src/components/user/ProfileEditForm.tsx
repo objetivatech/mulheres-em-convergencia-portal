@@ -32,8 +32,6 @@ interface ProfileEditFormProps {
 export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { uploadFile, uploading } = useR2Storage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
@@ -47,24 +45,11 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
     website_url: profile?.website_url || '',
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Erro', description: 'Selecione uma imagem válida', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Erro', description: 'Máximo 5MB', variant: 'destructive' });
-      return;
-    }
-
-    const url = await uploadFile(file, `avatars/${user.id}`);
-    if (url) {
-      await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
-      onProfileUpdated();
-      toast({ title: 'Sucesso', description: 'Foto atualizada!' });
-    }
+  const handleAvatarChange = async (url: string | null) => {
+    if (!user) return;
+    await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    onProfileUpdated();
+    toast({ title: 'Sucesso', description: 'Foto atualizada!' });
   };
 
   const handleSave = async () => {
