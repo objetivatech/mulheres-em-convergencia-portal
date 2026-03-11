@@ -57,8 +57,6 @@ const LogoComponent: React.FC<LogoComponentProps> = ({
         className={`${sizeClass} w-auto object-contain`}
         loading="eager"
         decoding="async"
-        // @ts-ignore - fetchPriority is valid but not yet in React 18 types
-        fetchpriority="high"
         width={variant === 'horizontal' ? 200 : variant === 'circular' ? 48 : 120}
         height={variant === 'horizontal' ? 48 : variant === 'circular' ? 48 : 80}
       />
