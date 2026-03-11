@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 const memberItems = [
@@ -49,11 +50,12 @@ const adminItems = [
 
 export function ConectaSidebar() {
   const { state } = useSidebar();
+  const isMobile = useIsMobile();
   const collapsed = state === 'collapsed';
   const { accessLevel, isMemberOrAbove } = useConectaAccess();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible={isMobile ? 'offcanvas' : 'none'} className="border-r border-border">
       <SidebarContent className="bg-sidebar">
         {/* Logo area */}
         <div className={cn("p-4 border-b border-border", collapsed && "p-2")}>
