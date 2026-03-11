@@ -41,6 +41,19 @@ IMAGE_PRESETS = {
 4. Ao confirmar, a imagem é redimensionada para as dimensões exatas, convertida para WebP, e enviada ao R2
 5. URL retornada via `onChange`
 
+### Locais de Uso
+
+| Local | Preset | Arquivo |
+|-------|--------|---------|
+| Blog - Imagem destacada | `blogFeatured` | Admin Blog Editor |
+| Foto de perfil (Meu Painel) | `ambassadorPhoto` | `src/components/user/ProfileEditForm.tsx` |
+| Banner CONECTA+ | `conectaBanner` | `src/pages/conecta/ConectaPerfil.tsx` |
+| Foto de reunião 1-a-1 | `conectaMeeting` | Componente de reuniões |
+| Logo do negócio | `businessLogo` | Admin/Editor de negócios |
+| Capa do negócio | `businessCover` | Admin/Editor de negócios |
+| Imagem de grupo | `groupImage` | Admin de grupos |
+| Foto da embaixadora | `ambassadorPhoto` | Admin de embaixadoras |
+
 ### Uso
 
 ```tsx
