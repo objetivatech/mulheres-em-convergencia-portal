@@ -1,17 +1,24 @@
 import { ReactNode, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ConectaSidebar } from './ConectaSidebar';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
 import Layout from '@/components/layout/Layout';
+import { Badge } from '@/components/ui/badge';
 
 interface ConectaLayoutProps {
   children: ReactNode;
   requireMember?: boolean;
 }
 
+const levelLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+  admin: { label: 'Admin', variant: 'default' },
+  membro: { label: 'Membro', variant: 'secondary' },
+  convidado: { label: 'Convidado', variant: 'outline' },
+};
+
 export function ConectaLayout({ children, requireMember = false }: ConectaLayoutProps) {
-  const { user, loading, hasAccess, isMemberOrAbove, ensureProfile } = useConectaAccess();
+  const { user, loading, hasAccess, isMemberOrAbove, accessLevel, ensureProfile } = useConectaAccess();
 
   useEffect(() => {
     if (user && hasAccess) {
@@ -35,14 +42,28 @@ export function ConectaLayout({ children, requireMember = false }: ConectaLayout
     return <Navigate to="/conecta" replace />;
   }
 
+  const levelInfo = accessLevel ? levelLabels[accessLevel] : null;
+
   return (
     <Layout>
-      <SidebarProvider>
-        <div className="flex w-full min-h-[calc(100vh-200px)]">
+      <SidebarProvider className="min-h-0 flex-1">
+        <div className="flex w-full">
           <ConectaSidebar />
-          <main className="flex-1 overflow-auto p-4 md:p-6 min-w-0">
-            {children}
-          </main>
+          <div className="flex-1 min-w-0 flex flex-col">
+            {/* Mobile top bar with sidebar trigger */}
+            <div className="flex items-center gap-2 border-b border-border px-4 py-2 md:hidden">
+              <SidebarTrigger className="h-8 w-8" />
+              <span className="text-sm font-semibold text-primary">CONECTA+</span>
+              {levelInfo && (
+                <Badge variant={levelInfo.variant} className="text-xs ml-auto">
+                  {levelInfo.label}
+                </Badge>
+              )}
+            </div>
+            <main className="flex-1 overflow-auto p-4 md:p-6">
+              {children}
+            </main>
+          </div>
         </div>
       </SidebarProvider>
     </Layout>
