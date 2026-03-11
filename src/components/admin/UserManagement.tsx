@@ -446,7 +446,7 @@ export const UserManagement = () => {
 
       {/* Business Manager Dialog */}
       <AlertDialog open={showBusinessManager} onOpenChange={setShowBusinessManager}>
-        <AlertDialogContent className="max-w-4xl">
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>Gerenciar Negócios e Cortesias</AlertDialogTitle>
             <AlertDialogDescription>

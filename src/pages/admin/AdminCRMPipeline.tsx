@@ -42,21 +42,21 @@ const AdminCRMPipeline = () => {
         <div className="container mx-auto py-6 px-4">
           <CRMNavigation />
           
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold">Pipeline de Vendas</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">Pipeline de Vendas</h1>
               <p className="text-muted-foreground">
                 Gerencie negócios e acompanhe o funil de vendas
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowSettings(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Configurar Pipelines
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => setShowSettings(true)} size="sm">
+                <Settings className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Configurar Pipelines</span>
               </Button>
-              <Button onClick={handleAddDeal}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Negócio
+              <Button onClick={handleAddDeal} size="sm">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Novo Negócio</span>
               </Button>
             </div>
           </div>
