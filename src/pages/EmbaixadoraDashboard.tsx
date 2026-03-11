@@ -143,6 +143,17 @@ export const EmbaixadoraDashboard = () => {
               </div>
             </header>
 
+            {hasActiveBusiness === false && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Assinatura de negócio necessária</AlertTitle>
+                <AlertDescription>
+                  Para manter seu perfil de embaixadora ativo, é necessário possuir um negócio com assinatura ativa no diretório.{' '}
+                  <Link to="/diretorio" className="underline font-medium">Criar ou ativar meu negócio</Link>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Stats Cards */}
             <section className="mb-8">
               <AmbassadorStatsCards stats={stats} isLoading={ambassadorLoading} />
