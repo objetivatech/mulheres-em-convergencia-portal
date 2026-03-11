@@ -340,7 +340,7 @@ export const UserManagement = () => {
                                 <span className="hidden sm:inline">Roles</span>
                               </Button>
                            </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
                             <AlertDialogHeader>
                               <AlertDialogTitle>Gerenciar Roles - {user.full_name || user.email}</AlertDialogTitle>
                               <AlertDialogDescription>
