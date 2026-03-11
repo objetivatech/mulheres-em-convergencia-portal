@@ -189,21 +189,21 @@ export const UserManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5" />
               <span>Gestão de Usuários</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Link to="/admin/jornada-usuario">
-                <Button variant="outline">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Jornada do Cliente
+                <Button variant="outline" size="sm">
+                  <TrendingUp className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Jornada do Cliente</span>
                 </Button>
               </Link>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Adicionar Usuário
+              <Button onClick={() => setShowAddDialog(true)} size="sm">
+                <UserPlus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar Usuário</span>
               </Button>
             </div>
           </CardTitle>
