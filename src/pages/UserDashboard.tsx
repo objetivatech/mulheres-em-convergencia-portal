@@ -274,9 +274,9 @@ export const UserDashboard = () => {
                         </CardHeader>
                         <CardContent className="space-y-3">
                           <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                            <div><p className="text-xl font-bold">{businessProfile.views_count}</p><p className="text-xs text-muted-foreground">Visualizações</p></div>
-                            <div><p className="text-xl font-bold">{businessProfile.clicks_count}</p><p className="text-xs text-muted-foreground">Cliques</p></div>
-                            <div><p className="text-xl font-bold">{businessProfile.contacts_count}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.views_count || 0}</p><p className="text-xs text-muted-foreground">Visualizações</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.clicks_count || 0}</p><p className="text-xs text-muted-foreground">Cliques</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.contacts_count || 0}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
                           </div>
                           <div className="flex gap-2 flex-wrap">
                             <Button asChild><Link to="/dashboard/empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
