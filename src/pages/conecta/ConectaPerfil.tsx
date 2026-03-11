@@ -1,9 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaProfile } from '@/hooks/useConectaProfile';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
-import { useR2Storage } from '@/hooks/useR2Storage';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
