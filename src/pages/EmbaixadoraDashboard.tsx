@@ -1,12 +1,15 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAmbassador } from '@/hooks/useAmbassador';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
 import { PRODUCTION_DOMAIN, PRODUCTION_DOMAIN as DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Crown, BarChart3, Link2, Wallet, Users, FileText, HelpCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Crown, BarChart3, Link2, Wallet, Users, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
 import {
   AmbassadorStatsCards,
   AmbassadorReferralLink,
@@ -42,6 +45,22 @@ export const EmbaixadoraDashboard = () => {
 
   // Ativar atualizações em tempo real
   useAmbassadorRealtime(ambassador?.id);
+
+  // Check if ambassador has active business subscription
+  const { data: hasActiveBusiness } = useQuery({
+    queryKey: ['ambassador-business-check', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user!.id)
+        .eq('subscription_active', true)
+        .limit(1)
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!ambassador,
+  });
 
   const isLoading = authLoading || ambassadorLoading;
 
@@ -123,6 +142,17 @@ export const EmbaixadoraDashboard = () => {
                 )}
               </div>
             </header>
+
+            {hasActiveBusiness === false && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Assinatura de negócio necessária</AlertTitle>
+                <AlertDescription>
+                  Para manter seu perfil de embaixadora ativo, é necessário possuir um negócio com assinatura ativa no diretório.{' '}
+                  <Link to="/diretorio" className="underline font-medium">Criar ou ativar meu negócio</Link>
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Stats Cards */}
             <section className="mb-8">

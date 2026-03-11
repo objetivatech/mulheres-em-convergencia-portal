@@ -4086,7 +4086,9 @@ export type Database = {
           payment_id: string | null
           phone: string | null
           presence_confirmed_at: string | null
+          reminder_1d_sent_at: string | null
           reminder_2h_sent_at: string | null
+          reminder_3d_sent_at: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -4115,7 +4117,9 @@ export type Database = {
           payment_id?: string | null
           phone?: string | null
           presence_confirmed_at?: string | null
+          reminder_1d_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          reminder_3d_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -4144,7 +4148,9 @@ export type Database = {
           payment_id?: string | null
           phone?: string | null
           presence_confirmed_at?: string | null
+          reminder_1d_sent_at?: string | null
           reminder_2h_sent_at?: string | null
+          reminder_3d_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null

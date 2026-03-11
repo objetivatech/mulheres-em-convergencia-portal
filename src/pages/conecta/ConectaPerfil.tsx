@@ -1,9 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ConectaLayout } from '@/components/conecta/ConectaLayout';
 import { useConectaProfile } from '@/hooks/useConectaProfile';
 import { useConectaAccess } from '@/hooks/useConectaAccess';
-import { useR2Storage } from '@/hooks/useR2Storage';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,19 +15,18 @@ import { Separator } from '@/components/ui/separator';
 import RankBadge from '@/components/conecta/RankBadge';
 import ConectaProfileStats from '@/components/conecta/ConectaProfileStats';
 import BusinessProfileCard from '@/components/conecta/BusinessProfileCard';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 import { toast } from 'sonner';
 import { 
   Loader2, Save, Building, Phone, Mail, Globe, Linkedin, Instagram, 
-  ImagePlus, Cake, Briefcase, Tag, Target, UserCheck, Megaphone, Sparkles, X
+  Cake, Briefcase, Tag, Target, UserCheck, Megaphone, Sparkles, X
 } from 'lucide-react';
 
 export default function ConectaPerfil() {
   const { user } = useConectaAccess();
   const { profile, isLoading, updateProfile, isUpdating } = useConectaProfile();
-  const { uploadFile, uploading: isUploadingBanner } = useR2Storage();
   const [isEditing, setIsEditing] = useState(false);
   const [generatingPitch, setGeneratingPitch] = useState(false);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
   const [tagInput, setTagInput] = useState('');
   const [formData, setFormData] = useState({
     company: '',
@@ -86,17 +84,9 @@ export default function ConectaPerfil() {
     setIsEditing(false);
   };
 
-  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user?.id) return;
-    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem válida'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error('A imagem deve ter no máximo 5MB'); return; }
-
-    const url = await uploadFile(file, 'conecta/banners');
-    if (url) {
-      updateProfile({ banner_url: url });
-      toast.success('Capa atualizada!');
-    }
+  const handleBannerChange = (url: string | null) => {
+    updateProfile({ banner_url: url || null });
+    toast.success('Capa atualizada!');
   };
 
   const addTag = () => {
@@ -183,28 +173,15 @@ export default function ConectaPerfil() {
 
         {/* Banner + Avatar Card */}
         <Card className="overflow-hidden">
-          <div 
-            className="relative h-32 md:h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"
-            style={profile?.banner_url ? { 
-              backgroundImage: `url(${profile.banner_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            } : undefined}
-          >
-            <button
-              onClick={() => bannerInputRef.current?.click()}
-              disabled={isUploadingBanner}
-              className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              {isUploadingBanner ? (
-                <Loader2 className="h-8 w-8 text-white animate-spin" />
-              ) : (
-                <div className="flex items-center gap-2 text-white bg-black/50 px-4 py-2 rounded-lg">
-                  <ImagePlus className="h-5 w-5" /><span>Alterar capa</span>
-                </div>
-              )}
-            </button>
-            <input ref={bannerInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+          <div className="relative">
+            <ImageCropUploader
+              value={profile?.banner_url || undefined}
+              onChange={handleBannerChange}
+              dimensions={IMAGE_PRESETS.conectaBanner}
+              folder="conecta/banners"
+              label="Capa do perfil"
+              previewHeight="h-32 md:h-48"
+            />
           </div>
 
           <CardContent className="relative pt-6">

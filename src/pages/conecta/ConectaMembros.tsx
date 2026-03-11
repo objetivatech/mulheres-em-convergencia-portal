@@ -42,7 +42,7 @@ function MemberCard({ member, onViewProfile }: { member: ConectaMember; onViewPr
                </div>
              )}
              {member.business && (
-               <Link to={`/guia/${member.business.slug}`} className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+               <Link to={`/diretorio/${member.business.slug}`} className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
                  <Store className="h-3 w-3" />
                  <span className="truncate max-w-[140px]">{member.business.name}</span>
                  <ExternalLink className="h-2.5 w-2.5 shrink-0" />
@@ -136,9 +136,9 @@ function MemberProfileModal({ member }: { member: ConectaMember }) {
 
       {member.business && (
         <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Guia</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Negócio no Diretório</h4>
           <Link 
-            to={`/guia/${member.business.slug}`}
+            to={`/diretorio/${member.business.slug}`}
             className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-primary/5 transition-colors"
           >
             {member.business.logo_url ? (

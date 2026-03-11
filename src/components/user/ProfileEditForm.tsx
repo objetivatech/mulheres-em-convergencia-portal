@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useR2Storage } from '@/hooks/useR2Storage';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, Camera, Linkedin, Instagram, Globe, Phone, MapPin } from 'lucide-react';
+import { Loader2, Save, Linkedin, Instagram, Globe, Phone, MapPin } from 'lucide-react';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 
 interface ProfileData {
   full_name: string | null;
@@ -32,8 +32,6 @@ interface ProfileEditFormProps {
 export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { uploadFile, uploading } = useR2Storage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
@@ -47,24 +45,11 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
     website_url: profile?.website_url || '',
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Erro', description: 'Selecione uma imagem válida', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Erro', description: 'Máximo 5MB', variant: 'destructive' });
-      return;
-    }
-
-    const url = await uploadFile(file, `avatars/${user.id}`);
-    if (url) {
-      await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
-      onProfileUpdated();
-      toast({ title: 'Sucesso', description: 'Foto atualizada!' });
-    }
+  const handleAvatarChange = async (url: string | null) => {
+    if (!user) return;
+    await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    onProfileUpdated();
+    toast({ title: 'Sucesso', description: 'Foto atualizada!' });
   };
 
   const handleSave = async () => {
@@ -105,28 +90,17 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Foto e Identificação</CardTitle>
-          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos. Recomendado: 400×400px, máx. 5MB.</CardDescription>
+          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row items-start gap-6">
-          <div className="relative group">
-            <Avatar className="h-24 w-24 border-2 border-primary/20">
-              <AvatarImage src={profile?.avatar_url || ''} />
-              <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">{initials}</AvatarFallback>
-            </Avatar>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer"
-            >
-              {uploading ? (
-                <Loader2 className="h-6 w-6 text-white animate-spin" />
-              ) : (
-                <Camera className="h-6 w-6 text-white" />
-              )}
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-          </div>
+          <ImageCropUploader
+            value={profile?.avatar_url || undefined}
+            onChange={handleAvatarChange}
+            dimensions={IMAGE_PRESETS.ambassadorPhoto}
+            folder={`avatars/${user?.id || 'unknown'}`}
+            label="Foto de perfil"
+            previewHeight="h-24"
+          />
           <div className="flex-1 space-y-1">
             <p className="font-semibold text-lg">{profile?.full_name || '—'}</p>
             <p className="text-sm text-muted-foreground">Nome cadastrado no CPF. Para alterar, entre em contato com o suporte.</p>

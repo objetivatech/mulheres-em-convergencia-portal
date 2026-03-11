@@ -95,6 +95,7 @@ import ConectaIndicacoes from '@/pages/conecta/ConectaIndicacoes';
 import ConectaRanking from '@/pages/conecta/ConectaRanking';
 import ConectaEstatisticas from '@/pages/conecta/ConectaEstatisticas';
 import ConectaConvites from '@/pages/conecta/ConectaConvites';
+import ConectaConviteLanding from '@/pages/conecta/ConectaConviteLanding';
 import ConectaConteudos from '@/pages/conecta/ConectaConteudos';
 import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
@@ -160,6 +161,7 @@ function AppContent() {
         <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
         <Route path="/academy/curso/:slug" element={<AcademyCurso />} />
         <Route path="/lp/:slug" element={<DynamicLandingPage />} />
+        <Route path="/conecta/convite/:code" element={<ConectaConviteLanding />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />

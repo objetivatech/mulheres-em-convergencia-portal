@@ -78,18 +78,25 @@ serve(async (req) => {
         .eq('id', inviter_id)
         .single();
 
+      const inviteLink = `https://mulheresemconvergencia.lovable.app/conecta/convite/${code}`;
+
       const html = emailWrapper('Você foi convidada! 🎉', `
         <p>Olá <strong>${guest_name}</strong>,</p>
         <p><strong>${inviter?.full_name || 'Uma membro'}</strong> convidou você para conhecer o <strong>CONECTA+</strong>, nossa comunidade de networking do Mulheres em Convergência!</p>
+        
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${inviteLink}" style="display: inline-block; background-color: ${BRAND_COLOR}; color: #ffffff; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 18px;">✨ Aceitar Convite</a>
+        </div>
+        
         <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
           <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px;">Seu código de convite:</p>
           <p style="margin: 0; font-size: 28px; font-weight: bold; color: ${BRAND_COLOR}; letter-spacing: 2px;">${code}</p>
         </div>
-        <p>Use este código ao se cadastrar no portal para ativar seu acesso como convidada.</p>
-        <div style="text-align: center; margin: 24px 0;">
-          <a href="https://mulheresemconvergencia.lovable.app/auth" style="display: inline-block; background-color: ${BRAND_COLOR}; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Cadastre-se Agora</a>
-        </div>
-        <p style="color: #6b7280; font-size: 14px;">Estamos ansiosas para te conhecer!</p>
+        
+        <p style="color: #4b5563; font-size: 14px;">Você também pode acessar diretamente pelo link:</p>
+        <p style="color: ${BRAND_COLOR}; font-size: 13px; word-break: break-all;"><a href="${inviteLink}" style="color: ${BRAND_COLOR};">${inviteLink}</a></p>
+        
+        <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">Estamos ansiosas para te conhecer!</p>
       `);
       await sendEmail(guest_email, guest_name, `Convite CONECTA+ de ${inviter?.full_name || 'uma membro'}`, html);
 
