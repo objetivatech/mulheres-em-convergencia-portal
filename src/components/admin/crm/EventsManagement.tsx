@@ -392,9 +392,10 @@ export const EventsManagement: React.FC = () => {
                   <div className="flex flex-col items-center gap-4 py-4">
                     <QRCodeSVG
                       value={`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
-                      size={256}
+                      size={200}
                       level="H"
                       includeMargin
+                      className="w-full max-w-[256px] h-auto"
                     />
                     <p className="text-xs text-muted-foreground text-center break-all">
                       {`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
