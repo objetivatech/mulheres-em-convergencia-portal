@@ -161,6 +161,7 @@ function AppContent() {
         <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
         <Route path="/academy/curso/:slug" element={<AcademyCurso />} />
         <Route path="/lp/:slug" element={<DynamicLandingPage />} />
+        <Route path="/conecta/convite/:code" element={<ConectaConviteLanding />} />
         
         {/* Redirects de Compatibilidade (URLs antigas) */}
         <Route path="/auth" element={<Navigate to="/entrar" replace />} />
