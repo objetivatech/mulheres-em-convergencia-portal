@@ -84,17 +84,9 @@ export default function ConectaPerfil() {
     setIsEditing(false);
   };
 
-  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user?.id) return;
-    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem válida'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error('A imagem deve ter no máximo 5MB'); return; }
-
-    const url = await uploadFile(file, 'conecta/banners');
-    if (url) {
-      updateProfile({ banner_url: url });
-      toast.success('Capa atualizada!');
-    }
+  const handleBannerChange = (url: string | null) => {
+    updateProfile({ banner_url: url || null });
+    toast.success('Capa atualizada!');
   };
 
   const addTag = () => {
