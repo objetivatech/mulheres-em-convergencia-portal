@@ -252,7 +252,7 @@ export function AdminPublicPageManager() {
               return (
                 <div 
                   key={ambassador.id}
-                  className={`flex items-center gap-4 p-4 border rounded-lg transition-colors ${
+                  className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 border rounded-lg transition-colors ${
                     ambassador.show_on_public_page && hasPublicData 
                       ? 'bg-primary/5 border-primary/20' 
                       : 'bg-muted/30'
