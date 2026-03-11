@@ -306,7 +306,7 @@ export const UserDashboard = () => {
                       <CardDescription>Acompanhe suas indicações, comissões e materiais</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <Button asChild><Link to="/embaixadora"><Crown className="h-4 w-4 mr-1" /> Acessar Painel Completo</Link></Button>
+                      <Button asChild><Link to="/painel/embaixadora"><Crown className="h-4 w-4 mr-1" /> Acessar Painel Completo</Link></Button>
                     </CardContent>
                   </Card>
                 </TabsContent>
