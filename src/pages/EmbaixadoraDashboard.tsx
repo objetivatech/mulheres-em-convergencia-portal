@@ -46,6 +46,22 @@ export const EmbaixadoraDashboard = () => {
   // Ativar atualizações em tempo real
   useAmbassadorRealtime(ambassador?.id);
 
+  // Check if ambassador has active business subscription
+  const { data: hasActiveBusiness } = useQuery({
+    queryKey: ['ambassador-business-check', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user!.id)
+        .eq('subscription_active', true)
+        .limit(1)
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!ambassador,
+  });
+
   const isLoading = authLoading || ambassadorLoading;
 
   if (isLoading) {
