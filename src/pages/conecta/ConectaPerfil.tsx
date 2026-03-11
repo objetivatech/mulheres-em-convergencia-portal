@@ -25,10 +25,8 @@ import {
 export default function ConectaPerfil() {
   const { user } = useConectaAccess();
   const { profile, isLoading, updateProfile, isUpdating } = useConectaProfile();
-  const { uploadFile, uploading: isUploadingBanner } = useR2Storage();
   const [isEditing, setIsEditing] = useState(false);
   const [generatingPitch, setGeneratingPitch] = useState(false);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
   const [tagInput, setTagInput] = useState('');
   const [formData, setFormData] = useState({
     company: '',
