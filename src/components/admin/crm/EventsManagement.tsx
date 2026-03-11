@@ -644,28 +644,11 @@ export const EventsManagement: React.FC = () => {
             className="pl-10"
           />
         </div>
-        <Dialog open={showEventForm} onOpenChange={(open) => {
-          if (!open) {
-            setEditingEvent(null);
-          }
-          setShowEventForm(open);
-        }}>
-          <DialogTrigger asChild>
-            <Button onClick={() => openEventForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Evento
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
-              <DialogDescription>
-                {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
-              </DialogDescription>
-            </DialogHeader>
-            {eventFormContent}
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => openEventForm()}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Evento
+        </Button>
+        {eventFormDialog}
       </div>
 
       {/* Events List with Tabs */}
