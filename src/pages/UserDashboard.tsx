@@ -211,7 +211,7 @@ export const UserDashboard = () => {
                   <QuickCard icon={User} title="Meus Dados" desc="Editar perfil e contatos" href="/configuracoes/dados-pessoais" />
                   <QuickCard icon={Network} title="CONECTA+" desc="Acessar networking" href="/conecta" />
                   {isBusinessOwner && businessProfile && (
-                    <QuickCard icon={Store} title={businessProfile.name} desc={`${businessProfile.views_count} visualizações`} href="/dashboard/empresa" />
+                    <QuickCard icon={Store} title={businessProfile.name} desc={`${businessProfile.views_count || 0} visualizações`} href="/painel-empresa" />
                   )}
                   {isAmbassador && (
                     <QuickCard icon={Crown} title="Painel Embaixadora" desc="Indicações e comissões" href="/embaixadora" />
