@@ -1,12 +1,15 @@
 import { Helmet } from 'react-helmet-async';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAmbassador } from '@/hooks/useAmbassador';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
 import { PRODUCTION_DOMAIN, PRODUCTION_DOMAIN as DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Crown, BarChart3, Link2, Wallet, Users, FileText, HelpCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Crown, BarChart3, Link2, Wallet, Users, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
 import {
   AmbassadorStatsCards,
   AmbassadorReferralLink,
