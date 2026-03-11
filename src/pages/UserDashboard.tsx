@@ -211,10 +211,10 @@ export const UserDashboard = () => {
                   <QuickCard icon={User} title="Meus Dados" desc="Editar perfil e contatos" href="/configuracoes/dados-pessoais" />
                   <QuickCard icon={Network} title="CONECTA+" desc="Acessar networking" href="/conecta" />
                   {isBusinessOwner && businessProfile && (
-                    <QuickCard icon={Store} title={businessProfile.name} desc={`${businessProfile.views_count} visualizações`} href="/dashboard/empresa" />
+                    <QuickCard icon={Store} title={businessProfile.name} desc={`${businessProfile.views_count || 0} visualizações`} href="/painel-empresa" />
                   )}
                   {isAmbassador && (
-                    <QuickCard icon={Crown} title="Painel Embaixadora" desc="Indicações e comissões" href="/embaixadora" />
+                    <QuickCard icon={Crown} title="Painel Embaixadora" desc="Indicações e comissões" href="/painel/embaixadora" />
                   )}
                   {(isStudent || isBusinessOwner || isAdmin) && (
                     <QuickCard icon={GraduationCap} title="MeC Academy" desc="Cursos e conteúdos" href="/academy" />
@@ -274,12 +274,12 @@ export const UserDashboard = () => {
                         </CardHeader>
                         <CardContent className="space-y-3">
                           <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                            <div><p className="text-xl font-bold">{businessProfile.views_count}</p><p className="text-xs text-muted-foreground">Visualizações</p></div>
-                            <div><p className="text-xl font-bold">{businessProfile.clicks_count}</p><p className="text-xs text-muted-foreground">Cliques</p></div>
-                            <div><p className="text-xl font-bold">{businessProfile.contacts_count}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.views_count || 0}</p><p className="text-xs text-muted-foreground">Visualizações</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.clicks_count || 0}</p><p className="text-xs text-muted-foreground">Cliques</p></div>
+                            <div><p className="text-xl font-bold">{businessProfile.contacts_count || 0}</p><p className="text-xs text-muted-foreground">Contatos</p></div>
                           </div>
                           <div className="flex gap-2 flex-wrap">
-                            <Button asChild><Link to="/dashboard/empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
+                            <Button asChild><Link to="/painel-empresa"><Store className="h-4 w-4 mr-1" /> Gerenciar Negócio</Link></Button>
                             <Button variant="outline" asChild><Link to={`/diretorio/${businessProfile.slug}`}><ExternalLink className="h-4 w-4 mr-1" /> Ver Página</Link></Button>
                           </div>
                         </CardContent>
@@ -290,7 +290,7 @@ export const UserDashboard = () => {
                       <CardContent className="py-8 text-center">
                         <Store className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground mb-4">Você ainda não cadastrou um negócio</p>
-                        <Button asChild><Link to="/dashboard/empresa">Cadastrar Negócio</Link></Button>
+                        <Button asChild><Link to="/painel-empresa">Cadastrar Negócio</Link></Button>
                       </CardContent>
                     </Card>
                   )}
@@ -306,7 +306,7 @@ export const UserDashboard = () => {
                       <CardDescription>Acompanhe suas indicações, comissões e materiais</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <Button asChild><Link to="/embaixadora"><Crown className="h-4 w-4 mr-1" /> Acessar Painel Completo</Link></Button>
+                      <Button asChild><Link to="/painel/embaixadora"><Crown className="h-4 w-4 mr-1" /> Acessar Painel Completo</Link></Button>
                     </CardContent>
                   </Card>
                 </TabsContent>

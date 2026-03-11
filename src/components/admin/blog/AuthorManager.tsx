@@ -112,7 +112,7 @@ export const AuthorManager = () => {
               Novo Autor
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAuthor ? 'Editar Autor' : 'Novo Autor'}</DialogTitle>
             </DialogHeader>

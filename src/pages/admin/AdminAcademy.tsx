@@ -141,7 +141,7 @@ const AdminAcademy = () => {
                   <div className="space-y-3">
                     {courses.map((course) => (
                       <Card key={course.id}>
-                        <CardContent className="p-4 flex items-center gap-4">
+                        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           {course.thumbnail_url ? (
                             <img src={course.thumbnail_url} alt="" className="w-20 h-14 object-cover rounded" />
                           ) : (
@@ -160,7 +160,7 @@ const AdminAcademy = () => {
                               {course.show_on_landing && <Badge variant="outline" className="text-xs">Na Landing</Badge>}
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" onClick={() => setLessonsPanel(course.id)}>
                               Aulas
                             </Button>
@@ -187,7 +187,7 @@ const AdminAcademy = () => {
 
         {/* Course Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingCourse?.id ? 'Editar Curso' : 'Novo Curso'}</DialogTitle>
             </DialogHeader>

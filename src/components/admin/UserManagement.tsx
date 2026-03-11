@@ -189,21 +189,21 @@ export const UserManagement = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5" />
               <span>Gestão de Usuários</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Link to="/admin/jornada-usuario">
-                <Button variant="outline">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Jornada do Cliente
+                <Button variant="outline" size="sm">
+                  <TrendingUp className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Jornada do Cliente</span>
                 </Button>
               </Link>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Adicionar Usuário
+              <Button onClick={() => setShowAddDialog(true)} size="sm">
+                <UserPlus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar Usuário</span>
               </Button>
             </div>
           </CardTitle>
@@ -273,7 +273,7 @@ export const UserManagement = () => {
           </div>
 
           {/* Tabela de usuários */}
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -314,14 +314,14 @@ export const UserManagement = () => {
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                      <TableCell>
-                       <div className="flex flex-wrap gap-2">
+                       <div className="flex flex-wrap gap-1">
                          <Button
                            variant="outline"
                            size="sm"
                            onClick={() => handleEditUser(user)}
                          >
-                           <Edit className="h-4 w-4 mr-1" />
-                           Editar
+                           <Edit className="h-4 w-4 sm:mr-1" />
+                           <span className="hidden sm:inline">Editar</span>
                          </Button>
 
                          <Button
@@ -329,18 +329,18 @@ export const UserManagement = () => {
                            size="sm"
                            onClick={() => handleManageBusinesses(user)}
                          >
-                           <Gift className="h-4 w-4 mr-1" />
-                           Gerenciar Negócios
+                           <Gift className="h-4 w-4 sm:mr-1" />
+                           <span className="hidden sm:inline">Negócios</span>
                          </Button>
 
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
-                             <Button variant="outline" size="sm">
-                               <Shield className="h-4 w-4 mr-1" />
-                               Gerenciar Roles
-                             </Button>
+                              <Button variant="outline" size="sm">
+                                <Shield className="h-4 w-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Roles</span>
+                              </Button>
                            </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
                             <AlertDialogHeader>
                               <AlertDialogTitle>Gerenciar Roles - {user.full_name || user.email}</AlertDialogTitle>
                               <AlertDialogDescription>
@@ -387,9 +387,9 @@ export const UserManagement = () => {
 
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Excluir
+                             <Button variant="destructive" size="sm">
+                              <Trash2 className="h-4 w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Excluir</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -446,7 +446,7 @@ export const UserManagement = () => {
 
       {/* Business Manager Dialog */}
       <AlertDialog open={showBusinessManager} onOpenChange={setShowBusinessManager}>
-        <AlertDialogContent className="max-w-4xl">
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>Gerenciar Negócios e Cortesias</AlertDialogTitle>
             <AlertDialogDescription>

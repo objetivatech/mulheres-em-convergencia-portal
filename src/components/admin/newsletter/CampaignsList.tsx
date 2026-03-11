@@ -112,7 +112,7 @@ export function CampaignsList() {
   return (
     <div className="space-y-6">
       {/* Header com Ações */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex gap-2">
           <Button
             variant={activeTab === 'drafts' ? 'default' : 'outline'}
@@ -137,7 +137,7 @@ export function CampaignsList() {
               Nova Campanha
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Criar Nova Campanha</DialogTitle>
               <DialogDescription>

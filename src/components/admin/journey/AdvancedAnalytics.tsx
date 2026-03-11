@@ -81,14 +81,14 @@ export const AdvancedAnalytics = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold">Analytics Avançado</h2>
           <p className="text-muted-foreground">Métricas detalhadas da jornada do cliente</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2">
           <Select value={selectedStage} onValueChange={setSelectedStage}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -101,7 +101,7 @@ export const AdvancedAnalytics = () => {
           </Select>
           
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

@@ -90,24 +90,24 @@ export default function BlogDashboard() {
       <div className="container mx-auto py-8 space-y-8">
         <AdminBackButton label="Voltar ao Admin" />
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-nexa text-foreground">Painel do Blog</h1>
+            <h1 className="text-2xl sm:text-3xl font-nexa text-foreground">Painel do Blog</h1>
             <p className="text-muted-foreground mt-2">
               Gerencie seus posts, categorias e conteúdo do blog
             </p>
           </div>
-          <div className="flex space-x-3">
-            <Button asChild variant="outline">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
               <Link to="/admin/blog/categorias">
-                <Filter className="w-4 h-4 mr-2" />
-                Categorias
+                <Filter className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Categorias</span>
               </Link>
             </Button>
-            <Button asChild>
+            <Button asChild size="sm">
               <Link to="/admin/blog/novo">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Post
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Novo Post</span>
               </Link>
             </Button>
           </div>

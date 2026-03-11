@@ -48,7 +48,7 @@ export const EditAmbassadorDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-[95vw] sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Taxa de Comissão</DialogTitle>
           <DialogDescription>

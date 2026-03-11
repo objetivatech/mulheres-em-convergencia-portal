@@ -384,7 +384,7 @@ export const EventsManagement: React.FC = () => {
                     <QrCode className="h-4 w-4 mr-2" />QR Check-in
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-sm">
+                <DialogContent className="max-w-[90vw] sm:max-w-sm">
                   <DialogHeader>
                     <DialogTitle>QR Code - Check-in</DialogTitle>
                     <DialogDescription>{event.title}</DialogDescription>
@@ -392,9 +392,10 @@ export const EventsManagement: React.FC = () => {
                   <div className="flex flex-col items-center gap-4 py-4">
                     <QRCodeSVG
                       value={`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
-                      size={256}
+                      size={200}
                       level="H"
                       includeMargin
+                      className="w-full max-w-[256px] h-auto"
                     />
                     <p className="text-xs text-muted-foreground text-center break-all">
                       {`${PRODUCTION_DOMAIN}/evento-checkin/${event.id}`}
@@ -574,8 +575,33 @@ export const EventsManagement: React.FC = () => {
 
   const [eventsTab, setEventsTab] = useState('active');
 
+  // Event form dialog - rendered always so it works from EventDetails too
+  const eventFormDialog = (
+    <Dialog open={showEventForm} onOpenChange={(open) => {
+      if (!open) {
+        setEditingEvent(null);
+      }
+      setShowEventForm(open);
+    }}>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+          <DialogDescription>
+            {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
+          </DialogDescription>
+        </DialogHeader>
+        {eventFormContent}
+      </DialogContent>
+    </Dialog>
+  );
+
   if (selectedEvent) {
-    return <EventDetails event={selectedEvent} />;
+    return (
+      <>
+        <EventDetails event={selectedEvent} />
+        {eventFormDialog}
+      </>
+    );
   }
 
   return (
@@ -619,28 +645,11 @@ export const EventsManagement: React.FC = () => {
             className="pl-10"
           />
         </div>
-        <Dialog open={showEventForm} onOpenChange={(open) => {
-          if (!open) {
-            setEditingEvent(null);
-          }
-          setShowEventForm(open);
-        }}>
-          <DialogTrigger asChild>
-            <Button onClick={() => openEventForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Evento
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
-              <DialogDescription>
-                {editingEvent ? 'Atualize as informações do evento.' : 'Preencha as informações para criar um novo evento. Os dados são salvos automaticamente.'}
-              </DialogDescription>
-            </DialogHeader>
-            {eventFormContent}
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => openEventForm()}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Evento
+        </Button>
+        {eventFormDialog}
       </div>
 
       {/* Events List with Tabs */}

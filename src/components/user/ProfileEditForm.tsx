@@ -105,7 +105,7 @@ export const ProfileEditForm = ({ profile, onProfileUpdated }: ProfileEditFormPr
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Foto e Identificação</CardTitle>
-          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos</CardDescription>
+          <CardDescription>Sua foto será reutilizada no CONECTA+, Embaixadora e outros módulos. Recomendado: 400×400px, máx. 5MB.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row items-start gap-6">
           <div className="relative group">

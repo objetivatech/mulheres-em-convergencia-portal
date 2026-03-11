@@ -1,126 +1,159 @@
 
+# Plano: Revisão Completa do CONECTA+ e Novos Recursos
 
-# Plano de Correções e Ajustes de Responsividade
+## Status de Implementação
 
-Este plano aborda 5 grandes áreas de correção, organizadas em sprints por prioridade.
+### ✅ Rodada 1: Correções Urgentes + Quick Wins (CONCLUÍDA)
 
----
+- Fix do hook de convites (`name`/`email` corrigidos)
+- Uploads migrados para R2 (banner + fotos 1-a-1)
+- Edge Function `send-conecta-email` com 5 tipos de email via Mailrelay
+- Temperatura nas indicações (cold/warm/hot com seletor visual)
+- Coluna `meeting_id` em `conecta_invitations`
 
-## Sprint 1 — Bugs Funcionais (Prioridade Crítica)
+### ✅ Rodada 2: Funcionalidades Core (CONCLUÍDA)
 
-### 1.1 Botão Editar Evento não funciona
-**Problema**: Quando o usuário está na tela de detalhes do evento (`EventDetails`), o componente retorna cedo (linha 577-578), então o `Dialog` do formulário (linhas 622-643) não está no DOM. O `openEventForm` seta `showEventForm=true`, mas não há Dialog para renderizar.
+#### Etapa 3: Lista de Convidados por Encontro
+- Hook `useMeetingGuests` busca convites vinculados a cada encontro
+- Componente `MeetingGuestsList` com lista expansível de convidadas
+- Visível apenas para membros/facilitadores/admin (`isMemberOrAbove`)
+- Nome do convidado como link para perfil se cadastrado
 
-**Correção**: Mover o Dialog do formulário para fora do bloco condicional, renderizando-o sempre — antes do `if (selectedEvent)` ou como um Dialog independente no final do componente.
+#### Etapa 4: Sincronização Encontros ↔ Eventos do Portal
+- Coluna `conecta_sync` (boolean) adicionada à tabela `events`
+- Eventos marcados com `conecta_sync=true` aparecem na timeline do Conecta+
+- Inscrição/desinscrição direta com dados pré-preenchidos do perfil
+- Badge "Portal" distingue eventos sincronizados dos encontros manuais
 
-**Arquivo**: `src/components/admin/crm/EventsManagement.tsx`
+#### Etapa 5: Perfil Enriquecido com Pitch
+- Novos campos: `area_of_expertise`, `skills_tags`, `pitch_what_i_do`, `pitch_ideal_client`, `pitch_how_to_refer`, `contact_email`
+- Formulário organizado em 3 seções: Info Básica, Contato & Redes, Elevator Pitch
+- Sistema de tags com adição/remoção dinâmica
+- Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
+- Visualização rica do pitch no modo leitura
 
-### 1.2 Links incorretos no Meu Painel
-**Problema**: 
-- "Gerenciar Negócio" aponta para `/dashboard/empresa` — a rota correta é `/painel-empresa`
-- "Acessar Painel Completo" (Embaixadora) aponta para `/embaixadora` — a rota correta é `/painel/embaixadora`
-- O QuickCard da Embaixadora também usa `/embaixadora`
+### ✅ Rodada 3: Notificações + Helpdesk + Docs (CONCLUÍDA)
 
-**Correção**: Atualizar os links em `src/pages/UserDashboard.tsx` (linhas 217, 214, 282, 293, 309).
+#### Etapa 8: Sistema de Notificações
+- Tabela `conecta_notifications` com RLS e real-time
+- Sino no header com badge de contagem (vermelho)
+- Dropdown com lista de notificações e marcar como lida
+- Real-time via Supabase Realtime (INSERT listener)
 
-### 1.3 Contadores do negócio não contabilizando
-**Problema**: A query busca `views_count`, `clicks_count`, `contacts_count` diretamente da tabela `businesses`. Esses campos podem não estar sendo incrementados corretamente (provavelmente são colunas default 0 que nunca são atualizadas, ou precisam de uma query agregada).
+#### Etapa 6: Conselho de Administração 24/7 (Helpdesk)
+- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies` com RLS
+- Visualização Kanban com 3 colunas (Aberto → Em Discussão → Resolvido)
+- Vista de lista alternativa com filtros por categoria
+- Thread de discussão com respostas e marcação de solução
+- Trigger automático: `reply_count` + mudança de status para "Em Discussão"
+- 8 categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia, Geral
+- Rota: `/conecta/helpdesk`
 
-**Correção**: Verificar se os campos existem e são atualizados. Se necessário, criar contagem via query em `business_views`, `business_clicks`, etc.
-
-### 1.4 Informação de tamanho de imagem ausente
-**Problema**: No `ProfileEditForm`, não há indicação de tamanho recomendado para o avatar.
-
-**Correção**: Adicionar texto auxiliar como "Recomendado: 400x400px, máx. 5MB" junto ao componente de upload.
-
----
-
-## Sprint 2 — QR Check-in Modal (Mobile)
-
-### 2.1 Modal do QR Code fora da tela no mobile
-**Problema**: O `DialogContent` do QR Code usa `max-w-sm` e o `QRCodeSVG` tem `size={256}`, que pode exceder telas pequenas.
-
-**Correção**: 
-- Adicionar classes responsivas: `max-w-[90vw] sm:max-w-sm`
-- Reduzir QRCode em mobile: usar um tamanho responsivo (ex: 200 em mobile, 256 em desktop) ou `w-full max-w-[256px]`
-
-**Arquivo**: `src/components/admin/crm/EventsManagement.tsx` (linhas 387-403)
-
----
-
-## Sprint 3 — Responsividade Admin (Mobile)
-
-Aplicação sistemática de padrões responsivos em todos os módulos admin. A abordagem geral será:
-
-**Padrão para botões que transbordam**: Usar `flex-wrap gap-2` nos containers de botões, e em mobile exibir apenas ícones (ocultar texto com `hidden sm:inline`).
-
-**Padrão para modais que transbordam**: Adicionar `max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto` ao `DialogContent`.
-
-**Padrão para tabs que se sobrepõem**: Usar `overflow-x-auto` no `TabsList`, ou converter para layout vertical/dropdown em mobile.
-
-**Padrão para tabelas que transbordam**: Envolver em `div` com `overflow-x-auto`.
-
-### Arquivos afetados:
-
-| Local | Problema | Arquivo |
-|-------|----------|---------|
-| **a) Pipeline CRM** | Botões transbordam | `DealPipeline.tsx` |
-| **b) Gestão Usuários** | Botões + modais | `UserManagement.tsx`, `EditUserDialog.tsx`, `ComplimentaryBusinessManager.tsx` |
-| **c) Gestão Negócios** | Modal visualização | `BusinessAnalyticsDashboard.tsx` ou componente de visualização |
-| **d) Jornada do Cliente** | Tabs + botões + analytics | `UserJourneyDashboard.tsx`, componentes em `journey/` |
-| **e) Newsletter** | Tabs + botões + relatórios | Componentes em `newsletter/` |
-| **f) Embaixadoras Admin** | Botões + modais + página pública | Componentes em `ambassadors/` |
-| **g) Blog** | Botões + modal autor | Componentes em `blog/` |
-| **h) Academy** | Sobreposição cursos + modais | Componentes Academy |
-| **i) Painel Embaixadora** | Nível/Ranking transbordam | `EmbaixadoraDashboard.tsx`, `AmbassadorTierProgress`, `AmbassadorRanking` |
+#### Etapa 9: Documentação
+- `conecta-fluxos-revisados.md` com todos os fluxos detalhados
+- `conecta-access-levels.md` atualizado com Conselho 24/7 e Notificações
 
 ---
 
-## Sprint 4 — CONECTA+ Integração ao Layout Principal
+### ✅ Rodada 4 - Sprint 1: Fundamentos e Correções (CONCLUÍDA)
 
-### 4.1 Usar Header/Footer do portal
-**Problema**: O CONECTA+ usa layout próprio (`ConectaLayout` com `ConectaSidebar` + `ConectaHeader`), isolado do portal.
+#### Item 1: Image Crop Tool + Dimensões Recomendadas
+- Componente `ImageCropUploader` com `react-image-crop`
+- Presets de dimensões para 7 contextos (blog, perfil, negócio, etc.)
+- Texto informativo de dimensão ideal em cada campo
+- Modal de recorte com aspect ratio fixo
+- Blog `ImageUploader` refatorado para usar novo componente
+- Documentação: `docs/_active/06-funcionalidades/image-crop-tool.md`
 
-**Proposta**: Integrar ao `Layout` principal mantendo a sidebar como navegação interna:
-- Envolver o conteúdo do CONECTA+ com o `Layout` do portal (Header + Footer)
-- Manter a `ConectaSidebar` como navegação lateral interna
-- Remover o `ConectaHeader` separado (a navegação principal do portal já cobre essa função)
-- Ajustar o `ConectaLayout` para usar `Layout` como wrapper externo
+#### Item 2: Revisão dos Contadores e Gamificação do CONECTA+
+- **Descoberta:** Funções de trigger existiam mas triggers NÃO estavam criados
+- Triggers criados para: one_on_ones, testimonials, business_deals, referrals, attendances
+- Novo trigger para respostas no Conselho 24/7 (+5 pts)
+- Função `conecta_calculate_monthly_points` atualizada com Conselho 24/7
+- `ScoringRulesCard.tsx` atualizado com regra do Conselho 24/7
+- Documentação: `docs/_active/12-conecta/conecta-gamificacao.md`
 
-**Arquivo**: `src/components/conecta/ConectaLayout.tsx`
-
-### 4.2 Responsividade CONECTA+
-- **Atividades**: Bloco transbordando — adicionar `overflow-x-auto` ou ajustar grid
-- **Card de Membro** (página Membros): Ajustar para `w-full` em mobile
-- **Aniversariantes**: Card extrapola — adicionar `overflow-hidden` e ajustar grid interno para `grid-cols-1` em mobile
-
-**Arquivos**: Componentes em `src/components/conecta/` e páginas em `src/pages/conecta/`
-
----
-
-## Sprint 5 — Documentação
-
-Atualizar/criar documentação em `docs/_active/`:
-- `responsividade-admin.md` — Padrões de responsividade adotados
-- `conecta-plus-layout.md` — Atualizar com a integração ao layout principal
-- `correcoes-sprint-bugs.md` — Registro das correções funcionais
-- Atualizar documentação existente dos módulos afetados
+#### Item 3: Arquivamento de Eventos no Admin
+- Tabs "Ativos" e "Arquivados" na gestão de eventos
+- Ativos ordenados por data ASC (próximos primeiro)
+- Arquivados ordenados por data DESC (recentes primeiro)
+- Botão "Arquivar" muda status para `completed`
 
 ---
 
-## Sugestão de Melhorias Adicionais
+### ✅ Rodada 5 - Sprint 2: Funcionalidades CONECTA+ (CONCLUÍDA)
 
-1. **Newsletter Relatórios** — "Cliques por Link" com informação incompleta: revisar a query que busca dados de cliques e garantir que URLs completas e contagens sejam retornadas.
-2. **Componente responsivo reutilizável** para botões de ação: criar um `ActionButtons` que automaticamente converte para dropdown em mobile.
-3. **Dialog responsivo global**: Criar wrapper `ResponsiveDialog` que aplica classes mobile automaticamente.
+#### Item 4: Card de Negócio no Perfil CONECTA+
+- Componente `BusinessProfileCard` busca negócios com `subscription_active = true`
+- Exibe nome, logo, categoria, descrição e link para `/guia/{slug}`
+- Integrado no perfil (`ConectaPerfil.tsx`) em modo visualização
+- `useConectaMembers` atualizado para filtrar apenas negócios com assinatura ativa
+
+#### Item 5: Pontuação Conselho 24/7 (concluído no Sprint 1)
+
+#### Item 7: Registro de Parcerias entre Membros
+- Tabela `conecta_partnerships` com RLS e constraint de parceiros diferentes
+- Trigger `trg_conecta_partnership_insert` → +15 pts para ambas
+- Função `conecta_calculate_monthly_points` atualizada com parcerias
+- Hook `useConectaPartnerships.ts` com CRUD
+- Página `/conecta/parcerias` com formulário e listagem
+- Sidebar atualizado com item "Parcerias"
+- `ScoringRulesCard.tsx` atualizado com regra de parcerias
+- Documentação: `docs/_active/12-conecta/conecta-parcerias.md`
 
 ---
 
-## Ordem de Execução
+### ✅ Sprint 3: Integrações e Automações (CONCLUÍDA)
 
-1. **Sprint 1** — Bugs funcionais (impacto imediato na usabilidade)
-2. **Sprint 2** — QR Check-in mobile
-3. **Sprint 3** — Responsividade Admin (maior volume de trabalho)
-4. **Sprint 4** — CONECTA+ integração e responsividade
-5. **Sprint 5** — Documentação
+- [x] **Check-in presencial via QR Code** (item 8)
+  - Página pública `/evento-checkin/:eventId` com busca por CPF
+  - Botão "QR Check-in" no admin para eventos presenciais/híbridos
+  - Trigger de gamificação: +10 pts para membros CONECTA+ ao fazer check-in
+  - Dependência `qrcode.react` instalada
+  - Documentação: `docs/_active/06-funcionalidades/evento-checkin-qrcode.md`
 
+- [x] **Integração CONECTA+ / MeC Academy** (item 9)
+  - `useConectaContents.ts` agora faz UNION de `conecta_contents` com `academy_lessons`
+  - Convidados veem apenas conteúdos gratuitos/free preview
+  - Badge "Academy" diferencia conteúdos do MeC Academy
+  - Link redireciona para `/academy/curso/:slug`
+
+- [x] **Aniversariantes do mês** (item 10)
+  - Página `/conecta/aniversariantes` com agrupamento por mês
+  - Mês atual em destaque (primeira posição, borda primária)
+  - Data de aniversário exibida sem ano (DD/mmm) no perfil público
+  - Edge Function `conecta-birthday-notify` para envio mensal via Mailrelay
+  - Item "Aniversariantes" no sidebar com ícone Cake
+  - Documentação: `docs/_active/12-conecta/conecta-aniversariantes.md`
+
+---
+
+## ✅ Sprint 4: Performance (item 6) — CONCLUÍDO
+
+- [x] GTM deferido para após page load (+2s delay)
+- [x] Preconnect para Supabase, Google Fonts, GTM, DNS-prefetch para Facebook/Google Ads
+- [x] Preload da fonte Montserrat
+- [x] Logo com `loading="eager"`, `fetchPriority="high"`, dimensões explícitas
+- [x] Componente `OptimizedImage` reutilizável com priority, srcset, fallback
+- [x] Documentação em `docs/_active/06-funcionalidades/performance-optimization.md`
+
+---
+
+## Arquitetura CONECTA+
+
+### Tabelas (prefixo `conecta_`):
+- conecta_profiles, conecta_teams, conecta_team_members
+- conecta_meetings, conecta_attendances, conecta_one_on_ones
+- conecta_testimonials, conecta_business_deals, conecta_referrals
+- conecta_invitations, conecta_contents, conecta_activity_feed
+- conecta_monthly_points, conecta_points_history
+- conecta_notifications, conecta_helpdesk_posts, conecta_helpdesk_replies
+
+### Edge Functions:
+- `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
+- `generate-conecta-pitch` — Gerador de pitch com IA (Perplexity)
+
+### Níveis de Acesso:
+- **Admin**: role `admin`
+- **Membro**: role `business_owner`
+- **Convidado**: `community_member`

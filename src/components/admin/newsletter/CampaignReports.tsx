@@ -156,9 +156,9 @@ export function CampaignReports() {
                   <CardContent>
                     <div className="space-y-3">
                       {report.clicks.map((click: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex-1 truncate mr-4">
-                            <p className="text-sm font-medium truncate">{click.url || click.link}</p>
+                        <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 border rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium break-all">{click.url || click.link}</p>
                           </div>
                           <Badge variant="secondary">
                             {click.clicks || click.count || 0} cliques

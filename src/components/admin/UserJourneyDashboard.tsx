@@ -13,7 +13,7 @@ export const UserJourneyDashboard = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="funnel" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full">
           <TabsTrigger value="funnel">Funil</TabsTrigger>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>

@@ -252,7 +252,7 @@ export function AdminPublicPageManager() {
               return (
                 <div 
                   key={ambassador.id}
-                  className={`flex items-center gap-4 p-4 border rounded-lg transition-colors ${
+                  className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 border rounded-lg transition-colors ${
                     ambassador.show_on_public_page && hasPublicData 
                       ? 'bg-primary/5 border-primary/20' 
                       : 'bg-muted/30'
@@ -351,7 +351,7 @@ export function AdminPublicPageManager() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingAmbassador} onOpenChange={(open) => !open && setEditingAmbassador(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Dados Públicos</DialogTitle>
             <DialogDescription>
