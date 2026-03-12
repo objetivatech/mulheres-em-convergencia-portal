@@ -28,6 +28,8 @@ export function useConectaRanking(month?: string, teamId?: string) {
 
       if (teamId) {
         query = query.eq('team_id', teamId);
+      } else {
+        query = query.is('team_id', null);
       }
 
       const { data: points, error } = await query;

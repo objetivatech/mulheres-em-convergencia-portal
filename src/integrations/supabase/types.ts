@@ -2634,7 +2634,7 @@ export type Database = {
           id: string
           points: number
           rank: Database["public"]["Enums"]["conecta_rank"]
-          team_id: string
+          team_id: string | null
           updated_at: string | null
           user_id: string
           year_month: string
@@ -2644,7 +2644,7 @@ export type Database = {
           id?: string
           points?: number
           rank?: Database["public"]["Enums"]["conecta_rank"]
-          team_id: string
+          team_id?: string | null
           updated_at?: string | null
           user_id: string
           year_month: string
@@ -2654,19 +2654,12 @@ export type Database = {
           id?: string
           points?: number
           rank?: Database["public"]["Enums"]["conecta_rank"]
-          team_id?: string
+          team_id?: string | null
           updated_at?: string | null
           user_id?: string
           year_month?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "conecta_monthly_points_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "conecta_teams"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "conecta_monthly_points_user_id_fkey"
             columns: ["user_id"]
@@ -5996,10 +5989,12 @@ export type Database = {
         Args: { _user_id1: string; _user_id2: string }
         Returns: boolean
       }
-      conecta_calculate_monthly_points: {
-        Args: { _team_id: string; _user_id: string; _year_month: string }
-        Returns: number
-      }
+      conecta_calculate_monthly_points:
+        | {
+            Args: { _team_id: string; _user_id: string; _year_month: string }
+            Returns: number
+          }
+        | { Args: { _user_id: string; _year_month: string }; Returns: number }
       conecta_get_current_year_month: { Args: never; Returns: string }
       conecta_get_monthly_ranking: {
         Args: { _team_id?: string; _year_month?: string }
@@ -6026,14 +6021,23 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      conecta_recalculate_all_points: {
+        Args: { _year_month?: string }
+        Returns: number
+      }
       conecta_update_all_user_points: {
         Args: { _user_id: string; _year_month?: string }
         Returns: undefined
       }
-      conecta_update_monthly_points: {
-        Args: { _team_id: string; _user_id: string; _year_month?: string }
-        Returns: undefined
-      }
+      conecta_update_monthly_points:
+        | {
+            Args: { _team_id: string; _user_id: string; _year_month?: string }
+            Returns: undefined
+          }
+        | {
+            Args: { _user_id: string; _year_month?: string }
+            Returns: undefined
+          }
       cpf_exists: { Args: { cpf_to_check: string }; Returns: boolean }
       create_ambassador_referral: {
         Args: {
