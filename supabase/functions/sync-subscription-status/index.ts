@@ -193,7 +193,6 @@ serve(async (req) => {
           // CRM log
           await supabaseClient.from('crm_interactions').insert({
             user_id: subscription.user_id,
-            cpf: subscription.profiles?.cpf,
             interaction_type: 'subscription_activated_sync',
             channel: 'system',
             description: `Assinatura sincronizada e ativada via sync-subscription-status`,
