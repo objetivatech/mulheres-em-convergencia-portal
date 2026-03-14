@@ -676,8 +676,106 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
-      } else {
+    } else {
         logStep("Payment not confirmed yet", { paymentId: payment.id, status: payment.status });
+      }
+    }
+
+    // ==========================================
+    // PAYMENT_OVERDUE - Pagamento atrasado
+    // ==========================================
+    else if (webhookData.event === "PAYMENT_OVERDUE") {
+      const payment = webhookData.payment;
+      if (payment?.id) {
+        logStep("Processing PAYMENT_OVERDUE", { paymentId: payment.id, subscription: payment.subscription });
+
+        // Find subscription
+        let subscription = null;
+        if (payment.subscription) {
+          const { data } = await supabaseClient
+            .from("user_subscriptions")
+            .select("*, profiles:user_id (id, full_name, email, cpf)")
+            .eq("external_subscription_id", payment.subscription)
+            .maybeSingle();
+          subscription = data;
+        }
+
+        if (subscription) {
+          // Log CRM interaction
+          await supabaseClient.from('crm_interactions').insert({
+            user_id: subscription.user_id,
+            cpf: subscription.profiles?.cpf,
+            interaction_type: 'payment_overdue',
+            channel: 'payment_gateway',
+            description: `Pagamento atrasado detectado. ID: ${payment.id}. Valor: R$ ${payment.value?.toFixed(2) || '0.00'}`,
+            form_source: 'asaas_webhook',
+            metadata: {
+              payment_id: payment.id,
+              subscription_id: subscription.id,
+              external_subscription_id: payment.subscription,
+              value: payment.value,
+              due_date: payment.dueDate,
+            },
+          }).catch(() => {});
+
+          // Count consecutive overdue events for this subscription
+          const { count: overdueCount } = await supabaseClient
+            .from('crm_interactions')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', subscription.user_id)
+            .eq('interaction_type', 'payment_overdue')
+            .gte('created_at', new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()); // last 60 days
+
+          logStep("Overdue count for user", { userId: subscription.user_id, overdueCount });
+
+          // After 2+ overdue events, start deactivation
+          if (overdueCount && overdueCount >= 2) {
+            logStep("Multiple overdue payments - deactivating", { userId: subscription.user_id });
+
+            await supabaseClient
+              .from('user_subscriptions')
+              .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+              .eq('id', subscription.id);
+
+            await supabaseClient
+              .from('businesses')
+              .update({ subscription_active: false, updated_at: new Date().toISOString() })
+              .eq('owner_id', subscription.user_id)
+              .eq('is_complimentary', false);
+
+            // Check if user has remaining active businesses
+            const { data: remaining } = await supabaseClient
+              .from('businesses')
+              .select('id')
+              .eq('owner_id', subscription.user_id)
+              .eq('subscription_active', true)
+              .limit(1);
+
+            if (!remaining || remaining.length === 0) {
+              await supabaseClient
+                .from('user_roles')
+                .delete()
+                .eq('user_id', subscription.user_id)
+                .in('role', ['business_owner', 'subscriber']);
+            }
+
+            await supabaseClient.from('crm_interactions').insert({
+              user_id: subscription.user_id,
+              interaction_type: 'subscription_deactivated_overdue',
+              channel: 'system',
+              description: `Assinatura desativada por inadimplência (${overdueCount} pagamentos atrasados).`,
+              metadata: { subscription_id: subscription.id, overdue_count: overdueCount },
+            }).catch(() => {});
+          }
+
+          // Log activity
+          await supabaseClient.from('user_activity_log').insert({
+            user_id: subscription.user_id,
+            activity_type: 'payment_overdue',
+            activity_description: `Pagamento atrasado: R$ ${payment.value?.toFixed(2) || '0.00'}`,
+            metadata: { payment_id: payment.id },
+          }).catch(() => {});
+        }
       }
     }
     
