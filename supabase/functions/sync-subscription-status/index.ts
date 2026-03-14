@@ -292,13 +292,15 @@ serve(async (req) => {
               rolesRemoved++;
             }
 
-            await supabaseClient.from('crm_interactions').insert({
-              user_id: subscription.user_id,
-              interaction_type: 'subscription_expired_local',
-              channel: 'system',
-              description: `Assinatura expirada localmente (expires_at: ${subscription.expires_at}). ${deactivated?.length || 0} negócio(s) desativado(s).`,
-              metadata: { subscription_id: subscription.id, expires_at: subscription.expires_at }
-            }).catch(() => {});
+            try {
+              await supabaseClient.from('crm_interactions').insert({
+                user_id: subscription.user_id,
+                interaction_type: 'subscription_expired_local',
+                channel: 'system',
+                description: `Assinatura expirada localmente (expires_at: ${subscription.expires_at}). ${deactivated?.length || 0} negócio(s) desativado(s).`,
+                metadata: { subscription_id: subscription.id, expires_at: subscription.expires_at }
+              });
+            } catch (_) {}
           }
         }
 
