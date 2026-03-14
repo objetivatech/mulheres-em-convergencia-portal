@@ -239,7 +239,6 @@ serve(async (req) => {
           // CRM log
           await supabaseClient.from('crm_interactions').insert({
             user_id: subscription.user_id,
-            cpf: subscription.profiles?.cpf,
             interaction_type: 'subscription_deactivated_sync',
             channel: 'system',
             description: `Assinatura desativada via sincronização. Status ASAAS: ${asaasStatus}. ${deactivated?.length || 0} negócio(s) desativado(s).`,
