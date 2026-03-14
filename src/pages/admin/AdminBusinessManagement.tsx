@@ -15,9 +15,9 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Store, Search, CheckCircle, XCircle, Gift, Calendar, 
   RefreshCw, Eye, Building2, User, CreditCard, AlertTriangle,
-  ExternalLink, Loader2, Zap
+  ExternalLink, Loader2, Zap, ShieldOff, Clock
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInDays, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Link } from 'react-router-dom';
@@ -60,8 +60,25 @@ const AdminBusinessManagement = () => {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
   const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
-  // Buscar todos os negócios com informações do proprietário e assinatura
+  // Helper: check if a business has an expired subscription but is still active (inconsistency)
+  const isInconsistent = (business: Business): boolean => {
+    if (business.is_complimentary) return false;
+    if (!business.subscription_active) return false;
+    const expiresAt = business.subscription_expires_at || business.subscription_renewal_date;
+    if (!expiresAt) return false;
+    return isPast(new Date(expiresAt));
+  };
+
+  const daysSinceExpiry = (business: Business): number | null => {
+    const expiresAt = business.subscription_expires_at || business.subscription_renewal_date;
+    if (!expiresAt) return null;
+    const diff = differenceInDays(new Date(), new Date(expiresAt));
+    return diff > 0 ? diff : null;
+  };
+
+  // Buscar todos os negócios
   const { data: businesses = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-businesses'],
     queryFn: async () => {
@@ -76,7 +93,6 @@ const AdminBusinessManagement = () => {
 
       if (error) throw error;
 
-      // Buscar proprietários e assinaturas
       const ownerIds = [...new Set(businessesData.filter(b => b.owner_id).map(b => b.owner_id))];
       
       const [{ data: owners }, { data: subscriptions }] = await Promise.all([
@@ -87,7 +103,7 @@ const AdminBusinessManagement = () => {
       return businessesData.map(business => ({
         ...business,
         owner: owners?.find(o => o.id === business.owner_id) || null,
-        subscription: subscriptions?.find(s => s.user_id === business.owner_id && (s.status === 'active' || s.status === 'pending')) || null,
+        subscription: subscriptions?.find(s => s.user_id === business.owner_id && ['active', 'pending', 'cancelled', 'expired'].includes(s.status)) || null,
       })) as Business[];
     },
   });
@@ -109,7 +125,7 @@ const AdminBusinessManagement = () => {
       
       toast({
         title: 'Sincronização concluída',
-        description: `${data.updatedSubscriptions || 0} assinatura(s) atualizada(s), ${data.activatedBusinesses || 0} negócio(s) ativado(s)`,
+        description: `${data.updatedSubscriptions || 0} assinatura(s) atualizada(s), ${data.activatedBusinesses || 0} ativado(s), ${data.deactivatedBusinesses || 0} desativado(s), ${data.rolesRemoved || 0} role(s) removida(s)`,
       });
       
       refetch();
@@ -126,6 +142,46 @@ const AdminBusinessManagement = () => {
     }
   };
 
+  // Desativar negócio manualmente
+  const handleManualDeactivation = async (business: Business) => {
+    if (!confirm(`Tem certeza que deseja desativar o negócio "${business.name}"? Isso removerá o negócio do diretório.`)) return;
+
+    setIsDeactivating(true);
+    try {
+      // Desativar o negócio
+      const { error: bizError } = await supabase
+        .from('businesses')
+        .update({ subscription_active: false, updated_at: new Date().toISOString() })
+        .eq('id', business.id);
+
+      if (bizError) throw bizError;
+
+      // Cancelar assinatura se existir
+      if (business.subscription?.id) {
+        await supabase
+          .from('user_subscriptions')
+          .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+          .eq('id', business.subscription.id);
+      }
+
+      toast({
+        title: 'Negócio desativado',
+        description: `"${business.name}" foi removido do diretório. O trigger automático cuidará da remoção de roles se necessário.`,
+      });
+
+      setShowDetailsDialog(false);
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao desativar',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
   // Filtrar negócios
   const filteredBusinesses = businesses.filter(business => {
     const matchesSearch = 
@@ -139,11 +195,13 @@ const AdminBusinessManagement = () => {
     if (statusFilter === 'inactive') return matchesSearch && !business.subscription_active && !business.is_complimentary;
     if (statusFilter === 'complimentary') return matchesSearch && business.is_complimentary;
     if (statusFilter === 'paid') return matchesSearch && business.subscription_active && !business.is_complimentary;
+    if (statusFilter === 'inconsistent') return matchesSearch && isInconsistent(business);
     
     return matchesSearch;
   });
 
   // Stats
+  const inconsistentCount = businesses.filter(b => isInconsistent(b)).length;
   const stats = {
     total: businesses.length,
     active: businesses.filter(b => b.subscription_active || b.is_complimentary).length,
@@ -153,6 +211,8 @@ const AdminBusinessManagement = () => {
   };
 
   const getStatusBadge = (business: Business) => {
+    const inconsistent = isInconsistent(business);
+    
     if (business.is_complimentary) {
       return (
         <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
@@ -163,10 +223,18 @@ const AdminBusinessManagement = () => {
     }
     if (business.subscription_active) {
       return (
-        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          <CreditCard className="h-3 w-3 mr-1" />
-          Assinante
-        </Badge>
+        <div className="space-y-1">
+          <Badge className={inconsistent ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}>
+            {inconsistent ? <AlertTriangle className="h-3 w-3 mr-1" /> : <CreditCard className="h-3 w-3 mr-1" />}
+            {inconsistent ? 'Expirado (inconsistente)' : 'Assinante'}
+          </Badge>
+          {inconsistent && (
+            <div className="text-xs text-destructive flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {daysSinceExpiry(business)} dia(s) expirado
+            </div>
+          )}
+        </div>
       );
     }
     return (
@@ -201,6 +269,26 @@ const AdminBusinessManagement = () => {
                 Consulte, ative e desative negócios do diretório com rastreabilidade completa
               </p>
             </header>
+
+            {/* Alerta de inconsistências */}
+            {inconsistentCount > 0 && (
+              <Card className="mb-6 border-destructive bg-destructive/5">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-destructive">
+                      {inconsistentCount} negócio(s) com inconsistência detectada
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Negócios com assinatura expirada mas ainda visíveis no diretório. Execute a sincronização para corrigir.
+                    </p>
+                  </div>
+                  <Button variant="destructive" size="sm" onClick={() => setStatusFilter('inconsistent')}>
+                    Ver inconsistências
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Estatísticas */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -243,6 +331,7 @@ const AdminBusinessManagement = () => {
                     <CardTitle>Negócios Cadastrados</CardTitle>
                     <CardDescription>
                       {filteredBusinesses.length} negócio(s) encontrado(s)
+                      {statusFilter === 'inconsistent' && ' — mostrando apenas inconsistências'}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -287,6 +376,7 @@ const AdminBusinessManagement = () => {
                       <SelectItem value="inactive">Inativos</SelectItem>
                       <SelectItem value="complimentary">Cortesia</SelectItem>
                       <SelectItem value="paid">Pagantes</SelectItem>
+                      <SelectItem value="inconsistent">⚠️ Inconsistentes ({inconsistentCount})</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -312,7 +402,7 @@ const AdminBusinessManagement = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredBusinesses.map((business) => (
-                          <TableRow key={business.id}>
+                          <TableRow key={business.id} className={isInconsistent(business) ? 'bg-destructive/5' : ''}>
                             <TableCell>
                               <div>
                                 <div className="font-medium">{business.name}</div>
@@ -334,7 +424,7 @@ const AdminBusinessManagement = () => {
                             <TableCell>
                               <div className="space-y-1">
                                 {getStatusBadge(business)}
-                                {(business.subscription_active || business.is_complimentary) && (
+                                {(business.subscription_active || business.is_complimentary) && !isInconsistent(business) && (
                                   <div className="text-xs text-green-600 flex items-center gap-1">
                                     <CheckCircle className="h-3 w-3" />
                                     Visível no diretório
@@ -347,9 +437,9 @@ const AdminBusinessManagement = () => {
                                 <span className="text-emerald-600 text-sm">Permanente</span>
                               ) : business.subscription_expires_at ? (
                                 <div className="text-sm">
-                                  <div className="flex items-center gap-1">
+                                  <div className={`flex items-center gap-1 ${isPast(new Date(business.subscription_expires_at)) ? 'text-destructive' : ''}`}>
                                     <Calendar className="h-3 w-3" />
-                                    Expira: {format(new Date(business.subscription_expires_at), 'dd/MM/yyyy', { locale: ptBR })}
+                                    {isPast(new Date(business.subscription_expires_at)) ? 'Expirou' : 'Expira'}: {format(new Date(business.subscription_expires_at), 'dd/MM/yyyy', { locale: ptBR })}
                                   </div>
                                   {business.subscription?.external_subscription_id && (
                                     <div className="text-xs text-muted-foreground mt-1">
@@ -370,7 +460,7 @@ const AdminBusinessManagement = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                {business.owner_id && business.subscription?.status === 'pending' && (
+                                {business.owner_id && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -422,6 +512,20 @@ const AdminBusinessManagement = () => {
           
           {selectedBusiness && (
             <div className="space-y-6">
+              {/* Alerta de inconsistência */}
+              {isInconsistent(selectedBusiness) && (
+                <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <div className="flex items-center gap-2 text-destructive font-medium mb-1">
+                    <AlertTriangle className="h-4 w-4" />
+                    Inconsistência Detectada
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Este negócio está visível no diretório mas a assinatura expirou há {daysSinceExpiry(selectedBusiness)} dia(s). 
+                    Execute a sincronização ou desative manualmente.
+                  </p>
+                </div>
+              )}
+
               {/* Info Básica */}
               <div className="space-y-2">
                 <h3 className="font-semibold text-lg">{selectedBusiness.name}</h3>
@@ -477,7 +581,9 @@ const AdminBusinessManagement = () => {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Status:</span>
-                        <p className="font-medium capitalize">{selectedBusiness.subscription.status}</p>
+                        <p className={`font-medium capitalize ${selectedBusiness.subscription.status === 'cancelled' || selectedBusiness.subscription.status === 'expired' ? 'text-destructive' : ''}`}>
+                          {selectedBusiness.subscription.status}
+                        </p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">ID ASAAS:</span>
@@ -489,9 +595,12 @@ const AdminBusinessManagement = () => {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Expira:</span>
-                        <p>{selectedBusiness.subscription.expires_at 
-                          ? format(new Date(selectedBusiness.subscription.expires_at), 'dd/MM/yyyy', { locale: ptBR })
-                          : 'N/A'}</p>
+                        <p className={selectedBusiness.subscription.expires_at && isPast(new Date(selectedBusiness.subscription.expires_at)) ? 'text-destructive font-medium' : ''}>
+                          {selectedBusiness.subscription.expires_at 
+                            ? format(new Date(selectedBusiness.subscription.expires_at), 'dd/MM/yyyy', { locale: ptBR })
+                            : 'N/A'}
+                          {selectedBusiness.subscription.expires_at && isPast(new Date(selectedBusiness.subscription.expires_at)) && ' (EXPIRADO)'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -499,10 +608,12 @@ const AdminBusinessManagement = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-amber-600">
                       <AlertTriangle className="h-4 w-4" />
-                      <span>Sem assinatura ativa</span>
+                      <span>Sem assinatura registrada</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Este negócio não possui assinatura ativa e não aparece no diretório.
+                      {selectedBusiness.subscription_active 
+                        ? 'O negócio está ativo no diretório mas não possui registro de assinatura.'
+                        : 'Este negócio não possui assinatura ativa e não aparece no diretório.'}
                     </p>
                   </div>
                 )}
@@ -523,8 +634,8 @@ const AdminBusinessManagement = () => {
               </div>
 
               {/* Ações */}
-              <div className="flex gap-2 pt-4 border-t">
-                <Link to={`/diretorio/${selectedBusiness.id}`} target="_blank" className="flex-1">
+              <div className="flex gap-2 pt-4 border-t flex-wrap">
+                <Link to={`/diretorio/${selectedBusiness.slug}`} target="_blank" className="flex-1">
                   <Button variant="outline" className="w-full">
                     <Eye className="h-4 w-4 mr-2" />
                     Ver no Diretório
@@ -537,6 +648,22 @@ const AdminBusinessManagement = () => {
                       Gerenciar Usuário
                     </Button>
                   </Link>
+                )}
+                {/* Desativar manualmente */}
+                {selectedBusiness.subscription_active && !selectedBusiness.is_complimentary && (
+                  <Button 
+                    variant="destructive" 
+                    className="flex-1"
+                    onClick={() => handleManualDeactivation(selectedBusiness)}
+                    disabled={isDeactivating}
+                  >
+                    {isDeactivating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <ShieldOff className="h-4 w-4 mr-2" />
+                    )}
+                    Desativar Manualmente
+                  </Button>
                 )}
               </div>
             </div>

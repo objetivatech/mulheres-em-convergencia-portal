@@ -209,9 +209,23 @@ user_activity_log (
 2. Confirmar que logs de atividade estão sendo criados
 3. Verificar políticas RLS das tabelas user_addresses e user_contacts
 
+## Automações (Cron Jobs)
+
+| Job | Horário (UTC) | Descrição |
+|-----|---------------|-----------|
+| `sync-subscriptions-daily` | 03:00 | Sincroniza todas as assinaturas com ASAAS |
+| `deactivate-expired-daily` | 04:00 | Desativa negócios expirados e remove roles |
+
+## Gestão de Roles
+
+- Role `business_owner` é atribuída quando assinatura é ativada
+- Role `subscriber` é atribuída junto com `business_owner`
+- Ambas são **removidas automaticamente** quando o último negócio do usuário é desativado
+- Trigger `trg_handle_business_deactivation` garante consistência em tempo real
+- Documentação detalhada em `sync-asaas.md` e `desativacao-inadimplentes.md`
+
 ## Melhorias Futuras
 
-- [ ] Webhook para status de pagamento
 - [ ] Parcelamento via cartão de crédito
 - [ ] Upgrade/downgrade de planos
 - [ ] Histórico de pagamentos
@@ -224,3 +238,5 @@ user_activity_log (
 - [Documentação ASAAS](https://docs.asaas.com)
 - [ViaCEP API](https://viacep.com.br)
 - [Validação CPF/CNPJ](https://www.calculadorafacil.com.br/computacao/validar-cpf)
+- [Sincronização ASAAS](./sync-asaas.md)
+- [Desativação de Inadimplentes](./desativacao-inadimplentes.md)
