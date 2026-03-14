@@ -239,13 +239,15 @@ serve(async (req) => {
           }
 
           // CRM log
-          await supabaseClient.from('crm_interactions').insert({
-            user_id: subscription.user_id,
-            interaction_type: 'subscription_deactivated_sync',
-            channel: 'system',
-            description: `Assinatura desativada via sincronização. Status ASAAS: ${asaasStatus}. ${deactivated?.length || 0} negócio(s) desativado(s).`,
-            metadata: { subscription_id: subscription.id, external_id: externalId, asaas_status: asaasStatus, businesses_deactivated: deactivated?.map(b => b.name) }
-          }).catch(() => {});
+          try {
+            await supabaseClient.from('crm_interactions').insert({
+              user_id: subscription.user_id,
+              interaction_type: 'subscription_deactivated_sync',
+              channel: 'system',
+              description: `Assinatura desativada via sincronização. Status ASAAS: ${asaasStatus}. ${deactivated?.length || 0} negócio(s) desativado(s).`,
+              metadata: { subscription_id: subscription.id, external_id: externalId, asaas_status: asaasStatus, businesses_deactivated: deactivated?.map(b => b.name) }
+            });
+          } catch (_) {}
         }
 
         // =====================================================
