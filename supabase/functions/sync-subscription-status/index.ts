@@ -191,13 +191,15 @@ serve(async (req) => {
           }
 
           // CRM log
-          await supabaseClient.from('crm_interactions').insert({
-            user_id: subscription.user_id,
-            interaction_type: 'subscription_activated_sync',
-            channel: 'system',
-            description: `Assinatura sincronizada e ativada via sync-subscription-status`,
-            metadata: { subscription_id: subscription.id, external_id: externalId, asaas_status: asaasStatus, businesses_activated: businesses?.length || 0 }
-          }).catch(() => {});
+          try {
+            await supabaseClient.from('crm_interactions').insert({
+              user_id: subscription.user_id,
+              interaction_type: 'subscription_activated_sync',
+              channel: 'system',
+              description: `Assinatura sincronizada e ativada via sync-subscription-status`,
+              metadata: { subscription_id: subscription.id, external_id: externalId, asaas_status: asaasStatus, businesses_activated: businesses?.length || 0 }
+            });
+          } catch (_) {}
 
         // --- DEACTIVATE (from ASAAS status) ---
         } else if (shouldDeactivate && subscription.status === 'active') {
