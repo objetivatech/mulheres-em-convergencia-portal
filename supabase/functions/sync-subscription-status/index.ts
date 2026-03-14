@@ -65,12 +65,7 @@ serve(async (req) => {
     // =====================================================
     let query = supabaseClient
       .from('user_subscriptions')
-      .select(`
-        *,
-        profiles:user_id (
-          id, full_name, email, cpf
-        )
-      `)
+      .select('*')
       .not('external_subscription_id', 'is', null)
       .in('status', ['pending', 'active']); // Process both pending AND active
 
