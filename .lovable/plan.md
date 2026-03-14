@@ -1,159 +1,130 @@
 
-# Plano: Revisão Completa do CONECTA+ e Novos Recursos
 
-## Status de Implementação
-
-### ✅ Rodada 1: Correções Urgentes + Quick Wins (CONCLUÍDA)
-
-- Fix do hook de convites (`name`/`email` corrigidos)
-- Uploads migrados para R2 (banner + fotos 1-a-1)
-- Edge Function `send-conecta-email` com 5 tipos de email via Mailrelay
-- Temperatura nas indicações (cold/warm/hot com seletor visual)
-- Coluna `meeting_id` em `conecta_invitations`
-
-### ✅ Rodada 2: Funcionalidades Core (CONCLUÍDA)
-
-#### Etapa 3: Lista de Convidados por Encontro
-- Hook `useMeetingGuests` busca convites vinculados a cada encontro
-- Componente `MeetingGuestsList` com lista expansível de convidadas
-- Visível apenas para membros/facilitadores/admin (`isMemberOrAbove`)
-- Nome do convidado como link para perfil se cadastrado
-
-#### Etapa 4: Sincronização Encontros ↔ Eventos do Portal
-- Coluna `conecta_sync` (boolean) adicionada à tabela `events`
-- Eventos marcados com `conecta_sync=true` aparecem na timeline do Conecta+
-- Inscrição/desinscrição direta com dados pré-preenchidos do perfil
-- Badge "Portal" distingue eventos sincronizados dos encontros manuais
-
-#### Etapa 5: Perfil Enriquecido com Pitch
-- Novos campos: `area_of_expertise`, `skills_tags`, `pitch_what_i_do`, `pitch_ideal_client`, `pitch_how_to_refer`, `contact_email`
-- Formulário organizado em 3 seções: Info Básica, Contato & Redes, Elevator Pitch
-- Sistema de tags com adição/remoção dinâmica
-- Edge Function `generate-conecta-pitch` com Perplexity AI (fallback sem API key)
-- Visualização rica do pitch no modo leitura
-
-### ✅ Rodada 3: Notificações + Helpdesk + Docs (CONCLUÍDA)
-
-#### Etapa 8: Sistema de Notificações
-- Tabela `conecta_notifications` com RLS e real-time
-- Sino no header com badge de contagem (vermelho)
-- Dropdown com lista de notificações e marcar como lida
-- Real-time via Supabase Realtime (INSERT listener)
-
-#### Etapa 6: Conselho de Administração 24/7 (Helpdesk)
-- Tabelas `conecta_helpdesk_posts` e `conecta_helpdesk_replies` com RLS
-- Visualização Kanban com 3 colunas (Aberto → Em Discussão → Resolvido)
-- Vista de lista alternativa com filtros por categoria
-- Thread de discussão com respostas e marcação de solução
-- Trigger automático: `reply_count` + mudança de status para "Em Discussão"
-- 8 categorias: Financeiro, Marketing, Vendas, Operações, Jurídico, RH, Tecnologia, Geral
-- Rota: `/conecta/helpdesk`
-
-#### Etapa 9: Documentação
-- `conecta-fluxos-revisados.md` com todos os fluxos detalhados
-- `conecta-access-levels.md` atualizado com Conselho 24/7 e Notificações
+# Plano de Correções: Sincronização Asaas, Desativação de Inadimplentes e Consistência entre Módulos
 
 ---
 
-### ✅ Rodada 4 - Sprint 1: Fundamentos e Correções (CONCLUÍDA)
+## Diagnóstico Detalhado
 
-#### Item 1: Image Crop Tool + Dimensões Recomendadas
-- Componente `ImageCropUploader` com `react-image-crop`
-- Presets de dimensões para 7 contextos (blog, perfil, negócio, etc.)
-- Texto informativo de dimensão ideal em cada campo
-- Modal de recorte com aspect ratio fixo
-- Blog `ImageUploader` refatorado para usar novo componente
-- Documentação: `docs/_active/06-funcionalidades/image-crop-tool.md`
+### Dados Reais Encontrados na Auditoria
 
-#### Item 2: Revisão dos Contadores e Gamificação do CONECTA+
-- **Descoberta:** Funções de trigger existiam mas triggers NÃO estavam criados
-- Triggers criados para: one_on_ones, testimonials, business_deals, referrals, attendances
-- Novo trigger para respostas no Conselho 24/7 (+5 pts)
-- Função `conecta_calculate_monthly_points` atualizada com Conselho 24/7
-- `ScoringRulesCard.tsx` atualizado com regra do Conselho 24/7
-- Documentação: `docs/_active/12-conecta/conecta-gamificacao.md`
+**ENCANDEIE** (caso citado):
+- `subscription_active = true` (visível no diretório)
+- `subscription_expires_at = 2026-02-13` (expirou há 1 mês!)
+- `subscription_renewal_date = NULL`
+- `user_subscriptions.status = active`
+- `user_subscriptions.expires_at = 2026-02-13`
+- Roles do usuário: `business_owner, subscriber, community_member, ambassador, blog_editor`
 
-#### Item 3: Arquivamento de Eventos no Admin
-- Tabs "Ativos" e "Arquivados" na gestão de eventos
-- Ativos ordenados por data ASC (próximos primeiro)
-- Arquivados ordenados por data DESC (recentes primeiro)
-- Botão "Arquivar" muda status para `completed`
+### Problema 1 (CRÍTICO): Nenhum cron job de desativação/sincronização
+Existem apenas 3 cron jobs no banco: `conecta-birthday-monthly`, `event-reminder-3d`, `event-reminder-1d`. **Não existe nenhum cron job para:**
+- `renew-business-subscriptions` (que chama `deactivate_expired_businesses`)
+- `sync-subscription-status`
 
----
+Resultado: negócios inadimplentes nunca são desativados automaticamente.
 
-### ✅ Rodada 5 - Sprint 2: Funcionalidades CONECTA+ (CONCLUÍDA)
+### Problema 2: `deactivate_expired_businesses` não pega NULL
+A função SQL verifica `subscription_renewal_date < CURRENT_DATE`, mas ENCANDEIE tem `subscription_renewal_date = NULL`, então o WHERE nunca corresponde. A função também deveria verificar `subscription_expires_at`.
 
-#### Item 4: Card de Negócio no Perfil CONECTA+
-- Componente `BusinessProfileCard` busca negócios com `subscription_active = true`
-- Exibe nome, logo, categoria, descrição e link para `/guia/{slug}`
-- Integrado no perfil (`ConectaPerfil.tsx`) em modo visualização
-- `useConectaMembers` atualizado para filtrar apenas negócios com assinatura ativa
+### Problema 3: sync-subscription-status só processa pendentes
+No modo normal (sem `force: true`), a função só busca assinaturas `pending` (linha 127). Assinaturas `active` que ficaram OVERDUE no Asaas nunca são verificadas automaticamente.
 
-#### Item 5: Pontuação Conselho 24/7 (concluído no Sprint 1)
+### Problema 4: Negócios desativados mas role `business_owner` nunca é removida
+O webhook e a sync function nunca removem a role `business_owner` quando a assinatura é cancelada/expirada. O usuário mantém a tag "Associada" indefinidamente, mesmo inadimplente.
 
-#### Item 7: Registro de Parcerias entre Membros
-- Tabela `conecta_partnerships` com RLS e constraint de parceiros diferentes
-- Trigger `trg_conecta_partnership_insert` → +15 pts para ambas
-- Função `conecta_calculate_monthly_points` atualizada com parcerias
-- Hook `useConectaPartnerships.ts` com CRUD
-- Página `/conecta/parcerias` com formulário e listagem
-- Sidebar atualizado com item "Parcerias"
-- `ScoringRulesCard.tsx` atualizado com regra de parcerias
-- Documentação: `docs/_active/12-conecta/conecta-parcerias.md`
+### Problema 5: Modal admin mostra dados inconsistentes
+O modal compara `subscription` com `subscription_active` do negócio, mas não cruza datas de expiração. Se a assinatura existe no banco como `active` mas está expirada, o modal mostra dados contraditórios.
 
 ---
 
-### ✅ Sprint 3: Integrações e Automações (CONCLUÍDA)
+## Plano de Correções
 
-- [x] **Check-in presencial via QR Code** (item 8)
-  - Página pública `/evento-checkin/:eventId` com busca por CPF
-  - Botão "QR Check-in" no admin para eventos presenciais/híbridos
-  - Trigger de gamificação: +10 pts para membros CONECTA+ ao fazer check-in
-  - Dependência `qrcode.react` instalada
-  - Documentação: `docs/_active/06-funcionalidades/evento-checkin-qrcode.md`
+### 1. SQL Migration: Corrigir `deactivate_expired_businesses`
 
-- [x] **Integração CONECTA+ / MeC Academy** (item 9)
-  - `useConectaContents.ts` agora faz UNION de `conecta_contents` com `academy_lessons`
-  - Convidados veem apenas conteúdos gratuitos/free preview
-  - Badge "Academy" diferencia conteúdos do MeC Academy
-  - Link redireciona para `/academy/curso/:slug`
+Reescrever para cobrir todos os cenários de expiração:
+```sql
+-- Desativa negócios onde:
+-- a) subscription_renewal_date não é NULL E está no passado
+-- b) subscription_expires_at não é NULL E está no passado (e renewal_date é NULL)
+-- c) NÃO são cortesia
+-- Exclui negócios is_complimentary = true
+```
 
-- [x] **Aniversariantes do mês** (item 10)
-  - Página `/conecta/aniversariantes` com agrupamento por mês
-  - Mês atual em destaque (primeira posição, borda primária)
-  - Data de aniversário exibida sem ano (DD/mmm) no perfil público
-  - Edge Function `conecta-birthday-notify` para envio mensal via Mailrelay
-  - Item "Aniversariantes" no sidebar com ícone Cake
-  - Documentação: `docs/_active/12-conecta/conecta-aniversariantes.md`
+### 2. SQL Migration: Criar função `sync_and_deactivate_businesses`
+
+Nova função que combina verificação Asaas + desativação local + remoção de roles:
+- Chama `deactivate_expired_businesses` para desativar negócios expirados
+- Após desativar, verifica se o `owner_id` ainda possui algum negócio ativo
+- Se não possuir, remove a role `business_owner` do `user_roles`
+- Registra cada ação no CRM (`crm_interactions`)
+
+### 3. Edge Function: Reescrever `sync-subscription-status`
+
+Mudanças:
+- **Modo padrão**: processar TODAS as assinaturas (não só `pending`) — remover o filtro da linha 127
+- **Deactivação**: quando Asaas retornar OVERDUE/CANCELED, além de atualizar `user_subscriptions`, também:
+  - Setar `businesses.subscription_active = false` para o `owner_id`
+  - Remover role `business_owner` se não houver mais nenhum negócio ativo
+  - Registrar no CRM
+- **Verificação de expiração local**: mesmo sem consultar Asaas, verificar se `expires_at` já passou e desativar
+- **Tolerância**: manter grace period de 5 dias após expiração antes de desativar (evitar desativação por atraso de 1 dia no Asaas)
+
+### 4. Cron Jobs: Criar automações diárias
+
+Dois cron jobs novos:
+- `sync-subscriptions-daily`: executa `sync-subscription-status` com `{ force: true }` diariamente às 03:00 UTC
+- `deactivate-expired-daily`: executa `renew-business-subscriptions` diariamente às 04:00 UTC (que já chama `deactivate_expired_businesses`)
+
+### 5. Webhook: Adicionar tratamento de PAYMENT_OVERDUE
+
+O `asaas-webhook` não processa eventos `PAYMENT_OVERDUE`. Adicionar handler para:
+- Registrar no CRM que o pagamento está atrasado
+- Enviar notificação por email ao usuário (via MailRelay)
+- Após 2 ocorrências de OVERDUE consecutivas, iniciar processo de desativação
+
+### 6. Frontend: Corrigir modal de detalhes do negócio
+
+No `AdminBusinessManagement.tsx`:
+- Exibir alerta quando `subscription_expires_at` está no passado mas `subscription_active = true` (inconsistência)
+- Adicionar botão "Desativar manualmente" para forçar desativação
+- Mostrar dias desde a expiração quando aplicável
+- Na query de listagem, incluir assinaturas `cancelled` e `expired` (não só `active/pending`) para contexto completo
+
+### 7. Gestão de Roles: Sincronização automática
+
+Criar trigger ou função que, ao atualizar `businesses.subscription_active` para `false`:
+- Verifica se o `owner_id` possui outros negócios ativos
+- Se não, remove `business_owner` de `user_roles`
+- Registra no activity log
+
+### 8. Documentação
+
+Atualizar/criar:
+- `docs/_active/02-assinaturas/sync-asaas.md` — mecânica completa de sincronização
+- `docs/_active/02-assinaturas/desativacao-inadimplentes.md` — fluxo de desativação
+- Atualizar `docs/_active/02-assinaturas/subscriptions.md` com os cron jobs e a mecânica de roles
 
 ---
 
-## ✅ Sprint 4: Performance (item 6) — CONCLUÍDO
+## Resumo de Impacto
 
-- [x] GTM deferido para após page load (+2s delay)
-- [x] Preconnect para Supabase, Google Fonts, GTM, DNS-prefetch para Facebook/Google Ads
-- [x] Preload da fonte Montserrat
-- [x] Logo com `loading="eager"`, `fetchPriority="high"`, dimensões explícitas
-- [x] Componente `OptimizedImage` reutilizável com priority, srcset, fallback
-- [x] Documentação em `docs/_active/06-funcionalidades/performance-optimization.md`
+| Componente | Problema | Correção |
+|---|---|---|
+| `deactivate_expired_businesses` | Ignora `renewal_date = NULL` | Verificar também `subscription_expires_at` |
+| `sync-subscription-status` | Só processa `pending` | Processar todas as assinaturas |
+| `sync-subscription-status` | Não desativa negócios | Desativar negócios + remover roles |
+| Cron jobs | Nenhum existe | Criar 2 cron jobs diários |
+| `asaas-webhook` | Ignora PAYMENT_OVERDUE | Processar e alertar |
+| `user_roles` | `business_owner` nunca removida | Remover ao desativar último negócio |
+| Modal admin | Dados inconsistentes | Alertas visuais + ação manual |
+| Documentação | Desatualizada | Atualizar 3 documentos |
 
----
+## Ordem de Execução
 
-## Arquitetura CONECTA+
+1. SQL Migration (funções corrigidas)
+2. Cron jobs (ativação imediata)
+3. Edge Function `sync-subscription-status` (reescrita)
+4. Webhook `asaas-webhook` (PAYMENT_OVERDUE)
+5. Frontend admin
+6. Documentação
 
-### Tabelas (prefixo `conecta_`):
-- conecta_profiles, conecta_teams, conecta_team_members
-- conecta_meetings, conecta_attendances, conecta_one_on_ones
-- conecta_testimonials, conecta_business_deals, conecta_referrals
-- conecta_invitations, conecta_contents, conecta_activity_feed
-- conecta_monthly_points, conecta_points_history
-- conecta_notifications, conecta_helpdesk_posts, conecta_helpdesk_replies
-
-### Edge Functions:
-- `send-conecta-email` — Emails via Mailrelay (convite, indicação, depoimento, negócio, cadastro)
-- `generate-conecta-pitch` — Gerador de pitch com IA (Perplexity)
-
-### Níveis de Acesso:
-- **Admin**: role `admin`
-- **Membro**: role `business_owner`
-- **Convidado**: `community_member`
