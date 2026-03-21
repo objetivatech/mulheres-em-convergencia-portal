@@ -84,6 +84,7 @@ import AdminCostCenters from '@/pages/admin/AdminCostCenters';
 import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
 import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
+import { InstallPWABanner } from '@/components/InstallPWABanner';
 import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
 import ConectaPerfil from '@/pages/conecta/ConectaPerfil';
 import ConectaMembros from '@/pages/conecta/ConectaMembros';
@@ -473,6 +474,9 @@ function AppContent() {
         
         {/* Cookie Consent Banner */}
         <CookieConsent />
+        
+        {/* PWA Install Banner */}
+        <InstallPWABanner />
       </BrowserRouter>
     </TooltipProvider>
   );
