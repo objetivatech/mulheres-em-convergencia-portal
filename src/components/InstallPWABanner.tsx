@@ -18,7 +18,11 @@ function isStandalone(): boolean {
 }
 
 function isIOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  // iPhone / iPod / iPad (classic UA)
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream) return true;
+  // iPad with iPadOS 13+ reports as Macintosh — detect via touch + Mac UA
+  if (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1) return true;
+  return false;
 }
 
 function wasDismissedRecently(): boolean {
