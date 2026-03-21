@@ -474,6 +474,9 @@ function AppContent() {
         
         {/* Cookie Consent Banner */}
         <CookieConsent />
+        
+        {/* PWA Install Banner */}
+        <InstallPWABanner />
       </BrowserRouter>
     </TooltipProvider>
   );
