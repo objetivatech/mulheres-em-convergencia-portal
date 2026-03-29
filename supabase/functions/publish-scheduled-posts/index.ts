@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -19,6 +18,14 @@ serve(async (req) => {
     )
 
     console.log('Starting scheduled posts publication check...')
+
+    // Get posts that are about to be published (before updating)
+    const { data: postsToPublish } = await supabase
+      .from('blog_posts')
+      .select('id, title')
+      .or('status.eq.scheduled,and(status.eq.draft,scheduled_for.not.is.null)')
+      .not('scheduled_for', 'is', null)
+      .lte('scheduled_for', new Date().toISOString())
 
     // Call the database function to publish scheduled posts
     const { data, error } = await supabase.rpc('publish_scheduled_posts')
@@ -36,6 +43,39 @@ serve(async (req) => {
 
     const publishedCount = data || 0
     console.log(`Published ${publishedCount} scheduled posts`)
+
+    // Trigger Ayrshare auto-post for each newly published post
+    if (publishedCount > 0 && postsToPublish && postsToPublish.length > 0) {
+      const ayrshareApiKey = Deno.env.get('AYRSHARE_API_KEY')
+      if (ayrshareApiKey) {
+        for (const post of postsToPublish) {
+          try {
+            console.log(`Triggering auto-post for: ${post.title}`)
+            const { error: autoPostError } = await supabase.functions.invoke('ayrshare-auto-post', {
+              body: { postId: post.id }
+            })
+            if (autoPostError) {
+              console.error(`Auto-post failed for ${post.id}:`, autoPostError)
+            }
+          } catch (e) {
+            console.error(`Auto-post exception for ${post.id}:`, e)
+          }
+        }
+      }
+    }
+
+    // Log activity
+    if (publishedCount > 0) {
+      await supabase.from('user_activity_log').insert({
+        user_id: 'system',
+        activity_type: 'blog_scheduled_publish',
+        activity_description: `${publishedCount} post(s) agendado(s) publicado(s) automaticamente`,
+        metadata: {
+          published_count: publishedCount,
+          post_ids: postsToPublish?.map(p => p.id) || [],
+        }
+      })
+    }
 
     return new Response(
       JSON.stringify({ 
