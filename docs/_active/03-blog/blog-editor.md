@@ -154,6 +154,30 @@ O Editor do Blog é um sistema completo de gerenciamento de conteúdo integrado 
 /admin/blog/categorias   - Gestão de categorias
 ```
 
+## Agendamento Automático de Posts
+
+O sistema de agendamento permite definir uma data/hora futura para publicação automática de posts.
+
+### Fluxo
+1. No editor, o autor define uma data em **"Agendar Publicação"** e clica em **"Agendar"**
+2. O post é salvo com `status = 'scheduled'` e `scheduled_for = <data escolhida>`
+3. Um **cron job** (`publish-scheduled-blog-posts`) roda a cada **5 minutos** via `pg_cron`
+4. O cron chama a edge function `publish-scheduled-posts`
+5. A edge function executa a DB function `publish_scheduled_posts()` que:
+   - Atualiza posts com `scheduled_for <= now()` para `status = 'published'`
+   - Define `published_at = scheduled_for` e limpa `scheduled_for`
+6. Após publicação, a edge function aciona automaticamente o **Ayrshare auto-post** (se configurado)
+7. Um log de atividade é registrado em `user_activity_log`
+
+### Componentes envolvidos
+| Componente | Tipo | Função |
+|---|---|---|
+| `BlogEditor.tsx` | Frontend | Interface de agendamento |
+| `publish-scheduled-posts` | Edge Function | Orquestrador do cron |
+| `publish_scheduled_posts()` | DB Function | UPDATE dos posts elegíveis |
+| `publish-scheduled-blog-posts` | pg_cron job | Dispara a cada 5 min |
+| `ayrshare-auto-post` | Edge Function | Auto-post em redes sociais |
+
 ## Status de Implementação
 
 ✅ **Dashboard completo** com abas e estatísticas
@@ -168,3 +192,5 @@ O Editor do Blog é um sistema completo de gerenciamento de conteúdo integrado 
 ✅ **Interface responsiva** e acessível
 ✅ **Nuvem de tags** no footer
 ✅ **Validação e segurança** implementadas
+✅ **Agendamento automático** com cron job a cada 5 minutos
+✅ **Auto-post em redes sociais** integrado ao agendamento
