@@ -1,73 +1,104 @@
 
 
-# Plano: Implementação PWA com Banner de Instalação
+# Plano de Melhorias SEO — Baseado no Relatório RankTop
 
-## Situação Atual
+## Diagnóstico Raiz
 
-Nenhuma infraestrutura PWA existe no projeto: sem `vite-plugin-pwa`, sem manifest, sem service worker, sem prompt de instalação.
+O relatório atribuiu **61/100** ao portal. A causa principal é que o portal é uma **SPA (Single Page Application)** — todo o conteúdo (H1, headings, textos, links, imagens, canonical, Schema.org) é renderizado via JavaScript pelo React. Crawlers que não executam JS (incluindo muitos bots de SEO) veem apenas o `index.html` estático, que contém:
 
-## Implementação
+- Title curto ("Mulheres em Convergência" — 24 caracteres)
+- Meta description OK (125 chars)
+- **Zero** H1, H2, H3
+- **Zero** palavras de conteúdo
+- **Nenhuma** canonical URL
+- **Nenhum** Schema.org JSON-LD
+- **Nenhuma** imagem com alt
+- **Zero** links internos
 
-### 1. Instalar `vite-plugin-pwa`
+Embora o Google execute JS e eventualmente veja o conteúdo, a indexação é mais lenta e menos confiável. A solução é **injetar conteúdo SEO crítico diretamente no HTML estático** e adicionar **fallback `<noscript>`** com conteúdo real.
 
-Adicionar dependência `vite-plugin-pwa` ao projeto.
+---
 
-### 2. Configurar `vite.config.ts`
+## Itens de Correção
 
-Adicionar o plugin `VitePWA` com:
-- **Manifest**: nome "Mulheres em Convergência", cores da marca (`#C75A92` como theme_color, `#FFFFFF` background), ícones PWA (192x192 e 512x512), `display: standalone`, `start_url: /`
-- **Service Worker**: estratégia `generateSW` com `navigateFallbackDenylist: [/^\/~oauth/]` (para não interferir com autenticação OAuth)
-- **Runtime caching**: cache de fontes Google e imagens estáticas
+### 1. Title Tag otimizado no `index.html`
 
-### 3. Criar ícones PWA
+**Problema**: "Mulheres em Convergência" (24 chars) — muito curto, sem palavras-chave.
 
-Gerar ícones `pwa-192x192.png` e `pwa-512x512.png` em `/public/` usando o logo existente do projeto (referenciado no favicon).
-
-### 4. Atualizar `index.html`
-
-Adicionar meta tags PWA:
-- `<meta name="theme-color" content="#C75A92">`
-- `<meta name="apple-mobile-web-app-capable" content="yes">`
-- `<meta name="apple-mobile-web-app-status-bar-style" content="default">`
-- `<link rel="apple-touch-icon">` (já existe via `Favicon.tsx`, mas garantir no HTML estático também)
-
-### 5. Criar componente `InstallPWABanner`
-
-Banner inteligente que aparece na parte inferior da tela convidando à instalação. Validações:
-- **Detecta se já está instalado**: verifica `window.matchMedia('(display-mode: standalone)')` e `navigator.standalone` (iOS)
-- **Intercepta `beforeinstallprompt`**: captura o evento nativo do Chrome/Edge/Samsung Browser para disparar a instalação nativa
-- **Fallback para iOS**: mostra instrução "Toque em Compartilhar > Adicionar à Tela de Início" (com ícones visuais)
-- **Dismissível**: botão de fechar que salva em `localStorage` (`pwa-install-dismissed`) com TTL de 7 dias (reaparece após 1 semana)
-- **Não exibe se já instalado**: valida `display-mode: standalone`
-
-Design do banner:
-- Gradiente roxo/rosa (identidade MeC)
-- Logo do MeC à esquerda
-- Texto: "Instale o App MeC" + subtítulo "Acesse tudo mais rápido direto da sua tela inicial"
-- Botão "Instalar" (primário) + botão fechar (X)
-
-### 6. Integrar no `App.tsx`
-
-Renderizar `<InstallPWABanner />` dentro do `AppContent`, após o `CookieConsent`.
-
-### 7. Documentação
-
-Criar `docs/_active/06-funcionalidades/pwa-install.md` descrevendo a mecânica do PWA, banner de instalação e configurações.
-
-## Detalhes Técnicos
-
-```text
-Fluxo de decisão do banner:
-
-[Página carrega]
-    │
-    ├─ display-mode: standalone? ──── SIM → NÃO exibe
-    │
-    ├─ localStorage "dismissed" < 7 dias? ── SIM → NÃO exibe
-    │
-    ├─ Chrome/Edge (beforeinstallprompt)? ── SIM → Botão "Instalar" (prompt nativo)
-    │
-    └─ iOS Safari? ── SIM → Instrução "Compartilhar > Adicionar à Tela"
-                  └── NÃO → NÃO exibe (browser não suporta)
+**Correção**: Atualizar o `<title>` no `index.html` para o title completo com palavras-chave:
 ```
+Mulheres em Convergência | Rede de Empreendedorismo Feminino, Cursos e Associação
+```
+(~82 chars — dentro do limite recomendado)
+
+O Helmet no React sobrescreve este title após hidratação, mas crawlers sem JS verão o title otimizado.
+
+### 2. Canonical URL estática no `index.html`
+
+**Problema**: Canonical não existe no HTML estático.
+
+**Correção**: Adicionar no `<head>` do `index.html`:
+```html
+<link rel="canonical" href="https://mulheresemconvergencia.com.br/" />
+```
+
+### 3. Schema.org JSON-LD estático no `index.html`
+
+**Problema**: O Schema.org existe via React (`SiteSchemaOrg.tsx`), mas crawlers sem JS não o veem.
+
+**Correção**: Duplicar o Schema Organization + WebSite como `<script type="application/ld+json">` diretamente no `<head>` do `index.html`. O React continuará injetando schemas específicos por página.
+
+### 4. Bloco `<noscript>` com conteúdo semântico
+
+**Problema**: Sem JS, o crawler vê apenas `<div id="root"></div>` — zero conteúdo.
+
+**Correção**: Adicionar dentro do `<body>`, logo após o `<div id="root">`, um bloco `<noscript>` contendo:
+- Um `<h1>` com o título principal da página
+- Parágrafos descritivos sobre a missão e os pilares do portal (mínimo 300 palavras)
+- Headings `<h2>` para cada seção (Rede de Networking, MeC Academy, Diretório de Negócios, Eventos)
+- Links internos para as páginas principais (`/planos`, `/academy`, `/diretorio`, `/eventos`, `/convergindo`, `/sobre`, `/contato`)
+- Imagens com `alt` descritivo (logo)
+- Palavras-chave naturais: empreendedorismo feminino, redes de apoio para mulheres, liderança feminina, capacitação feminina, negócios para mulheres, comunidade feminina
+
+### 5. Meta keywords (baixo impacto, mas presente)
+
+Adicionar meta keywords no `index.html` com as palavras-chave identificadas pelo relatório:
+```html
+<meta name="keywords" content="empreendedorismo feminino, redes de apoio para mulheres, liderança feminina, capacitação feminina, negócios para mulheres, comunidade feminina, mulheres na tecnologia" />
+```
+
+### 6. Og:url estático
+
+Adicionar `og:url` no `index.html`:
+```html
+<meta property="og:url" content="https://mulheresemconvergencia.com.br/" />
+```
+
+### 7. Atualizar documentação
+
+Atualizar `docs/_active/06-funcionalidades/rss-sitemap-schema.md` e `docs/_active/06-funcionalidades/performance-optimization.md` para refletir o conteúdo SEO estático adicionado ao `index.html`.
+
+---
+
+## Resumo das Alterações
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `index.html` | Title otimizado, canonical, Schema.org JSON-LD, og:url, meta keywords, bloco `<noscript>` com conteúdo semântico |
+| `docs/_active/06-funcionalidades/rss-sitemap-schema.md` | Documentar SEO estático |
+
+## Impacto Esperado
+
+| Item do Relatório | Score Atual | Após Correção |
+|---|---|---|
+| Title Tag (peso 15) | Parcial (curto) | OK (completo com keywords) |
+| H1 (peso 10) | 0 encontrados | 1 via noscript |
+| Headings (peso 8) | 0 H2/H3 | H2s via noscript |
+| Canonical (peso 7) | Ausente | Presente |
+| Schema JSON-LD (peso 8) | Ausente para crawlers | Presente no HTML |
+| Conteúdo (peso 10) | 0 palavras | 300+ palavras via noscript |
+| Links internos (peso 2) | 0 | 6+ via noscript |
+| Imagens alt (peso 8) | 0 | 1+ via noscript |
+
+**Score estimado**: de **61 → 85+**
 
