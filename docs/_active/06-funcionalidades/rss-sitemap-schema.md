@@ -1,8 +1,8 @@
-# RSS, Sitemap, Schema.org e Visibilidade para IA Generativa
+# RSS, Sitemap, Schema.org, SEO Estático e Visibilidade para IA Generativa
 
 ## Visão Geral
 
-Sistema SEO completo do portal Mulheres em Convergência, incluindo RSS Feed, Sitemap XML, Schema.org, llms.txt e meta tags otimizadas para melhor indexação, descoberta de conteúdo e visibilidade em ferramentas de IA generativa.
+Sistema SEO completo do portal Mulheres em Convergência, incluindo RSS Feed, Sitemap XML, Schema.org, llms.txt, meta tags otimizadas, conteúdo SEO estático no `index.html` e visibilidade em ferramentas de IA generativa.
 
 ## Funcionalidades Implementadas
 
@@ -34,8 +34,15 @@ Sistema SEO completo do portal Mulheres em Convergência, incluindo RSS Feed, Si
 
 ### 3. Schema.org Estruturado
 
-**Componentes:**
-- `src/components/seo/SiteSchemaOrg.tsx` — Schema global (Organization + WebSite) incluído no Layout
+**Implementação dupla (estática + dinâmica):**
+
+#### 3a. Schema.org Estático (`index.html`)
+- JSON-LD no `<head>` do `index.html` com `Organization` + `WebSite`
+- Visível para **todos os crawlers**, incluindo os que não executam JavaScript
+- Inclui: nome, logo, redes sociais, contato, SearchAction
+
+#### 3b. Schema.org Dinâmico (React)
+- `src/components/seo/SiteSchemaOrg.tsx` — Schema global (Organization + WebSite) incluído no Layout via Helmet
 - `src/components/blog/SchemaOrg.tsx` — Schema para posts do blog (Article + BreadcrumbList)
 
 **Tipos implementados:**
@@ -44,7 +51,33 @@ Sistema SEO completo do portal Mulheres em Convergência, incluindo RSS Feed, Si
 - `Article` para cada post do blog
 - `BreadcrumbList` para navegação
 
-### 4. Arquivos para IA Generativa (llms.txt)
+### 4. SEO Estático no `index.html` (SPA Fallback)
+
+**Problema resolvido:** Como o portal é uma SPA (Single Page Application), crawlers que não executam JavaScript não veem nenhum conteúdo. O `index.html` agora contém:
+
+#### Title Tag Otimizado
+```html
+<title>Mulheres em Convergência | Rede de Empreendedorismo Feminino, Cursos e Associação</title>
+```
+- ~82 caracteres com palavras-chave estratégicas
+- Helmet sobrescreve após hidratação do React
+
+#### Meta Tags Estáticas
+- `<meta name="description">` — descrição completa com keywords
+- `<meta name="keywords">` — palavras-chave: empreendedorismo feminino, liderança feminina, capacitação feminina, etc.
+- `<link rel="canonical">` — URL canônica da home
+- `<meta property="og:url">` — URL para Open Graph
+
+#### Bloco `<noscript>` Semântico
+Conteúdo HTML estático dentro de `<noscript>` que fornece aos crawlers:
+- **H1** com título principal e palavras-chave
+- **6 seções H2**: Networking, MeC Academy, Diretório, Eventos, Blog, Planos
+- **300+ palavras** de conteúdo descritivo com keywords naturais
+- **10+ links internos** para páginas principais
+- **Imagem com alt** descritivo (logo)
+- **Navegação semântica** com lista de links
+
+### 5. Arquivos para IA Generativa (llms.txt)
 
 **Padrão:** [llmstxt.org](https://llmstxt.org/)
 
@@ -56,7 +89,7 @@ Sistema SEO completo do portal Mulheres em Convergência, incluindo RSS Feed, Si
 - `https://mulheresemconvergencia.com.br/llms.txt`
 - `https://mulheresemconvergencia.com.br/llms-full.txt`
 
-### 5. Meta Tags Completas (Helmet)
+### 6. Meta Tags Completas (Helmet)
 
 Todas as páginas públicas possuem:
 - ✅ `<title>` otimizado
@@ -66,7 +99,7 @@ Todas as páginas públicas possuem:
 
 **Páginas cobertas:** Home, Convergindo (blog), Diretório, Embaixadoras, Eventos, Comunidades, Planos, 404
 
-### 6. Robots.txt
+### 7. Robots.txt
 
 **Arquivo:** `public/robots.txt`
 
@@ -75,7 +108,7 @@ Todas as páginas públicas possuem:
 - ✅ Referência ao Sitemap
 - ✅ Referência ao `llms.txt` (diretiva `LLMs-Txt`)
 
-### 7. Página 404
+### 8. Página 404
 
 - ✅ Traduzida para português
 - ✅ Meta tag `noindex, nofollow`
@@ -95,6 +128,27 @@ Proxies configurados para desenvolvimento local de `/rss.xml`, `/sitemap.xml` e 
 ### Cache
 - RSS, Sitemap, LLMs Full: `Cache-Control: public, max-age=3600`
 
+## Arquitetura SEO (Estático vs Dinâmico)
+
+```
+index.html (estático)
+├── <title> otimizado com keywords
+├── <meta description> completa
+├── <meta keywords>
+├── <link canonical>
+├── <meta og:url>
+├── Schema.org JSON-LD (Organization + WebSite)
+├── <noscript> com conteúdo semântico
+│   ├── H1 + 6x H2
+│   ├── 300+ palavras
+│   ├── 10+ links internos
+│   └── Imagem com alt
+└── React SPA (carrega via JS)
+    ├── Helmet sobrescreve title/meta por página
+    ├── SiteSchemaOrg.tsx (Schema global)
+    └── SchemaOrg.tsx (Schema por post)
+```
+
 ## URLs de Produção
 
 | Recurso | URL |
@@ -106,4 +160,4 @@ Proxies configurados para desenvolvimento local de `/rss.xml`, `/sitemap.xml` e 
 
 ## Status
 
-🎉 **CONCLUÍDO** — Atualizado em fevereiro de 2026
+🎉 **CONCLUÍDO** — Atualizado em março de 2026
