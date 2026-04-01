@@ -26,6 +26,12 @@ export interface BlogPost {
     name: string;
     slug: string;
   };
+  categories?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    is_primary: boolean;
+  }>;
   tags?: Array<{
     id: string;
     name: string;
