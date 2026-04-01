@@ -124,12 +124,18 @@ export const useCreateBlogPost = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (postData: Partial<BlogPost> & { tagIds?: string[] }) => {
-      const { tagIds, ...postFields } = postData;
+    mutationFn: async (postData: Partial<BlogPost> & { tagIds?: string[]; categoryIds?: { id: string; is_primary: boolean }[] }) => {
+      const { tagIds, categoryIds, ...postFields } = postData;
       
       // Generate slug if not provided
       if (!postFields.slug && postFields.title) {
         postFields.slug = slugify(postFields.title, { lower: true, strict: true });
+      }
+
+      // Set category_id from primary category
+      const primaryCat = categoryIds?.find(c => c.is_primary);
+      if (primaryCat) {
+        postFields.category_id = primaryCat.id;
       }
 
       // Ensure required fields have values
@@ -163,6 +169,21 @@ export const useCreateBlogPost = () => {
           .insert(tagAssociations);
 
         if (tagError) throw tagError;
+      }
+
+      // Associate categories if provided
+      if (categoryIds && categoryIds.length > 0) {
+        const catAssociations = categoryIds.map(cat => ({
+          post_id: data.id,
+          category_id: cat.id,
+          is_primary: cat.is_primary
+        }));
+
+        const { error: catError } = await supabase
+          .from('blog_post_categories')
+          .insert(catAssociations);
+
+        if (catError) throw catError;
       }
 
       return data;
