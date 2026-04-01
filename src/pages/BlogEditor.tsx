@@ -496,72 +496,112 @@ export default function BlogEditor() {
                 <div className="bg-card p-6 rounded-lg border space-y-4">
                   <h3 className="font-medium text-foreground">Configurações</h3>
                   
-                <FormField
-                  control={form.control}
-                  name="category_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoria</FormLabel>
-                      <div className="flex space-x-2">
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories?.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button type="button" variant="outline" size="icon">
-                              <Plus className="w-4 h-4" />
+                {/* Multi-Category Selection */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm font-medium">Categorias</Label>
+                    <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm">
+                          <Plus className="w-3 h-3 mr-1" />
+                          Nova
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Nova Categoria</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="category-name">Nome</Label>
+                            <Input
+                              id="category-name"
+                              value={newCategoryName}
+                              onChange={(e) => setNewCategoryName(e.target.value)}
+                              placeholder="Nome da categoria"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="category-description">Descrição</Label>
+                            <Textarea
+                              id="category-description"
+                              value={newCategoryDescription}
+                              onChange={(e) => setNewCategoryDescription(e.target.value)}
+                              placeholder="Descrição da categoria (opcional)"
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                              Cancelar
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Nova Categoria</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="category-name">Nome</Label>
-                                <Input
-                                  id="category-name"
-                                  value={newCategoryName}
-                                  onChange={(e) => setNewCategoryName(e.target.value)}
-                                  placeholder="Nome da categoria"
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="category-description">Descrição</Label>
-                                <Textarea
-                                  id="category-description"
-                                  value={newCategoryDescription}
-                                  onChange={(e) => setNewCategoryDescription(e.target.value)}
-                                  placeholder="Descrição da categoria (opcional)"
-                                />
-                              </div>
-                              <div className="flex justify-end space-x-2">
-                                <Button type="button" variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
-                                  Cancelar
-                                </Button>
-                                <Button type="button" onClick={handleCreateCategory}>
-                                  Criar Categoria
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
+                            <Button type="button" onClick={handleCreateCategory}>
+                              Criar Categoria
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-2">
+                    {categories?.map((category) => {
+                      const isSelected = selectedCategories.some(c => c.id === category.id);
+                      const isPrimary = selectedCategories.find(c => c.id === category.id)?.is_primary;
+                      return (
+                        <div key={category.id} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleCategory(category.id)}
+                            />
+                            <span className="text-sm">{category.name}</span>
+                          </div>
+                          {isSelected && (
+                            <Button
+                              type="button"
+                              variant={isPrimary ? "default" : "ghost"}
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => setPrimaryCategory(category.id)}
+                              title={isPrimary ? "Categoria principal" : "Definir como principal"}
+                            >
+                              <Star className={`w-3 h-3 ${isPrimary ? 'fill-current' : ''}`} />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {selectedCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedCategories.map(sc => {
+                        const cat = categories?.find(c => c.id === sc.id);
+                        if (!cat) return null;
+                        return (
+                          <Badge
+                            key={sc.id}
+                            variant={sc.is_primary ? "default" : "secondary"}
+                            className="text-xs"
+                          >
+                            {sc.is_primary && <Star className="w-2.5 h-2.5 mr-1 fill-current" />}
+                            {cat.name}
+                            <button
+                              type="button"
+                              onClick={() => toggleCategory(sc.id)}
+                              className="ml-1 hover:opacity-75"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        );
+                      })}
+                    </div>
                   )}
-                />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ★ = Categoria principal (usada para URL). Clique na estrela para alterar.
+                  </p>
+                </div>
 
                 <FormField
                   control={form.control}
