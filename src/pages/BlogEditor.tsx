@@ -142,6 +142,7 @@ export default function BlogEditor() {
       } else if (post.category_id) {
         setSelectedCategories([{ id: post.category_id, is_primary: true }]);
       }
+    }
   }, [post, form, isEditing]);
 
   // Auto-generate slug from title
