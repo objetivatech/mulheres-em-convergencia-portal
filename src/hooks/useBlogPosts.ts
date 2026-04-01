@@ -210,11 +210,18 @@ export const useUpdateBlogPost = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, postData, tagIds }: { 
+    mutationFn: async ({ id, postData, tagIds, categoryIds }: { 
       id: string; 
       postData: Partial<BlogPost>; 
-      tagIds?: string[] 
+      tagIds?: string[];
+      categoryIds?: { id: string; is_primary: boolean }[];
     }) => {
+      // Set category_id from primary category
+      const primaryCat = categoryIds?.find(c => c.is_primary);
+      if (primaryCat) {
+        postData.category_id = primaryCat.id;
+      }
+
       const { data, error } = await supabase
         .from('blog_posts')
         .update(postData)
@@ -226,13 +233,11 @@ export const useUpdateBlogPost = () => {
 
       // Update tags if provided
       if (tagIds !== undefined) {
-        // Remove existing tag associations
         await supabase
           .from('blog_post_tags')
           .delete()
           .eq('post_id', id);
 
-        // Add new tag associations
         if (tagIds.length > 0) {
           const tagAssociations = tagIds.map(tagId => ({
             post_id: id,
@@ -244,6 +249,28 @@ export const useUpdateBlogPost = () => {
             .insert(tagAssociations);
 
           if (tagError) throw tagError;
+        }
+      }
+
+      // Update categories if provided
+      if (categoryIds !== undefined) {
+        await supabase
+          .from('blog_post_categories')
+          .delete()
+          .eq('post_id', id);
+
+        if (categoryIds.length > 0) {
+          const catAssociations = categoryIds.map(cat => ({
+            post_id: id,
+            category_id: cat.id,
+            is_primary: cat.is_primary
+          }));
+
+          const { error: catError } = await supabase
+            .from('blog_post_categories')
+            .insert(catAssociations);
+
+          if (catError) throw catError;
         }
       }
 
