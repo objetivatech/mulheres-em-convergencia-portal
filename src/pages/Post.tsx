@@ -175,30 +175,31 @@ const Post = () => {
               .eq('status', 'published')
               .order('published_at', { ascending: false });
 
-          if (related) {
-            const formattedRelated = related.map(post => ({
-              id: post.id,
-              title: post.title,
-              slug: post.slug,
-              excerpt: post.excerpt,
-              content: '',
-              featured_image_url: post.featured_image_url,
-              status: 'published',
-              published_at: post.published_at,
-              created_at: post.created_at,
-              views_count: 0,
-              seo_title: null,
-              seo_description: null,
-              seo_keywords: null,
-              category: post.blog_categories,
-              author: post.profiles ? { 
-                full_name: post.profiles.full_name,
-                avatar_url: null 
-              } : null,
-              author_profile: null,
-              tags: []
-            }));
-            setRelatedPosts(formattedRelated);
+            if (related) {
+              const formattedRelated = related.map(post => ({
+                id: post.id,
+                title: post.title,
+                slug: post.slug,
+                excerpt: post.excerpt,
+                content: '',
+                featured_image_url: post.featured_image_url,
+                status: 'published',
+                published_at: post.published_at,
+                created_at: post.created_at,
+                views_count: 0,
+                seo_title: null,
+                seo_description: null,
+                seo_keywords: null,
+                category: post.blog_categories,
+                author: post.profiles ? { 
+                  full_name: post.profiles.full_name,
+                  avatar_url: null 
+                } : null,
+                author_profile: null,
+                tags: []
+              }));
+              setRelatedPosts(formattedRelated);
+            }
           }
         }
       } catch (error) {
