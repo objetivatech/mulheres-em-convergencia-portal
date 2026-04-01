@@ -26,6 +26,12 @@ export interface BlogPost {
     name: string;
     slug: string;
   };
+  categories?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    is_primary: boolean;
+  }>;
   tags?: Array<{
     id: string;
     name: string;
@@ -42,6 +48,11 @@ export const useBlogPosts = (status?: string, limit?: number) => {
         .select(`
           *,
           category:blog_categories(id, name, slug),
+          blog_post_categories(
+            category_id,
+            is_primary,
+            blog_categories(id, name, slug)
+          ),
           tags:blog_post_tags(
             tag:blog_tags(id, name, slug)
           )
@@ -62,6 +73,10 @@ export const useBlogPosts = (status?: string, limit?: number) => {
       
       return data?.map(post => ({
         ...post,
+        categories: (post as any).blog_post_categories?.map((pc: any) => ({
+          ...pc.blog_categories,
+          is_primary: pc.is_primary
+        })).filter((c: any) => c?.id) || [],
         tags: post.tags?.map((t: any) => t.tag).filter(Boolean) || []
       })) as BlogPost[];
     },
@@ -77,6 +92,11 @@ export const useBlogPost = (id: string) => {
         .select(`
           *,
           category:blog_categories(id, name, slug),
+          blog_post_categories(
+            category_id,
+            is_primary,
+            blog_categories(id, name, slug)
+          ),
           tags:blog_post_tags(
             tag:blog_tags(id, name, slug)
           )
@@ -88,6 +108,10 @@ export const useBlogPost = (id: string) => {
 
       return {
         ...data,
+        categories: (data as any).blog_post_categories?.map((pc: any) => ({
+          ...pc.blog_categories,
+          is_primary: pc.is_primary
+        })).filter((c: any) => c?.id) || [],
         tags: data.tags?.map((t: any) => t.tag).filter(Boolean) || []
       } as BlogPost;
     },
@@ -100,12 +124,18 @@ export const useCreateBlogPost = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (postData: Partial<BlogPost> & { tagIds?: string[] }) => {
-      const { tagIds, ...postFields } = postData;
+    mutationFn: async (postData: Partial<BlogPost> & { tagIds?: string[]; categoryIds?: { id: string; is_primary: boolean }[] }) => {
+      const { tagIds, categoryIds, ...postFields } = postData;
       
       // Generate slug if not provided
       if (!postFields.slug && postFields.title) {
         postFields.slug = slugify(postFields.title, { lower: true, strict: true });
+      }
+
+      // Set category_id from primary category
+      const primaryCat = categoryIds?.find(c => c.is_primary);
+      if (primaryCat) {
+        postFields.category_id = primaryCat.id;
       }
 
       // Ensure required fields have values
@@ -141,6 +171,21 @@ export const useCreateBlogPost = () => {
         if (tagError) throw tagError;
       }
 
+      // Associate categories if provided
+      if (categoryIds && categoryIds.length > 0) {
+        const catAssociations = categoryIds.map(cat => ({
+          post_id: data.id,
+          category_id: cat.id,
+          is_primary: cat.is_primary
+        }));
+
+        const { error: catError } = await supabase
+          .from('blog_post_categories')
+          .insert(catAssociations);
+
+        if (catError) throw catError;
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -165,11 +210,18 @@ export const useUpdateBlogPost = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, postData, tagIds }: { 
+    mutationFn: async ({ id, postData, tagIds, categoryIds }: { 
       id: string; 
       postData: Partial<BlogPost>; 
-      tagIds?: string[] 
+      tagIds?: string[];
+      categoryIds?: { id: string; is_primary: boolean }[];
     }) => {
+      // Set category_id from primary category
+      const primaryCat = categoryIds?.find(c => c.is_primary);
+      if (primaryCat) {
+        postData.category_id = primaryCat.id;
+      }
+
       const { data, error } = await supabase
         .from('blog_posts')
         .update(postData)
@@ -181,13 +233,11 @@ export const useUpdateBlogPost = () => {
 
       // Update tags if provided
       if (tagIds !== undefined) {
-        // Remove existing tag associations
         await supabase
           .from('blog_post_tags')
           .delete()
           .eq('post_id', id);
 
-        // Add new tag associations
         if (tagIds.length > 0) {
           const tagAssociations = tagIds.map(tagId => ({
             post_id: id,
@@ -199,6 +249,28 @@ export const useUpdateBlogPost = () => {
             .insert(tagAssociations);
 
           if (tagError) throw tagError;
+        }
+      }
+
+      // Update categories if provided
+      if (categoryIds !== undefined) {
+        await supabase
+          .from('blog_post_categories')
+          .delete()
+          .eq('post_id', id);
+
+        if (categoryIds.length > 0) {
+          const catAssociations = categoryIds.map(cat => ({
+            post_id: id,
+            category_id: cat.id,
+            is_primary: cat.is_primary
+          }));
+
+          const { error: catError } = await supabase
+            .from('blog_post_categories')
+            .insert(catAssociations);
+
+          if (catError) throw catError;
         }
       }
 

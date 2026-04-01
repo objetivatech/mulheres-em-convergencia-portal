@@ -93,6 +93,19 @@ const Convergindo = () => {
     const loadPosts = async () => {
       setLoading(true);
       try {
+        // If filtering by category, first get post IDs from junction table
+        let postIdsForCategory: string[] | null = null;
+        if (selectedCategory !== 'all') {
+          const categoryData = categories.find(cat => cat.slug === selectedCategory);
+          if (categoryData) {
+            const { data: catPosts } = await supabase
+              .from('blog_post_categories')
+              .select('post_id')
+              .eq('category_id', categoryData.id);
+            postIdsForCategory = catPosts?.map(cp => cp.post_id) || [];
+          }
+        }
+
         let query = supabase
           .from('blog_posts')
           .select(`
@@ -129,12 +142,15 @@ const Convergindo = () => {
           .order('published_at', { ascending: false })
           .limit(POSTS_PER_PAGE);
 
-        // Apply category filter
-        if (selectedCategory !== 'all') {
-          const categoryData = categories.find(cat => cat.slug === selectedCategory);
-          if (categoryData) {
-            query = query.eq('category_id', categoryData.id);
+        // Apply category filter via junction table
+        if (postIdsForCategory !== null) {
+          if (postIdsForCategory.length === 0) {
+            setPosts([]);
+            setHasMore(false);
+            setLoading(false);
+            return;
           }
+          query = query.in('id', postIdsForCategory);
         }
 
         // Apply search filter
@@ -213,11 +229,21 @@ const Convergindo = () => {
           .order('published_at', { ascending: false })
           .range(posts.length, posts.length + POSTS_PER_PAGE - 1);
 
-      // Apply filters
+      // Apply category filter - reuse junction table approach
       if (selectedCategory !== 'all') {
         const categoryData = categories.find(cat => cat.slug === selectedCategory);
         if (categoryData) {
-          query = query.eq('category_id', categoryData.id);
+          const { data: catPosts } = await supabase
+            .from('blog_post_categories')
+            .select('post_id')
+            .eq('category_id', categoryData.id);
+          const ids = catPosts?.map(cp => cp.post_id) || [];
+          if (ids.length === 0) {
+            setHasMore(false);
+            setLoadingMore(false);
+            return;
+          }
+          query = query.in('id', ids);
         }
       }
 

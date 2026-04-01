@@ -1086,6 +1086,39 @@ export type Database = {
           },
         ]
       }
+      blog_post_categories: {
+        Row: {
+          category_id: string
+          is_primary: boolean
+          post_id: string
+        }
+        Insert: {
+          category_id: string
+          is_primary?: boolean
+          post_id: string
+        }
+        Update: {
+          category_id?: string
+          is_primary?: boolean
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "blog_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_post_categories_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_post_tags: {
         Row: {
           post_id: string

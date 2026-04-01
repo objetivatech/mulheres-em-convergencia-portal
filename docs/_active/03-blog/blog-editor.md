@@ -27,7 +27,8 @@ O Editor do Blog é um sistema completo de gerenciamento de conteúdo integrado 
 - **Títulos e slugs** auto-gerados
 - **Resumos/excerpts** para SEO
 - **Imagens destacadas** com upload
-- ✅ **Categorização completa** com criação rápida
+- ✅ **Categorização múltipla** com categoria principal (para slug/URL) e categorias secundárias (para SEO)
+- ✅ **Criação rápida** de categorias no editor
 - ✅ **Sistema de tags** com interface completa
 - ✅ **Status dinâmico** com botões condicionais
 - **SEO**: título, meta descrição, palavras-chave
@@ -126,10 +127,11 @@ O Editor do Blog é um sistema completo de gerenciamento de conteúdo integrado 
 ## Banco de Dados
 
 ### Tabelas
-- `blog_posts`: Posts com `author_profile_id` (FK para blog_authors)
+- `blog_posts`: Posts com `author_profile_id` (FK para blog_authors), `category_id` (categoria principal)
 - `blog_categories`: Categorias
 - `blog_tags`: Tags
 - `blog_post_tags`: Associação posts-tags
+- ✅ `blog_post_categories`: Associação posts-categorias (com `is_primary` flag)
 - ✅ `blog_authors`: Perfis de autores (nome, foto, bio, links)
 - ✅ `blog_comments`: Comentários com status (pending/approved/rejected)
 
