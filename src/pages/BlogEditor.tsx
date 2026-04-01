@@ -79,7 +79,7 @@ export default function BlogEditor() {
   const isEditing = Boolean(id);
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [newTagName, setNewTagName] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<{ id: string; is_primary: boolean }[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
