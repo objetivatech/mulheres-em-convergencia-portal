@@ -136,7 +136,12 @@ export default function BlogEditor() {
         scheduled_for: post.scheduled_for || '',
       });
       setSelectedTags(post.tags?.map(tag => tag.id) || []);
-    }
+      // Load categories from junction table
+      if (post.categories && post.categories.length > 0) {
+        setSelectedCategories(post.categories.map(c => ({ id: c.id, is_primary: c.is_primary })));
+      } else if (post.category_id) {
+        setSelectedCategories([{ id: post.category_id, is_primary: true }]);
+      }
   }, [post, form, isEditing]);
 
   // Auto-generate slug from title
