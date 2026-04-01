@@ -51,8 +51,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useBlogAuthors } from '@/hooks/useBlogAuthors';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const blogPostSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
