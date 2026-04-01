@@ -172,11 +172,36 @@ export default function BlogEditor() {
         name: newCategoryName.trim(),
         description: newCategoryDescription.trim() || undefined
       });
-      form.setValue('category_id', newCategory.id);
+      // Add as primary if no categories selected, otherwise as secondary
+      const isPrimary = selectedCategories.length === 0;
+      setSelectedCategories(prev => [...prev, { id: newCategory.id, is_primary: isPrimary }]);
       setNewCategoryName('');
       setNewCategoryDescription('');
       setIsCategoryDialogOpen(false);
     }
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const exists = prev.find(c => c.id === categoryId);
+      if (exists) {
+        const filtered = prev.filter(c => c.id !== categoryId);
+        // If removed was primary, make first remaining primary
+        if (exists.is_primary && filtered.length > 0) {
+          filtered[0].is_primary = true;
+        }
+        return filtered;
+      }
+      // Add as primary if first, otherwise secondary
+      return [...prev, { id: categoryId, is_primary: prev.length === 0 }];
+    });
+  };
+
+  const setPrimaryCategory = (categoryId: string) => {
+    setSelectedCategories(prev => prev.map(c => ({
+      ...c,
+      is_primary: c.id === categoryId
+    })));
   };
 
   const toggleTag = (tagId: string) => {
