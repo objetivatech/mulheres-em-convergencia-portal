@@ -130,32 +130,50 @@ const Post = () => {
         // Increment view count using RPC for security
         await supabase.rpc('increment_blog_post_views', { p_slug: slug });
 
-        // Load related posts
-        if (data.blog_categories?.id) {
-          const { data: related } = await supabase
-            .from('blog_posts')
-            .select(`
-              id,
-              title,
-              slug,
-              excerpt,
-              featured_image_url,
-              published_at,
-              created_at,
-              blog_categories:category_id (
+        // Load related posts via any shared category (junction table)
+        const { data: postCats } = await supabase
+          .from('blog_post_categories')
+          .select('category_id')
+          .eq('post_id', data.id);
+        
+        const catIds = postCats?.map(pc => pc.category_id) || [];
+        if (data.blog_categories?.id && !catIds.includes(data.blog_categories.id)) {
+          catIds.push(data.blog_categories.id);
+        }
+
+        if (catIds.length > 0) {
+          // Get post IDs that share any category
+          const { data: relatedPostIds } = await supabase
+            .from('blog_post_categories')
+            .select('post_id')
+            .in('category_id', catIds)
+            .neq('post_id', data.id);
+          
+          const uniqueIds = [...new Set(relatedPostIds?.map(r => r.post_id) || [])];
+          
+          if (uniqueIds.length > 0) {
+            const { data: related } = await supabase
+              .from('blog_posts')
+              .select(`
                 id,
-                name,
-                slug
-              ),
-              profiles:author_id (
-                full_name
-              )
-            `)
-            .eq('category_id', data.blog_categories.id)
-            .eq('status', 'published')
-            .neq('id', data.id)
-            .order('published_at', { ascending: false })
-            .limit(3);
+                title,
+                slug,
+                excerpt,
+                featured_image_url,
+                published_at,
+                created_at,
+                blog_categories:category_id (
+                  id,
+                  name,
+                  slug
+                ),
+                profiles:author_id (
+                  full_name
+                )
+              `)
+              .in('id', uniqueIds.slice(0, 3))
+              .eq('status', 'published')
+              .order('published_at', { ascending: false });
 
           if (related) {
             const formattedRelated = related.map(post => ({
