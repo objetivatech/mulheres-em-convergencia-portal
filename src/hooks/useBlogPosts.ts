@@ -73,6 +73,10 @@ export const useBlogPosts = (status?: string, limit?: number) => {
       
       return data?.map(post => ({
         ...post,
+        categories: (post as any).blog_post_categories?.map((pc: any) => ({
+          ...pc.blog_categories,
+          is_primary: pc.is_primary
+        })).filter((c: any) => c?.id) || [],
         tags: post.tags?.map((t: any) => t.tag).filter(Boolean) || []
       })) as BlogPost[];
     },
