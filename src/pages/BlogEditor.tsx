@@ -201,12 +201,16 @@ export default function BlogEditor() {
         finalStatus = 'draft';
       }
       
+      // Set primary category_id
+      const primaryCat = selectedCategories.find(c => c.is_primary);
+      
       const postData = {
         ...data,
         status: finalStatus,
         content: sanitizedContent,
         author_id: user?.id,
         author_profile_id: data.author_profile_id || null,
+        category_id: primaryCat?.id || data.category_id || null,
         published_at: finalStatus === 'published' && !data.published_at 
           ? new Date().toISOString() 
           : (data.published_at || null),
@@ -217,12 +221,14 @@ export default function BlogEditor() {
         await updateBlogPost.mutateAsync({
           id,
           postData,
-          tagIds: selectedTags
+          tagIds: selectedTags,
+          categoryIds: selectedCategories
         });
       } else {
         await createBlogPost.mutateAsync({
           ...postData,
-          tagIds: selectedTags
+          tagIds: selectedTags,
+          categoryIds: selectedCategories
         });
       }
 
