@@ -229,11 +229,21 @@ const Convergindo = () => {
           .order('published_at', { ascending: false })
           .range(posts.length, posts.length + POSTS_PER_PAGE - 1);
 
-      // Apply filters
+      // Apply category filter - reuse junction table approach
       if (selectedCategory !== 'all') {
         const categoryData = categories.find(cat => cat.slug === selectedCategory);
         if (categoryData) {
-          query = query.eq('category_id', categoryData.id);
+          const { data: catPosts } = await supabase
+            .from('blog_post_categories')
+            .select('post_id')
+            .eq('category_id', categoryData.id);
+          const ids = catPosts?.map(cp => cp.post_id) || [];
+          if (ids.length === 0) {
+            setHasMore(false);
+            setLoadingMore(false);
+            return;
+          }
+          query = query.in('id', ids);
         }
       }
 
