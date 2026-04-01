@@ -108,6 +108,10 @@ export const useBlogPost = (id: string) => {
 
       return {
         ...data,
+        categories: (data as any).blog_post_categories?.map((pc: any) => ({
+          ...pc.blog_categories,
+          is_primary: pc.is_primary
+        })).filter((c: any) => c?.id) || [],
         tags: data.tags?.map((t: any) => t.tag).filter(Boolean) || []
       } as BlogPost;
     },
