@@ -47,7 +47,7 @@ const Sobre = () => {
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Conheça a jornada do Mulheres em Convergência e como estamos 
-              transformando vidas através do empreendedorismo feminino.
+              transformando vidas através do empreendedorismo feminino. Saiba mais abaixo.
             </p>
           </div>
         </div>
