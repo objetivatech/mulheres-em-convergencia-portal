@@ -60,17 +60,24 @@ VITE_SUPABASE_URL=https://ngqymbjatenxztrjjdxa.supabase.co
 
 > **IMPORTANTE:** A variável `SKIP_DEPENDENCY_INSTALL=true` pula o `npm ci` automático do Cloudflare, que falha quando o `package-lock.json` está dessincronizado. O build command (`npm install && npm run build`) cuida da instalação.
 
-### Passo 3: Cloudflare Pages Function (RSS/Sitemap)
+### Passo 3: Cloudflare Pages Function (RSS/Sitemap + SEO Pre-rendering)
 
-O arquivo `functions/[[path]].ts` já está criado e intercepta requisições para RSS e Sitemap.
+O arquivo `functions/[[path]].ts` intercepta requisições e tem duas funções:
 
-**Como funciona:**
-1. Intercepta `/rss.xml` e `/sitemap.xml`
+**Proxy de RSS/Sitemap/llms-full.txt:**
+1. Intercepta `/rss.xml`, `/sitemap.xml` e `/llms-full.txt`
 2. Faz fetch às Edge Functions do Supabase com header `apikey`
-3. Retorna XML com `Content-Type: application/xml`
-4. Todas as outras rotas são passadas adiante com `context.next()`
+3. Retorna conteúdo com Content-Type adequado
+
+**SEO Pre-rendering para crawlers:**
+1. Detecta crawlers por User-Agent (~40 padrões: Googlebot, GPTBot, ClaudeBot, etc.)
+2. Para crawlers em rotas dinâmicas, faz proxy para a Edge Function `seo-prerender`
+3. Retorna HTML completo com metadados, Schema.org e conteúdo real do banco
+4. Browsers reais recebem o SPA normalmente
 
 **Importante:** As variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` devem estar configuradas no Cloudflare Pages (veja Passo 2).
+
+Veja detalhes completos em `docs/_active/06-funcionalidades/seo-prerender.md`.
 
 ### Passo 4: Verificações Finais
 
