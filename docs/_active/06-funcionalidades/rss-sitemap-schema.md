@@ -128,7 +128,7 @@ Proxies configurados para desenvolvimento local de `/rss.xml`, `/sitemap.xml` e 
 ### Cache
 - RSS, Sitemap, LLMs Full: `Cache-Control: public, max-age=3600`
 
-## Arquitetura SEO (Estático vs Dinâmico)
+## Arquitetura SEO (Estático vs Dinâmico + Pre-rendering)
 
 ```
 index.html (estático)
@@ -147,7 +147,32 @@ index.html (estático)
     ├── Helmet sobrescreve title/meta por página
     ├── SiteSchemaOrg.tsx (Schema global)
     └── SchemaOrg.tsx (Schema por post)
+
+Cloudflare Pages Function (functions/[[path]].ts)
+├── Detecta crawlers por User-Agent
+├── Proxy para seo-prerender Edge Function
+│   ├── HTML completo com conteúdo real do banco
+│   ├── Schema.org dinâmico (Article, LocalBusiness, Event, Course)
+│   ├── Open Graph + Twitter Card
+│   └── Cache 1h browser + 12h CDN
+├── Proxy RSS/Sitemap/llms-full.txt
+└── Browsers reais → SPA normalmente
 ```
+
+### 9. SEO Pre-rendering para Crawlers
+
+**Edge Function:** `supabase/functions/seo-prerender/index.ts`
+**Cloudflare Pages Function:** `functions/[[path]].ts`
+
+Crawlers que não executam JavaScript recebem HTML completo com:
+- Metadados corretos por rota (title, description, canonical, OG, Twitter)
+- Schema.org dinâmico (Article, LocalBusiness, Event, Course, Organization)
+- Conteúdo real do banco de dados em HTML semântico
+- Links de navegação interna
+
+**Rotas cobertas:** Home, Blog (lista + posts), Diretório (lista + negócios), Eventos (lista + individuais), Academy (lista + cursos), Embaixadoras, páginas estáticas, Page Builder, Landing Pages.
+
+**Documentação detalhada:** `docs/_active/06-funcionalidades/seo-prerender.md`
 
 ## URLs de Produção
 
@@ -160,4 +185,4 @@ index.html (estático)
 
 ## Status
 
-🎉 **CONCLUÍDO** — Atualizado em março de 2026
+🎉 **CONCLUÍDO** — Atualizado em abril de 2026
