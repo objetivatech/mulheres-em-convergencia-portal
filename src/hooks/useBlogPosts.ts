@@ -91,11 +91,11 @@ export const useBlogPost = (id: string) => {
         .from('blog_posts')
         .select(`
           *,
-          category:blog_categories(id, name, slug),
+          category:blog_categories!blog_posts_category_id_fkey(id, name, slug),
           blog_post_categories(
             category_id,
             is_primary,
-            blog_categories(id, name, slug)
+            blog_categories:blog_categories!blog_post_categories_category_id_fkey(id, name, slug)
           ),
           tags:blog_post_tags(
             tag:blog_tags(id, name, slug)
