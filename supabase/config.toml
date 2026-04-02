@@ -116,3 +116,6 @@ verify_jwt = false
 
 [functions.conecta-birthday-notify]
 verify_jwt = false
+
+[functions.seo-prerender]
+verify_jwt = false
