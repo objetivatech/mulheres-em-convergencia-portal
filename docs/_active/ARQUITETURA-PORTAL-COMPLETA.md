@@ -381,7 +381,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 | `send-journey-reminder` | Jornada | Cron job | user_journey_tracking, MailRelay |
 | `notify-new-user` | Jornada | Novo cadastro | profiles, MailRelay |
 | `publish-scheduled-posts` | Blog | Cron job | posts |
-| `ayrshare-auto-post` | Blog | Post publicado | posts, Ayrshare |
 | `generate-rss` | Blog | HTTP request | posts |
 | `generate-sitemap` | SEO | HTTP request | posts, pages, businesses |
 | `optimize-image` | Mídia | Upload | Storage |
