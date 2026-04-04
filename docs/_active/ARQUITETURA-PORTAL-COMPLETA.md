@@ -208,8 +208,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 
 **Edge Functions:**
 - `publish-scheduled-posts`
-- `ayrshare-auto-post`
-- `ayrshare-test-post`
 - `generate-rss`
 - `generate-sitemap`
 
