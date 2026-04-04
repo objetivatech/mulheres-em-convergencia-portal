@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
             proxyReq.setHeader('apikey', SUPABASE_ANON_KEY);
+            proxyReq.setHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
           });
         },
       },
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => ({
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
             proxyReq.setHeader('apikey', SUPABASE_ANON_KEY);
+            proxyReq.setHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
           });
         },
       },
@@ -40,6 +42,7 @@ export default defineConfig(({ mode }) => ({
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
             proxyReq.setHeader('apikey', SUPABASE_ANON_KEY);
+            proxyReq.setHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
           });
         },
       },

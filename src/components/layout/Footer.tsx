@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Rss } from 'lucide-react';
 import LogoComponent from './LogoComponent';
 import { TagCloud } from '@/components/blog/TagCloud';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useFooterNavigation } from '@/hooks/useFooterNavigation';
 import { getSocialIcon } from '@/lib/socialIconMap';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
