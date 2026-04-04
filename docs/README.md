@@ -12,7 +12,7 @@ Contém a documentação de funcionalidades **atualmente implementadas e em uso*
 
 **Subdiretórios:**
 
-- **`01-integracao/`** - Integrações com serviços externos (Asaas, AyrShare, Mapbox, MailRelay, etc.)
+- **`01-integracao/`** - Integrações com serviços externos (Asaas, Mapbox, MailRelay, Social Media, etc.)
 - **`02-assinaturas/`** - Sistema de planos, pagamentos, renovações e cortesias
 - **`03-blog/`** - Editor de posts, categorias, publicação e métricas
 - **`04-usuarios/`** - Autenticação, perfis, permissões e jornada do cliente
