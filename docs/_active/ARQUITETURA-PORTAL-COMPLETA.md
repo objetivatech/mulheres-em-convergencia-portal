@@ -299,7 +299,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 - `/admin/jornada-usuario` (UserJourney)
 - `/admin/mensagens-contato` (AdminContactMessages)
 - `/admin/parceiros` (AdminPartners)
-- `/admin/ayrshare` (AdminAyrshare)
 
 **Interconexões:**
 - ✅ Conecta com **TODOS os sistemas** do portal
