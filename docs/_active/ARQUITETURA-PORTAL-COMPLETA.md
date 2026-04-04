@@ -342,18 +342,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 
 ---
 
-### 11. Sistema de Redes Sociais
-
-**Responsabilidade:** Compartilhamento automático de posts em redes sociais.
-
-**Edge Functions:**
-- `ayrshare-auto-post`
-- `ayrshare-test-post`
-
-**Interconexões:**
-- ✅ Conecta com **Ayrshare API** (publicação automática)
-- ✅ Conecta com **Sistema de Blog** (posts publicados)
-
 ---
 
 ## 🗄️ Banco de Dados - Tabelas Principais
