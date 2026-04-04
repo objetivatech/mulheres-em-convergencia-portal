@@ -119,6 +119,28 @@ const Footer = () => {
               </span>
             ))}
           </div>
+
+          {/* RSS & Sitemap links */}
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground mt-2">
+            <a
+              href={`${PRODUCTION_DOMAIN}/rss.xml`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-primary transition-colors"
+            >
+              <Rss size={12} />
+              RSS Feed
+            </a>
+            <span className="text-border">|</span>
+            <a
+              href={`${PRODUCTION_DOMAIN}/sitemap.xml`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              Sitemap
+            </a>
+          </div>
         </div>
       </div>
     </footer>
