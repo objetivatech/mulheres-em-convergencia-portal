@@ -168,8 +168,7 @@ O sistema de agendamento permite definir uma data/hora futura para publicação 
 5. A edge function executa a DB function `publish_scheduled_posts()` que:
    - Atualiza posts com `scheduled_for <= now()` para `status = 'published'`
    - Define `published_at = scheduled_for` e limpa `scheduled_for`
-6. Após publicação, a edge function aciona automaticamente o **Ayrshare auto-post** (se configurado)
-7. Um log de atividade é registrado em `user_activity_log`
+6. Um log de atividade é registrado em `user_activity_log`
 
 ### Componentes envolvidos
 | Componente | Tipo | Função |
@@ -178,7 +177,6 @@ O sistema de agendamento permite definir uma data/hora futura para publicação 
 | `publish-scheduled-posts` | Edge Function | Orquestrador do cron |
 | `publish_scheduled_posts()` | DB Function | UPDATE dos posts elegíveis |
 | `publish-scheduled-blog-posts` | pg_cron job | Dispara a cada 5 min |
-| `ayrshare-auto-post` | Edge Function | Auto-post em redes sociais |
 
 ## Status de Implementação
 

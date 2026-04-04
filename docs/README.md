@@ -12,7 +12,7 @@ Contém a documentação de funcionalidades **atualmente implementadas e em uso*
 
 **Subdiretórios:**
 
-- **`01-integracao/`** - Integrações com serviços externos (Asaas, AyrShare, Mapbox, MailRelay, etc.)
+- **`01-integracao/`** - Integrações com serviços externos (Asaas, Mapbox, MailRelay, Social Media, etc.)
 - **`02-assinaturas/`** - Sistema de planos, pagamentos, renovações e cortesias
 - **`03-blog/`** - Editor de posts, categorias, publicação e métricas
 - **`04-usuarios/`** - Autenticação, perfis, permissões e jornada do cliente
@@ -48,7 +48,7 @@ Contém documentos de **correções antigas**, **implementações concluídas** 
 | :--- | :--- | :--- |
 | Sistema de Assinaturas | `_active/02-assinaturas/subscriptions.md` | Fluxo completo de pagamentos e ativação |
 | Sistema de Cortesia | `_active/02-assinaturas/sistema-cortesia-completo.md` | Acesso gratuito a negócios |
-| Integração AyrShare | `_active/01-integracao/ayrshare-integration.md` | Publicação automática em redes sociais |
+| Social Media Automation | `_active/01-integracao/social-media-automation.md` | Publicação automática em redes sociais |
 | Gestão de Usuários | `_active/04-usuarios/user-management-complete.md` | Administração de contas e permissões |
 | Page Builder | `_active/06-funcionalidades/page-builder-implementacao-completa.md` | Editor visual de páginas |
 

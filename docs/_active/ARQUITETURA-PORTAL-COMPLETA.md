@@ -45,7 +45,7 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              INTEGRAÇÕES EXTERNAS                           │
-│  MailRelay │ Asaas │ Ayrshare │ Mapbox │ TinyMCE           │
+│  MailRelay │ Asaas │ Mapbox │ TinyMCE                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -208,8 +208,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 
 **Edge Functions:**
 - `publish-scheduled-posts`
-- `ayrshare-auto-post`
-- `ayrshare-test-post`
 - `generate-rss`
 - `generate-sitemap`
 
@@ -301,7 +299,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 - `/admin/jornada-usuario` (UserJourney)
 - `/admin/mensagens-contato` (AdminContactMessages)
 - `/admin/parceiros` (AdminPartners)
-- `/admin/ayrshare` (AdminAyrshare)
 
 **Interconexões:**
 - ✅ Conecta com **TODOS os sistemas** do portal
@@ -345,18 +342,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 
 ---
 
-### 11. Sistema de Redes Sociais
-
-**Responsabilidade:** Compartilhamento automático de posts em redes sociais.
-
-**Edge Functions:**
-- `ayrshare-auto-post`
-- `ayrshare-test-post`
-
-**Interconexões:**
-- ✅ Conecta com **Ayrshare API** (publicação automática)
-- ✅ Conecta com **Sistema de Blog** (posts publicados)
-
 ---
 
 ## 🗄️ Banco de Dados - Tabelas Principais
@@ -396,7 +381,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 | `send-journey-reminder` | Jornada | Cron job | user_journey_tracking, MailRelay |
 | `notify-new-user` | Jornada | Novo cadastro | profiles, MailRelay |
 | `publish-scheduled-posts` | Blog | Cron job | posts |
-| `ayrshare-auto-post` | Blog | Post publicado | posts, Ayrshare |
 | `generate-rss` | Blog | HTTP request | posts |
 | `generate-sitemap` | SEO | HTTP request | posts, pages, businesses |
 | `optimize-image` | Mídia | Upload | Storage |
@@ -551,7 +535,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 | :--- | :--- | :--- | :--- |
 | **MailRelay** | Envio de emails | Sistema de Emails | `MAILRELAY_HOST`, `MAILRELAY_API_KEY` |
 | **Asaas** | Processamento de pagamentos | Sistema de Assinaturas | `ASAAS_API_KEY`, `ASAAS_WEBHOOK_SECRET` |
-| **Ayrshare** | Compartilhamento em redes sociais | Sistema de Blog | `AYRSHARE_API_KEY` |
 | **Mapbox** | Mapas interativos | Sistema de Geolocalização | `MAPBOX_TOKEN` |
 | **TinyMCE** | Editor de texto rico | Sistema de Blog | `TINYMCE_API_KEY` |
 | **Cloudflare Pages** | Hospedagem frontend | - | Deploy automático via GitHub |

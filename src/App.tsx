@@ -197,7 +197,6 @@ function AppContent() {
         <Route path="/admin/users" element={<Navigate to="/admin/usuarios" replace />} />
         <Route path="/admin/user-journey" element={<Navigate to="/admin/jornada-usuario" replace />} />
         <Route path="/admin/analytics" element={<Navigate to="/admin/analiticas" replace />} />
-        {/* Rotas removidas: AdminAyrshare, AdminSocialMedia */}
         <Route path="/admin/parceiros" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminPartners />

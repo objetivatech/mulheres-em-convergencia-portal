@@ -52,23 +52,7 @@
 - Redirecionamento automático para edge functions
 - CORS configurado nas edge functions
 
-### 4. Interface de Teste AYRSHARE 🌐
-
-**Problema**: Sem forma de testar integração AYRSHARE
-**Solução**: Interface completa de teste no painel admin
-
-**Funcionalidades**:
-- `AyrshareTestInterface.tsx` - interface de teste
-- Seleção de plataformas (Facebook, Twitter, LinkedIn, Instagram)
-- Preview do conteúdo antes do envio
-- Resposta detalhada da API AYRSHARE
-- Log de atividades dos testes
-- Edge function `ayrshare-test-post` dedicada
-- Secret `AYRSHARE_API_KEY` configurado
-
-**Páginas**:
-- `/admin/ayrshare` - Nova página de teste
-- Link no painel administrativo
+### 4. ~~Interface de Teste AYRSHARE~~ *(Descontinuado — removido em Abril/2026)*
 
 ### 5. Mobile UX Otimizada 📱
 
@@ -84,11 +68,7 @@
 
 ### 6. Funcionalidades Complementares
 
-**Auto-post Blog → AYRSHARE**:
-- Trigger automático quando post é publicado
-- Edge function `ayrshare-auto-post` aprimorada
-- Conteúdo personalizado por plataforma
-- Logs de atividade para auditoria
+**~~Auto-post Blog → AYRSHARE~~** *(Descontinuado — removido em Abril/2026)*
 
 **Mapbox Integration**:
 - Suporte completo ao Mapbox GL JS
