@@ -27,7 +27,7 @@ const BOT_USER_AGENTS = [
 ];
 
 // File extensions that should never be pre-rendered
-const STATIC_EXTENSIONS = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webp|avif|mp4|webm|pdf|xml|json|txt|mp3|wav|ogg)$/i;
+const STATIC_EXTENSIONS = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webp|avif|mp4|webm|pdf|json|mp3|wav|ogg)$/i;
 
 function isBot(userAgent: string): boolean {
   if (!userAgent) return true; // Empty UA = likely a bot
@@ -61,11 +61,6 @@ function isPrerenderableRoute(path: string): boolean {
 export async function onRequest(context: { request: Request; env: Env; next: () => Promise<Response> }) {
   const url = new URL(context.request.url);
   const path = url.pathname;
-
-  // Never intercept static assets
-  if (STATIC_EXTENSIONS.test(path)) {
-    return context.next();
-  }
 
   const supabaseUrl = context.env.VITE_SUPABASE_URL;
   const supabaseKey = context.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -112,6 +107,11 @@ export async function onRequest(context: { request: Request; env: Env; next: () 
       console.error(`Error proxying ${path}:`, error);
       return new Response(`Error generating ${path}`, { status: 500, headers: { 'Content-Type': 'text/plain' } });
     }
+  }
+
+  // Never intercept static assets
+  if (STATIC_EXTENSIONS.test(path)) {
+    return context.next();
   }
 
   // ── SEO Pre-rendering for crawlers ──
