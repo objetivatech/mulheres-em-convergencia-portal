@@ -45,7 +45,7 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              INTEGRAÇÕES EXTERNAS                           │
-│  MailRelay │ Asaas │ Ayrshare │ Mapbox │ TinyMCE           │
+│  MailRelay │ Asaas │ Mapbox │ TinyMCE                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
