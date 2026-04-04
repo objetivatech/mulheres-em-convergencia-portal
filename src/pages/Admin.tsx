@@ -385,7 +385,7 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open('/rss.xml', '_blank')}
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/rss.xml`, '_blank', 'noopener,noreferrer')}
                         >
                           Visualizar RSS
                         </Button>
@@ -408,7 +408,7 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open('/sitemap.xml', '_blank')}
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/sitemap.xml`, '_blank', 'noopener,noreferrer')}
                         >
                           Visualizar Sitemap
                         </Button>
