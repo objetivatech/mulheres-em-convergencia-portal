@@ -68,11 +68,7 @@
 
 ### 6. Funcionalidades Complementares
 
-**Auto-post Blog → AYRSHARE**:
-- Trigger automático quando post é publicado
-- Edge function `ayrshare-auto-post` aprimorada
-- Conteúdo personalizado por plataforma
-- Logs de atividade para auditoria
+**~~Auto-post Blog → AYRSHARE~~** *(Descontinuado — removido em Abril/2026)*
 
 **Mapbox Integration**:
 - Suporte completo ao Mapbox GL JS

@@ -62,7 +62,7 @@ docs/
 - Apenas o `README.md` permanece na raiz
 
 **Documentos principais em _active**:
-- **Integrações**: AyrShare
+- **Integrações**: Social Media Automation, Asaas, MailRelay
 - **Assinaturas**: Sistema de assinaturas, cortesia, renovação
 - **Blog**: Editor, dashboard, métricas
 - **Usuários**: Autenticação, gestão, roles, recuperação de senha

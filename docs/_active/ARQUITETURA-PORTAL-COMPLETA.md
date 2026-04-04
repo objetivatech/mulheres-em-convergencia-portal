@@ -535,7 +535,6 @@ O Portal Mulheres em Convergência é uma plataforma completa para empreendedora
 | :--- | :--- | :--- | :--- |
 | **MailRelay** | Envio de emails | Sistema de Emails | `MAILRELAY_HOST`, `MAILRELAY_API_KEY` |
 | **Asaas** | Processamento de pagamentos | Sistema de Assinaturas | `ASAAS_API_KEY`, `ASAAS_WEBHOOK_SECRET` |
-| **Ayrshare** | Compartilhamento em redes sociais | Sistema de Blog | `AYRSHARE_API_KEY` |
 | **Mapbox** | Mapas interativos | Sistema de Geolocalização | `MAPBOX_TOKEN` |
 | **TinyMCE** | Editor de texto rico | Sistema de Blog | `TINYMCE_API_KEY` |
 | **Cloudflare Pages** | Hospedagem frontend | - | Deploy automático via GitHub |

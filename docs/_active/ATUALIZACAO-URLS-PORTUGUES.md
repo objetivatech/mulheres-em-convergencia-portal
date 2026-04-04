@@ -74,7 +74,6 @@ Estas URLs já estavam em português e permaneceram inalteradas:
 - `/confirmacao-pagamento` - Confirmação de pagamento
 - `/admin/blog/*` - Gerenciamento do blog
 - `/admin/parceiros` - Gestão de parceiros
-- `/admin/ayrshare` - Integração Ayrshare
 
 ## Compatibilidade
 

@@ -177,7 +177,6 @@ O sistema de agendamento permite definir uma data/hora futura para publicação 
 | `publish-scheduled-posts` | Edge Function | Orquestrador do cron |
 | `publish_scheduled_posts()` | DB Function | UPDATE dos posts elegíveis |
 | `publish-scheduled-blog-posts` | pg_cron job | Dispara a cada 5 min |
-| `ayrshare-auto-post` | Edge Function | Auto-post em redes sociais |
 
 ## Status de Implementação
 

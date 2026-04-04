@@ -44,26 +44,6 @@ serve(async (req) => {
     const publishedCount = data || 0
     console.log(`Published ${publishedCount} scheduled posts`)
 
-    // Trigger Ayrshare auto-post for each newly published post
-    if (publishedCount > 0 && postsToPublish && postsToPublish.length > 0) {
-      const ayrshareApiKey = Deno.env.get('AYRSHARE_API_KEY')
-      if (ayrshareApiKey) {
-        for (const post of postsToPublish) {
-          try {
-            console.log(`Triggering auto-post for: ${post.title}`)
-            const { error: autoPostError } = await supabase.functions.invoke('ayrshare-auto-post', {
-              body: { postId: post.id }
-            })
-            if (autoPostError) {
-              console.error(`Auto-post failed for ${post.id}:`, autoPostError)
-            }
-          } catch (e) {
-            console.error(`Auto-post exception for ${post.id}:`, e)
-          }
-        }
-      }
-    }
-
     // Log activity
     if (publishedCount > 0) {
       await supabase.from('user_activity_log').insert({

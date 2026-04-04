@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-Sistema próprio de publicação automatizada em redes sociais, substituindo o AyrShare para eliminar custos recorrentes. Permite conectar múltiplas plataformas (LinkedIn, Facebook, Instagram, Pinterest) e publicar posts do blog automaticamente ou manualmente.
+Sistema próprio de publicação automatizada em redes sociais. Permite conectar múltiplas plataformas (LinkedIn, Facebook, Instagram, Pinterest) e publicar posts do blog automaticamente ou manualmente.
 
 **Status:** ✅ LinkedIn implementado | 🚧 Meta e Pinterest em desenvolvimento
 
