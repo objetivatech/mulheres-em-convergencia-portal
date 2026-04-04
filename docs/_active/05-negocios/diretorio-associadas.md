@@ -187,9 +187,9 @@ src/
 ## Alterações Recentes (Fevereiro 2026)
 
 ### Removido
-- ❌ Integração Ayrshare/Redes Sociais (removida por descontinuação do serviço)
+- ❌ Integração com serviço externo de redes sociais (descontinuada)
 - ❌ Bloco "Redes Sociais" do painel administrativo
-- ❌ Edge functions relacionadas: `ayrshare-auth`, `ayrshare-post`, `linkedin-auth`
+- ❌ Edge functions relacionadas removidas
 
 ### Adicionado
 - ✅ Auto-rotação no slider de parceiros (2.5s delay)
