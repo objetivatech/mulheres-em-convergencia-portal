@@ -1,4 +1,5 @@
-# Redirect RSS and Sitemap to Edge Functions
-/rss.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-rss 200
-/sitemap.xml https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-sitemap 200
+# RSS, Sitemap e llms-full.txt são servidos pela Cloudflare Pages Function (functions/[[path]].ts)
+# NÃO adicionar regras de redirect aqui para esses arquivos — o proxy já cuida disso.
+# Este arquivo existe apenas para compatibilidade com plataformas que o processem.
+
 /llms-full.txt https://ngqymbjatenxztrjjdxa.supabase.co/functions/v1/generate-llms-full 200
