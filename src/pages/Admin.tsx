@@ -415,7 +415,7 @@ const Admin = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(SITEMAP_URL)}
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/sitemap.xml`)}
                         >
                           Copiar URL
                         </Button>

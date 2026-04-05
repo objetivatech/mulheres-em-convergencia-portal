@@ -123,7 +123,7 @@ const Footer = () => {
           {/* RSS & Sitemap links */}
           <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground mt-2">
             <a
-              href={RSS_FEED_URL}
+              href={`${PRODUCTION_DOMAIN}/rss.xml`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-primary transition-colors"
@@ -133,7 +133,7 @@ const Footer = () => {
             </a>
             <span className="text-border">|</span>
             <a
-              href={SITEMAP_URL}
+              href={`${PRODUCTION_DOMAIN}/sitemap.xml`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-primary transition-colors"
