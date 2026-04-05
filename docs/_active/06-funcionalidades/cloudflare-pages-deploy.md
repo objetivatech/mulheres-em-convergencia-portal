@@ -130,8 +130,7 @@ Após o deploy funcionar:
 - **Solução:** Warnings de peer dependencies são normais e não impedem o build
 
 ### RSS/Sitemap retornam 404
-- **Solução:** Verifique se o arquivo `public/_redirects` está sendo copiado para o build
-- Confirme que está no diretório `public/` (não `dist/`)
+- **Solução:** Verifique se `functions/[[path]].ts` existe e se as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` estão no Cloudflare Pages. O `_redirects` NÃO deve conter regras para `/rss.xml` ou `/sitemap.xml` (o proxy cuida disso).
 
 ### Build timeout
 - **Solução:** O build pode demorar na primeira vez. Aguarde até 10 minutos.

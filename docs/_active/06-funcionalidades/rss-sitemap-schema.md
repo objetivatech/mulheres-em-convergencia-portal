@@ -115,18 +115,12 @@ Todas as páginas públicas possuem:
 
 ## Configuração Técnica
 
-### Redirects (`public/_redirects`)
-```
-/rss.xml → edge function generate-rss
-/sitemap.xml → edge function generate-sitemap
-/llms-full.txt → edge function generate-llms-full
-```
+### Proxy via Cloudflare Pages Function (`functions/[[path]].ts`)
 
-### Vite Proxy (`vite.config.ts`)
-Proxies configurados para desenvolvimento local de `/rss.xml`, `/sitemap.xml` e `/llms-full.txt`.
+O proxy em `functions/[[path]].ts` intercepta `/rss.xml`, `/sitemap.xml` e `/llms-full.txt`, adiciona os headers de autenticação do Supabase e retorna o conteúdo com Content-Type correto. Este é o **único mecanismo de entrega pública** — nenhum redirect ou URL direta do Supabase deve ser exposta.
 
-### Cache
-- RSS, Sitemap, LLMs Full: `Cache-Control: public, max-age=3600`
+> ⚠️ O arquivo `public/_redirects` **não** deve conter regras para `/rss.xml` ou `/sitemap.xml` — isso criaria conflito com a Pages Function.
+
 
 ## Arquitetura SEO (Estático vs Dinâmico + Pre-rendering)
 
