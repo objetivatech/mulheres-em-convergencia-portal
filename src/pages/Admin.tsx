@@ -392,7 +392,7 @@ const Admin = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(RSS_FEED_URL)}
+                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/rss.xml`)}
                         >
                           Copiar URL
                         </Button>
