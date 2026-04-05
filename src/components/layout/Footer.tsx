@@ -5,7 +5,7 @@ import { TagCloud } from '@/components/blog/TagCloud';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useFooterNavigation } from '@/hooks/useFooterNavigation';
 import { getSocialIcon } from '@/lib/socialIconMap';
-import { RSS_FEED_URL, SITEMAP_URL } from '@/lib/constants';
+import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
