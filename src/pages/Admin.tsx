@@ -408,7 +408,7 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(SITEMAP_URL, '_blank', 'noopener,noreferrer')}
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/sitemap.xml`, '_blank', 'noopener,noreferrer')}
                         >
                           Visualizar Sitemap
                         </Button>
