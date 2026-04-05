@@ -385,7 +385,7 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(RSS_FEED_URL, '_blank', 'noopener,noreferrer')}
+                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/rss.xml`, '_blank', 'noopener,noreferrer')}
                         >
                           Visualizar RSS
                         </Button>
