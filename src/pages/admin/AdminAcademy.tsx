@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { useAcademyCourses, useAcademyCategories, useCreateCourse, useUpdateCourse, useDeleteCourse, useAcademyLessons, useCreateLesson, useUpdateLesson, useDeleteLesson } from '@/hooks/useAcademy';
+import { useAcademyCourses, useAcademyCategories, useCreateCourse, useUpdateCourse, useDeleteCourse, useAcademyLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useReorderLessons } from '@/hooks/useAcademy';
 import { useAllAcademySubscriptions, useAcademyStudents } from '@/hooks/useAcademySubscription';
 import { useR2Storage } from '@/hooks/useR2Storage';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,23 @@ import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Plus, Pencil, Trash2, BookOpen, ArrowLeft, Upload, GripVertical, Eye, Users, CreditCard, Clock, XCircle } from 'lucide-react';
 import type { AcademyCourse, AcademyLesson } from '@/hooks/useAcademy';
 import { format } from 'date-fns';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   active: { label: 'Ativa', variant: 'default' },
