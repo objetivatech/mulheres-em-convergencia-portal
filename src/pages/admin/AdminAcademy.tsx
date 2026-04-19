@@ -541,7 +541,7 @@ const LessonsPanel = ({ courseId, onClose }: { courseId: string; onClose: () => 
   const updateLesson = useUpdateLesson();
   const deleteLesson = useDeleteLesson();
   const reorderLessons = useReorderLessons(courseId);
-  const { uploadFile, uploading } = useR2Storage();
+  const { uploadFile, uploading, progress } = useR2Storage();
 
   const [editing, setEditing] = useState<Partial<AcademyLesson> | null>(null);
 
@@ -672,7 +672,19 @@ const LessonsPanel = ({ courseId, onClose }: { courseId: string; onClose: () => 
               ) : (
                 <div className="space-y-2">
                   <Input type="file" accept={editing.content_type === 'pdf' ? '.pdf' : 'image/*'} onChange={handleFileUpload} disabled={uploading} />
-                  {editing.content_url && <p className="text-xs text-muted-foreground truncate">{editing.content_url}</p>}
+                  <p className="text-xs text-muted-foreground">
+                    Limite: <strong>200 MB</strong> · Formatos: {editing.content_type === 'pdf' ? 'PDF' : 'JPG, PNG, WebP'}.
+                    Arquivos acima de 10 MB são enviados diretamente para o Cloudflare R2 (upload pode levar alguns minutos).
+                  </p>
+                  {uploading && (
+                    <div className="space-y-1">
+                      <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                        <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Enviando... {progress}%</p>
+                    </div>
+                  )}
+                  {editing.content_url && !uploading && <p className="text-xs text-muted-foreground truncate">{editing.content_url}</p>}
                 </div>
               )}
             </div>

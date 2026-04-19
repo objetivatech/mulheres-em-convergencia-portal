@@ -102,6 +102,10 @@ Admin / Associada / Embaixadora
 
 - PDFs e imagens via Cloudflare R2 (pasta `academy-materials`)
 - Hook `useR2Storage` para uploads no admin
+- **Limite por arquivo**: 200 MB (PDF, JPG, PNG, WebP)
+- **Fluxo**: arquivos > 10 MB são enviados diretamente do navegador para o R2
+  via URL pré-assinada, evitando limites de CPU/memória da Edge Function.
+  Requer CORS configurado no bucket R2 (ver `docs/_active/06-funcionalidades/r2-cors-config.md`).
 
 ## Assinatura (R$29,90/mês)
 

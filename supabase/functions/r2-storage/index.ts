@@ -13,6 +13,10 @@ const FOLDER_RULES: Record<string, { maxSizeMB: number; allowedMimeTypes: string
     maxSizeMB: 10,
     allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'],
   },
+  'academy-materials': {
+    maxSizeMB: 200,
+    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'],
+  },
 }
 
 const DEFAULT_RULES = { maxSizeMB: 50, allowedMimeTypes: [] as string[] } // empty = any
@@ -29,6 +33,11 @@ function getR2Config() {
   }
 
   return { accessKeyId, secretAccessKey, endpoint, publicUrl, bucketName }
+}
+
+function sanitizeFileName(name: string): string {
+  const ext = name.split('.').pop()?.toLowerCase() || 'bin'
+  return `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`
 }
 
 serve(async (req) => {
@@ -48,10 +57,9 @@ serve(async (req) => {
     const url = new URL(req.url)
     let action = url.searchParams.get('action')
 
-    // Determine action from content type
     const contentType = req.headers.get('content-type') || ''
 
-    // ─── UPLOAD (multipart/form-data) ───
+    // ─── UPLOAD (multipart/form-data) — small files only ───
     if (contentType.includes('multipart/form-data') || contentType.includes('form-data')) {
       const formData = await req.formData()
       action = (formData.get('action') as string) || action || 'upload'
@@ -67,7 +75,6 @@ serve(async (req) => {
           )
         }
 
-        // Apply folder-specific rules
         const rules = FOLDER_RULES[folder] || DEFAULT_RULES
         const fileSizeMB = file.size / (1024 * 1024)
         if (fileSizeMB > rules.maxSizeMB) {
@@ -83,10 +90,15 @@ serve(async (req) => {
           )
         }
 
-        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin'
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-        const objectKey = `${folder}/${fileName}`
+        // Hard cap to protect edge function CPU/memory: anything > 20MB must use presign flow
+        if (fileSizeMB > 20) {
+          return new Response(
+            JSON.stringify({ error: `File too large for direct upload (${fileSizeMB.toFixed(1)}MB). Use presigned upload for files over 20MB.` }),
+            { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
 
+        const objectKey = `${folder}/${sanitizeFileName(file.name)}`
         const arrayBuffer = await file.arrayBuffer()
 
         const r2Url = `${config.endpoint}/${config.bucketName}/${objectKey}`
@@ -116,10 +128,64 @@ serve(async (req) => {
       }
     }
 
-    // ─── JSON body (delete action) ───
+    // ─── JSON body (presign / delete) ───
     if (contentType.includes('application/json')) {
       const body = await req.json()
       action = body.action || action
+
+      // ─── PRESIGN (large file uploads — browser PUTs directly to R2) ───
+      if (action === 'presign') {
+        const folder: string = body.folder || 'uploads'
+        const fileName: string = body.fileName || ''
+        const fileType: string = body.fileType || 'application/octet-stream'
+        const fileSize: number = Number(body.fileSize) || 0
+
+        if (!fileName) {
+          return new Response(
+            JSON.stringify({ error: 'fileName is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const rules = FOLDER_RULES[folder] || DEFAULT_RULES
+        const fileSizeMB = fileSize / (1024 * 1024)
+        if (fileSize > 0 && fileSizeMB > rules.maxSizeMB) {
+          return new Response(
+            JSON.stringify({ error: `Arquivo muito grande. Máximo ${rules.maxSizeMB}MB para a pasta "${folder}", recebido ${fileSizeMB.toFixed(1)}MB` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        if (rules.allowedMimeTypes.length > 0 && !rules.allowedMimeTypes.includes(fileType)) {
+          return new Response(
+            JSON.stringify({ error: `Tipo de arquivo "${fileType}" não permitido para a pasta "${folder}". Permitidos: ${rules.allowedMimeTypes.join(', ')}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        const objectKey = `${folder}/${sanitizeFileName(fileName)}`
+        const r2Url = `${config.endpoint}/${config.bucketName}/${objectKey}`
+
+        // Sign a PUT URL valid for 10 minutes
+        const signed = await aws.sign(
+          new Request(`${r2Url}?X-Amz-Expires=600`, {
+            method: 'PUT',
+            headers: { 'Content-Type': fileType },
+          }),
+          { aws: { signQuery: true } }
+        )
+
+        const publicFileUrl = `${config.publicUrl}/${objectKey}`
+        return new Response(
+          JSON.stringify({
+            success: true,
+            uploadUrl: signed.url,
+            publicUrl: publicFileUrl,
+            key: objectKey,
+            requiredHeaders: { 'Content-Type': fileType },
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       if (action === 'delete') {
         const objectKey = body.key
@@ -184,7 +250,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ error: 'Invalid action. Send action via form-data or JSON body (upload/delete) or query param (list)' }),
+      JSON.stringify({ error: 'Invalid action. Send action via form-data or JSON body (upload/presign/delete) or query param (list)' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
