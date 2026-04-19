@@ -62,7 +62,9 @@ const AdminAcademy = () => {
   const [subStatusFilter, setSubStatusFilter] = useState('all');
 
   const materialTypes = categories?.filter((c) => c.category_type === 'material_type') || [];
-  const subjects = categories?.filter((c) => c.category_type === 'subject') || [];
+  const subjects = (categories?.filter((c) => c.category_type === 'subject') || [])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
   const handleSaveCourse = async () => {
     if (!editingCourse?.title) return;
