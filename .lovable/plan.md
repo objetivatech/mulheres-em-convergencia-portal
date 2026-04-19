@@ -1,110 +1,61 @@
 
-## Plano Definitivo para RSS e Sitemap Canônicos no domínio `mulheresemconvergencia.com.br`
 
-### Diagnóstico da varredura
-Encontrei um desalinhamento claro entre a infraestrutura e a aplicação:
+## Plano: ajustes no MeC Academy
 
-- O projeto já possui um proxy correto em `functions/[[path]].ts` para atender:
-  - `/rss.xml`
-  - `/sitemap.xml`
-  - `/llms-full.txt`
-- Porém, o frontend foi alterado para usar URLs diretas do Supabase em:
-  - `src/lib/constants.ts`
-  - `src/components/layout/Footer.tsx`
-  - `src/pages/Admin.tsx`
-- O arquivo `public/_redirects` ainda aponta diretamente para o Supabase, criando uma segunda estratégia de roteamento e deixando a arquitetura inconsistente.
-- Há documentação ainda ensinando ou exibindo URLs `supabase.co/functions/v1/...`, o que reforça o uso do endpoint errado.
+### 1. Adicionar 3 novos assuntos e ordenar alfabeticamente
 
-Isso confirma a raiz do problema: a camada pública correta deveria ser sempre o domínio oficial, mas o sistema ficou com fontes de verdade conflitantes.
+**Banco de dados** — inserir 3 novas linhas em `academy_categories` (tipo `subject`):
+- Networking
+- Gestão de Negócios
+- Comunidade
 
-## Objetivo da correção
-Restaurar uma arquitetura única e definitiva em que:
+Os assuntos atuais são: Marketing, Empreendedorismo, Finanças, Liderança, Desenvolvimento Pessoal, Tecnologia. Com os novos, ficaremos com 9 assuntos.
 
-- o endereço público e canônico seja sempre:
-  - `https://mulheresemconvergencia.com.br/rss.xml`
-  - `https://mulheresemconvergencia.com.br/sitemap.xml`
-- o Supabase continue apenas como backend interno de geração
-- o Admin, rodapé, meta tags e documentos usem somente o domínio oficial
-- não haja risco de bagunçar Search Console, rastreamento, distribuição SEO ou consumo por agregadores
+**Ordenação alfabética** — duas frentes complementares:
 
-## Correções a implementar
+a) Atualizar o `display_order` no banco para refletir a ordem alfabética dos 9 assuntos (mantendo `material_type` intacto, com sua ordem própria). Isso garante consistência em todos os lugares que listam categorias (catálogo público, filtros, etc.).
 
-### 1. Reverter os links públicos para o domínio oficial
-Ajustar `src/lib/constants.ts` para que `RSS_FEED_URL` e `SITEMAP_URL` sejam derivados de `PRODUCTION_DOMAIN`, não do Supabase.
+b) Adicionar um sort secundário por `name` no client em `AdminAcademy.tsx` apenas no array `subjects` usado no seletor "Assunto", como segurança extra (ordena no JS mesmo se o `display_order` desincronizar no futuro).
 
-Resultado esperado:
-- o Admin passa a abrir/copiar o domínio canônico
-- o rodapé passa a exibir o domínio canônico
-- nenhuma interface pública expõe endpoint interno do Supabase
+**Conexões revisadas (sem quebra)**:
+- `useAcademyCategories` retorna por `display_order` — continua funcionando com novas linhas.
+- Filtros do catálogo (`AcademyCatalogo` via `CategoryFilter`) — continuam funcionando, ganham as 3 novas opções automaticamente.
+- `academy_courses.subject_id` referencia `academy_categories.id` — apenas adicionamos linhas, nada quebra.
+- CONECTA+ (que reaproveita o catálogo do Academy) — herda automaticamente.
 
-### 2. Manter o proxy do Cloudflare/Pages como única ponte para o Supabase
-Preservar `functions/[[path]].ts` como mecanismo oficial de entrega pública.
+### 2. Reordenação de aulas via drag-and-drop
 
-Revisão prevista:
-- confirmar que `/rss.xml` e `/sitemap.xml` são interceptados antes de qualquer fallback do SPA
-- garantir `Content-Type` correto para XML
-- manter cache apropriado
-- manter headers de autenticação só no lado servidor
+A lib `@dnd-kit` já está instalada. Implementação no `LessonsPanel` (dentro de `AdminAcademy.tsx`):
 
-### 3. Eliminar conflito de roteamento
-Revisar `public/_redirects` para não competir com a Pages Function.
+- Envolver a lista de aulas com `DndContext` + `SortableContext` (estratégia vertical).
+- Cada item de aula vira um componente `SortableLessonItem` usando `useSortable`. O ícone `GripVertical` (já presente) vira a alça de arraste.
+- Ao soltar, recalcular o `display_order` sequencial (1, 2, 3…) e persistir via uma nova função `useReorderLessons` em `useAcademy.ts`, que faz update em lote das aulas movidas (apenas as que mudaram de posição, em uma única transação via `upsert` ou múltiplos `update` em paralelo).
+- Atualização otimista no React Query para feedback imediato; invalidação de `['academy-lessons', courseId]` ao final.
 
-Ajuste proposto:
-- remover ou neutralizar as regras de `/rss.xml` e `/sitemap.xml` no `_redirects` se estiverem redundantes com `functions/[[path]].ts`
-- deixar apenas uma estratégia oficial de publicação
+**Conexões revisadas (sem quebra)**:
+- `useAcademyLessons` já ordena por `display_order` — a reordenação reflete imediatamente no player do aluno (`AcademyCurso.tsx`), navegação Anterior/Próxima e `LessonList` lateral.
+- O campo `display_order` já existe na tabela `academy_lessons` e já é usado na criação de novas aulas (`(lessons?.length || 0) + 1`).
+- Progresso (`academy_progress`) referencia `lesson_id`, não posição — totalmente intocado.
+- Nenhuma edge function depende da ordem.
 
-Isso evita comportamento inconsistente entre deploys, ambientes e domínio customizado.
+### 3. Documentação
 
-### 4. Corrigir a área administrativa
-Atualizar `src/pages/Admin.tsx` para:
-- visualizar RSS e Sitemap no domínio oficial
-- copiar as URLs canônicas corretas
-- exibir textos alinhados com a arquitetura real
+Atualizar `docs/_active/11-academy/mec-academy.md`:
+- Incluir os 3 novos assuntos na lista de categorias padrão.
+- Documentar a reordenação drag-and-drop das aulas e o uso de `display_order`.
+- Mencionar a ordenação alfabética dos assuntos.
 
-### 5. Corrigir o rodapé
-Atualizar `src/components/layout/Footer.tsx` para manter os links públicos no domínio oficial, sem qualquer referência ao Supabase.
+### Impacto e segurança
 
-### 6. Revisar referências SEO no HTML estático
-Validar que o `index.html` continue apontando para:
-- `<link rel="alternate" ... href="https://mulheresemconvergencia.com.br/rss.xml" />`
+- **Migration**: apenas `INSERT` de 3 categorias e `UPDATE` de `display_order` nos subjects. Zero alteração de schema.
+- **Frontend**: alterações isoladas em `AdminAcademy.tsx` (LessonsPanel) e em `useAcademy.ts` (novo hook `useReorderLessons`).
+- **Sem mudança** em: `LessonPlayer`, `LessonList`, `AccessGate`, `AcademyCurso`, `AcademyCatalogo`, hooks de matrícula/progresso/assinatura, edge functions, RSS/Sitemap, CRM, gamificação.
+- **CONECTA+**: continua consumindo o catálogo de cursos via os mesmos hooks, sem mudanças.
 
-Se necessário, revisar também qualquer referência complementar a sitemap/RSS em arquivos públicos.
+### Arquivos que serão tocados
 
-### 7. Limpeza documental completa
-Atualizar a documentação para refletir a arquitetura correta:
+1. Migration SQL: insert de 3 subjects + update de `display_order`
+2. `src/hooks/useAcademy.ts` — novo `useReorderLessons` + sort alfabético opcional
+3. `src/pages/admin/AdminAcademy.tsx` — DnD no LessonsPanel + sort dos subjects no seletor
+4. `docs/_active/11-academy/mec-academy.md` — documentação atualizada
 
-- `docs/_active/06-funcionalidades/cloudflare-pages-deploy.md`
-- `docs/_active/06-funcionalidades/rss-sitemap-schema.md`
-- `docs/_active/DEPLOY-RSS-FUNCTION.md`
-
-Remover instruções que incentivem uso público de URLs `supabase.co/functions/v1/...`.
-
-### 8. Validação final obrigatória
-Após a implementação, validar explicitamente:
-
-- `https://mulheresemconvergencia.com.br/rss.xml`
-- `https://mulheresemconvergencia.com.br/sitemap.xml`
-
-E confirmar:
-- abre no domínio oficial
-- não cai em SPA/404
-- retorna XML
-- Admin copia a URL correta
-- rodapé abre a URL correta
-- Search Console pode consumir o sitemap canônico sem desvio para Supabase
-
-## Resultado esperado
-Ao final, o portal ficará com uma arquitetura limpa e estável:
-
-```text
-Usuário / Google / agregadores
-        ↓
-https://mulheresemconvergencia.com.br/rss.xml
-https://mulheresemconvergencia.com.br/sitemap.xml
-        ↓
-Cloudflare Pages Function
-        ↓
-Supabase Edge Functions (interno)
-```
-
-Assim, o domínio oficial volta a ser a única referência pública, sem exposição indevida de endpoints internos e sem ruído para métricas, SEO e indexação.
