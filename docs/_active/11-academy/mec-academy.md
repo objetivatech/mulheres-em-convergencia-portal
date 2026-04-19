@@ -12,10 +12,35 @@ O **MeC Academy** é o módulo de Learning Management System (LMS) do portal Mul
 |---|---|
 | `academy_categories` | Categorias de conteúdo (tipo de material e assunto) |
 | `academy_courses` | Cursos e aulas avulsas |
-| `academy_lessons` | Aulas dentro de cada curso |
+| `academy_lessons` | Aulas dentro de cada curso (ordenadas por `display_order`) |
 | `academy_enrollments` | Matrículas dos alunos |
 | `academy_progress` | Progresso por aula (posição, conclusão) |
 | `academy_subscriptions` | Assinaturas pagas do Academy (R$29,90/mês) |
+
+### Categorias de Assuntos (subject)
+
+Os assuntos disponíveis no cadastro de cursos são exibidos em **ordem alfabética** no Admin, no catálogo público e nos filtros. Lista atual:
+
+- Comunidade
+- Desenvolvimento Pessoal
+- Empreendedorismo
+- Finanças
+- Gestão de Negócios
+- Liderança
+- Marketing
+- Networking
+- Tecnologia
+
+A ordenação é garantida em duas camadas: o `display_order` no banco está sincronizado alfabeticamente, e o seletor de Assunto no Admin (`AdminAcademy.tsx`) aplica um sort secundário por `name` no client (`localeCompare` pt-BR) como fallback.
+
+### Reordenação de Aulas
+
+Cada curso tem suas aulas ordenadas pelo campo `display_order` em `academy_lessons`. O Admin (`LessonsPanel`) permite reordenar as aulas via **drag-and-drop** usando `@dnd-kit/sortable`:
+
+- A alça de arraste é o ícone `GripVertical` em cada item.
+- Ao soltar, o `display_order` é recalculado sequencialmente (1, 2, 3...) e persistido via `useReorderLessons`, que faz updates em paralelo no Supabase.
+- A nova ordem reflete imediatamente no player do aluno (`AcademyCurso.tsx`), na navegação Anterior/Próxima e na `LessonList` lateral, pois `useAcademyLessons` consulta sempre por `display_order`.
+- O progresso (`academy_progress`) referencia `lesson_id`, então reordenar **não afeta** o progresso já registrado.
 
 ### Role `student`
 
