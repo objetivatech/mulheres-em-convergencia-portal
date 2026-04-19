@@ -267,6 +267,48 @@ export const useDeleteLesson = () => {
   });
 };
 
+export const useReorderLessons = (courseId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      // Update display_order in parallel for all lessons
+      const updates = orderedIds.map((id, index) =>
+        supabase
+          .from('academy_lessons')
+          .update({ display_order: index + 1 })
+          .eq('id', id)
+      );
+      const results = await Promise.all(updates);
+      const firstError = results.find((r) => r.error)?.error;
+      if (firstError) throw firstError;
+    },
+    onMutate: async (orderedIds: string[]) => {
+      await queryClient.cancelQueries({ queryKey: ['academy-lessons', courseId] });
+      const previous = queryClient.getQueryData<AcademyLesson[]>(['academy-lessons', courseId]);
+      if (previous) {
+        const byId = new Map(previous.map((l) => [l.id, l]));
+        const reordered = orderedIds
+          .map((id, index) => {
+            const lesson = byId.get(id);
+            return lesson ? { ...lesson, display_order: index + 1 } : null;
+          })
+          .filter(Boolean) as AcademyLesson[];
+        queryClient.setQueryData(['academy-lessons', courseId], reordered);
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['academy-lessons', courseId], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['academy-lessons', courseId] });
+    },
+  });
+};
+
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 

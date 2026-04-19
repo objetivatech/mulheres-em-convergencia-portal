@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { useAcademyCourses, useAcademyCategories, useCreateCourse, useUpdateCourse, useDeleteCourse, useAcademyLessons, useCreateLesson, useUpdateLesson, useDeleteLesson } from '@/hooks/useAcademy';
+import { useAcademyCourses, useAcademyCategories, useCreateCourse, useUpdateCourse, useDeleteCourse, useAcademyLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useReorderLessons } from '@/hooks/useAcademy';
 import { useAllAcademySubscriptions, useAcademyStudents } from '@/hooks/useAcademySubscription';
 import { useR2Storage } from '@/hooks/useR2Storage';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,23 @@ import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Plus, Pencil, Trash2, BookOpen, ArrowLeft, Upload, GripVertical, Eye, Users, CreditCard, Clock, XCircle } from 'lucide-react';
 import type { AcademyCourse, AcademyLesson } from '@/hooks/useAcademy';
 import { format } from 'date-fns';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   active: { label: 'Ativa', variant: 'default' },
@@ -45,7 +62,9 @@ const AdminAcademy = () => {
   const [subStatusFilter, setSubStatusFilter] = useState('all');
 
   const materialTypes = categories?.filter((c) => c.category_type === 'material_type') || [];
-  const subjects = categories?.filter((c) => c.category_type === 'subject') || [];
+  const subjects = (categories?.filter((c) => c.category_type === 'subject') || [])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
   const handleSaveCourse = async () => {
     if (!editingCourse?.title) return;
@@ -460,6 +479,60 @@ const SubscribersTab = ({ statusFilter, onStatusFilterChange }: { statusFilter: 
   );
 };
 
+// Sortable lesson item
+const SortableLessonItem = ({
+  lesson,
+  onEdit,
+  onDelete,
+}: {
+  lesson: AcademyLesson;
+  onEdit: () => void;
+  onDelete: () => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: lesson.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 p-3 border rounded-md bg-background"
+    >
+      <button
+        type="button"
+        className="cursor-grab active:cursor-grabbing touch-none p-1 -ml-1 text-muted-foreground hover:text-foreground"
+        aria-label="Arrastar para reordenar"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex-1">
+        <p className="font-medium text-sm">{lesson.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {lesson.content_type} · {lesson.duration_minutes}min
+        </p>
+      </div>
+      {lesson.is_free_preview && (
+        <Badge variant="outline" className="text-xs">Preview</Badge>
+      )}
+      <Button variant="ghost" size="icon" onClick={onEdit}>
+        <Pencil className="h-3 w-3" />
+      </Button>
+      <Button variant="ghost" size="icon" onClick={onDelete}>
+        <Trash2 className="h-3 w-3 text-destructive" />
+      </Button>
+    </div>
+  );
+};
+
 // Sub-component for managing lessons
 const LessonsPanel = ({ courseId, onClose }: { courseId: string; onClose: () => void }) => {
   const { toast } = useToast();
@@ -467,9 +540,32 @@ const LessonsPanel = ({ courseId, onClose }: { courseId: string; onClose: () => 
   const createLesson = useCreateLesson();
   const updateLesson = useUpdateLesson();
   const deleteLesson = useDeleteLesson();
+  const reorderLessons = useReorderLessons(courseId);
   const { uploadFile, uploading } = useR2Storage();
 
   const [editing, setEditing] = useState<Partial<AcademyLesson> | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !lessons) return;
+
+    const oldIndex = lessons.findIndex((l) => l.id === active.id);
+    const newIndex = lessons.findIndex((l) => l.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(lessons, oldIndex, newIndex);
+    try {
+      await reorderLessons.mutateAsync(reordered.map((l) => l.id));
+      toast({ title: 'Ordem das aulas atualizada!' });
+    } catch (e: any) {
+      toast({ title: 'Erro ao reordenar', description: e.message, variant: 'destructive' });
+    }
+  };
 
   const handleSave = async () => {
     if (!editing?.title || !editing?.content_url) return;
@@ -508,23 +604,32 @@ const LessonsPanel = ({ courseId, onClose }: { courseId: string; onClose: () => 
           ) : !lessons?.length ? (
             <p className="text-muted-foreground text-center py-4">Nenhuma aula. Adicione a primeira!</p>
           ) : (
-            lessons.map((lesson) => (
-              <div key={lesson.id} className="flex items-center gap-3 p-3 border rounded-md">
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{lesson.title}</p>
-                  <p className="text-xs text-muted-foreground">{lesson.content_type} · {lesson.duration_minutes}min</p>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={lessons.map((l) => l.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {lessons.map((lesson) => (
+                    <SortableLessonItem
+                      key={lesson.id}
+                      lesson={lesson}
+                      onEdit={() => setEditing(lesson)}
+                      onDelete={async () => {
+                        if (confirm('Excluir esta aula?')) {
+                          await deleteLesson.mutateAsync(lesson.id);
+                          toast({ title: 'Aula excluída' });
+                        }
+                      }}
+                    />
+                  ))}
                 </div>
-                {lesson.is_free_preview && <Badge variant="outline" className="text-xs">Preview</Badge>}
-                <Button variant="ghost" size="icon" onClick={() => setEditing(lesson)}><Pencil className="h-3 w-3" /></Button>
-                <Button variant="ghost" size="icon" onClick={async () => {
-                  if (confirm('Excluir esta aula?')) {
-                    await deleteLesson.mutateAsync(lesson.id);
-                    toast({ title: 'Aula excluída' });
-                  }
-                }}><Trash2 className="h-3 w-3 text-destructive" /></Button>
-              </div>
-            ))
+              </SortableContext>
+            </DndContext>
           )}
 
           <Button variant="outline" className="w-full" onClick={() => setEditing({ title: '', content_type: 'youtube', content_url: '', display_order: (lessons?.length || 0) + 1 })}>
