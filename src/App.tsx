@@ -29,6 +29,7 @@ import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
+import ConfirmarTrocaEmailPage from "./pages/ConfirmarTrocaEmailPage";
 import ResetPasswordWithToken from "./pages/ResetPasswordWithToken";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
@@ -143,6 +144,7 @@ function AppContent() {
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/entrar" element={<Auth />} />
         <Route path="/confirmar-email" element={<ConfirmEmail />} />
+        <Route path="/confirmar-troca-email" element={<ConfirmarTrocaEmailPage />} />
         <Route path="/redefinir-senha" element={<ResetPasswordWithToken />} />
         <Route path="/esqueci-senha" element={<ForgotPassword />} />
         <Route path="/contato" element={<Contato />} />
