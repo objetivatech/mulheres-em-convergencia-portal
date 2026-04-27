@@ -81,18 +81,6 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
       return false;
     }
 
-    if (formData.contact_type === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.contact_value)) {
-        toast({
-          title: 'Erro de validação',
-          description: 'Email inválido',
-          variant: 'destructive'
-        });
-        return false;
-      }
-    }
-
     if (formData.contact_type === 'phone' || formData.contact_type === 'whatsapp') {
       const phoneOnly = formData.contact_value.replace(/\D/g, '');
       if (phoneOnly.length < 10) {
@@ -183,7 +171,7 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{contact ? 'Editar Contato' : 'Adicionar Contato'}</DialogTitle>
           <DialogDescription>
-            Adicione uma forma de contato
+            Adicione telefones, WhatsApp ou outros contatos. Para alterar seu email principal, use a aba Perfil.
           </DialogDescription>
         </DialogHeader>
 
@@ -198,7 +186,6 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="phone">Telefone</SelectItem>
                 <SelectItem value="whatsapp">WhatsApp</SelectItem>
                 <SelectItem value="other">Outro</SelectItem>
@@ -208,8 +195,7 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
 
           <div>
             <Label htmlFor="contact_value">
-              {formData.contact_type === 'email' ? 'Email' :
-               formData.contact_type === 'phone' ? 'Telefone' :
+              {formData.contact_type === 'phone' ? 'Telefone' :
                formData.contact_type === 'whatsapp' ? 'WhatsApp' : 'Valor'} *
             </Label>
             <Input
@@ -217,11 +203,10 @@ export const ContactFormDialog: React.FC<ContactFormDialogProps> = ({
               value={formData.contact_value}
               onChange={(e) => handleValueChange(e.target.value)}
               placeholder={
-                formData.contact_type === 'email' ? 'email@exemplo.com' :
                 formData.contact_type === 'phone' || formData.contact_type === 'whatsapp' ? '(11) 99999-9999' :
                 'Valor do contato'
               }
-              type={formData.contact_type === 'email' ? 'email' : 'text'}
+              type="text"
               required
             />
           </div>
