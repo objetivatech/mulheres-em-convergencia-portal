@@ -105,7 +105,15 @@ import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 import ConectaParcerias from '@/pages/conecta/ConectaParcerias';
 import ConectaAniversariantes from '@/pages/conecta/ConectaAniversariantes';
 import EventoCheckin from '@/pages/EventoCheckin';
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 60_000,
+    },
+  },
+});
 
 // Hook para scroll ao topo quando a rota muda
 function ScrollToTop() {
