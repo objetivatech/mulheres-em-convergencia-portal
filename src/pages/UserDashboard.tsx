@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { SocioeconomicForm } from '@/components/user/SocioeconomicForm';
-import { ProfileEditForm } from '@/components/user/ProfileEditForm';
 import {
   LayoutDashboard,
   User,
@@ -169,9 +168,6 @@ export const UserDashboard = () => {
                 <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">
                   <LayoutDashboard className="h-4 w-4 mr-1" /> Visão Geral
                 </TabsTrigger>
-                <TabsTrigger value="meus-dados" className="text-xs sm:text-sm">
-                  <User className="h-4 w-4 mr-1" /> Meus Dados
-                </TabsTrigger>
                 <TabsTrigger value="socioeconomico" className="text-xs sm:text-sm">
                   <ClipboardList className="h-4 w-4 mr-1" /> Socioeconômico
                 </TabsTrigger>
@@ -246,11 +242,6 @@ export const UserDashboard = () => {
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
-
-              {/* ====== MEUS DADOS ====== */}
-              <TabsContent value="meus-dados" className="mt-6">
-                <ProfileEditForm profile={profile} onProfileUpdated={loadUserData} />
               </TabsContent>
 
               {/* ====== SOCIOECONÔMICO ====== */}
