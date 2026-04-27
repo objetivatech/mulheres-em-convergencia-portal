@@ -3844,6 +3844,45 @@ export type Database = {
           },
         ]
       }
+      email_change_requests: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          current_email: string
+          expires_at: string
+          id: string
+          new_email: string
+          status: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          current_email: string
+          expires_at?: string
+          id?: string
+          new_email: string
+          status?: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          current_email?: string
+          expires_at?: string
+          id?: string
+          new_email?: string
+          status?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_confirmation_tokens: {
         Row: {
           confirmed_at: string | null
