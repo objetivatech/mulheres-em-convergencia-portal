@@ -582,6 +582,13 @@ const DadosPessoaisPage = () => {
             fetchContacts();
           }}
         />
+
+        {/* Change Email Dialog */}
+        <ChangeEmailDialog
+          open={emailDialogOpen}
+          onClose={() => setEmailDialogOpen(false)}
+          currentEmail={user?.email || ''}
+        />
       </div>
     </Layout>
   );
