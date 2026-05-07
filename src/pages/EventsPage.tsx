@@ -12,6 +12,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { stripHtml } from '@/lib/stripHtml';
 
 const formatBadge = (eventFormat: string) => {
   const formats: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
