@@ -47,10 +47,35 @@ export interface EventRegistration {
   payment_id: string | null;
   checked_in_at: string | null;
   cost_center_id: string | null;
+  batch_id?: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   event?: Event;
+}
+
+export interface EventSpeaker {
+  id: string;
+  event_id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  photo_url: string | null;
+  linkedin_url: string | null;
+  display_order: number;
+}
+
+export interface EventTicketBatch {
+  id: string;
+  event_id: string;
+  name: string;
+  price: number;
+  quantity: number | null;
+  sold_count: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  display_order: number;
+  active: boolean;
 }
 
 export const useEvents = () => {
