@@ -219,6 +219,16 @@ export const EventsManagement: React.FC = () => {
             placeholder="Descrição detalhada do evento..."
           />
         </div>
+        <div className="col-span-2">
+          <Label>Imagem de capa</Label>
+          <ImageCropUploader
+            value={formData.image_url || undefined}
+            onChange={(url) => setFormData({ ...formData, image_url: url || '' })}
+            folder="event-covers"
+            dimensions={IMAGE_PRESETS.blogFeatured}
+            label="Capa do evento (1200×630)"
+          />
+        </div>
         <div>
           <Label>Tipo</Label>
           <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
