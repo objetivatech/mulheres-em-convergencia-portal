@@ -42,6 +42,16 @@ const defaultStages = [
   { value: 'lost', label: 'Perdido' },
 ];
 
+const getEventAutoRegistration = (deal?: CRMDeal) => {
+  const data = (deal?.metadata as any)?.event_auto_registration || {};
+  return {
+    full_name: data.full_name || deal?.title || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    cpf: data.cpf || deal?.cpf || '',
+  };
+};
+
 export const DealForm = ({ 
   open, 
   onOpenChange, 
@@ -75,11 +85,16 @@ export const DealForm = ({
     pipeline_id: deal?.pipeline_id || '',
     event_id: (deal as any)?.event_id || '',
     auto_register: (deal as any)?.auto_register ?? false,
+    participant_full_name: getEventAutoRegistration(deal).full_name,
+    participant_email: getEventAutoRegistration(deal).email,
+    participant_phone: getEventAutoRegistration(deal).phone,
+    participant_cpf: getEventAutoRegistration(deal).cpf,
   });
 
   // Reinicializar formData quando o deal mudar (editar vs criar)
   useEffect(() => {
     if (open) {
+      const eventAutoRegistration = getEventAutoRegistration(deal);
       setFormData({
         title: deal?.title || `Negócio com ${contactName}`,
         description: deal?.description || '',
@@ -91,6 +106,10 @@ export const DealForm = ({
         pipeline_id: deal?.pipeline_id || '',
         event_id: (deal as any)?.event_id || '',
         auto_register: (deal as any)?.auto_register ?? false,
+        participant_full_name: eventAutoRegistration.full_name || contactName || '',
+        participant_email: eventAutoRegistration.email,
+        participant_phone: eventAutoRegistration.phone,
+        participant_cpf: eventAutoRegistration.cpf,
       });
       if (deal?.pipeline_id) {
         setSelectedPipelineId(deal.pipeline_id);
@@ -124,6 +143,16 @@ export const DealForm = ({
       return;
     }
 
+    const needsParticipantData = formData.product_type === 'evento' && formData.event_id && formData.auto_register && contactType !== 'lead';
+    if (needsParticipantData && (!formData.participant_full_name.trim() || !formData.participant_email.trim())) {
+      toast({
+        title: 'Dados do participante obrigatórios',
+        description: 'Informe nome e email para atualizar as vagas do evento automaticamente.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const dealData: any = {
         title: formData.title,
@@ -139,6 +168,15 @@ export const DealForm = ({
         cpf: cpf || deal?.cpf || null,
         event_id: formData.product_type === 'evento' && formData.event_id ? formData.event_id : null,
         auto_register: formData.product_type === 'evento' ? formData.auto_register : false,
+        metadata: {
+          ...((deal?.metadata as Record<string, unknown>) || {}),
+          event_auto_registration: formData.product_type === 'evento' && formData.auto_register ? {
+            full_name: (formData.participant_full_name || formData.title).trim(),
+            email: formData.participant_email.trim(),
+            phone: formData.participant_phone.trim(),
+            cpf: formData.participant_cpf.replace(/\D/g, ''),
+          } : undefined,
+        },
       };
 
       if (deal) {
