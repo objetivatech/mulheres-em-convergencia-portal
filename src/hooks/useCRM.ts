@@ -425,9 +425,9 @@ export const useCRM = () => {
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
         queryClient.invalidateQueries({ queryKey: ['crm-stats'] });
-        if ((data as any).event_id && (data as any).auto_register) {
+        if (data.event_id && data.auto_register) {
           queryClient.invalidateQueries({ queryKey: ['events'] });
-          queryClient.invalidateQueries({ queryKey: ['event', (data as any).event_id] });
+          queryClient.invalidateQueries({ queryKey: ['event', data.event_id] });
           queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
           queryClient.invalidateQueries({ queryKey: ['event-stats'] });
         }
@@ -454,9 +454,9 @@ export const useCRM = () => {
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
         queryClient.invalidateQueries({ queryKey: ['crm-deal', data.id] });
         queryClient.invalidateQueries({ queryKey: ['crm-stats'] });
-        if ((data as any).event_id && (data as any).auto_register) {
+        if (data.event_id && data.auto_register) {
           queryClient.invalidateQueries({ queryKey: ['events'] });
-          queryClient.invalidateQueries({ queryKey: ['event', (data as any).event_id] });
+          queryClient.invalidateQueries({ queryKey: ['event', data.event_id] });
           queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
           queryClient.invalidateQueries({ queryKey: ['event-stats'] });
         }
