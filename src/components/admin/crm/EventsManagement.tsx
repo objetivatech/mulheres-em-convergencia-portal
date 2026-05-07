@@ -729,24 +729,31 @@ export const EventsManagement: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {list?.map((event) => (
-                          <TableRow key={event.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{event.title}</div>
-                                <div className="text-sm text-muted-foreground">{event.type}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                            </TableCell>
-                            <TableCell>{formatBadge(event.format)}</TableCell>
-                            <TableCell>
-                              {event.current_participants}/{event.max_participants || '∞'}
-                            </TableCell>
-                            <TableCell>{formatStatusBadge(event.status)}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
+                        {list?.map((event) => {
+                          const availableSpots = event.max_participants === null || event.max_participants === undefined
+                            ? null
+                            : Math.max(event.max_participants - (event.current_participants || 0), 0);
+                          return (
+                            <TableRow key={event.id}>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{event.title}</div>
+                                  <div className="text-sm text-muted-foreground">{event.type}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                              </TableCell>
+                              <TableCell>{formatBadge(event.format)}</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{event.current_participants}/{event.max_participants || '∞'}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {availableSpots === null ? 'Ilimitadas' : `${availableSpots} vagas disponíveis`}
+                                </div>
+                              </TableCell>
+                              <TableCell>{formatStatusBadge(event.status)}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
                                 <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
                                   <Eye className="h-4 w-4" />
                                 </Button>
@@ -783,10 +790,11 @@ export const EventsManagement: React.FC = () => {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   )}
