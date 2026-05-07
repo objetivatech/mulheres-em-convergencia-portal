@@ -565,5 +565,12 @@ export const useEvents = () => {
     useCheckIn,
     useRemoveRegistration,
     useEventStats,
+    useEventSpeakers,
+    useUpsertSpeaker,
+    useDeleteSpeaker,
+    useEventBatches,
+    useUpsertBatch,
+    useDeleteBatch,
+    useAddManualParticipant,
   };
 };
