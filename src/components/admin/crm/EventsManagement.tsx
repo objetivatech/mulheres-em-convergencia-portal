@@ -430,7 +430,7 @@ export const EventsManagement: React.FC = () => {
             <div className="flex items-start justify-between">
               <div>
                 <CardTitle className="text-2xl">{event.title}</CardTitle>
-                <p className="text-muted-foreground mt-1">{event.description}</p>
+                <p className="text-muted-foreground mt-1">{stripHtml(event.description, 240)}</p>
               </div>
               <div className="flex gap-2">
                 {formatStatusBadge(event.status)}
