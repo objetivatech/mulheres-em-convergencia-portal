@@ -42,8 +42,15 @@ const defaultStages = [
   { value: 'lost', label: 'Perdido' },
 ];
 
+type EventAutoRegistration = {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  cpf?: string;
+};
+
 const getEventAutoRegistration = (deal?: CRMDeal) => {
-  const data = (deal?.metadata as any)?.event_auto_registration || {};
+  const data = (deal?.metadata?.event_auto_registration || {}) as EventAutoRegistration;
   return {
     full_name: data.full_name || deal?.title || '',
     email: data.email || '',
@@ -83,8 +90,8 @@ export const DealForm = ({
     expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
     cost_center_id: deal?.cost_center_id || '',
     pipeline_id: deal?.pipeline_id || '',
-    event_id: (deal as any)?.event_id || '',
-    auto_register: (deal as any)?.auto_register ?? false,
+    event_id: deal?.event_id || '',
+    auto_register: deal?.auto_register ?? false,
     participant_full_name: getEventAutoRegistration(deal).full_name,
     participant_email: getEventAutoRegistration(deal).email,
     participant_phone: getEventAutoRegistration(deal).phone,
@@ -104,8 +111,8 @@ export const DealForm = ({
         expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
         cost_center_id: deal?.cost_center_id || '',
         pipeline_id: deal?.pipeline_id || '',
-        event_id: (deal as any)?.event_id || '',
-        auto_register: (deal as any)?.auto_register ?? false,
+        event_id: deal?.event_id || '',
+        auto_register: deal?.auto_register ?? false,
         participant_full_name: eventAutoRegistration.full_name || contactName || '',
         participant_email: eventAutoRegistration.email,
         participant_phone: eventAutoRegistration.phone,
@@ -154,7 +161,7 @@ export const DealForm = ({
     }
 
     try {
-      const dealData: any = {
+      const dealData: Omit<Partial<CRMDeal>, 'metadata'> & { metadata?: Record<string, unknown> } = {
         title: formData.title,
         description: formData.description || null,
         value: parseFloat(formData.value) || 0,
@@ -188,10 +195,11 @@ export const DealForm = ({
       }
       
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado ao salvar negócio';
       toast({
         title: deal ? 'Erro ao atualizar negócio' : 'Erro ao criar negócio',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }
@@ -258,7 +266,7 @@ export const DealForm = ({
                 <Label htmlFor="stage">Estágio</Label>
                 <Select
                   value={formData.stage}
-                  onValueChange={(value) => setFormData({ ...formData, stage: value as any })}
+                  onValueChange={(value) => setFormData({ ...formData, stage: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
