@@ -6682,6 +6682,10 @@ export type Database = {
         Returns: Json
       }
       publish_scheduled_posts: { Args: never; Returns: number }
+      recalculate_event_current_participants: {
+        Args: { _event_id: string }
+        Returns: undefined
+      }
       reject_community_request: {
         Args: { admin_notes: string; request_id: string }
         Returns: Json
