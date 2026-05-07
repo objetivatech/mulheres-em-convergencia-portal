@@ -42,6 +42,23 @@ const defaultStages = [
   { value: 'lost', label: 'Perdido' },
 ];
 
+type EventAutoRegistration = {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  cpf?: string;
+};
+
+const getEventAutoRegistration = (deal?: CRMDeal) => {
+  const data = (deal?.metadata?.event_auto_registration || {}) as EventAutoRegistration;
+  return {
+    full_name: data.full_name || deal?.title || '',
+    email: data.email || '',
+    phone: data.phone || '',
+    cpf: data.cpf || deal?.cpf || '',
+  };
+};
+
 export const DealForm = ({ 
   open, 
   onOpenChange, 
@@ -73,13 +90,18 @@ export const DealForm = ({
     expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
     cost_center_id: deal?.cost_center_id || '',
     pipeline_id: deal?.pipeline_id || '',
-    event_id: (deal as any)?.event_id || '',
-    auto_register: (deal as any)?.auto_register ?? false,
+    event_id: deal?.event_id || '',
+    auto_register: deal?.auto_register ?? false,
+    participant_full_name: getEventAutoRegistration(deal).full_name,
+    participant_email: getEventAutoRegistration(deal).email,
+    participant_phone: getEventAutoRegistration(deal).phone,
+    participant_cpf: getEventAutoRegistration(deal).cpf,
   });
 
   // Reinicializar formData quando o deal mudar (editar vs criar)
   useEffect(() => {
     if (open) {
+      const eventAutoRegistration = getEventAutoRegistration(deal);
       setFormData({
         title: deal?.title || `Negócio com ${contactName}`,
         description: deal?.description || '',
@@ -89,8 +111,12 @@ export const DealForm = ({
         expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
         cost_center_id: deal?.cost_center_id || '',
         pipeline_id: deal?.pipeline_id || '',
-        event_id: (deal as any)?.event_id || '',
-        auto_register: (deal as any)?.auto_register ?? false,
+        event_id: deal?.event_id || '',
+        auto_register: deal?.auto_register ?? false,
+        participant_full_name: eventAutoRegistration.full_name || contactName || '',
+        participant_email: eventAutoRegistration.email,
+        participant_phone: eventAutoRegistration.phone,
+        participant_cpf: eventAutoRegistration.cpf,
       });
       if (deal?.pipeline_id) {
         setSelectedPipelineId(deal.pipeline_id);
@@ -124,8 +150,18 @@ export const DealForm = ({
       return;
     }
 
+    const needsParticipantData = formData.product_type === 'evento' && formData.event_id && formData.auto_register && contactType !== 'lead';
+    if (needsParticipantData && (!formData.participant_full_name.trim() || !formData.participant_email.trim())) {
+      toast({
+        title: 'Dados do participante obrigatórios',
+        description: 'Informe nome e email para atualizar as vagas do evento automaticamente.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      const dealData: any = {
+      const dealData: Omit<Partial<CRMDeal>, 'metadata'> & { metadata?: Record<string, unknown> } = {
         title: formData.title,
         description: formData.description || null,
         value: parseFloat(formData.value) || 0,
@@ -139,6 +175,15 @@ export const DealForm = ({
         cpf: cpf || deal?.cpf || null,
         event_id: formData.product_type === 'evento' && formData.event_id ? formData.event_id : null,
         auto_register: formData.product_type === 'evento' ? formData.auto_register : false,
+        metadata: {
+          ...((deal?.metadata as Record<string, unknown>) || {}),
+          event_auto_registration: formData.product_type === 'evento' && formData.auto_register ? {
+            full_name: (formData.participant_full_name || formData.title).trim(),
+            email: formData.participant_email.trim(),
+            phone: formData.participant_phone.trim(),
+            cpf: formData.participant_cpf.replace(/\D/g, ''),
+          } : undefined,
+        },
       };
 
       if (deal) {
@@ -150,10 +195,11 @@ export const DealForm = ({
       }
       
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro inesperado ao salvar negócio';
       toast({
         title: deal ? 'Erro ao atualizar negócio' : 'Erro ao criar negócio',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }
@@ -220,7 +266,7 @@ export const DealForm = ({
                 <Label htmlFor="stage">Estágio</Label>
                 <Select
                   value={formData.stage}
-                  onValueChange={(value) => setFormData({ ...formData, stage: value as any })}
+                  onValueChange={(value) => setFormData({ ...formData, stage: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -316,17 +362,58 @@ export const DealForm = ({
                   </Select>
                 </div>
                 {formData.event_id && (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Inscrever automaticamente</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Cria a inscrição no evento ao salvar este negócio.
-                      </p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Inscrever automaticamente</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Cria a inscrição no evento ao salvar este negócio.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={formData.auto_register}
+                        onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
+                      />
                     </div>
-                    <Switch
-                      checked={formData.auto_register}
-                      onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
-                    />
+                    {formData.auto_register && contactType !== 'lead' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg border bg-background p-3">
+                        <div>
+                          <Label htmlFor="participant_full_name">Nome do participante *</Label>
+                          <Input
+                            id="participant_full_name"
+                            value={formData.participant_full_name}
+                            onChange={(e) => setFormData({ ...formData, participant_full_name: e.target.value })}
+                            placeholder="Nome completo"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_email">Email do participante *</Label>
+                          <Input
+                            id="participant_email"
+                            type="email"
+                            value={formData.participant_email}
+                            onChange={(e) => setFormData({ ...formData, participant_email: e.target.value })}
+                            placeholder="email@dominio.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_phone">Telefone</Label>
+                          <Input
+                            id="participant_phone"
+                            value={formData.participant_phone}
+                            onChange={(e) => setFormData({ ...formData, participant_phone: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_cpf">CPF</Label>
+                          <Input
+                            id="participant_cpf"
+                            value={formData.participant_cpf}
+                            onChange={(e) => setFormData({ ...formData, participant_cpf: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

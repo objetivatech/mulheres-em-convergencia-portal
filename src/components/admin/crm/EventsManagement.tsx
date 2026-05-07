@@ -354,6 +354,11 @@ export const EventsManagement: React.FC = () => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
     const [activeTab, setActiveTab] = useState('details');
     const [showAddParticipant, setShowAddParticipant] = useState(false);
+    const confirmedRegistrations = registrations?.filter((reg) => ['confirmed', 'attended'].includes(reg.status)).length;
+    const currentParticipants = confirmedRegistrations ?? event.current_participants ?? 0;
+    const availableSpots = event.max_participants === null || event.max_participants === undefined
+      ? null
+      : Math.max(event.max_participants - currentParticipants, 0);
 
     const handleCheckIn = async (registrationId: string) => {
       try {
@@ -456,12 +461,11 @@ export const EventsManagement: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{event.current_participants}/{event.max_participants || '∞'}</span>
+                <span>{currentParticipants}/{event.max_participants || '∞'} inscritos</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">
-                  {event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}
-                </span>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{availableSpots === null ? 'Vagas ilimitadas' : `${availableSpots} vagas disponíveis`}</span>
               </div>
             </div>
           </CardContent>
@@ -725,35 +729,42 @@ export const EventsManagement: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {list?.map((event) => (
-                          <TableRow key={event.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{event.title}</div>
-                                <div className="text-sm text-muted-foreground">{event.type}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                            </TableCell>
-                            <TableCell>{formatBadge(event.format)}</TableCell>
-                            <TableCell>
-                              {event.current_participants}/{event.max_participants || '∞'}
-                            </TableCell>
-                            <TableCell>{formatStatusBadge(event.status)}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                {tab === 'active' && new Date(event.date_start) < now && (
-                                  <Button
+                        {list?.map((event) => {
+                          const availableSpots = event.max_participants === null || event.max_participants === undefined
+                            ? null
+                            : Math.max(event.max_participants - (event.current_participants || 0), 0);
+                          return (
+                            <TableRow key={event.id}>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{event.title}</div>
+                                  <div className="text-sm text-muted-foreground">{event.type}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {format(new Date(event.date_start), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                              </TableCell>
+                              <TableCell>{formatBadge(event.format)}</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{event.current_participants}/{event.max_participants || '∞'}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {availableSpots === null ? 'Ilimitadas' : `${availableSpots} vagas disponíveis`}
+                                </div>
+                              </TableCell>
+                              <TableCell>{formatStatusBadge(event.status)}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                  {tab === 'active' && new Date(event.date_start) < now && (
+                                    <Button
                                     size="sm"
                                     variant="ghost"
                                     title="Arquivar"
@@ -763,26 +774,27 @@ export const EventsManagement: React.FC = () => {
                                     }}
                                   >
                                     <Archive className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-destructive"
+                                    title="Excluir"
+                                    onClick={async () => {
+                                      if (confirm('Excluir evento?')) {
+                                        await deleteEvent.mutateAsync(event.id);
+                                        toast({ title: 'Evento excluído' });
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
-                                )}
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  className="text-destructive"
-                                  title="Excluir"
-                                  onClick={async () => {
-                                    if (confirm('Excluir evento?')) {
-                                      await deleteEvent.mutateAsync(event.id);
-                                      toast({ title: 'Evento excluído' });
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   )}
