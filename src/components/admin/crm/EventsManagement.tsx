@@ -22,6 +22,11 @@ import { useToast } from '@/hooks/use-toast';
 import { EventFormBuilder } from './EventFormBuilder';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { TinyMCESelfHosted } from '@/components/blog/TinyMCESelfHosted';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
+import { EventSpeakersPanel } from './EventSpeakersPanel';
+import { EventBatchesPanel } from './EventBatchesPanel';
+import { AddParticipantDialog } from './AddParticipantDialog';
+import { stripHtml } from '@/lib/stripHtml';
 
 // Storage key for form persistence
 const FORM_STORAGE_KEY = 'crm_event_form_draft';
@@ -41,6 +46,7 @@ interface EventFormData {
   instructor_name: string;
   status: string;
   conecta_sync: boolean;
+  image_url: string;
 }
 
 const getDefaultFormData = (): EventFormData => ({
@@ -58,6 +64,7 @@ const getDefaultFormData = (): EventFormData => ({
   instructor_name: '',
   status: 'draft',
   conecta_sync: false,
+  image_url: '',
 });
 
 const eventToFormData = (event: Event): EventFormData => ({
@@ -75,6 +82,7 @@ const eventToFormData = (event: Event): EventFormData => ({
   instructor_name: event.instructor_name || '',
   status: event.status || 'draft',
   conecta_sync: (event as any).conecta_sync ?? false,
+  image_url: event.image_url || '',
 });
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -211,6 +219,16 @@ export const EventsManagement: React.FC = () => {
             placeholder="Descrição detalhada do evento..."
           />
         </div>
+        <div className="col-span-2">
+          <Label>Imagem de capa</Label>
+          <ImageCropUploader
+            value={formData.image_url || undefined}
+            onChange={(url) => setFormData({ ...formData, image_url: url || '' })}
+            folder="event-covers"
+            dimensions={IMAGE_PRESETS.blogFeatured}
+            label="Capa do evento (1200×630)"
+          />
+        </div>
         <div>
           <Label>Tipo</Label>
           <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
@@ -335,6 +353,7 @@ export const EventsManagement: React.FC = () => {
   const EventDetails: React.FC<{ event: Event }> = ({ event }) => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
     const [activeTab, setActiveTab] = useState('details');
+    const [showAddParticipant, setShowAddParticipant] = useState(false);
 
     const handleCheckIn = async (registrationId: string) => {
       try {
@@ -412,7 +431,7 @@ export const EventsManagement: React.FC = () => {
             <div className="flex items-start justify-between">
               <div>
                 <CardTitle className="text-2xl">{event.title}</CardTitle>
-                <p className="text-muted-foreground mt-1">{event.description}</p>
+                <p className="text-muted-foreground mt-1">{stripHtml(event.description, 240)}</p>
               </div>
               <div className="flex gap-2">
                 {formatStatusBadge(event.status)}
@@ -454,6 +473,8 @@ export const EventsManagement: React.FC = () => {
               <Users className="h-4 w-4" />
               Inscritos ({registrations?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="speakers">Palestrantes</TabsTrigger>
+            <TabsTrigger value="batches">Lotes</TabsTrigger>
             <TabsTrigger value="form" className="flex items-center gap-2">
               <FileEdit className="h-4 w-4" />
               Formulário
@@ -463,6 +484,11 @@ export const EventsManagement: React.FC = () => {
           <TabsContent value="details" className="mt-4">
             <Card>
               <CardContent className="pt-6">
+                <div className="flex justify-end mb-3">
+                  <Button size="sm" onClick={() => setShowAddParticipant(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Adicionar participante
+                  </Button>
+                </div>
                 {isLoading ? (
                   <p>Carregando...</p>
                 ) : registrations?.length === 0 ? (
@@ -539,10 +565,19 @@ export const EventsManagement: React.FC = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="speakers" className="mt-4">
+            <EventSpeakersPanel eventId={event.id} />
+          </TabsContent>
+
+          <TabsContent value="batches" className="mt-4">
+            <EventBatchesPanel eventId={event.id} />
+          </TabsContent>
+
           <TabsContent value="form" className="mt-4">
             <EventFormBuilder eventId={event.id} />
           </TabsContent>
         </Tabs>
+        <AddParticipantDialog event={event} open={showAddParticipant} onOpenChange={setShowAddParticipant} />
       </div>
     );
   };

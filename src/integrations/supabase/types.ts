@@ -3385,11 +3385,14 @@ export type Database = {
       crm_deals: {
         Row: {
           assigned_to: string | null
+          auto_register: boolean
+          batch_id: string | null
           closed_at: string | null
           cost_center_id: string | null
           cpf: string | null
           created_at: string
           description: string | null
+          event_id: string | null
           expected_close_date: string | null
           id: string
           lead_id: string | null
@@ -3407,11 +3410,14 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          auto_register?: boolean
+          batch_id?: string | null
           closed_at?: string | null
           cost_center_id?: string | null
           cpf?: string | null
           created_at?: string
           description?: string | null
+          event_id?: string | null
           expected_close_date?: string | null
           id?: string
           lead_id?: string | null
@@ -3429,11 +3435,14 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          auto_register?: boolean
+          batch_id?: string | null
           closed_at?: string | null
           cost_center_id?: string | null
           cpf?: string | null
           created_at?: string
           description?: string | null
+          event_id?: string | null
           expected_close_date?: string | null
           id?: string
           lead_id?: string | null
@@ -3451,10 +3460,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "crm_deals_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticket_batches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "crm_deals_cost_center_id_fkey"
             columns: ["cost_center_id"]
             isOneToOne: false
             referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
           {
@@ -4129,6 +4152,7 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          batch_id: string | null
           checked_in_at: string | null
           confirmation_email_1_sent_at: string | null
           confirmation_email_2_sent_at: string | null
@@ -4160,6 +4184,7 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          batch_id?: string | null
           checked_in_at?: string | null
           confirmation_email_1_sent_at?: string | null
           confirmation_email_2_sent_at?: string | null
@@ -4191,6 +4216,7 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          batch_id?: string | null
           checked_in_at?: string | null
           confirmation_email_1_sent_at?: string | null
           confirmation_email_2_sent_at?: string | null
@@ -4223,6 +4249,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "event_registrations_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticket_batches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_registrations_cost_center_id_fkey"
             columns: ["cost_center_id"]
             isOneToOne: false
@@ -4248,6 +4281,106 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_speakers: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_order: number
+          event_id: string
+          id: string
+          linkedin_url: string | null
+          name: string
+          photo_url: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          event_id: string
+          id?: string
+          linkedin_url?: string | null
+          name: string
+          photo_url?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_order?: number
+          event_id?: string
+          id?: string
+          linkedin_url?: string | null
+          name?: string
+          photo_url?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_speakers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ticket_batches: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          ends_at: string | null
+          event_id: string
+          id: string
+          name: string
+          price: number
+          quantity: number | null
+          sold_count: number
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          ends_at?: string | null
+          event_id: string
+          id?: string
+          name: string
+          price?: number
+          quantity?: number | null
+          sold_count?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          ends_at?: string | null
+          event_id?: string
+          id?: string
+          name?: string
+          price?: number
+          quantity?: number | null
+          sold_count?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_batches_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]

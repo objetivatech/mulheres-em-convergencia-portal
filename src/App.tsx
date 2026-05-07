@@ -18,6 +18,7 @@ import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
+import EventoConfirmacaoPage from './pages/EventoConfirmacaoPage';
 import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
@@ -157,6 +158,7 @@ function AppContent() {
         <Route path="/planos" element={<Planos />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventsPage />} />
+        <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />
         <Route path="/eventos/:slug" element={<EventDetailPage />} />
         <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />

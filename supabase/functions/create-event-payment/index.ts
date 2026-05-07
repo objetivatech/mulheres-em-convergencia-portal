@@ -50,6 +50,22 @@ serve(async (req) => {
 
     logStep("Event found", { title: event.title, price: event.price });
 
+    // Dedupe: log pending registration from same email in last 24h
+    const { data: existingPending } = await supabaseClient
+      .from('event_registrations')
+      .select('id, payment_id')
+      .eq('event_id', event_id)
+      .eq('email', registration_data.email)
+      .eq('status', 'pending')
+      .eq('paid', false)
+      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existingPending) {
+      logStep("Found existing pending registration", { id: existingPending.id });
+    }
+
     // Get Asaas API key
     const asaasApiKey = Deno.env.get("ASAAS_API_KEY");
     if (!asaasApiKey) {

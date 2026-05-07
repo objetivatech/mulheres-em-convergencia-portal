@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useCRM, CRMDeal } from '@/hooks/useCRM';
 import { usePipelines } from '@/hooks/usePipelines';
+import { useEvents } from '@/hooks/useEvents';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -52,6 +54,8 @@ export const DealForm = ({
   const { toast } = useToast();
   const { useCreateDeal, useUpdateDeal, useCostCenters } = useCRM();
   const { usePipelinesList } = usePipelines();
+  const { useEventsList } = useEvents();
+  const { data: eventsList } = useEventsList();
   const createDeal = useCreateDeal();
   const updateDeal = useUpdateDeal();
   const { data: costCenters } = useCostCenters();
@@ -69,6 +73,8 @@ export const DealForm = ({
     expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
     cost_center_id: deal?.cost_center_id || '',
     pipeline_id: deal?.pipeline_id || '',
+    event_id: (deal as any)?.event_id || '',
+    auto_register: (deal as any)?.auto_register ?? false,
   });
 
   // Reinicializar formData quando o deal mudar (editar vs criar)
@@ -83,6 +89,8 @@ export const DealForm = ({
         expected_close_date: deal?.expected_close_date?.split('T')[0] || '',
         cost_center_id: deal?.cost_center_id || '',
         pipeline_id: deal?.pipeline_id || '',
+        event_id: (deal as any)?.event_id || '',
+        auto_register: (deal as any)?.auto_register ?? false,
       });
       if (deal?.pipeline_id) {
         setSelectedPipelineId(deal.pipeline_id);
@@ -129,6 +137,8 @@ export const DealForm = ({
         lead_id: contactType === 'lead' ? contactId : deal?.lead_id || null,
         user_id: contactType === 'user' ? contactId : deal?.user_id || null,
         cpf: cpf || deal?.cpf || null,
+        event_id: formData.product_type === 'evento' && formData.event_id ? formData.event_id : null,
+        auto_register: formData.product_type === 'evento' ? formData.auto_register : false,
       };
 
       if (deal) {
@@ -284,6 +294,43 @@ export const DealForm = ({
                 rows={3}
               />
             </div>
+
+            {formData.product_type === 'evento' && (
+              <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                <div>
+                  <Label>Evento de destino</Label>
+                  <Select
+                    value={formData.event_id}
+                    onValueChange={(v) => setFormData({ ...formData, event_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Vincular a um evento (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eventsList?.map((ev) => (
+                        <SelectItem key={ev.id} value={ev.id}>
+                          {ev.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {formData.event_id && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Inscrever automaticamente</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Cria a inscrição no evento ao salvar este negócio.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.auto_register}
+                      onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter>
