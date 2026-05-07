@@ -162,9 +162,9 @@ const EventsPage = () => {
                     </CardHeader>
                     
                     <CardContent className="flex-1 flex flex-col">
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
+                       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                         {stripHtml(event.description, 200)}
+                       </p>
                       
                       <div className="space-y-2 text-sm text-muted-foreground mb-4">
                         <div className="flex items-center gap-2">
