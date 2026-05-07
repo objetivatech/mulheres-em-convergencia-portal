@@ -553,11 +553,196 @@ export const useEvents = () => {
     });
   };
 
+  // ==================== SPEAKERS ====================
+  const useEventSpeakers = (eventId?: string | null) => {
+    return useQuery({
+      queryKey: ['event-speakers', eventId],
+      queryFn: async () => {
+        if (!eventId) return [] as EventSpeaker[];
+        const { data, error } = await supabase
+          .from('event_speakers')
+          .select('*')
+          .eq('event_id', eventId)
+          .order('display_order', { ascending: true });
+        if (error) throw error;
+        return (data || []) as EventSpeaker[];
+      },
+      enabled: !!eventId,
+    });
+  };
+
+  const useUpsertSpeaker = () => {
+    return useMutation({
+      mutationFn: async (speaker: Partial<EventSpeaker> & { event_id: string; name: string }) => {
+        const { data, error } = await supabase
+          .from('event_speakers')
+          .upsert(speaker as any)
+          .select()
+          .single();
+        if (error) throw error;
+        return data as EventSpeaker;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ['event-speakers', data.event_id] });
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+      },
+    });
+  };
+
+  const useDeleteSpeaker = () => {
+    return useMutation({
+      mutationFn: async ({ id, eventId }: { id: string; eventId: string }) => {
+        const { error } = await supabase.from('event_speakers').delete().eq('id', id);
+        if (error) throw error;
+        return { id, eventId };
+      },
+      onSuccess: ({ eventId }) => {
+        queryClient.invalidateQueries({ queryKey: ['event-speakers', eventId] });
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+      },
+    });
+  };
+
+  // ==================== BATCHES ====================
+  const useEventBatches = (eventId?: string | null) => {
+    return useQuery({
+      queryKey: ['event-batches', eventId],
+      queryFn: async () => {
+        if (!eventId) return [] as EventTicketBatch[];
+        const { data, error } = await supabase
+          .from('event_ticket_batches')
+          .select('*')
+          .eq('event_id', eventId)
+          .order('display_order', { ascending: true });
+        if (error) throw error;
+        return (data || []) as EventTicketBatch[];
+      },
+      enabled: !!eventId,
+    });
+  };
+
+  const useUpsertBatch = () => {
+    return useMutation({
+      mutationFn: async (batch: Partial<EventTicketBatch> & { event_id: string; name: string; price: number }) => {
+        const { data, error } = await supabase
+          .from('event_ticket_batches')
+          .upsert(batch as any)
+          .select()
+          .single();
+        if (error) throw error;
+        return data as EventTicketBatch;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ['event-batches', data.event_id] });
+      },
+    });
+  };
+
+  const useDeleteBatch = () => {
+    return useMutation({
+      mutationFn: async ({ id, eventId }: { id: string; eventId: string }) => {
+        const { error } = await supabase.from('event_ticket_batches').delete().eq('id', id);
+        if (error) throw error;
+        return { id, eventId };
+      },
+      onSuccess: ({ eventId }) => {
+        queryClient.invalidateQueries({ queryKey: ['event-batches', eventId] });
+      },
+    });
+  };
+
+  // ==================== MANUAL PARTICIPANT ====================
+  const useAddManualParticipant = () => {
+    return useMutation({
+      mutationFn: async (params: {
+        event_id: string;
+        full_name: string;
+        email: string;
+        phone?: string | null;
+        cpf?: string | null;
+        paid: boolean;
+        batch_id?: string | null;
+        send_email?: boolean;
+        eventTitle?: string;
+        eventPrice?: number;
+        isFree?: boolean;
+        cost_center_id?: string | null;
+      }) => {
+        // 1. Create or find lead via CRM
+        let leadId: string | null = null;
+        try {
+          leadId = await crmIntegration.findOrCreateLead({
+            full_name: params.full_name,
+            email: params.email,
+            phone: params.phone,
+            cpf: params.cpf,
+            source: 'evento_manual',
+            source_detail: params.eventTitle,
+            cost_center_id: params.cost_center_id,
+          });
+        } catch (e) {
+          console.error('[useAddManualParticipant] lead error', e);
+        }
+
+        // 2. Insert registration
+        const { data: reg, error } = await supabase
+          .from('event_registrations')
+          .insert({
+            event_id: params.event_id,
+            full_name: params.full_name,
+            email: params.email,
+            phone: params.phone || null,
+            cpf: params.cpf || null,
+            paid: params.paid,
+            status: 'confirmed',
+            batch_id: params.batch_id || null,
+            payment_amount: params.eventPrice ?? null,
+            cost_center_id: params.cost_center_id || null,
+            lead_id: leadId,
+            metadata: { added_manually: true },
+          } as any)
+          .select()
+          .single();
+        if (error) throw error;
+
+        // 3. Log interaction
+        if (leadId) {
+          try {
+            await crmIntegration.createInteraction({
+              lead_id: leadId,
+              interaction_type: 'event_registration_manual',
+              channel: 'admin',
+              description: `Inscrição manual no evento: ${params.eventTitle || 'Evento'}`,
+              activity_name: params.eventTitle,
+              cost_center_id: params.cost_center_id,
+              metadata: { registration_id: (reg as any).id, paid: params.paid },
+            });
+          } catch (e) {
+            console.error('[useAddManualParticipant] interaction error', e);
+          }
+        }
+
+        // 4. Optional confirmation email
+        if (params.send_email) {
+          try {
+            await crmIntegration.sendEventConfirmationEmail((reg as any).id);
+          } catch (e) {
+            console.error('[useAddManualParticipant] email error', e);
+          }
+        }
+
+        return reg as EventRegistration;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
+      },
+    });
+  };
+
   return {
     useEventsList,
-
-  // ==================== SPEAKERS ====================
-  // (Hoisted above to be in scope when returned)
     useEventById,
     useCreateEvent,
     useUpdateEvent,
