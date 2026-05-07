@@ -74,6 +74,11 @@ Quando um usuário se inscreve em um evento:
 2. Se CPF informado, lead criado/atualizado em `crm_leads`
 3. Interação registrada em `crm_interactions`
 
+Quando um negócio do pipeline é vinculado a um evento com **Inscrever automaticamente** ativo:
+1. O sistema usa o lead vinculado ao negócio ou os dados do participante informados no próprio negócio.
+2. A inscrição é criada ou reativada em `event_registrations` com status confirmado.
+3. `events.current_participants` é sempre recalculado a partir das inscrições confirmadas/presentes, mantendo a relação correta entre inscritos e vagas disponíveis.
+
 ### Campos Rastreados
 
 | Origem | Campo CRM |
@@ -110,6 +115,7 @@ Quando um usuário se inscreve em um evento:
 4. **Descrição completa** - Todas as informações necessárias
 5. **Publicar com antecedência** - Tempo para divulgação
 6. **Campos opcionais vazios viram `null`**: ex. data/hora fim (`date_end`)
+7. **Inscrição pelo pipeline exige participante válido**: para atualizar as vagas, informe lead vinculado ou nome/email no negócio.
 
 ## Navegação
 
