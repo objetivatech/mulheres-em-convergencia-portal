@@ -754,17 +754,17 @@ export const EventsManagement: React.FC = () => {
                               <TableCell>{formatStatusBadge(event.status)}</TableCell>
                               <TableCell>
                                 <div className="flex gap-1">
-                                <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                {tab === 'active' && new Date(event.date_start) < now && (
-                                  <Button
+                                  <Button size="sm" variant="ghost" onClick={() => setSelectedEvent(event)} title="Ver detalhes">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => openEventForm(event, false)} title="Editar">
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => openEventForm(event, true)} title="Duplicar">
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                  {tab === 'active' && new Date(event.date_start) < now && (
+                                    <Button
                                     size="sm"
                                     variant="ghost"
                                     title="Arquivar"
@@ -774,22 +774,22 @@ export const EventsManagement: React.FC = () => {
                                     }}
                                   >
                                     <Archive className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-destructive"
+                                    title="Excluir"
+                                    onClick={async () => {
+                                      if (confirm('Excluir evento?')) {
+                                        await deleteEvent.mutateAsync(event.id);
+                                        toast({ title: 'Evento excluído' });
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
-                                )}
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  className="text-destructive"
-                                  title="Excluir"
-                                  onClick={async () => {
-                                    if (confirm('Excluir evento?')) {
-                                      await deleteEvent.mutateAsync(event.id);
-                                      toast({ title: 'Evento excluído' });
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
                                 </div>
                               </TableCell>
                             </TableRow>
