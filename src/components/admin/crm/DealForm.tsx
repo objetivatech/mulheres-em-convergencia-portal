@@ -354,17 +354,58 @@ export const DealForm = ({
                   </Select>
                 </div>
                 {formData.event_id && (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Inscrever automaticamente</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Cria a inscrição no evento ao salvar este negócio.
-                      </p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Inscrever automaticamente</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Cria a inscrição no evento ao salvar este negócio.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={formData.auto_register}
+                        onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
+                      />
                     </div>
-                    <Switch
-                      checked={formData.auto_register}
-                      onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
-                    />
+                    {formData.auto_register && contactType !== 'lead' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg border bg-background p-3">
+                        <div>
+                          <Label htmlFor="participant_full_name">Nome do participante *</Label>
+                          <Input
+                            id="participant_full_name"
+                            value={formData.participant_full_name}
+                            onChange={(e) => setFormData({ ...formData, participant_full_name: e.target.value })}
+                            placeholder="Nome completo"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_email">Email do participante *</Label>
+                          <Input
+                            id="participant_email"
+                            type="email"
+                            value={formData.participant_email}
+                            onChange={(e) => setFormData({ ...formData, participant_email: e.target.value })}
+                            placeholder="email@dominio.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_phone">Telefone</Label>
+                          <Input
+                            id="participant_phone"
+                            value={formData.participant_phone}
+                            onChange={(e) => setFormData({ ...formData, participant_phone: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="participant_cpf">CPF</Label>
+                          <Input
+                            id="participant_cpf"
+                            value={formData.participant_cpf}
+                            onChange={(e) => setFormData({ ...formData, participant_cpf: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
