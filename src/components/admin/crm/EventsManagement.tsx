@@ -353,6 +353,7 @@ export const EventsManagement: React.FC = () => {
   const EventDetails: React.FC<{ event: Event }> = ({ event }) => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
     const [activeTab, setActiveTab] = useState('details');
+    const [showAddParticipant, setShowAddParticipant] = useState(false);
 
     const handleCheckIn = async (registrationId: string) => {
       try {
@@ -472,6 +473,8 @@ export const EventsManagement: React.FC = () => {
               <Users className="h-4 w-4" />
               Inscritos ({registrations?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="speakers">Palestrantes</TabsTrigger>
+            <TabsTrigger value="batches">Lotes</TabsTrigger>
             <TabsTrigger value="form" className="flex items-center gap-2">
               <FileEdit className="h-4 w-4" />
               Formulário
@@ -481,6 +484,11 @@ export const EventsManagement: React.FC = () => {
           <TabsContent value="details" className="mt-4">
             <Card>
               <CardContent className="pt-6">
+                <div className="flex justify-end mb-3">
+                  <Button size="sm" onClick={() => setShowAddParticipant(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Adicionar participante
+                  </Button>
+                </div>
                 {isLoading ? (
                   <p>Carregando...</p>
                 ) : registrations?.length === 0 ? (
@@ -557,10 +565,19 @@ export const EventsManagement: React.FC = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="speakers" className="mt-4">
+            <EventSpeakersPanel eventId={event.id} />
+          </TabsContent>
+
+          <TabsContent value="batches" className="mt-4">
+            <EventBatchesPanel eventId={event.id} />
+          </TabsContent>
+
           <TabsContent value="form" className="mt-4">
             <EventFormBuilder eventId={event.id} />
           </TabsContent>
         </Tabs>
+        <AddParticipantDialog event={event} open={showAddParticipant} onOpenChange={setShowAddParticipant} />
       </div>
     );
   };
