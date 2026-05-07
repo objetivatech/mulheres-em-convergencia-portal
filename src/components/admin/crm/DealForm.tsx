@@ -294,6 +294,43 @@ export const DealForm = ({
                 rows={3}
               />
             </div>
+
+            {formData.product_type === 'evento' && (
+              <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                <div>
+                  <Label>Evento de destino</Label>
+                  <Select
+                    value={formData.event_id}
+                    onValueChange={(v) => setFormData({ ...formData, event_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Vincular a um evento (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eventsList?.map((ev) => (
+                        <SelectItem key={ev.id} value={ev.id}>
+                          {ev.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {formData.event_id && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Inscrever automaticamente</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Cria a inscrição no evento ao salvar este negócio.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.auto_register}
+                      onCheckedChange={(v) => setFormData({ ...formData, auto_register: v })}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter>
