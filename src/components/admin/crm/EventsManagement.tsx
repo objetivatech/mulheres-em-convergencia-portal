@@ -354,6 +354,11 @@ export const EventsManagement: React.FC = () => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
     const [activeTab, setActiveTab] = useState('details');
     const [showAddParticipant, setShowAddParticipant] = useState(false);
+    const confirmedRegistrations = registrations?.filter((reg) => ['confirmed', 'attended'].includes(reg.status)).length;
+    const currentParticipants = confirmedRegistrations ?? event.current_participants ?? 0;
+    const availableSpots = event.max_participants === null || event.max_participants === undefined
+      ? null
+      : Math.max(event.max_participants - currentParticipants, 0);
 
     const handleCheckIn = async (registrationId: string) => {
       try {
@@ -456,12 +461,11 @@ export const EventsManagement: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{event.current_participants}/{event.max_participants || '∞'}</span>
+                <span>{currentParticipants}/{event.max_participants || '∞'} inscritos</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">
-                  {event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}
-                </span>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>{availableSpots === null ? 'Vagas ilimitadas' : `${availableSpots} vagas disponíveis`}</span>
               </div>
             </div>
           </CardContent>
