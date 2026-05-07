@@ -63,6 +63,9 @@ export interface CRMDeal {
   won: boolean | null;
   lost_reason: string | null;
   assigned_to: string | null;
+  event_id?: string | null;
+  batch_id?: string | null;
+  auto_register?: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -419,9 +422,15 @@ export const useCRM = () => {
         if (error) throw error;
         return data as CRMDeal;
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
         queryClient.invalidateQueries({ queryKey: ['crm-stats'] });
+        if ((data as any).event_id && (data as any).auto_register) {
+          queryClient.invalidateQueries({ queryKey: ['events'] });
+          queryClient.invalidateQueries({ queryKey: ['event', (data as any).event_id] });
+          queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+          queryClient.invalidateQueries({ queryKey: ['event-stats'] });
+        }
       },
     });
   };
@@ -445,6 +454,12 @@ export const useCRM = () => {
         queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
         queryClient.invalidateQueries({ queryKey: ['crm-deal', data.id] });
         queryClient.invalidateQueries({ queryKey: ['crm-stats'] });
+        if ((data as any).event_id && (data as any).auto_register) {
+          queryClient.invalidateQueries({ queryKey: ['events'] });
+          queryClient.invalidateQueries({ queryKey: ['event', (data as any).event_id] });
+          queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+          queryClient.invalidateQueries({ queryKey: ['event-stats'] });
+        }
       },
     });
   };
