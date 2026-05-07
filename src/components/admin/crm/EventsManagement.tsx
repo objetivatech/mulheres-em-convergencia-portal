@@ -22,6 +22,11 @@ import { useToast } from '@/hooks/use-toast';
 import { EventFormBuilder } from './EventFormBuilder';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { TinyMCESelfHosted } from '@/components/blog/TinyMCESelfHosted';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
+import { EventSpeakersPanel } from './EventSpeakersPanel';
+import { EventBatchesPanel } from './EventBatchesPanel';
+import { AddParticipantDialog } from './AddParticipantDialog';
+import { stripHtml } from '@/lib/stripHtml';
 
 // Storage key for form persistence
 const FORM_STORAGE_KEY = 'crm_event_form_draft';
@@ -41,6 +46,7 @@ interface EventFormData {
   instructor_name: string;
   status: string;
   conecta_sync: boolean;
+  image_url: string;
 }
 
 const getDefaultFormData = (): EventFormData => ({
@@ -58,6 +64,7 @@ const getDefaultFormData = (): EventFormData => ({
   instructor_name: '',
   status: 'draft',
   conecta_sync: false,
+  image_url: '',
 });
 
 const eventToFormData = (event: Event): EventFormData => ({
@@ -75,6 +82,7 @@ const eventToFormData = (event: Event): EventFormData => ({
   instructor_name: event.instructor_name || '',
   status: event.status || 'draft',
   conecta_sync: (event as any).conecta_sync ?? false,
+  image_url: event.image_url || '',
 });
 const formatStatusBadge = (status: string) => {
   const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
