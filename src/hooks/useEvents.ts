@@ -555,6 +555,9 @@ export const useEvents = () => {
 
   return {
     useEventsList,
+
+  // ==================== SPEAKERS ====================
+  // (Hoisted above to be in scope when returned)
     useEventById,
     useCreateEvent,
     useUpdateEvent,
