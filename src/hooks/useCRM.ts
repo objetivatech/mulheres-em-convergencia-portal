@@ -519,15 +519,20 @@ export const useCRM = () => {
   };
 
   // ==================== UNIFIED CONTACTS ====================
-  const useUnifiedContacts = (search?: string) => {
+  const PAGE_SIZE = 50;
+
+  const useUnifiedContacts = (search?: string, page = 0) => {
     return useQuery({
-      queryKey: ['crm-unified-contacts', search],
+      queryKey: ['crm-unified-contacts', search, page],
       queryFn: async () => {
-        // Buscar leads
+        const offset = page * PAGE_SIZE;
+
+        // Buscar leads com limite e paginação
         let leadsQuery = supabase
           .from('crm_leads')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
 
         if (search) {
           leadsQuery = leadsQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,cpf.ilike.%${search}%`);
@@ -536,11 +541,12 @@ export const useCRM = () => {
         const { data: leads, error: leadsError } = await leadsQuery;
         if (leadsError) throw leadsError;
 
-        // Buscar usuários (profiles) - TODOS os perfis
+        // Buscar perfis com limite e paginação
         let profilesQuery = supabase
           .from('profiles')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
 
         if (search) {
           profilesQuery = profilesQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,cpf.ilike.%${search}%`);
@@ -549,14 +555,30 @@ export const useCRM = () => {
         const { data: profiles, error: profilesError } = await profilesQuery;
         if (profilesError) throw profilesError;
 
-        // Buscar contagens de interações e deals em batch
-        const { data: interactionCounts } = await supabase
-          .from('crm_interactions')
-          .select('lead_id, user_id');
-        
-        const { data: dealCounts } = await supabase
-          .from('crm_deals')
-          .select('lead_id, user_id, value');
+        // Buscar contagens apenas para os IDs retornados (evita table-scan total)
+        const leadIds = (leads || []).map(l => l.id);
+        const profileIds = (profiles || []).map(p => p.id);
+
+        const [interactionCounts, dealCounts] = await Promise.all([
+          leadIds.length || profileIds.length
+            ? supabase
+                .from('crm_interactions')
+                .select('lead_id, user_id')
+                .or([
+                  leadIds.length ? `lead_id.in.(${leadIds.join(',')})` : null,
+                  profileIds.length ? `user_id.in.(${profileIds.join(',')})` : null,
+                ].filter(Boolean).join(','))
+            : Promise.resolve({ data: [] }),
+          leadIds.length || profileIds.length
+            ? supabase
+                .from('crm_deals')
+                .select('lead_id, user_id, value')
+                .or([
+                  leadIds.length ? `lead_id.in.(${leadIds.join(',')})` : null,
+                  profileIds.length ? `user_id.in.(${profileIds.join(',')})` : null,
+                ].filter(Boolean).join(','))
+            : Promise.resolve({ data: [] }),
+        ]);
 
         // Mapear contagens
         const leadInteractions = new Map<string, number>();
@@ -564,12 +586,12 @@ export const useCRM = () => {
         const leadDeals = new Map<string, { count: number; value: number }>();
         const userDeals = new Map<string, { count: number; value: number }>();
 
-        interactionCounts?.forEach(i => {
+        (interactionCounts.data || []).forEach(i => {
           if (i.lead_id) leadInteractions.set(i.lead_id, (leadInteractions.get(i.lead_id) || 0) + 1);
           if (i.user_id) userInteractions.set(i.user_id, (userInteractions.get(i.user_id) || 0) + 1);
         });
 
-        dealCounts?.forEach(d => {
+        (dealCounts.data || []).forEach(d => {
           if (d.lead_id) {
             const current = leadDeals.get(d.lead_id) || { count: 0, value: 0 };
             leadDeals.set(d.lead_id, { count: current.count + 1, value: current.value + (d.value || 0) });
@@ -582,11 +604,9 @@ export const useCRM = () => {
 
         // Combinar em contatos unificados
         const contacts: UnifiedContact[] = [];
-        
-        // Map para rastrear usuários convertidos de leads (por user_id)
+
         const convertedUserIds = new Set((leads || []).filter(l => l.converted_user_id).map(l => l.converted_user_id));
 
-        // Adicionar leads
         for (const lead of leads || []) {
           const dealData = leadDeals.get(lead.id) || { count: 0, value: 0 };
           contacts.push({
@@ -607,9 +627,7 @@ export const useCRM = () => {
           });
         }
 
-        // Adicionar TODOS os usuários (excluindo apenas os que já foram convertidos de leads pelo user_id)
         for (const profile of profiles || []) {
-          // Só exclui se o perfil for de um lead convertido
           if (!convertedUserIds.has(profile.id)) {
             const dealData = userDeals.get(profile.id) || { count: 0, value: 0 };
             contacts.push({
@@ -631,9 +649,14 @@ export const useCRM = () => {
           }
         }
 
-        return contacts;
+        return {
+          contacts,
+          hasMore: (leads?.length ?? 0) === PAGE_SIZE || (profiles?.length ?? 0) === PAGE_SIZE,
+          page,
+        };
       },
       enabled: isAdmin,
+      placeholderData: (prev) => prev,
     });
   };
 

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, UserPlus, Filter, Users, UserCheck, Clock, DollarSign } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, UserPlus, Filter, Users, UserCheck, Clock, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -33,20 +33,39 @@ const statusColors: Record<string, string> = {
   active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
 };
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [page, setPage] = useState(0);
+
+  const debouncedSearch = useDebounce(searchTerm, 400);
+
+  // Reset to page 0 when search or filters change
+  useEffect(() => { setPage(0); }, [debouncedSearch, typeFilter, statusFilter]);
 
   const { useUnifiedContacts, useCRMStats } = useCRM();
-  const { data: contacts, isLoading } = useUnifiedContacts(searchTerm || undefined);
+  const { data, isLoading } = useUnifiedContacts(debouncedSearch || undefined, page);
   const { data: stats } = useCRMStats();
 
-  const filteredContacts = contacts?.filter(contact => {
+  const allContacts = data?.contacts || [];
+
+  const filteredContacts = allContacts.filter(contact => {
     if (typeFilter !== 'all' && contact.type !== typeFilter) return false;
     if (statusFilter !== 'all' && contact.status !== statusFilter) return false;
     return true;
-  }) || [];
+  });
+
+  const hasMore = data?.hasMore ?? false;
 
   return (
     <div className="space-y-6">
@@ -65,7 +84,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -79,7 +98,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -93,7 +112,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -135,7 +154,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
                 className="pl-10"
               />
             </div>
-            
+
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
@@ -147,7 +166,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
                 <SelectItem value="user">Usuários</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
@@ -187,7 +206,7 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
                 </TableHeader>
                 <TableBody>
                   {filteredContacts.map((contact) => (
-                    <TableRow 
+                    <TableRow
                       key={`${contact.type}-${contact.id}`}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => onSelectContact(contact)}
@@ -213,6 +232,35 @@ export const ContactsList = ({ onSelectContact, onAddContact }: ContactsListProp
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {(page > 0 || hasMore) && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Página {page + 1}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0 || isLoading}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={!hasMore || isLoading}
+                >
+                  Próxima
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
