@@ -256,26 +256,34 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
     payoutEligibleDate: payoutEligibleDate.toISOString().split('T')[0]
   });
 
-  // Update ambassador totals
-  const { error: updateError } = await supabaseClient
-    .from('ambassadors')
-    .update({
-      total_earnings: {
-        increment: commissionAmount
-      },
-      total_sales: {
-        increment: 1
-      },
-      pending_commission: {
-        increment: commissionAmount
-      }
-    })
-    .eq('id', subscription.ambassador_id);
+  // Update ambassador totals using RPC for atomic increment
+  const { error: updateError } = await supabaseClient.rpc('increment_ambassador_totals', {
+    p_ambassador_id: subscription.ambassador_id,
+    p_commission_amount: commissionAmount,
+  });
 
   if (updateError) {
-    logStep("Error updating ambassador totals", { error: updateError });
+    // Fallback: fetch current values and update manually
+    logStep("RPC increment failed, falling back to manual update", { error: updateError });
+    const { data: currentAmbassador } = await supabaseClient
+      .from('ambassadors')
+      .select('total_earnings, total_sales, pending_commission')
+      .eq('id', subscription.ambassador_id)
+      .single();
+
+    if (currentAmbassador) {
+      await supabaseClient
+        .from('ambassadors')
+        .update({
+          total_earnings: (currentAmbassador.total_earnings || 0) + commissionAmount,
+          total_sales: (currentAmbassador.total_sales || 0) + 1,
+          pending_commission: (currentAmbassador.pending_commission || 0) + commissionAmount,
+        })
+        .eq('id', subscription.ambassador_id);
+      logStep("Ambassador totals updated via fallback");
+    }
   } else {
-    logStep("Ambassador totals updated");
+    logStep("Ambassador totals updated via RPC");
   }
 
   return { success: true, commissionAmount };
@@ -656,12 +664,120 @@ serve(async (req) => {
           });
         }
 
-        // ✅ NOVO: Processar comissão de embaixadora
+        // Processar comissão de embaixadora
         const commissionResult = await processAmbassadorCommission(supabaseClient, subscription, payment);
         if (commissionResult.success) {
           logStep('Ambassador commission processed', {
             commissionAmount: commissionResult.commissionAmount
           });
+        }
+
+        // Atualizar CRM: marcar lead como convertido e registrar interação
+        try {
+          // Buscar perfil do usuário para obter CPF e email
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('id, cpf, email, full_name')
+            .eq('id', subscription.user_id)
+            .maybeSingle();
+
+          const userCpf = profile?.cpf || null;
+          const userEmail = profile?.email || null;
+
+          // Buscar lead por CPF ou email
+          let leadId: string | null = null;
+          if (userCpf) {
+            const { data: leadByCpf } = await supabaseClient
+              .from('crm_leads')
+              .select('id')
+              .eq('cpf', userCpf)
+              .maybeSingle();
+            if (leadByCpf) leadId = leadByCpf.id;
+          }
+          if (!leadId && userEmail) {
+            const { data: leadByEmail } = await supabaseClient
+              .from('crm_leads')
+              .select('id')
+              .eq('email', userEmail.toLowerCase())
+              .maybeSingle();
+            if (leadByEmail) leadId = leadByEmail.id;
+          }
+
+          // Atualizar deal existente ou registrar interação diretamente
+          if (leadId) {
+            await supabaseClient
+              .from('crm_leads')
+              .update({
+                status: 'converted',
+                converted_at: new Date().toISOString(),
+                converted_user_id: subscription.user_id,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', leadId);
+            logStep('CRM lead marked as converted', { leadId });
+
+            // Atualizar deal para won se existir
+            const { data: existingDeal } = await supabaseClient
+              .from('crm_deals')
+              .select('id')
+              .eq('lead_id', leadId)
+              .neq('stage', 'won')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (existingDeal) {
+              await supabaseClient
+                .from('crm_deals')
+                .update({
+                  stage: 'won',
+                  won: true,
+                  closed_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  metadata: {
+                    payment_id: payment.id,
+                    payment_confirmed_at: new Date().toISOString(),
+                    subscription_id: subscription.id,
+                  },
+                })
+                .eq('id', existingDeal.id);
+              logStep('CRM deal marked as won', { dealId: existingDeal.id });
+            }
+          }
+
+          // Registrar interação de pagamento confirmado
+          await supabaseClient.from('crm_interactions').insert({
+            lead_id: leadId,
+            user_id: subscription.user_id,
+            cpf: userCpf,
+            interaction_type: 'subscription_payment_confirmed',
+            channel: 'payment_gateway',
+            description: `Assinatura business confirmada - R$ ${payment.value?.toFixed(2) || '0.00'}`,
+            activity_paid: true,
+            form_source: 'asaas_webhook',
+            metadata: {
+              payment_id: payment.id,
+              subscription_id: subscription.id,
+              plan_id: subscription.plan_id,
+              payment_value: payment.value,
+            },
+          });
+
+          // Criar milestone de conversão
+          await supabaseClient.from('crm_conversion_milestones').insert({
+            milestone_type: 'subscription_activated',
+            milestone_name: 'Assinatura Business Ativada',
+            cpf: userCpf,
+            user_id: subscription.user_id,
+            total_value: payment.value,
+            metadata: {
+              payment_id: payment.id,
+              subscription_id: subscription.id,
+            },
+          });
+          logStep('CRM interaction and milestone created for subscription payment');
+        } catch (crmError) {
+          logStep('CRM update failed (non-blocking)', { error: String(crmError) });
         }
 
         // Marcar evento como processado

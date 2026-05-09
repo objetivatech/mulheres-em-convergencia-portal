@@ -27,22 +27,52 @@ export interface CRMInteractionData {
 /**
  * Registra um lead e/ou interação no CRM quando um formulário é submetido
  */
+// Normaliza CPF para apenas dígitos
+const normalizeCpf = (cpf: string | undefined | null): string | null => {
+  if (!cpf) return null;
+  const digits = cpf.replace(/\D/g, '');
+  return digits.length === 11 ? digits : null;
+};
+
+// Normaliza email para lowercase sem espaços
+const normalizeEmail = (email: string | undefined | null): string | null => {
+  if (!email) return null;
+  return email.trim().toLowerCase();
+};
+
 export async function registerCRMInteraction(
   contactData: CRMContactData,
   interactionData: CRMInteractionData
 ): Promise<{ success: boolean; leadId?: string; error?: string }> {
   try {
-    // 1. Verificar se já existe um lead com este email ou CPF
+    // 1. Normalizar dados de contato antes de qualquer operação
+    const normalizedEmail = normalizeEmail(contactData.email);
+    const normalizedCpf = normalizeCpf(contactData.cpf);
+
     let leadId: string | null = null;
     let userId: string | null = null;
-    let cpf: string | null = contactData.cpf || null;
+    let cpf: string | null = normalizedCpf;
 
-    // Buscar por email nos leads
-    if (contactData.email) {
+    // Buscar por CPF primeiro (chave mais confiável), depois por email
+    if (normalizedCpf) {
+      const { data: existingLeadByCpf } = await supabase
+        .from('crm_leads')
+        .select('id, cpf, email')
+        .eq('cpf', normalizedCpf)
+        .maybeSingle();
+
+      if (existingLeadByCpf) {
+        leadId = existingLeadByCpf.id;
+        cpf = existingLeadByCpf.cpf || cpf;
+      }
+    }
+
+    // Buscar por email nos leads (se não achou por CPF)
+    if (normalizedEmail && !leadId) {
       const { data: existingLead } = await supabase
         .from('crm_leads')
         .select('id, cpf')
-        .eq('email', contactData.email)
+        .eq('email', normalizedEmail)
         .maybeSingle();
 
       if (existingLead) {
@@ -51,12 +81,26 @@ export async function registerCRMInteraction(
       }
     }
 
-    // Buscar por email nos profiles (usuários cadastrados)
-    if (contactData.email && !leadId) {
+    // Buscar por CPF nos profiles (usuários cadastrados)
+    if (normalizedCpf && !leadId) {
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id, cpf')
-        .eq('email', contactData.email)
+        .eq('cpf', normalizedCpf)
+        .maybeSingle();
+
+      if (existingProfile) {
+        userId = existingProfile.id;
+        cpf = existingProfile.cpf || cpf;
+      }
+    }
+
+    // Buscar por email nos profiles (usuários cadastrados)
+    if (normalizedEmail && !leadId && !userId) {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, cpf')
+        .eq('email', normalizedEmail)
         .maybeSingle();
 
       if (existingProfile) {
@@ -71,9 +115,9 @@ export async function registerCRMInteraction(
         .from('crm_leads')
         .insert({
           full_name: contactData.name,
-          email: contactData.email,
+          email: normalizedEmail,
           phone: contactData.phone,
-          cpf: contactData.cpf,
+          cpf: normalizedCpf,
           source: interactionData.form_source || 'website',
           source_detail: interactionData.activity_name,
           status: 'new',
@@ -87,7 +131,7 @@ export async function registerCRMInteraction(
 
       if (leadError) {
         console.error('Erro ao criar lead:', leadError);
-        // Continue mesmo se houver erro (pode ser unique constraint)
+        return { success: false, error: leadError.message };
       } else if (newLead) {
         leadId = newLead.id;
       }
@@ -111,7 +155,7 @@ export async function registerCRMInteraction(
         metadata: {
           ...interactionData.metadata,
           contact_name: contactData.name,
-          contact_email: contactData.email,
+          contact_email: normalizedEmail,
           contact_phone: contactData.phone,
         },
       } as any);
