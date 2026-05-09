@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CheckCircle2, XCircle, Loader2, UserCheck, Search, PartyPopper } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, UserCheck, Search, PartyPopper, UserPlus } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { useQuery } from '@tanstack/react-query';
+import { registerCRMInteraction } from '@/lib/crmIntegration';
 
 interface CheckinResult {
   found: boolean;
@@ -36,6 +37,11 @@ export default function EventoCheckin() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CheckinResult | null>(null);
   const [checkinDone, setCheckinDone] = useState(false);
+  const [walkInDone, setWalkInDone] = useState<string | null>(null);
+
+  // Walk-in form state
+  const [showWalkIn, setShowWalkIn] = useState(false);
+  const [walkInForm, setWalkInForm] = useState({ full_name: '', email: '', phone: '' });
 
   const { data: event } = useQuery({
     queryKey: ['event-checkin', eventId],
@@ -71,6 +77,8 @@ export default function EventoCheckin() {
 
       if (!reg) {
         setResult({ found: false, error: 'CPF não encontrado nas inscrições deste evento.' });
+        setShowWalkIn(false);
+        setWalkInForm({ full_name: '', email: '', phone: '' });
         return;
       }
 
@@ -121,6 +129,59 @@ export default function EventoCheckin() {
     }
   };
 
+  const handleWalkIn = async () => {
+    if (!walkInForm.full_name.trim() || !walkInForm.email.trim()) return;
+    setLoading(true);
+
+    try {
+      const cleanedCpf = cleanCPF(cpf);
+
+      // Verificar se já existe registro com esse CPF (pode ter sido excluído do resultado mas existir com outro status)
+      const { data: existing } = await supabase
+        .from('event_registrations')
+        .select('id, status')
+        .eq('event_id', eventId!)
+        .eq('cpf', cleanedCpf)
+        .maybeSingle();
+
+      if (existing) {
+        // Reativar e fazer check-in
+        await supabase
+          .from('event_registrations')
+          .update({ status: 'attended', checked_in_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq('id', existing.id);
+      } else {
+        // Criar nova inscrição walk-in
+        const { error } = await supabase
+          .from('event_registrations')
+          .insert({
+            event_id: eventId!,
+            full_name: walkInForm.full_name.trim(),
+            email: walkInForm.email.trim().toLowerCase(),
+            phone: walkInForm.phone || null,
+            cpf: cleanedCpf,
+            status: 'attended',
+            paid: false,
+            checked_in_at: new Date().toISOString(),
+            metadata: { walk_in: true, registered_at_event: true },
+          } as any);
+        if (error) throw error;
+      }
+
+      // Registrar no CRM
+      await registerCRMInteraction(
+        { name: walkInForm.full_name.trim(), email: walkInForm.email.trim(), phone: walkInForm.phone, cpf: cleanedCpf },
+        { interaction_type: 'event_registration', form_source: 'walk_in', activity_name: event?.title, activity_paid: false, activity_online: false }
+      );
+
+      setWalkInDone(walkInForm.full_name.trim());
+    } catch {
+      setResult({ found: false, error: 'Erro ao registrar walk-in. Tente novamente.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -139,7 +200,7 @@ export default function EventoCheckin() {
               )}
             </div>
 
-            {checkinDone ? (
+            {checkinDone || walkInDone ? (
               <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
                 <CardContent className="py-12 text-center">
                   <div className="relative inline-block mb-6">
@@ -147,10 +208,10 @@ export default function EventoCheckin() {
                     <CheckCircle2 className="h-8 w-8 text-green-500 absolute -bottom-1 -right-1 bg-background rounded-full" />
                   </div>
                   <h2 className="text-2xl font-bold text-foreground mb-2">
-                    Check-in Realizado! 🎉
+                    {walkInDone ? 'Walk-in Registrado! 🎉' : 'Check-in Realizado! 🎉'}
                   </h2>
                   <p className="text-foreground text-lg font-medium mb-2">
-                    {result?.fullName}
+                    {walkInDone || result?.fullName}
                   </p>
                   <p className="text-muted-foreground text-sm">
                     Presença confirmada com sucesso!
@@ -161,6 +222,9 @@ export default function EventoCheckin() {
                       setCpf('');
                       setResult(null);
                       setCheckinDone(false);
+                      setWalkInDone(null);
+                      setShowWalkIn(false);
+                      setWalkInForm({ full_name: '', email: '', phone: '' });
                     }}
                   >
                     Novo Check-in
@@ -244,17 +308,77 @@ export default function EventoCheckin() {
                         </Card>
                       )
                     ) : (
-                      <Card className="border-destructive/30 bg-destructive/5">
-                        <CardContent className="py-8 text-center">
-                          <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-                          <h3 className="text-xl font-bold text-foreground mb-1">
-                            Inscrição não encontrada
-                          </h3>
-                          <p className="text-muted-foreground text-sm">
-                            {result.error}
-                          </p>
-                        </CardContent>
-                      </Card>
+                      <>
+                        <Card className="border-destructive/30 bg-destructive/5">
+                          <CardContent className="py-6 text-center space-y-4">
+                            <XCircle className="h-12 w-12 text-destructive mx-auto" />
+                            <div>
+                              <h3 className="text-xl font-bold text-foreground">Inscrição não encontrada</h3>
+                              <p className="text-muted-foreground text-sm mt-1">{result.error}</p>
+                            </div>
+                            {!showWalkIn && (
+                              <Button variant="outline" className="w-full" onClick={() => setShowWalkIn(true)}>
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Registrar Walk-in
+                              </Button>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        {showWalkIn && (
+                          <Card className="border-primary/30">
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center gap-2">
+                                <UserPlus className="h-5 w-5 text-primary" />
+                                Registrar Presença (Walk-in)
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <p className="text-sm text-muted-foreground">
+                                CPF: <span className="font-mono font-medium">{cpf}</span>
+                              </p>
+                              <div className="space-y-2">
+                                <Label>Nome completo *</Label>
+                                <Input
+                                  value={walkInForm.full_name}
+                                  onChange={(e) => setWalkInForm({ ...walkInForm, full_name: e.target.value })}
+                                  placeholder="Nome completo"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Email *</Label>
+                                <Input
+                                  type="email"
+                                  value={walkInForm.email}
+                                  onChange={(e) => setWalkInForm({ ...walkInForm, email: e.target.value })}
+                                  placeholder="email@exemplo.com"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Telefone</Label>
+                                <Input
+                                  value={walkInForm.phone}
+                                  onChange={(e) => setWalkInForm({ ...walkInForm, phone: e.target.value })}
+                                  placeholder="(00) 00000-0000"
+                                />
+                              </div>
+                              <Button
+                                className="w-full"
+                                onClick={handleWalkIn}
+                                disabled={loading || !walkInForm.full_name.trim() || !walkInForm.email.trim()}
+                              >
+                                {loading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                )}
+                                Confirmar Presença
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </>
                     )}
                   </>
                 )}

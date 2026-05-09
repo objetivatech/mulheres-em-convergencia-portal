@@ -10,10 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Plus, Calendar, Users, MapPin, Clock, 
-  CheckCircle2, XCircle, Edit2, Trash2, 
-  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus, Archive, QrCode
+import {
+  Plus, Calendar, Users, MapPin, Clock,
+  CheckCircle2, XCircle, Edit2, Trash2,
+  UserCheck, Search, Eye, FileEdit, ExternalLink, DollarSign, Copy, UserMinus, Archive, QrCode, BarChart3
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { format } from 'date-fns';
@@ -26,6 +26,7 @@ import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploa
 import { EventSpeakersPanel } from './EventSpeakersPanel';
 import { EventBatchesPanel } from './EventBatchesPanel';
 import { AddParticipantDialog } from './AddParticipantDialog';
+import { SocioeconomicDataDialog } from './SocioeconomicDataDialog';
 import { stripHtml } from '@/lib/stripHtml';
 
 // Storage key for form persistence
@@ -354,6 +355,7 @@ export const EventsManagement: React.FC = () => {
     const { data: registrations, isLoading } = events.useEventRegistrations(event.id);
     const [activeTab, setActiveTab] = useState('details');
     const [showAddParticipant, setShowAddParticipant] = useState(false);
+    const [socioReg, setSocioReg] = useState<EventRegistration | null>(null);
     const confirmedRegistrations = registrations?.filter((reg) => ['confirmed', 'attended'].includes(reg.status)).length;
     const currentParticipants = confirmedRegistrations ?? event.current_participants ?? 0;
     const availableSpots = event.max_participants === null || event.max_participants === undefined
@@ -537,8 +539,8 @@ export const EventsManagement: React.FC = () => {
                           <TableCell>
                             <div className="flex gap-1">
                               {!reg.checked_in_at && (reg.paid || event.free) && (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => handleCheckIn(reg.id)}
                                   disabled={checkIn.isPending}
@@ -548,8 +550,16 @@ export const EventsManagement: React.FC = () => {
                                   Check-in
                                 </Button>
                               )}
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setSocioReg(reg)}
+                                title="Dados socioeconômicos"
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
                                 variant="ghost"
                                 className="text-destructive hover:text-destructive"
                                 onClick={() => handleRemoveRegistration(reg.id)}
@@ -582,6 +592,13 @@ export const EventsManagement: React.FC = () => {
           </TabsContent>
         </Tabs>
         <AddParticipantDialog event={event} open={showAddParticipant} onOpenChange={setShowAddParticipant} />
+        {socioReg && (
+          <SocioeconomicDataDialog
+            registration={socioReg}
+            open={!!socioReg}
+            onOpenChange={(open) => { if (!open) setSocioReg(null); }}
+          />
+        )}
       </div>
     );
   };

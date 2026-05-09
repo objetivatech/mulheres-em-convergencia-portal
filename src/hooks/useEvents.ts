@@ -667,6 +667,7 @@ export const useEvents = () => {
         eventPrice?: number;
         isFree?: boolean;
         cost_center_id?: string | null;
+        walk_in?: boolean;
       }) => {
         // 1. Create or find lead via CRM
         let leadId: string | null = null;
@@ -694,12 +695,13 @@ export const useEvents = () => {
             phone: params.phone || null,
             cpf: params.cpf || null,
             paid: params.paid,
-            status: 'confirmed',
+            status: params.walk_in ? 'attended' : 'confirmed',
+            checked_in_at: params.walk_in ? new Date().toISOString() : null,
             batch_id: params.batch_id || null,
             payment_amount: params.eventPrice ?? null,
             cost_center_id: params.cost_center_id || null,
             lead_id: leadId,
-            metadata: { added_manually: true },
+            metadata: { added_manually: true, walk_in: !!params.walk_in },
           } as any)
           .select()
           .single();
