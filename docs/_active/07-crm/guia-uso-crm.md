@@ -35,8 +35,9 @@ Visão geral com KPIs em tempo real:
 Lista unificada de leads e usuários.
 
 #### Funcionalidades
-- **Busca**: Por nome, email ou CPF
-- **Filtros**: Status, origem, tags
+- **Busca**: Por nome, email ou CPF (debounce de 400ms — busca inicia após parar de digitar)
+- **Paginação**: 50 contatos por página; botões Anterior/Próxima. Ao ativar busca, paginação é desativada para não truncar resultados.
+- **Filtros locais**: Por tipo (Lead/Usuário) e status — aplicados sobre a página atual
 - **Perfil 360°**: Clique em um contato para ver:
   - Dados cadastrais
   - Timeline de interações
@@ -126,6 +127,7 @@ Após publicar, o evento estará disponível em:
 - Confirme pagamentos
 - Realize check-in (presencial)
 - Exporte lista para Excel
+- **Dados Socioeconômicos**: Ícone `BarChart3` em cada inscrito abre formulário para coletar dados de raça/etnia, gênero, renda, escolaridade e negócio. Disponível tanto para usuários registrados quanto para inscritos anônimos (walk-in). Ver: [`coleta-dados-socioeconomicos.md`](./coleta-dados-socioeconomicos.md)
 
 ### 5. Financeiro (`/admin/crm/financeiro`)
 

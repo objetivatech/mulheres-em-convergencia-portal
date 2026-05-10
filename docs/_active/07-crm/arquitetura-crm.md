@@ -192,8 +192,36 @@ Donation → donations + crm_interactions
 - **Acesso Admin**: Verificação via `is_admin` no perfil
 - **Auditoria**: Logs de acesso a dados sensíveis (CPF)
 
-## Próximos Passos
+### user_socioeconomic_data
+Dados socioeconômicos coletados por inscrito de evento ou usuário registrado.
 
-1. Integração com sistema de pagamentos (Asaas)
-2. Automações de email baseadas em eventos CRM
-3. Relatórios personalizáveis com export PDF
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| id | UUID | Identificador único |
+| user_id | UUID | Referência ao usuário (nullable) |
+| registration_id | UUID | Referência ao event_registration (nullable) |
+| race_ethnicity | TEXT | Raça/etnia autodeclarada |
+| gender_identity | TEXT | Identidade de gênero |
+| monthly_income | TEXT | Faixa de renda mensal |
+| education_level | TEXT | Nível de escolaridade |
+| date_of_birth | DATE | Data de nascimento |
+| has_business | BOOLEAN | Possui negócio |
+| business_sector | TEXT | Setor do negócio |
+| business_formalization | TEXT | Nível de formalização (MEI, ME, informal, etc.) |
+
+> **Regra:** `user_id IS NOT NULL OR registration_id IS NOT NULL` (constraint CHECK). Índices únicos parciais garantem um registro por usuário ou por inscrição.
+
+## Notas de Implementação
+
+### Paginação em `useUnifiedContacts`
+
+O hook `useUnifiedContacts` (em `src/hooks/useCRM.ts`) suporta paginação server-side:
+- Aceita parâmetros `search?: string` e `page = 0`
+- `PAGE_SIZE = 50` por consulta
+- Quando `search` está ativo, paginação é desativada (sem LIMIT) para não truncar resultados
+- Retorna `{ contacts, hasMore, page }`
+- Usa `placeholderData: (prev) => prev` para evitar flickering durante navegação
+
+### Debounce na Busca
+
+`ContactsList.tsx` aplica debounce de 400ms na busca para evitar chamadas excessivas ao banco.

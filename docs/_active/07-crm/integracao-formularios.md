@@ -54,6 +54,7 @@ if (result.success) {
 | `meeting` | Reunião |
 | `whatsapp` | WhatsApp |
 | `signup` | Cadastro como usuário |
+| `walk_in` | Presença registrada no local (sem inscrição prévia) |
 
 ## Canais
 
@@ -223,11 +224,30 @@ try {
 
 ## Boas Práticas
 
-1. **Sempre inclua o CPF quando disponível**: Permite unificar interações do mesmo contato
+1. **Sempre inclua o CPF quando disponível**: Permite unificar interações do mesmo contato. Normalize CPF para apenas dígitos (`cpf.replace(/\D/g, '')`) antes de passar para a função.
 2. **Use os tipos padrão**: `INTERACTION_TYPES` e `CHANNELS` garantem consistência
-3. **Não bloqueie o formulário**: Erros do CRM não devem impedir o envio
+3. **Não bloqueie o fluxo principal**: Chamadas ao CRM devem ser feitas em bloco `try/catch` separado do fluxo principal. Uma falha de permissão RLS (ex.: usuário anônimo) não deve impedir a operação de negócio.
 4. **Registre metadados relevantes**: IDs de transações, valores, etc.
 5. **Identifique o formulário de origem**: Use `formSource` para rastrear
+
+### Padrão de Integração Best-Effort
+
+```typescript
+// ✅ CRM como operação best-effort — não bloqueia o fluxo
+try {
+  await supabase.from('event_registrations').insert({ ... });
+} catch (err) {
+  setError('Erro ao salvar inscrição.');
+  return;
+}
+
+// CRM: chamada separada, falha silenciosa
+try {
+  await registerCRMInteraction({ ... }, { ... });
+} catch {
+  // RLS pode bloquear usuários anônimos — não é erro crítico
+}
+```
 
 ## Triggers Automáticos
 

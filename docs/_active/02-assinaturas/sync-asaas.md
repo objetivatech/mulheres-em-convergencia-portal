@@ -60,6 +60,18 @@ Trigger automático em `businesses` que, quando `subscription_active` muda de `t
 | `sync-subscriptions-daily` | 03:00 UTC | `sync-subscription-status` com `force: true` |
 | `deactivate-expired-daily` | 04:00 UTC | `renew-business-subscriptions` |
 
+## Webhook: PAYMENT_RECEIVED
+
+O `asaas-webhook` processa eventos `PAYMENT_RECEIVED`:
+1. Identifica a assinatura pelo `externalReference` (user_id) ou `subscriptionId`
+2. Ativa a assinatura e negócio no banco (`subscription_active = true`)
+3. Registra interação no CRM como `payment_received`
+4. Processa comissão de embaixadora (`processAmbassadorCommission()`):
+   - Verifica se a assinatura tem `ambassador_id` associado
+   - Cria registro em `ambassador_referrals`
+   - Atualiza totais via RPC `increment_ambassador_totals` (atômico)
+   - Verifica conquistas e milestones de gamificação
+
 ## Webhook: PAYMENT_OVERDUE
 
 O `asaas-webhook` processa eventos `PAYMENT_OVERDUE`:

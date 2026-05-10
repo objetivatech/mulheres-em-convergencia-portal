@@ -255,10 +255,14 @@ processAmbassadorCommission() executado
     ↓
 ambassador_referrals criado
     ↓
-Totais da embaixadora atualizados
+RPC increment_ambassador_totals() — atualiza lifetime_sales e total_points atomicamente
+    ↓
+Trigger verifica e sobe nível (bronze → prata → ouro)
     ↓
 Conquistas verificadas
 ```
+
+> **Importante:** A atualização dos totais usa a RPC `increment_ambassador_totals` em vez de incremento direto via Supabase JS. Isso garante atomicidade e evita race conditions em múltiplas vendas simultâneas.
 
 ---
 
