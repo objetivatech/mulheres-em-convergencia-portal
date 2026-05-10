@@ -168,11 +168,15 @@ export default function EventoCheckin() {
         if (error) throw error;
       }
 
-      // Registrar no CRM
-      await registerCRMInteraction(
-        { name: walkInForm.full_name.trim(), email: walkInForm.email.trim(), phone: walkInForm.phone, cpf: cleanedCpf },
-        { interaction_type: 'event_registration', form_source: 'walk_in', activity_name: event?.title, activity_paid: false, activity_online: false }
-      );
+      // Registrar no CRM (best-effort — não bloqueia o sucesso do walk-in)
+      try {
+        await registerCRMInteraction(
+          { name: walkInForm.full_name.trim(), email: walkInForm.email.trim(), phone: walkInForm.phone, cpf: cleanedCpf },
+          { interaction_type: 'event_registration', form_source: 'walk_in', activity_name: event?.title, activity_paid: false, activity_online: false }
+        );
+      } catch {
+        // CRM write falhou (provavelmente sem permissão), mas o check-in foi registrado
+      }
 
       setWalkInDone(walkInForm.full_name.trim());
     } catch {

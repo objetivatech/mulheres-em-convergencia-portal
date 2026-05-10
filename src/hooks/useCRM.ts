@@ -525,31 +525,38 @@ export const useCRM = () => {
     return useQuery({
       queryKey: ['crm-unified-contacts', search, page],
       queryFn: async () => {
+        // Quando há busca ativa, retorna todos os matches (sem range) — resultados costumam ser poucos
+        // Quando navegando sem busca, pagina com PAGE_SIZE
+        const paginate = !search;
         const offset = page * PAGE_SIZE;
 
-        // Buscar leads com limite e paginação
+        // Buscar leads
         let leadsQuery = supabase
           .from('crm_leads')
           .select('*')
-          .order('created_at', { ascending: false })
-          .range(offset, offset + PAGE_SIZE - 1);
+          .order('created_at', { ascending: false });
 
         if (search) {
           leadsQuery = leadsQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,cpf.ilike.%${search}%`);
+        }
+        if (paginate) {
+          leadsQuery = leadsQuery.range(offset, offset + PAGE_SIZE - 1);
         }
 
         const { data: leads, error: leadsError } = await leadsQuery;
         if (leadsError) throw leadsError;
 
-        // Buscar perfis com limite e paginação
+        // Buscar perfis
         let profilesQuery = supabase
           .from('profiles')
           .select('*')
-          .order('created_at', { ascending: false })
-          .range(offset, offset + PAGE_SIZE - 1);
+          .order('created_at', { ascending: false });
 
         if (search) {
           profilesQuery = profilesQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,cpf.ilike.%${search}%`);
+        }
+        if (paginate) {
+          profilesQuery = profilesQuery.range(offset, offset + PAGE_SIZE - 1);
         }
 
         const { data: profiles, error: profilesError } = await profilesQuery;
@@ -651,7 +658,7 @@ export const useCRM = () => {
 
         return {
           contacts,
-          hasMore: (leads?.length ?? 0) === PAGE_SIZE || (profiles?.length ?? 0) === PAGE_SIZE,
+          hasMore: paginate && ((leads?.length ?? 0) === PAGE_SIZE || (profiles?.length ?? 0) === PAGE_SIZE),
           page,
         };
       },
