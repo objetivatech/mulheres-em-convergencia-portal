@@ -319,11 +319,10 @@ const processEventPayment = async (supabaseClient: any, payment: any, registrati
   logStep("Event registration confirmed", { registrationId });
 
   // Increment event participants count
-  await supabaseClient.rpc('increment_event_participants', { 
-    p_event_id: registration.event_id 
-  }).catch(() => {
-    logStep("increment_event_participants RPC not available");
+  const { error: incrError } = await supabaseClient.rpc('increment_event_participants', {
+    p_event_id: registration.event_id
   });
+  if (incrError) logStep("increment_event_participants RPC not available");
 
   // Update CRM deal for event if exists
   if (registration.lead_id) {
@@ -832,7 +831,7 @@ serve(async (req) => {
               value: payment.value,
               due_date: payment.dueDate,
             },
-          }).catch(() => {});
+          });
 
           // Count consecutive overdue events for this subscription
           const { count: overdueCount } = await supabaseClient
@@ -881,7 +880,7 @@ serve(async (req) => {
               channel: 'system',
               description: `Assinatura desativada por inadimplência (${overdueCount} pagamentos atrasados).`,
               metadata: { subscription_id: subscription.id, overdue_count: overdueCount },
-            }).catch(() => {});
+            });
           }
 
           // Log activity
@@ -890,7 +889,7 @@ serve(async (req) => {
             activity_type: 'payment_overdue',
             activity_description: `Pagamento atrasado: R$ ${payment.value?.toFixed(2) || '0.00'}`,
             metadata: { payment_id: payment.id },
-          }).catch(() => {});
+          });
         }
       }
     }
