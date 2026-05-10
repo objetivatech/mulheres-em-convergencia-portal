@@ -306,7 +306,7 @@ const processEventPayment = async (supabaseClient: any, payment: any, registrati
   }
 
   // Update registration status
-  await supabaseClient
+  const { error: updateError } = await supabaseClient
     .from('event_registrations')
     .update({
       status: 'confirmed',
@@ -316,6 +316,10 @@ const processEventPayment = async (supabaseClient: any, payment: any, registrati
       updated_at: new Date().toISOString(),
     })
     .eq('id', registrationId);
+  if (updateError) {
+    logStep("Failed to update event registration", { registrationId, error: updateError });
+    return { success: false };
+  }
   logStep("Event registration confirmed", { registrationId });
 
   // Increment event participants count
@@ -414,7 +418,9 @@ serve(async (req) => {
       }
 
       // Verificar se já foi processado (idempotência)
-      const eventId = `${webhookData.event}_${payment.id}_${Date.now()}`;
+      // Usa o ID único do evento Asaas (webhookData.id) quando disponível;
+      // fallback para event+payment para garantir que o mesmo pagamento não seja reprocessado.
+      const eventId = webhookData.id ?? `${webhookData.event}_${payment.id}`;
       if (await isEventProcessed(supabaseClient, eventId, payment.id)) {
         logStep("Event already processed", { eventId, paymentId: payment.id });
         return new Response(JSON.stringify({ 
