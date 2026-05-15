@@ -167,7 +167,7 @@ const SliderCard: React.FC<{ item: SliderItem }> = ({ item }) => {
 
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-2">
-            {item.description}
+            {stripHtml(item.description, 180)}
           </p>
 
           {/* CTA */}
