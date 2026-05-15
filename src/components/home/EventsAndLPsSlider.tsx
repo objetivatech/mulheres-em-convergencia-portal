@@ -12,6 +12,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { useEventsAndLPs } from '@/hooks/useEventsAndLPs';
+import { stripHtml } from '@/lib/stripHtml';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Autoplay from 'embla-carousel-autoplay';
