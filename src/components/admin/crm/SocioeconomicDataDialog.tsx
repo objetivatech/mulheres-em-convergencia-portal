@@ -90,12 +90,17 @@ export const SocioeconomicDataDialog: React.FC<Props> = ({ registration, open, o
       ? { column: 'user_id', value: registration.user_id }
       : { column: 'registration_id', value: registration.id };
 
-    supabase
+    const query = supabase
       .from('user_socioeconomic_data')
-      .select('*')
-      .eq(anchor.column, anchor.value)
-      .maybeSingle()
-      .then(({ data }) => {
+      .select('*');
+
+    if (anchor.column === 'user_id') {
+      (query as any).eq('user_id', anchor.value);
+    } else {
+      (query as any).eq('registration_id', anchor.value);
+    }
+
+    (query as any).maybeSingle().then(({ data }: { data: any }) => {
         if (data) {
           setExistingId(data.id);
           setForm({
