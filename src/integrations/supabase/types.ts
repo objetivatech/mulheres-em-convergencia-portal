@@ -5853,9 +5853,10 @@ export type Database = {
           motivation: string | null
           neighborhood: string | null
           race_ethnicity: string | null
+          registration_id: string | null
           state: string | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
           years_in_business: number | null
         }
         Insert: {
@@ -5880,9 +5881,10 @@ export type Database = {
           motivation?: string | null
           neighborhood?: string | null
           race_ethnicity?: string | null
+          registration_id?: string | null
           state?: string | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
           years_in_business?: number | null
         }
         Update: {
@@ -5907,12 +5909,20 @@ export type Database = {
           motivation?: string | null
           neighborhood?: string | null
           race_ethnicity?: string | null
+          registration_id?: string | null
           state?: string | null
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
           years_in_business?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_socioeconomic_data_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_socioeconomic_data_user_id_fkey"
             columns: ["user_id"]
@@ -6649,6 +6659,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_ambassador_totals: {
+        Args: { p_ambassador_id: string; p_commission_amount: number }
+        Returns: undefined
       }
       increment_blog_post_views: { Args: { p_slug: string }; Returns: boolean }
       is_business_active: { Args: { business_uuid: string }; Returns: boolean }

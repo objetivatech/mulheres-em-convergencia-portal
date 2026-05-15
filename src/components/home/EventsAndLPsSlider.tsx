@@ -12,6 +12,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { useEventsAndLPs } from '@/hooks/useEventsAndLPs';
+import { stripHtml } from '@/lib/stripHtml';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import Autoplay from 'embla-carousel-autoplay';
@@ -166,7 +167,7 @@ const SliderCard: React.FC<{ item: SliderItem }> = ({ item }) => {
 
           {/* Description */}
           <p className="text-sm text-muted-foreground line-clamp-2">
-            {item.description}
+            {stripHtml(item.description, 180)}
           </p>
 
           {/* CTA */}

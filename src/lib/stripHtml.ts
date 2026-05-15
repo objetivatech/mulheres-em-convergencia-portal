@@ -1,20 +1,25 @@
 /**
- * Remove tags HTML e decodifica entidades comuns para uso seguro
+ * Remove tags HTML e decodifica todas as entidades HTML para uso seguro
  * em previews de texto (cards, listas, og:description).
+ *
+ * Usa o DOM do browser para decodificacao completa de entidades.
  */
-const ENTITIES: Record<string, string> = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&#39;': "'",
-  '&nbsp;': ' ',
-};
-
 export function stripHtml(input?: string | null, maxLength?: number): string {
   if (!input) return '';
+
+  // Remove tags HTML
   const noTags = input.replace(/<[^>]*>/g, ' ');
-  const decoded = noTags.replace(/&[a-z#0-9]+;/gi, (m) => ENTITIES[m] ?? ' ');
+
+  // Decodifica entidades HTML usando o DOM (browser) ou fallback
+  let decoded: string;
+  if (typeof document !== 'undefined') {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = noTags;
+    decoded = textarea.value;
+  } else {
+    decoded = noTags;
+  }
+
   const collapsed = decoded.replace(/\s+/g, ' ').trim();
   if (maxLength && collapsed.length > maxLength) {
     return collapsed.slice(0, maxLength).trimEnd() + '…';
