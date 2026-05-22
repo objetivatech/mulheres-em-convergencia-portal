@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const ResetPasswordWithToken = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +18,8 @@ const ResetPasswordWithToken = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const token = searchParams.get('token');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,9 +34,7 @@ const ResetPasswordWithToken = () => {
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    const newPassword = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+    const newPassword = password;
 
     // Validations
     if (!newPassword || !confirmPassword) {
@@ -53,10 +55,11 @@ const ResetPasswordWithToken = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    const strength = scorePassword(newPassword);
+    if (!strength.isStrong) {
       toast({
-        title: 'Senha muito curta',
-        description: 'A senha deve ter pelo menos 6 caracteres.',
+        title: 'Senha fraca',
+        description: `A senha deve atingir ${MIN_PASSWORD_SCORE}/100 de força (atual: ${strength.score}).`,
         variant: 'destructive',
       });
       return;
@@ -180,8 +183,10 @@ const ResetPasswordWithToken = () => {
                       type={showPassword ? "text" : "password"}
                       required
                       className="pl-10 pr-10"
-                      placeholder="Mínimo 6 caracteres"
-                      minLength={6}
+                      placeholder="Crie uma senha forte"
+                      minLength={8}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                     <button
                       type="button"
@@ -191,6 +196,7 @@ const ResetPasswordWithToken = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  <PasswordStrengthMeter password={password} confirmPassword={confirmPassword} />
                 </div>
 
                 <div className="space-y-2">
@@ -204,7 +210,9 @@ const ResetPasswordWithToken = () => {
                       required
                       className="pl-10 pr-10"
                       placeholder="Digite a senha novamente"
-                      minLength={6}
+                      minLength={8}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     <button
                       type="button"
@@ -219,7 +227,7 @@ const ResetPasswordWithToken = () => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !scorePassword(password).isStrong || password !== confirmPassword}
                 >
                   {isSubmitting ? 'Redefinindo...' : 'Redefinir Senha'}
                 </Button>
