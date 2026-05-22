@@ -9,6 +9,8 @@ import { useCpfSystem } from '@/hooks/useCpfSystem';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2, Shield, Store, User, Mail, Crown, Users, Edit3 } from 'lucide-react';
 import { CpfUserForm } from '@/components/cpf/CpfUserForm';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const roleIcons: Partial<Record<UserRole, any>> = {
   admin: Shield,
@@ -78,6 +80,15 @@ export const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       toast({
         title: 'Erro',
         description: 'Email e senha são obrigatórios para criar conta de acesso.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!scorePassword(password).isStrong) {
+      toast({
+        title: 'Senha fraca',
+        description: `A senha temporária deve atingir ${MIN_PASSWORD_SCORE}/100 de força.`,
         variant: 'destructive',
       });
       return;
@@ -175,8 +186,9 @@ export const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Senha temporária"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
+                <PasswordStrengthMeter password={password} />
               </div>
             </div>
 
@@ -215,7 +227,7 @@ export const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
               </Button>
               <Button 
                 type="submit" 
-                disabled={createUserMutation.isPending}
+                disabled={createUserMutation.isPending || !scorePassword(password).isStrong}
                 className="min-w-24"
               >
                 {createUserMutation.isPending ? (
