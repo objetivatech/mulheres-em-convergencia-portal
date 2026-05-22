@@ -16,6 +16,8 @@ import AddressSelector from '@/components/form/AddressSelector';
 import ContactSelector from '@/components/form/ContactSelector';
 import CpfMergeDialog, { type MergeSelections } from '@/components/form/CpfMergeDialog';
 import { AddressFormDialog } from '@/components/user/AddressFormDialog';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Informe o nome completo'),
@@ -30,16 +32,17 @@ const customerSchema = z.object({
   state: z.string().min(2, 'Informe o estado (UF)'),
   // Signup fields (only when user is not logged in)
   email: z.string().email('Email inválido').optional(),
-  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
+  password: z.string().optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {
   // Only validate email/password if email has actual content (not empty string)
   if (data.email && data.email.trim().length > 0) {
-    return data.password && data.password.length >= 6 && data.confirmPassword && data.password === data.confirmPassword;
+    if (!data.password || !data.confirmPassword || data.password !== data.confirmPassword) return false;
+    return scorePassword(data.password).isStrong;
   }
   return true;
 }, {
-  message: "Senhas devem coincidir",
+  message: `Senhas devem coincidir e atingir ${MIN_PASSWORD_SCORE}/100 de força`,
   path: ["confirmPassword"],
 });
 
@@ -442,10 +445,11 @@ const CustomerInfoDialog: React.FC<CustomerInfoDialogProps> = ({ open, loading, 
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Senha *</FormLabel>
-                      <FormControl><Input type="password" placeholder="Mínimo 6 caracteres" {...field} /></FormControl>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        ℹ️ Use letras, números e símbolos para maior segurança
-                      </p>
+                      <FormControl><Input type="password" placeholder="Crie uma senha forte" {...field} /></FormControl>
+                      <PasswordStrengthMeter
+                        password={field.value || ''}
+                        confirmPassword={form.watch('confirmPassword') || ''}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}

@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const ResetPassword = () => {
   const { session, updatePassword } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ready, setReady] = useState(false);
   const [done, setDone] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
 
   useEffect(() => {
     // Aguarda hidratar o auth
@@ -22,11 +26,12 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const password = data.get('password') as string;
-    const confirm = data.get('confirm') as string;
     if (password !== confirm) {
       alert('As senhas não coincidem.');
+      return;
+    }
+    if (!scorePassword(password).isStrong) {
+      alert(`Senha não atende ao mínimo de segurança (${MIN_PASSWORD_SCORE}/100).`);
       return;
     }
     setIsSubmitting(true);
@@ -70,11 +75,14 @@ const ResetPassword = () => {
                         name="password"
                         type="password"
                         required
-                        minLength={6}
+                        minLength={8}
                         className="pl-10"
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Crie uma senha forte"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
+                    <PasswordStrengthMeter password={password} confirmPassword={confirm} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm">Confirme a nova senha</Label>
@@ -85,13 +93,15 @@ const ResetPassword = () => {
                         name="confirm"
                         type="password"
                         required
-                        minLength={6}
+                        minLength={8}
                         className="pl-10"
                         placeholder="Repita a senha"
+                        value={confirm}
+                        onChange={(e) => setConfirm(e.target.value)}
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full" disabled={isSubmitting || !scorePassword(password).isStrong || password !== confirm}>
                     {isSubmitting ? 'Salvando...' : 'Salvar nova senha'}
                   </Button>
                 </form>

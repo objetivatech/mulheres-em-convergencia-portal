@@ -11,6 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Settings, Shield, Bell, Trash2, Key } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const ConfiguracoesContaPage = () => {
   const { user, updatePassword } = useAuth();
@@ -33,10 +35,11 @@ const ConfiguracoesContaPage = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    const strength = scorePassword(newPassword);
+    if (!strength.isStrong) {
       toast({
-        title: 'Erro', 
-        description: 'A nova senha deve ter pelo menos 6 caracteres',
+        title: 'Senha fraca',
+        description: `A senha deve atingir ${MIN_PASSWORD_SCORE}/100 de força (atual: ${strength.score}).`,
         variant: 'destructive'
       });
       return;
@@ -176,6 +179,7 @@ const ConfiguracoesContaPage = () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Digite sua nova senha"
                     />
+                    <PasswordStrengthMeter password={newPassword} confirmPassword={confirmPassword} />
                   </div>
                   <div>
                     <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
@@ -189,7 +193,7 @@ const ConfiguracoesContaPage = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    disabled={loading || !newPassword || !confirmPassword}
+                    disabled={loading || !newPassword || !confirmPassword || !scorePassword(newPassword).isStrong || newPassword !== confirmPassword}
                     className="w-full md:w-auto"
                   >
                     <Key className="h-4 w-4 mr-2" />

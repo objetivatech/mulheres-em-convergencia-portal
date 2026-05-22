@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Mail, Lock, User, CreditCard } from 'lucide-react';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
+import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -17,6 +19,7 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [newsletterOptIn, setNewsletterOptIn] = useState(true);
+  const [signupPassword, setSignupPassword] = useState('');
   const formStartRef = useRef<number>(Date.now());
   const [error, setError] = useState<string | null>(null);
 
@@ -121,8 +124,9 @@ const Auth = () => {
       return;
     }
     // Regras simples
-    if (password.length < 6) {
-      setError('A senha deve ter ao menos 6 caracteres.');
+    const strength = scorePassword(password);
+    if (!strength.isStrong) {
+      setError(`Senha não atende ao mínimo de segurança (${strength.score}/100). É necessário ${MIN_PASSWORD_SCORE}+.`);
       setIsSubmitting(false);
       return;
     }
@@ -319,10 +323,12 @@ const Auth = () => {
                           name="password"
                           type={showPassword ? "text" : "password"}
                           required
-                          minLength={6}
+                          minLength={8}
                           autoComplete="new-password"
                           className="pl-10 pr-10"
-                          placeholder="Mínimo 6 caracteres"
+                          placeholder="Crie uma senha forte"
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
                         />
                         <button
                           type="button"
@@ -332,6 +338,7 @@ const Auth = () => {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                      <PasswordStrengthMeter password={signupPassword} />
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -348,7 +355,7 @@ const Auth = () => {
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !scorePassword(signupPassword).isStrong}
                     >
                       {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                     </Button>
