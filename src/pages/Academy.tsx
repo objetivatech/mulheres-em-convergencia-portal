@@ -132,9 +132,20 @@ const Academy = () => {
   return (
     <>
       <Helmet>
-        <title>MeC Academy - Aprenda, Empreenda, Cresça | Mulheres em Convergência</title>
+        <title>MeC Academy | Cursos para Empreendedoras</title>
         <meta name="description" content="Plataforma de cursos e capacitação para empreendedoras. Videoaulas, workshops, materiais de apoio e muito mais." />
         <link rel="canonical" href={`${PRODUCTION_DOMAIN}/academy`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqItems.map((item) => ({
+              "@type": "Question",
+              "name": item.q,
+              "acceptedAnswer": { "@type": "Answer", "text": item.a },
+            })),
+          })}
+        </script>
       </Helmet>
 
       <Layout>

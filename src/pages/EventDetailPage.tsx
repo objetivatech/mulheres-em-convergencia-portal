@@ -197,6 +197,58 @@ const EventDetailPage = () => {
         <meta property="og:description" content={event.description || `Participe do evento ${event.title}`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${PRODUCTION_DOMAIN}/eventos/${event.slug}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Event",
+            "name": event.title,
+            "description": (event.description || `Participe do evento ${event.title}`).replace(/<[^>]*>/g, '').substring(0, 500),
+            "startDate": event.date_start,
+            "endDate": event.date_end || event.date_start,
+            "eventAttendanceMode":
+              event.format === 'online'
+                ? 'https://schema.org/OnlineEventAttendanceMode'
+                : event.format === 'hibrido'
+                ? 'https://schema.org/MixedEventAttendanceMode'
+                : 'https://schema.org/OfflineEventAttendanceMode',
+            "eventStatus": "https://schema.org/EventScheduled",
+            "location":
+              event.format === 'online'
+                ? {
+                    "@type": "VirtualLocation",
+                    "url": `${PRODUCTION_DOMAIN}/eventos/${event.slug}`,
+                  }
+                : {
+                    "@type": "Place",
+                    "name": event.location || 'Mulheres em Convergência',
+                    "address": event.location || 'Brasil',
+                  },
+            "image": event.image_url ? [event.image_url] : undefined,
+            "organizer": {
+              "@type": "Organization",
+              "name": "Mulheres em Convergência",
+              "url": PRODUCTION_DOMAIN,
+            },
+            "offers": event.free
+              ? {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "BRL",
+                  "availability": "https://schema.org/InStock",
+                  "url": `${PRODUCTION_DOMAIN}/eventos/${event.slug}`,
+                }
+              : event.price
+              ? {
+                  "@type": "Offer",
+                  "price": String(event.price),
+                  "priceCurrency": "BRL",
+                  "availability": "https://schema.org/InStock",
+                  "url": `${PRODUCTION_DOMAIN}/eventos/${event.slug}`,
+                }
+              : undefined,
+            "url": `${PRODUCTION_DOMAIN}/eventos/${event.slug}`,
+          })}
+        </script>
       </Helmet>
 
       <Layout>
