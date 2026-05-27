@@ -20,11 +20,14 @@ const levelLabels: Record<string, { label: string; variant: 'default' | 'seconda
 export function ConectaLayout({ children, requireMember = false }: ConectaLayoutProps) {
   const { user, loading, hasAccess, isMemberOrAbove, accessLevel, ensureProfile } = useConectaAccess();
 
+  // Wait until both the auth state AND the role query have resolved before
+  // calling ensureProfile, so the role (membro vs convidado) is known and the
+  // upsert writes the correct conecta_role from the start.
   useEffect(() => {
-    if (user && hasAccess) {
+    if (user && hasAccess && !loading) {
       ensureProfile();
     }
-  }, [user, hasAccess]);
+  }, [user, hasAccess, loading]);
 
   if (loading) {
     return (
