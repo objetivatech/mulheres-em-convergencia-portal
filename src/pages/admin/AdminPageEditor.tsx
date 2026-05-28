@@ -1,5 +1,5 @@
 // src/pages/admin/AdminPageEditor.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/layout/Layout';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { usePage, useSavePage, getEditorContent } from '@/hooks/usePageEditor';
 import type { PageSavePayload } from '@/hooks/usePageEditor';
 import { TipTapEditor } from '@/components/editor/TipTapEditor';
 import type { TipTapDoc } from '@/lib/migrateBlocksToTipTap';
+import { ensureTipTapDoc } from '@/lib/migrateBlocksToTipTap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,12 +44,14 @@ export default function AdminPageEditor() {
   const [isPublic, setIsPublic] = useState(false);
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
-  const [content, setContent] = useState<TipTapDoc | null>(null);
+  const [content, setContent] = useState<TipTapDoc>(() => ensureTipTapDoc(null));
   const [isDirty, setIsDirty] = useState(false);
+  const populated = useRef(false);
 
   // Populate form when existing data loads
   useEffect(() => {
-    if (existing) {
+    if (existing && !populated.current) {
+      populated.current = true;
       setTitle(existing.title);
       setSlug(existing.slug);
       setStatus(existing.status as 'draft' | 'published');
@@ -71,7 +74,7 @@ export default function AdminPageEditor() {
   };
 
   const handleSave = async () => {
-    if (!title.trim() || !slug.trim() || !content) return;
+    if (!title.trim() || !slug.trim()) return;
     const payload: PageSavePayload = {
       id: isNew ? undefined : id,
       title,
@@ -83,9 +86,13 @@ export default function AdminPageEditor() {
       seo_description: seoDescription || undefined,
       content,
     };
-    const saved = await saveMutation.mutateAsync(payload);
-    setIsDirty(false);
-    if (isNew) navigate(`/admin/paginas/${saved.id}`, { replace: true });
+    try {
+      const saved = await saveMutation.mutateAsync(payload);
+      setIsDirty(false);
+      if (isNew) navigate(`/admin/paginas/${saved.id}`, { replace: true });
+    } catch {
+      // onError in useSavePage already shows the error toast
+    }
   };
 
   const isSystemPage = existing?.page_type === 'system';
