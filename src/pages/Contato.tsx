@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { registerCRMInteraction } from '@/lib/crmIntegration';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
-import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { TipTapRenderer } from '@/components/editor/TipTapRenderer';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { getSocialIcon } from '@/lib/socialIconMap';
 
@@ -106,7 +106,7 @@ const Contato = () => {
           <meta name="description" content="Entre em contato conosco. Estamos aqui para ouvir você e responder suas dúvidas sobre o movimento Mulheres em Convergência." />
           <link rel="canonical" href={`${PRODUCTION_DOMAIN}/contato`} />
         </Helmet>
-        <PageRenderer data={pageContent.content} />
+        <TipTapRenderer content={pageContent.content} />
       </Layout>
     );
   }

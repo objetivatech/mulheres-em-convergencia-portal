@@ -1,3 +1,5 @@
+> **⚠️ ARQUIVADO em 2026-05-27** — O Page Builder baseado em PUCK foi removido. Substituído pelo Editor TipTap. Ver: `docs/_active/06-funcionalidades/page-editor-tiptap.md`
+
 # Page Builder - Implementação Completa
 
 ## Resumo da Implementação

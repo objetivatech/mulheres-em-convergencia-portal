@@ -189,3 +189,9 @@ Para adicionar novos roles:
 - Todas as operações requerem privilégios de administrador
 - Verificação de segurança em nível de hook e banco de dados
 - Invalidação automática de cache para atualizações em tempo real
+
+### ⚠️ Regras de Remoção de Roles (atualizado 2026-05-27)
+
+- **`community_member`** é atribuída automaticamente no cadastro. O botão de remoção fica **desabilitado** na UI quando o usuário possui outras roles. Se tentada via DB, o trigger `validate_role_consistency` bloqueia com exceção.
+- **`business_owner`** concede acesso ao **CONECTA+ como Membro**. Gerenciada pela assinatura.
+- Ao tentar remover `community_member` com roles dependentes, a UI exibe: *"Remova primeiro todas as outras funções do usuário antes de retirar Membro da Comunidade."*

@@ -4777,6 +4777,10 @@ export type Database = {
           content: Json
           created_at: string
           id: string
+          is_public: boolean
+          page_type: string
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           status: string
           title: string
@@ -4787,6 +4791,10 @@ export type Database = {
           content?: Json
           created_at?: string
           id?: string
+          is_public?: boolean
+          page_type?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           status?: string
           title: string
@@ -4797,6 +4805,10 @@ export type Database = {
           content?: Json
           created_at?: string
           id?: string
+          is_public?: boolean
+          page_type?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           status?: string
           title?: string

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Settings, Users, FileText, Mail, BarChart3, Shield, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap, LayoutTemplate } from 'lucide-react';
+import { Settings, Users, FileText, Mail, BarChart3, Shield, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap, LayoutTemplate, BookOpen } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const Admin = () => {
@@ -164,6 +164,14 @@ const Admin = () => {
           icon: LayoutTemplate,
           available: isAdmin,
           href: '/admin/landing-pages',
+          comingSoon: false
+        },
+        {
+          title: 'Gerenciador de Páginas',
+          description: 'Criar e editar páginas do portal com editor rico TipTap',
+          icon: BookOpen,
+          available: isAdmin,
+          href: '/admin/paginas',
           comingSoon: false
         }
       ]
