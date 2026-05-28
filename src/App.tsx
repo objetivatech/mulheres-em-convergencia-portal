@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Index from "./pages/Index";
@@ -61,6 +61,9 @@ import AdminAcademy from './pages/admin/AdminAcademy';
 import AdminLandingPages from './pages/admin/AdminLandingPages';
 import AdminLandingPageEditor from './pages/admin/AdminLandingPageEditor';
 import DynamicLandingPage from './pages/DynamicLandingPage';
+const AdminPages = lazy(() => import('@/pages/admin/AdminPages'));
+const AdminPageEditor = lazy(() => import('@/pages/admin/AdminPageEditor'));
+const PublicPageView = lazy(() => import('@/pages/PublicPageView'));
 
 import { UserDashboard } from '@/pages/UserDashboard';
 import ConfiguracoesContaPage from '@/pages/ConfiguracoesContaPage';
@@ -179,7 +182,7 @@ function AppContent() {
         <Route path="/reset-password" element={<Navigate to="/redefinir-senha" replace />} />
         <Route path="/forgot-password" element={<Navigate to="/esqueci-senha" replace />} />
         <Route path="/page/:slug" element={<Navigate to="/" replace />} />
-        <Route path="/pagina/:slug" element={<Navigate to="/" replace />} />
+        <Route path="/pagina/:slug" element={<Suspense fallback={null}><PublicPageView /></Suspense>} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={
@@ -315,6 +318,20 @@ function AppContent() {
         <Route path="/admin/landing-pages/:id" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminLandingPageEditor />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/paginas" element={
+          <ProtectedRoute requireAdmin={true}>
+            <Suspense fallback={null}>
+              <AdminPages />
+            </Suspense>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/paginas/:id" element={
+          <ProtectedRoute requireAdmin={true}>
+            <Suspense fallback={null}>
+              <AdminPageEditor />
+            </Suspense>
           </ProtectedRoute>
         } />
         {/* Redirect alternativo */}
