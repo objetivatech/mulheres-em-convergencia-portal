@@ -122,8 +122,9 @@ export function useDeletePage() {
       const { error } = await supabase.from('pages').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['admin', 'pages'] });
+      qc.removeQueries({ queryKey: ['admin', 'pages', id] });
       toast({ title: 'Página excluída' });
     },
     onError: (err: Error) => {
