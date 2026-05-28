@@ -14,7 +14,6 @@ import { CalloutNode } from './extensions/CalloutNode';
 import { CTANode } from './extensions/CTANode';
 import { useRef } from 'react';
 import { useR2Storage } from '@/hooks/useR2Storage';
-import { useToast } from '@/hooks/use-toast';
 import type { TipTapDoc } from '@/lib/migrateBlocksToTipTap';
 import {
   Bold, Italic, Strikethrough, Code, Heading1, Heading2, Heading3,
@@ -33,7 +32,6 @@ interface TipTapEditorProps {
 
 export function TipTapEditor({ content, onChange, placeholder = 'Comece a escrever...', className }: TipTapEditorProps) {
   const { uploadFile, uploading } = useR2Storage();
-  const { toast } = useToast();
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -68,9 +66,8 @@ export function TipTapEditor({ content, onChange, placeholder = 'Comece a escrev
     const url = await uploadFile(file, 'paginas');
     if (url) {
       editor.chain().focus().setImage({ src: url, alt: file.name }).run();
-    } else {
-      toast({ title: 'Erro no upload', description: 'Não foi possível enviar a imagem.', variant: 'destructive' });
     }
+    // useR2Storage already shows a toast on failure — no redundant toast needed here.
     // Reset input so the same file can be selected again
     e.target.value = '';
   };
