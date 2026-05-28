@@ -42,11 +42,8 @@ import UserJourney from './pages/UserJourney';
 import BlogDashboard from './pages/BlogDashboard';
 import BlogEditor from './pages/BlogEditor';
 import BlogCategories from './pages/BlogCategories';
-import PagesManagement from './pages/admin/PagesManagement';
-import PageBuilderEditor from './pages/admin/PageBuilder';
 import SiteSettings from './pages/admin/SiteSettings';
 import NavigationSettings from './pages/admin/NavigationSettings';
-import PublicPage from './pages/PublicPage';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -165,7 +162,7 @@ function AppContent() {
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/evento-checkin/:eventId" element={<EventoCheckin />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
-        <Route path="/pagina/:slug" element={<PublicPage />} />
+        {/* /pagina/:slug removido junto com o Page Builder */}
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
         <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
@@ -181,7 +178,8 @@ function AppContent() {
         <Route path="/confirm-email" element={<Navigate to="/confirmar-email" replace />} />
         <Route path="/reset-password" element={<Navigate to="/redefinir-senha" replace />} />
         <Route path="/forgot-password" element={<Navigate to="/esqueci-senha" replace />} />
-        <Route path="/page/:slug" element={<Navigate to="/pagina/:slug" replace />} />
+        <Route path="/page/:slug" element={<Navigate to="/" replace />} />
+        <Route path="/pagina/:slug" element={<Navigate to="/" replace />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={
@@ -346,27 +344,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
-        {/* Rotas do Construtor de Páginas */}
-        <Route path="/admin/paginas" element={
-          <ProtectedRoute requireAdmin={true}>
-            <PagesManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/construtor-paginas/novo" element={
-          <ProtectedRoute requireAdmin={true}>
-            <PageBuilderEditor />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/construtor-paginas/:id" element={
-          <ProtectedRoute requireAdmin={true}>
-            <PageBuilderEditor />
-          </ProtectedRoute>
-        } />
-        
-        {/* Redirects Page Builder */}
-        <Route path="/admin/pages" element={<Navigate to="/admin/paginas" replace />} />
-        <Route path="/admin/page-builder/new" element={<Navigate to="/admin/construtor-paginas/novo" replace />} />
-        <Route path="/admin/page-builder/:id" element={<Navigate to="/admin/construtor-paginas/:id" replace />} />
+        {/* Page Builder removido — ver alternativas no DOCs */}
         
         {/* Rotas de Gerenciamento do Site */}
         <Route path="/admin/configuracoes-site" element={
