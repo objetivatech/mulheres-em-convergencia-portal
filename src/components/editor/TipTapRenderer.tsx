@@ -46,7 +46,7 @@ export function TipTapRenderer({ content, className }: TipTapRendererProps) {
       content: isTipTap ? (content as TipTapDoc) : undefined,
       editorProps: {
         attributes: {
-          class: `prose prose-sm max-w-none ${className ?? ''}`,
+          class: 'prose prose-sm max-w-none',
         },
       },
     },
@@ -60,5 +60,9 @@ export function TipTapRenderer({ content, className }: TipTapRendererProps) {
 
   if (!isTipTap || !editor) return null;
 
-  return <EditorContent editor={editor} />;
+  // Empty document — render nothing rather than an invisible empty element
+  const doc = content as TipTapDoc;
+  if (!doc.content || doc.content.length === 0) return null;
+
+  return <div className={className}><EditorContent editor={editor} /></div>;
 }
