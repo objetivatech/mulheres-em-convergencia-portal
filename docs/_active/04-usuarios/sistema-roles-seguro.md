@@ -153,3 +153,14 @@ Para testar se as permissões estão corretas:
 4. ✅ Auditar mudanças de permissões
 5. ❌ NUNCA confiar em verificações client-side
 6. ❌ NUNCA permitir usuários modificarem suas próprias roles
+
+## Proteção de UX (atualizado 2026-05-27)
+
+### Trigger `validate_role_consistency`
+Bloqueia a remoção de `community_member` quando o usuário possui roles dependentes (`business_owner`, `ambassador`, `blog_editor`, `admin`, etc.).
+
+### Comportamento na UI (`UserManagement.tsx`)
+- O botão de remover `community_member` é **desabilitado** quando o usuário tem outras roles
+- Um ícone de cadeado e uma nota explicativa são exibidos
+- `business_owner` é exibida com a label "(CONECTA+ Membro)" para clareza
+- Erros do banco são exibidos em toast descritivo, nunca como erro genérico
