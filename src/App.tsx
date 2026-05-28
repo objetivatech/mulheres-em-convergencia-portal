@@ -165,7 +165,6 @@ function AppContent() {
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/evento-checkin/:eventId" element={<EventoCheckin />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
-        {/* /pagina/:slug removido junto com o Page Builder */}
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
         <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
