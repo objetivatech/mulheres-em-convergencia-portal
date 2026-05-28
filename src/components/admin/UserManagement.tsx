@@ -11,8 +11,18 @@ import { useToast } from '@/hooks/use-toast';
 import { AddUserDialog } from './AddUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { ComplimentaryBusinessManager } from './ComplimentaryBusinessManager';
-import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift, TrendingUp } from 'lucide-react';
+import { Search, UserPlus, Shield, User, Store, Mail, Crown, Users, Edit3, Edit, Trash2, Gift, TrendingUp, Lock, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Roles that are system-managed and cannot be freely removed via the UI.
+// community_member: auto-assigned on signup; DB blocks removal while dependent roles exist.
+// business_owner:   controls CONECTA+ membro access; granted by subscription webhook.
+const SYSTEM_ROLE_NOTES: Partial<Record<UserRole, string>> = {
+  community_member: 'Atribuída automaticamente. Só pode ser removida se o usuário não tiver nenhuma outra função.',
+  business_owner:   'Concede acesso ao CONECTA+ como Membro. Gerenciada pela assinatura.',
+};
+
+const CONECTA_ACCESS_ROLES: UserRole[] = ['business_owner', 'admin'];
 
 const roleIcons: Partial<Record<UserRole, any>> = {
   admin: Shield,
@@ -94,13 +104,18 @@ export const UserManagement = () => {
     try {
       await removeRoleMutation.mutateAsync({ userId, role });
       toast({
-        title: 'Role removido',
-        description: `Role ${roleLabels[role]} removido com sucesso.`,
+        title: 'Função removida',
+        description: `${roleLabels[role]} removido com sucesso.`,
       });
-    } catch (error) {
+    } catch (err: any) {
+      // Surface the actual DB reason so the admin understands what happened
+      const detail: string = err?.message ?? String(err);
+      const isCommunityMemberBlocked = detail.includes('dependent roles');
       toast({
-        title: 'Erro',
-        description: 'Não foi possível remover o role.',
+        title: 'Não foi possível remover',
+        description: isCommunityMemberBlocked
+          ? 'Remova primeiro todas as outras funções do usuário antes de retirar "Membro da Comunidade".'
+          : detail || 'Erro ao remover função.',
         variant: 'destructive',
       });
     }
@@ -347,28 +362,50 @@ export const UserManagement = () => {
                                 Adicione ou remova roles para este usuário.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                               {Object.entries(roleLabels).map(([role, label]) => {
                                 const hasRole = user.roles.includes(role as UserRole);
-                                const Icon = roleIcons[role as UserRole];
-                                
+                                const Icon = roleIcons[role as UserRole] ?? Users;
+                                const note = SYSTEM_ROLE_NOTES[role as UserRole];
+                                const otherRoles = user.roles.filter(r => r !== 'community_member');
+                                // community_member cannot be removed while other roles exist (DB enforces this)
+                                const isRemoveBlocked =
+                                  role === 'community_member' && hasRole && otherRoles.length > 0;
+
                                 return (
-                                  <div key={role} className="flex items-center justify-between p-3 border rounded-lg">
-                                    <div className="flex items-center space-x-3">
-                                      <Icon className="h-5 w-5" />
-                                      <div>
-                                        <div className="font-medium">{label}</div>
+                                  <div key={role} className={`flex items-center justify-between p-3 border rounded-lg ${note ? 'bg-muted/40' : ''}`}>
+                                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                      <Icon className="h-5 w-5 shrink-0" />
+                                      <div className="min-w-0">
+                                        <div className="font-medium flex items-center gap-1">
+                                          {label}
+                                          {role === 'community_member' && (
+                                            <Lock className="h-3 w-3 text-muted-foreground" title="Função de sistema" />
+                                          )}
+                                          {role === 'business_owner' && (
+                                            <span className="text-xs font-normal text-muted-foreground ml-1">(CONECTA+ Membro)</span>
+                                          )}
+                                        </div>
                                         {hasRole && (
-                                        <Badge className={roleColors[role as UserRole]}>
-                                          Ativo
-                                        </Badge>
+                                          <Badge className={roleColors[role as UserRole] ?? ''}>
+                                            Ativo
+                                          </Badge>
+                                        )}
+                                        {note && (
+                                          <p className="text-xs text-muted-foreground mt-0.5 flex items-start gap-1">
+                                            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                                            {note}
+                                          </p>
                                         )}
                                       </div>
                                     </div>
                                     <Button
-                                      variant={hasRole ? "destructive" : "default"}
+                                      variant={hasRole ? 'destructive' : 'default'}
                                       size="sm"
-                                      onClick={() => hasRole 
+                                      className="ml-3 shrink-0"
+                                      disabled={isRemoveBlocked}
+                                      title={isRemoveBlocked ? 'Remova primeiro todas as outras funções' : undefined}
+                                      onClick={() => hasRole
                                         ? handleRemoveRole(user.id, role as UserRole)
                                         : handleAddRole(user.id, role as UserRole)
                                       }
