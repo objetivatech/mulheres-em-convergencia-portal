@@ -55,6 +55,10 @@ export default function AdminPages() {
               <CardContent>
                 {isLoading ? (
                   <div className="py-8 text-center text-muted-foreground">Carregando...</div>
+                ) : pages.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    Nenhuma página encontrada. Clique em "+ Nova Página" para criar a primeira.
+                  </div>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -147,9 +151,10 @@ export default function AdminPages() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteMutation.isPending}
               onClick={() => { deleteMutation.mutate(deleteId!); setDeleteId(null); }}
             >
-              Excluir
+              {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
