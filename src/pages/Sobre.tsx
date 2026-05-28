@@ -6,7 +6,7 @@ import { PartnersCarousel } from "@/components/partners/PartnersCarousel";
 import { Users, Target, Heart } from "lucide-react";
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
-import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { TipTapRenderer } from '@/components/editor/TipTapRenderer';
 
 
 const Sobre = () => {
@@ -23,7 +23,7 @@ const Sobre = () => {
           <meta name="description" content="Conheça nossa missão de empoderar mulheres empreendedoras através da educação, comunidade e oportunidades de crescimento." />
           <link rel="canonical" href={`${PRODUCTION_DOMAIN}/sobre`} />
         </Helmet>
-        <PageRenderer data={pageContent.content} />
+        <TipTapRenderer content={pageContent.content} />
       </Layout>
     );
   }

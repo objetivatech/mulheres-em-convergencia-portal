@@ -11,7 +11,7 @@ import { CheckCircle, Star, Zap, Crown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import CustomerInfoDialog, { CustomerFormData, UserProfileData } from '@/components/subscriptions/CustomerInfoDialog';
 import { usePageBuilder } from '@/hooks/usePageBuilder';
-import { PageRenderer } from '@/components/page-builder/PageRenderer';
+import { TipTapRenderer } from '@/components/editor/TipTapRenderer';
 import { FAQSection } from '@/components/subscriptions/FAQSection';
 
 type SubscriptionPlan = {
@@ -428,7 +428,7 @@ const Planos: React.FC = () => {
           <meta property="og:description" content="Escolha o plano ideal para o seu negócio." />
           <meta property="og:url" content="https://mulheresemconvergencia.com.br/planos" />
         </Helmet>
-        <PageRenderer data={pageContent.content} />
+        <TipTapRenderer content={pageContent.content} />
       </Layout>
     );
   }
