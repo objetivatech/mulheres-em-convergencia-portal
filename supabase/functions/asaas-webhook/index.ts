@@ -1052,6 +1052,75 @@ serve(async (req) => {
             form_source: "asaas_webhook",
             metadata: { subscription_id: subscription.id, user_id: academySub.user_id },
           });
+        } else {
+          // Business subscription cancellation
+          const { data: businessSub } = await supabaseClient
+            .from("user_subscriptions")
+            .select("id, user_id")
+            .eq("external_subscription_id", subscription.id)
+            .maybeSingle();
+
+          if (businessSub) {
+            const newStatus = webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelled" : "expired";
+
+            const { error: subUpdateError } = await supabaseClient
+              .from("user_subscriptions")
+              .update({
+                status: newStatus,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", businessSub.id);
+            if (subUpdateError) logStep("Failed to update business subscription status", { error: subUpdateError });
+            else logStep("Business subscription cancelled/expired", { subId: businessSub.id, status: newStatus });
+
+            // Deactivate non-complimentary businesses
+            const { data: deactivated, error: bizUpdateError } = await supabaseClient
+              .from("businesses")
+              .update({
+                subscription_active: false,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("owner_id", businessSub.user_id)
+              .eq("is_complimentary", false)
+              .select("id, name");
+            if (bizUpdateError) logStep("Failed to deactivate businesses", { error: bizUpdateError });
+            else logStep("Business profiles deactivated", { count: deactivated?.length || 0 });
+
+            // Revoke roles only if no active businesses remain (handles multi-business plans)
+            const { data: remaining } = await supabaseClient
+              .from("businesses")
+              .select("id")
+              .eq("owner_id", businessSub.user_id)
+              .eq("subscription_active", true)
+              .limit(1);
+
+            if (!remaining || remaining.length === 0) {
+              await supabaseClient
+                .from("user_roles")
+                .delete()
+                .eq("user_id", businessSub.user_id)
+                .in("role", ["business_owner", "subscriber"]);
+              logStep("Roles revoked — no active businesses remain", { userId: businessSub.user_id });
+            } else {
+              logStep("Roles retained — user still has active businesses", { userId: businessSub.user_id });
+            }
+
+            // CRM interaction
+            await supabaseClient.from("crm_interactions").insert({
+              user_id: businessSub.user_id,
+              interaction_type: "subscription_cancelled",
+              channel: "system",
+              description: `Assinatura business ${webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelada" : "expirada"} via ASAAS`,
+              form_source: "asaas_webhook",
+              metadata: {
+                asaas_subscription_id: subscription.id,
+                user_id: businessSub.user_id,
+                event: webhookData.event,
+              },
+            });
+          } else {
+            logStep("No matching business subscription for deleted/expired event", { asaasSubId: subscription.id });
+          }
         }
       }
     }
