@@ -999,22 +999,39 @@ serve(async (req) => {
             })
             .eq("owner_id", localSub.user_id);
 
-          // Assign business_owner role
-          const { data: existingRole } = await supabaseClient
+          // Assign business_owner and subscriber roles (idempotent)
+          const { data: existingOwnerRole } = await supabaseClient
             .from('user_roles')
             .select('role')
             .eq('user_id', localSub.user_id)
             .eq('role', 'business_owner')
             .maybeSingle();
 
-          if (!existingRole) {
-            await supabaseClient
+          if (!existingOwnerRole) {
+            const { error: ownerInsertError } = await supabaseClient
               .from('user_roles')
-              .insert({
-                user_id: localSub.user_id,
-                role: 'business_owner'
-              });
-            logStep("Role business_owner assigned", { userId: localSub.user_id });
+              .insert({ user_id: localSub.user_id, role: 'business_owner' });
+            if (ownerInsertError) logStep("Failed to assign role business_owner", { userId: localSub.user_id, error: String(ownerInsertError) });
+            else logStep("Role business_owner assigned", { userId: localSub.user_id });
+          } else {
+            logStep("Role business_owner already exists — skipping", { userId: localSub.user_id });
+          }
+
+          const { data: existingSubRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', localSub.user_id)
+            .eq('role', 'subscriber')
+            .maybeSingle();
+
+          if (!existingSubRole) {
+            const { error: subInsertError } = await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: localSub.user_id, role: 'subscriber' });
+            if (subInsertError) logStep("Failed to assign role subscriber", { userId: localSub.user_id, error: String(subInsertError) });
+            else logStep("Role subscriber assigned", { userId: localSub.user_id });
+          } else {
+            logStep("Role subscriber already exists — skipping", { userId: localSub.user_id });
           }
 
           logStep("Subscription activated", { subscriptionId: localSub.id });
@@ -1086,12 +1103,14 @@ serve(async (req) => {
             if (bizUpdateError) logStep("Failed to deactivate businesses", { error: bizUpdateError });
             else logStep("Business profiles deactivated", { count: deactivated?.length || 0 });
 
-            // Revoke roles only if no active businesses remain (handles multi-business plans)
+            // Revoke roles only if no active paid businesses remain (handles multi-business plans;
+            // complimentary businesses do not count as active paid subscriptions)
             const { data: remaining, error: remainingError } = await supabaseClient
               .from("businesses")
               .select("id")
               .eq("owner_id", businessSub.user_id)
               .eq("subscription_active", true)
+              .eq("is_complimentary", false)
               .limit(1);
 
             if (remainingError) {
