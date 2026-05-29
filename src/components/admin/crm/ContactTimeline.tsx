@@ -55,6 +55,18 @@ const interactionIcons: Record<string, React.ElementType> = {
   product_purchase_confirmed: DollarSign,
   event_payment_confirmed: DollarSign,
   donation: Gift,
+  // Subscription lifecycle
+  subscription_payment_confirmed: DollarSign,
+  subscription_payment_processed: DollarSign,
+  subscription_activated_sync: CheckCircle,
+  subscription_deactivated_sync: AlertCircle,
+  subscription_deactivated_overdue: AlertCircle,
+  subscription_expired_local: AlertCircle,
+  subscription_cancelled: AlertCircle,
+  payment_overdue: AlertCircle,
+  // Academy
+  academy_payment_confirmed: DollarSign,
+  academy_subscription_cancelled: AlertCircle,
   // Other
   signup: UserPlus,
   form_submit: FileText,
@@ -88,6 +100,18 @@ const interactionLabels: Record<string, string> = {
   product_purchase_confirmed: 'Pagamento confirmado',
   event_payment_confirmed: 'Pagamento de evento confirmado',
   donation: 'Doação',
+  // Subscription lifecycle
+  subscription_payment_confirmed: 'Pagamento de assinatura confirmado',
+  subscription_payment_processed: 'Pagamento de assinatura processado',
+  subscription_activated_sync: 'Assinatura ativada (sincronização)',
+  subscription_deactivated_sync: 'Assinatura desativada (sincronização)',
+  subscription_deactivated_overdue: 'Assinatura desativada por inadimplência',
+  subscription_expired_local: 'Assinatura expirada localmente',
+  subscription_cancelled: 'Assinatura cancelada',
+  payment_overdue: 'Pagamento em atraso',
+  // Academy
+  academy_payment_confirmed: 'Pagamento Academy confirmado',
+  academy_subscription_cancelled: 'Assinatura Academy cancelada/expirada',
   // Other
   signup: 'Cadastro',
   form_submit: 'Formulário enviado',
@@ -106,6 +130,8 @@ const milestoneLabels: Record<string, string> = {
   became_subscriber: 'Tornou-se Assinante',
   became_ambassador: 'Tornou-se Embaixadora',
   lead_converted: 'Lead Convertido',
+  subscription_activated: 'Assinatura Business Ativada',
+  product_purchase: 'Compra de Produto',
 };
 
 export const ContactTimeline = ({ interactions, milestones }: ContactTimelineProps) => {
