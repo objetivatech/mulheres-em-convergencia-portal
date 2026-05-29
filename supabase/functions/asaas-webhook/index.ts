@@ -669,6 +669,49 @@ serve(async (req) => {
           });
         }
 
+        // Grant business_owner and subscriber roles (idempotent upsert)
+        try {
+          const { data: existingOwnerRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', subscription.user_id)
+            .eq('role', 'business_owner')
+            .maybeSingle();
+
+          if (!existingOwnerRole) {
+            const { error: ownerInsertError } = await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: subscription.user_id, role: 'business_owner' });
+            if (ownerInsertError) throw ownerInsertError;
+            logStep('Role business_owner granted', { userId: subscription.user_id });
+          } else {
+            logStep('Role business_owner already exists — skipping', { userId: subscription.user_id });
+          }
+
+          const { data: existingSubRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', subscription.user_id)
+            .eq('role', 'subscriber')
+            .maybeSingle();
+
+          if (!existingSubRole) {
+            const { error: subInsertError } = await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: subscription.user_id, role: 'subscriber' });
+            if (subInsertError) throw subInsertError;
+            logStep('Role subscriber granted', { userId: subscription.user_id });
+          } else {
+            logStep('Role subscriber already exists — skipping', { userId: subscription.user_id });
+          }
+        } catch (roleError) {
+          // Non-blocking: log prominently so admin can spot it in Function logs
+          logStep('CRITICAL: Failed to grant roles after payment — manual fix may be needed', {
+            userId: subscription.user_id,
+            error: String(roleError),
+          });
+        }
+
         // Processar comissão de embaixadora
         const commissionResult = await processAmbassadorCommission(supabaseClient, subscription, payment);
         if (commissionResult.success) {
@@ -956,22 +999,39 @@ serve(async (req) => {
             })
             .eq("owner_id", localSub.user_id);
 
-          // Assign business_owner role
-          const { data: existingRole } = await supabaseClient
+          // Assign business_owner and subscriber roles (idempotent)
+          const { data: existingOwnerRole } = await supabaseClient
             .from('user_roles')
             .select('role')
             .eq('user_id', localSub.user_id)
             .eq('role', 'business_owner')
             .maybeSingle();
 
-          if (!existingRole) {
-            await supabaseClient
+          if (!existingOwnerRole) {
+            const { error: ownerInsertError } = await supabaseClient
               .from('user_roles')
-              .insert({
-                user_id: localSub.user_id,
-                role: 'business_owner'
-              });
-            logStep("Role business_owner assigned", { userId: localSub.user_id });
+              .insert({ user_id: localSub.user_id, role: 'business_owner' });
+            if (ownerInsertError) logStep("Failed to assign role business_owner", { userId: localSub.user_id, error: String(ownerInsertError) });
+            else logStep("Role business_owner assigned", { userId: localSub.user_id });
+          } else {
+            logStep("Role business_owner already exists — skipping", { userId: localSub.user_id });
+          }
+
+          const { data: existingSubRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', localSub.user_id)
+            .eq('role', 'subscriber')
+            .maybeSingle();
+
+          if (!existingSubRole) {
+            const { error: subInsertError } = await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: localSub.user_id, role: 'subscriber' });
+            if (subInsertError) logStep("Failed to assign role subscriber", { userId: localSub.user_id, error: String(subInsertError) });
+            else logStep("Role subscriber assigned", { userId: localSub.user_id });
+          } else {
+            logStep("Role subscriber already exists — skipping", { userId: localSub.user_id });
           }
 
           logStep("Subscription activated", { subscriptionId: localSub.id });
@@ -1009,6 +1069,86 @@ serve(async (req) => {
             form_source: "asaas_webhook",
             metadata: { subscription_id: subscription.id, user_id: academySub.user_id },
           });
+        } else {
+          // Business subscription cancellation
+          const { data: businessSub } = await supabaseClient
+            .from("user_subscriptions")
+            .select("id, user_id")
+            .eq("external_subscription_id", subscription.id)
+            .maybeSingle();
+
+          if (businessSub) {
+            const newStatus = webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelled" : "expired";
+
+            const { error: subUpdateError } = await supabaseClient
+              .from("user_subscriptions")
+              .update({
+                status: newStatus,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", businessSub.id);
+            if (subUpdateError) logStep("Failed to update business subscription status", { error: subUpdateError });
+            else logStep("Business subscription cancelled/expired", { subId: businessSub.id, status: newStatus });
+
+            // Deactivate non-complimentary businesses
+            const { data: deactivated, error: bizUpdateError } = await supabaseClient
+              .from("businesses")
+              .update({
+                subscription_active: false,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("owner_id", businessSub.user_id)
+              .eq("is_complimentary", false)
+              .select("id, name");
+            if (bizUpdateError) logStep("Failed to deactivate businesses", { error: bizUpdateError });
+            else logStep("Business profiles deactivated", { count: deactivated?.length || 0 });
+
+            // Revoke roles only if no active paid businesses remain (handles multi-business plans;
+            // complimentary businesses do not count as active paid subscriptions)
+            const { data: remaining, error: remainingError } = await supabaseClient
+              .from("businesses")
+              .select("id")
+              .eq("owner_id", businessSub.user_id)
+              .eq("subscription_active", true)
+              .eq("is_complimentary", false)
+              .limit(1);
+
+            if (remainingError) {
+              logStep("Could not check remaining businesses — roles NOT revoked (safe default)", {
+                userId: businessSub.user_id,
+                error: remainingError,
+              });
+            } else if (!remaining || remaining.length === 0) {
+              const { error: roleDeleteError } = await supabaseClient
+                .from("user_roles")
+                .delete()
+                .eq("user_id", businessSub.user_id)
+                .in("role", ["business_owner", "subscriber"]);
+              if (roleDeleteError) {
+                logStep("Failed to revoke roles", { userId: businessSub.user_id, error: roleDeleteError });
+              } else {
+                logStep("Roles revoked — no active businesses remain", { userId: businessSub.user_id });
+              }
+            } else {
+              logStep("Roles retained — user still has active businesses", { userId: businessSub.user_id });
+            }
+
+            // CRM interaction
+            await supabaseClient.from("crm_interactions").insert({
+              user_id: businessSub.user_id,
+              interaction_type: "subscription_cancelled",
+              channel: "system",
+              description: `Assinatura business ${webhookData.event === "SUBSCRIPTION_DELETED" ? "cancelada" : "expirada"} via ASAAS`,
+              form_source: "asaas_webhook",
+              metadata: {
+                asaas_subscription_id: subscription.id,
+                user_id: businessSub.user_id,
+                event: webhookData.event,
+              },
+            });
+          } else {
+            logStep("No matching business subscription for deleted/expired event", { asaasSubId: subscription.id });
+          }
         }
       }
     }
