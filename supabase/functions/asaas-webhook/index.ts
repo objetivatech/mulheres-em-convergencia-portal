@@ -679,9 +679,10 @@ serve(async (req) => {
             .maybeSingle();
 
           if (!existingOwnerRole) {
-            await supabaseClient
+            const { error: ownerInsertError } = await supabaseClient
               .from('user_roles')
               .insert({ user_id: subscription.user_id, role: 'business_owner' });
+            if (ownerInsertError) throw ownerInsertError;
             logStep('Role business_owner granted', { userId: subscription.user_id });
           } else {
             logStep('Role business_owner already exists — skipping', { userId: subscription.user_id });
@@ -695,10 +696,13 @@ serve(async (req) => {
             .maybeSingle();
 
           if (!existingSubRole) {
-            await supabaseClient
+            const { error: subInsertError } = await supabaseClient
               .from('user_roles')
               .insert({ user_id: subscription.user_id, role: 'subscriber' });
+            if (subInsertError) throw subInsertError;
             logStep('Role subscriber granted', { userId: subscription.user_id });
+          } else {
+            logStep('Role subscriber already exists — skipping', { userId: subscription.user_id });
           }
         } catch (roleError) {
           // Non-blocking: log prominently so admin can spot it in Function logs
