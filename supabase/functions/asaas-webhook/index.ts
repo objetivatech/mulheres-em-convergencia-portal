@@ -1087,20 +1087,29 @@ serve(async (req) => {
             else logStep("Business profiles deactivated", { count: deactivated?.length || 0 });
 
             // Revoke roles only if no active businesses remain (handles multi-business plans)
-            const { data: remaining } = await supabaseClient
+            const { data: remaining, error: remainingError } = await supabaseClient
               .from("businesses")
               .select("id")
               .eq("owner_id", businessSub.user_id)
               .eq("subscription_active", true)
               .limit(1);
 
-            if (!remaining || remaining.length === 0) {
-              await supabaseClient
+            if (remainingError) {
+              logStep("Could not check remaining businesses — roles NOT revoked (safe default)", {
+                userId: businessSub.user_id,
+                error: remainingError,
+              });
+            } else if (!remaining || remaining.length === 0) {
+              const { error: roleDeleteError } = await supabaseClient
                 .from("user_roles")
                 .delete()
                 .eq("user_id", businessSub.user_id)
                 .in("role", ["business_owner", "subscriber"]);
-              logStep("Roles revoked — no active businesses remain", { userId: businessSub.user_id });
+              if (roleDeleteError) {
+                logStep("Failed to revoke roles", { userId: businessSub.user_id, error: roleDeleteError });
+              } else {
+                logStep("Roles revoked — no active businesses remain", { userId: businessSub.user_id });
+              }
             } else {
               logStep("Roles retained — user still has active businesses", { userId: businessSub.user_id });
             }
