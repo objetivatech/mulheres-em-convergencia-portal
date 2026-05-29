@@ -669,6 +669,45 @@ serve(async (req) => {
           });
         }
 
+        // Grant business_owner and subscriber roles (idempotent upsert)
+        try {
+          const { data: existingOwnerRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', subscription.user_id)
+            .eq('role', 'business_owner')
+            .maybeSingle();
+
+          if (!existingOwnerRole) {
+            await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: subscription.user_id, role: 'business_owner' });
+            logStep('Role business_owner granted', { userId: subscription.user_id });
+          } else {
+            logStep('Role business_owner already exists — skipping', { userId: subscription.user_id });
+          }
+
+          const { data: existingSubRole } = await supabaseClient
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', subscription.user_id)
+            .eq('role', 'subscriber')
+            .maybeSingle();
+
+          if (!existingSubRole) {
+            await supabaseClient
+              .from('user_roles')
+              .insert({ user_id: subscription.user_id, role: 'subscriber' });
+            logStep('Role subscriber granted', { userId: subscription.user_id });
+          }
+        } catch (roleError) {
+          // Non-blocking: log prominently so admin can spot it in Function logs
+          logStep('CRITICAL: Failed to grant roles after payment — manual fix may be needed', {
+            userId: subscription.user_id,
+            error: String(roleError),
+          });
+        }
+
         // Processar comissão de embaixadora
         const commissionResult = await processAmbassadorCommission(supabaseClient, subscription, payment);
         if (commissionResult.success) {
