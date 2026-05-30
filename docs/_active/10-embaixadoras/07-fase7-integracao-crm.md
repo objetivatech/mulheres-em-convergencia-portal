@@ -246,3 +246,4 @@ As tabelas CRM precisam permitir INSERT para usuários não-admin:
 | Data | Alteração |
 |------|-----------|
 | 2025-02-09 | Implementação inicial da Fase 7 |
+| 2026-05-29 | Adicionada interação `referral_converted` no webhook `asaas-webhook` ao processar comissão com sucesso. Antes, essa interação existia apenas na documentação mas não era criada em produção. |

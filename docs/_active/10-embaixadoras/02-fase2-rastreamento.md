@@ -222,3 +222,32 @@ ambassadorId = null
 - **Fase 3:** Landing Page dinâmica `/convite/[codigo]`
 - **Fase 4:** Dashboard da embaixadora para visualizar comissões
 - **Fase 5:** Admin panel para gestão de pagamentos
+
+---
+
+## Correções (2026-05-29)
+
+### Bug corrigido: `ambassador[0].active` nunca verdadeiro
+
+**Arquivo:** `supabase/functions/create-subscription/index.ts`
+
+**Problema:** O RPC `get_ambassador_by_referral` retorna apenas `(id, user_id, commission_rate, asaas_split_config)` — já filtra `active = true` no WHERE. O código chamador verificava `ambassador[0].active`, que sempre é `undefined` (campo não existe no resultado), causando `ambassador_id = NULL` em todas as assinaturas via indicação.
+
+**Correção:** Removida a verificação `&& ambassador[0].active`. A condição correta é `ambassador && ambassador.length > 0`.
+
+### Bug corrigido: webhook sem fallback por `referral_code`
+
+**Arquivo:** `supabase/functions/asaas-webhook/index.ts` — `processAmbassadorCommission()`
+
+**Problema:** Quando `subscription.ambassador_id` é `NULL`, a função retornava imediatamente sem tentar resolver o embaixador pelo `referral_code`. Como o primeiro bug garantia que `ambassador_id` sempre seria `NULL`, nenhuma comissão foi criada desde a implantação do módulo.
+
+**Correção:** Adicionado fallback: quando `ambassador_id` é null mas `referral_code` existe, a função chama `get_ambassador_by_referral` para resolver o embaixador e faz backfill do campo `ambassador_id` na assinatura.
+
+### Dados corrigidos
+
+- Assinatura da Lizielli Gertge Silva: `ambassador_id` preenchido (Fabiana Alves Dias), registro em `ambassador_referrals` criado, totais do embaixador atualizados.
+- Nenhuma outra assinatura afetada (apenas 1 assinatura com `referral_code` e `ambassador_id = NULL`).
+
+### Interação CRM adicionada
+
+Quando uma comissão é processada com sucesso no webhook, agora é criada uma interação do tipo `referral_converted` na timeline CRM do embaixador, completando a integração descrita na Fase 7.
