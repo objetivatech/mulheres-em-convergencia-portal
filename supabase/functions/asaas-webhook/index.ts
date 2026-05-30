@@ -201,8 +201,11 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
 
   if (!resolvedAmbassadorId && subscription.referral_code) {
     logStep('ambassador_id missing — resolving from referral_code', { referralCode: subscription.referral_code });
-    const { data: ambassador } = await supabaseClient
+    const { data: ambassador, error: rpcError } = await supabaseClient
       .rpc('get_ambassador_by_referral', { referral_code: subscription.referral_code });
+    if (rpcError) {
+      logStep('get_ambassador_by_referral RPC failed', { error: String(rpcError) });
+    }
 
     if (ambassador && ambassador.length > 0) {
       resolvedAmbassadorId = ambassador[0].id;
@@ -326,16 +329,18 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
         .eq('id', ambData.user_id)
         .maybeSingle();
 
-      const { data: ambassadorLead } = await supabaseClient
-        .from('crm_leads')
-        .select('id')
-        .or(
-          [
-            ambassadorProfile?.email ? `email.eq.${ambassadorProfile.email}` : null,
-            ambassadorProfile?.cpf ? `cpf.eq.${ambassadorProfile.cpf}` : null,
-          ].filter(Boolean).join(',')
-        )
-        .maybeSingle();
+      const orFilters = [
+        ambassadorProfile?.email ? `email.eq.${ambassadorProfile.email}` : null,
+        ambassadorProfile?.cpf ? `cpf.eq.${ambassadorProfile.cpf}` : null,
+      ].filter(Boolean) as string[];
+
+      const ambassadorLead = orFilters.length > 0
+        ? (await supabaseClient
+            .from('crm_leads')
+            .select('id')
+            .or(orFilters.join(','))
+            .maybeSingle()).data
+        : null;
 
       await supabaseClient.from('crm_interactions').insert({
         lead_id: ambassadorLead?.id || null,
