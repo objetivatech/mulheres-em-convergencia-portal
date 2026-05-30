@@ -194,13 +194,38 @@ const processProductPayment = async (supabaseClient: any, payment: any, external
 
 // ✅ NOVO: Process ambassador commission from subscription payment
 const processAmbassadorCommission = async (supabaseClient: any, subscription: any, payment: any) => {
-  if (!subscription.ambassador_id) {
+  // Resolve ambassador_id: use stored value or fall back to referral_code lookup.
+  // The fallback handles subscriptions created before the .active bug was fixed
+  // (those have referral_code set but ambassador_id = NULL).
+  let resolvedAmbassadorId = subscription.ambassador_id;
+
+  if (!resolvedAmbassadorId && subscription.referral_code) {
+    logStep('ambassador_id missing — resolving from referral_code', { referralCode: subscription.referral_code });
+    const { data: ambassador } = await supabaseClient
+      .rpc('get_ambassador_by_referral', { referral_code: subscription.referral_code });
+
+    if (ambassador && ambassador.length > 0) {
+      resolvedAmbassadorId = ambassador[0].id;
+      // Backfill the subscription so future webhook events (renewals) don't need this path
+      const { error: backfillError } = await supabaseClient
+        .from('user_subscriptions')
+        .update({ ambassador_id: resolvedAmbassadorId })
+        .eq('id', subscription.id);
+      if (backfillError) {
+        logStep('Failed to backfill ambassador_id on subscription', { error: String(backfillError) });
+      } else {
+        logStep('ambassador_id backfilled on subscription', { ambassadorId: resolvedAmbassadorId, subscriptionId: subscription.id });
+      }
+    }
+  }
+
+  if (!resolvedAmbassadorId) {
     logStep("No ambassador for this subscription");
     return { success: false };
   }
 
   logStep("Processing ambassador commission", {
-    ambassadorId: subscription.ambassador_id,
+    ambassadorId: resolvedAmbassadorId,
     saleAmount: payment.value,
     subscriptionId: subscription.id
   });
@@ -233,7 +258,7 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
   const { error: refError } = await supabaseClient
     .from('ambassador_referrals')
     .insert({
-      ambassador_id: subscription.ambassador_id,
+      ambassador_id: resolvedAmbassadorId,
       referred_user_id: subscription.user_id,
       subscription_id: subscription.id,
       plan_name: subscription.plan_id, // Will be enriched with plan details
@@ -251,14 +276,14 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
   }
 
   logStep("Ambassador referral created", {
-    ambassadorId: subscription.ambassador_id,
+    ambassadorId: resolvedAmbassadorId,
     commissionAmount,
     payoutEligibleDate: payoutEligibleDate.toISOString().split('T')[0]
   });
 
   // Update ambassador totals using RPC for atomic increment
   const { error: updateError } = await supabaseClient.rpc('increment_ambassador_totals', {
-    p_ambassador_id: subscription.ambassador_id,
+    p_ambassador_id: resolvedAmbassadorId,
     p_commission_amount: commissionAmount,
   });
 
@@ -268,7 +293,7 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
     const { data: currentAmbassador } = await supabaseClient
       .from('ambassadors')
       .select('total_earnings, total_sales, pending_commission')
-      .eq('id', subscription.ambassador_id)
+      .eq('id', resolvedAmbassadorId)
       .single();
 
     if (currentAmbassador) {
@@ -279,11 +304,59 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
           total_sales: (currentAmbassador.total_sales || 0) + 1,
           pending_commission: (currentAmbassador.pending_commission || 0) + commissionAmount,
         })
-        .eq('id', subscription.ambassador_id);
+        .eq('id', resolvedAmbassadorId);
       logStep("Ambassador totals updated via fallback");
     }
   } else {
     logStep("Ambassador totals updated via RPC");
+  }
+
+  // CRM: register referral_converted interaction on the ambassador's contact timeline
+  try {
+    const { data: ambData } = await supabaseClient
+      .from('ambassadors')
+      .select('user_id')
+      .eq('id', resolvedAmbassadorId)
+      .single();
+
+    if (ambData?.user_id) {
+      const { data: ambassadorProfile } = await supabaseClient
+        .from('profiles')
+        .select('cpf, email')
+        .eq('id', ambData.user_id)
+        .maybeSingle();
+
+      const { data: ambassadorLead } = await supabaseClient
+        .from('crm_leads')
+        .select('id')
+        .or(
+          [
+            ambassadorProfile?.email ? `email.eq.${ambassadorProfile.email}` : null,
+            ambassadorProfile?.cpf ? `cpf.eq.${ambassadorProfile.cpf}` : null,
+          ].filter(Boolean).join(',')
+        )
+        .maybeSingle();
+
+      await supabaseClient.from('crm_interactions').insert({
+        lead_id: ambassadorLead?.id || null,
+        user_id: ambData.user_id,
+        cpf: ambassadorProfile?.cpf || null,
+        interaction_type: 'referral_converted',
+        channel: 'system',
+        description: `Indicação convertida em assinatura — R$ ${payment.value?.toFixed(2)} | Comissão: R$ ${commissionAmount.toFixed(2)}`,
+        form_source: 'asaas_webhook',
+        metadata: {
+          ambassador_id: resolvedAmbassadorId,
+          referred_user_id: subscription.user_id,
+          subscription_id: subscription.id,
+          commission_amount: commissionAmount,
+          payout_eligible_date: payoutEligibleDate.toISOString().split('T')[0],
+        },
+      });
+      logStep('CRM referral_converted interaction created for ambassador');
+    }
+  } catch (crmError) {
+    logStep('CRM referral_converted interaction failed (non-blocking)', { error: String(crmError) });
   }
 
   return { success: true, commissionAmount };
