@@ -67,6 +67,8 @@ const interactionIcons: Record<string, React.ElementType> = {
   // Academy
   academy_payment_confirmed: DollarSign,
   academy_subscription_cancelled: AlertCircle,
+  // Ambassador
+  referral_converted: UserPlus,
   // Other
   signup: UserPlus,
   form_submit: FileText,
@@ -112,6 +114,8 @@ const interactionLabels: Record<string, string> = {
   // Academy
   academy_payment_confirmed: 'Pagamento Academy confirmado',
   academy_subscription_cancelled: 'Assinatura Academy cancelada/expirada',
+  // Ambassador
+  referral_converted: 'Indicação convertida em assinatura',
   // Other
   signup: 'Cadastro',
   form_submit: 'Formulário enviado',
