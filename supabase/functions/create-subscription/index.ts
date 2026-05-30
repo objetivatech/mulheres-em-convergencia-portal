@@ -115,7 +115,7 @@ serve(async (req) => {
       
       if (ambassadorError) {
         logStep("Error checking ambassador", { error: ambassadorError });
-      } else if (ambassador && ambassador.length > 0 && ambassador[0].active) {
+      } else if (ambassador && ambassador.length > 0) {
         ambassadorId = ambassador[0].id;
         logStep("Ambassador found for referral", { ambassadorId, ambassadorCode: referral_code });
       } else {
