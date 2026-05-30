@@ -257,6 +257,23 @@ const processAmbassadorCommission = async (supabaseClient: any, subscription: an
     );
   }
 
+  // Guard: only create one first-sale commission per subscription lifetime.
+  // Monthly renewals fire new PAYMENT_CONFIRMED events and must not repeat the initial commission.
+  const { data: existingReferral } = await supabaseClient
+    .from('ambassador_referrals')
+    .select('id')
+    .eq('subscription_id', subscription.id)
+    .eq('status', 'confirmed')
+    .maybeSingle();
+
+  if (existingReferral) {
+    logStep('First-sale commission already registered — skipping (renewal payment)', {
+      subscriptionId: subscription.id,
+      existingReferralId: existingReferral.id,
+    });
+    return { success: true, commissionAmount: 0 };
+  }
+
   // Create ambassador referral record
   const { error: refError } = await supabaseClient
     .from('ambassador_referrals')
