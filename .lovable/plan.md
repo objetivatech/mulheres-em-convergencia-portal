@@ -1,68 +1,58 @@
-## Objetivo
+# Aplicação de Cupons no Formulário de Inscrição em Eventos
 
-Adicionar um indicador visual de força da senha e bloquear cadastros/alterações quando a pontuação for inferior a 80/100, em todos os formulários do portal que criam ou alteram senha.
+## Diagnóstico
 
-## Escopo (arquivos identificados)
+Hoje existe a ferramenta `/admin/crm/cupons` que cria registros em `event_coupons`, e o backend já expõe os RPCs `validate_coupon` e `apply_coupon` (usados no hook `useEventCoupons`). O que falta é o **ponto de uso público**: o formulário em `src/pages/EventDetailPage.tsx` chama `create-event-payment` sem nenhum campo de cupom, e a edge function ignora qualquer desconto. Resultado: cupons são criados mas nunca aplicáveis.
 
-Formulários onde a regra será aplicada:
+## Caminho correto (a ser implementado)
 
-1. `src/pages/Auth.tsx` — cadastro de novo usuário (sign-up).
-2. `src/pages/ResetPassword.tsx` — redefinição via sessão autenticada.
-3. `src/pages/ResetPasswordWithToken.tsx` — redefinição via token de email.
-4. `src/components/user/ChangeEmailDialog.tsx` — quando exige senha nova/confirmação.
-5. `src/pages/ConfiguracoesContaPage.tsx` — alteração de senha do perfil.
-6. `src/components/admin/AddUserDialog.tsx` — criação de usuários pelo admin.
-7. `src/components/subscriptions/CustomerInfoDialog.tsx` — se gerar senha do cliente.
+O cupom deve ser aplicado **no próprio formulário de inscrição do evento** (página pública `/eventos/:slug`), antes do redirecionamento para o checkout Asaas. Fluxo:
 
-Formulários que apenas pedem senha para login (não criação) ficam de fora: apenas onde há definição/alteração de senha.
+```text
+[Usuário preenche dados]
+        ↓
+[Digita código + clica "Aplicar"]
+        ↓
+[Frontend chama validate_coupon RPC] → mostra desconto e valor final
+        ↓
+[Submit] → create-event-payment recebe coupon_id + valor com desconto
+        ↓
+[Edge function cria cobrança Asaas no valor com desconto]
+        ↓
+[apply_coupon registra uso em coupon_usage e incrementa current_uses]
+```
 
-## Componentes a criar
+## Mudanças
 
-### 1. `src/lib/passwordStrength.ts`
+### 1. Frontend — `src/pages/EventDetailPage.tsx`
+- Novo bloco "Cupom de desconto" visível apenas quando `!event.free && event.price > 0`.
+- Campo `Input` para o código + botão "Aplicar" + botão "Remover".
+- Estado local: `couponCode`, `appliedCoupon` (id, discount, final_amount, discount_type, discount_value), `couponError`.
+- Ao clicar "Aplicar": chamar `useValidateCoupon` (já existente) com `code`, `eventId=event.id`, `email`, `amount=event.price`. Exibir badge verde com desconto aplicado e novo total, ou mensagem de erro PT-BR.
+- Exibir resumo: "Valor original: R$ X • Desconto: -R$ Y • Total: R$ Z".
+- No submit, enviar `coupon_id` e `discount_amount` no payload para `create-event-payment`.
 
-Função pura `scorePassword(pwd: string): { score: number; checks: PasswordChecks; label: string }`.
+### 2. Edge function — `supabase/functions/create-event-payment/index.ts`
+- Aceitar `coupon_id` e `discount_amount` opcionais no body.
+- Se presentes: revalidar o cupom server-side via `validate_coupon` RPC (segurança — nunca confiar no valor enviado pelo cliente), recalcular `final_amount`.
+- Usar `final_amount` (em vez de `event.price`) no `paymentPayload.value` enviado ao Asaas.
+- Salvar `coupon_id` e `discount_amount` em `event_registrations.metadata` (ou colunas dedicadas se já existirem — verificar schema).
+- Após criar a cobrança Asaas com sucesso, chamar `apply_coupon` RPC para registrar uso em `coupon_usage` e incrementar `current_uses`.
+- Em caso de rollback (falha no Asaas), não chamar `apply_coupon`.
 
-Critérios (pontuação 0–100, soma ponderada):
+### 3. Documentação
+- Atualizar `docs/_active/07-crm/eventos-publicos.md` adicionando seção "Cupons de desconto" explicando o fluxo público + admin.
 
-- Comprimento ≥ 8 → 15 pts; ≥ 12 → +15; ≥ 16 → +10 (máx 40).
-- Letra minúscula → 10 pts.
-- Letra maiúscula → 15 pts.
-- Número → 15 pts.
-- Caractere especial (`!@#$%^&*()_+-=[]{};':"\\|,.<>/?~`) → 20 pts.
-- Penalidades: sequências repetidas (`aaaa`, `1111`) ou sequenciais (`1234`, `abcd`) → −15 pts; senha em blacklist comum (`123456`, `senha`, `password`, etc.) → score = 0.
+## Escopo / fora de escopo
 
-Labels: 0–39 "Fraca", 40–69 "Média", 70–79 "Boa", 80–100 "Forte".
-Constante exportada `MIN_PASSWORD_SCORE = 80`.
-
-### 2. `src/components/auth/PasswordStrengthMeter.tsx`
-
-- Barra de progresso (Progress shadcn) colorida via tokens semânticos (`bg-destructive`, `bg-warning`, `bg-primary`, `bg-success` — adicionar tokens faltantes em `index.css` / `tailwind.config.ts` se necessário).
-- Lista de requisitos com ícones Check/X (lucide) mostrando o que falta: comprimento mínimo, maiúscula, minúscula, número, caractere especial.
-- Texto curto: "Força: Forte (85/100)".
-- Props: `password: string`, opcional `onValidityChange?: (isStrong: boolean) => void`.
-
-## Integração nos formulários
-
-Em cada formulário listado:
-
-- Importar `PasswordStrengthMeter` e renderizar abaixo do(s) campo(s) de senha (apenas quando o usuário começou a digitar).
-- Importar `scorePassword` e `MIN_PASSWORD_SCORE`.
-- Desabilitar o botão de submit enquanto `score < 80` (além das validações já existentes, como confirmação de senha).
-- No handler de submit, validar novamente e exibir `toast` em PT-BR caso não atinja o mínimo: "Senha não atende aos requisitos mínimos de segurança."
-- Preservar comportamentos atuais (confirmação de senha, captcha, recuperação, etc.) — somente adiciona uma camada de validação.
-
-## Não-objetivos
-
-- Não altera políticas no Supabase Auth (a regra é client-side; o backend continua aceitando o que o Auth permitir).
-- Não altera formulários de login.
-- Não mexe em fluxos do CRM, eventos, blog ou outros módulos.
+- ✅ Apenas eventos pagos (`event.free === false && event.price > 0`).
+- ✅ Mantém compatibilidade: inscrições sem cupom continuam funcionando idênticas.
+- ❌ Não altera a UI de criação de cupons em `/admin/crm/cupons` (já funcional).
+- ❌ Não altera o webhook Asaas — `apply_coupon` é chamado no momento da criação da cobrança (consistente com `current_uses` representando reservas/uso pendente; isso já é o comportamento do RPC existente).
 
 ## Verificação
 
-- Preview manual em cada um dos 7 formulários: digitar senhas fracas e fortes, confirmar bloqueio < 80 e liberação ≥ 80.
-- Build TS sem erros.
-- Documentação rápida em `docs/_active/04-usuarios/password-strength-policy.md` descrevendo a regra e o limiar 80.
-
-**IMPORTANTE**:
-
-É preciso adicionar indicadores visuais em todos os formulário, tanto para o sucesso quanto para a falha na criação da senha. Devem haver mensagens para o usuário poder entender o que está ocorrendo. Essas mensagens indicativas devem aparecer logo abaixo do campo preenchido.
+- Criar cupom 10% no admin, abrir evento pago, aplicar código → ver desconto refletido no resumo.
+- Confirmar que o checkout Asaas abre com o valor descontado.
+- Conferir `coupon_usage` populado e `current_uses` incrementado.
+- Testar códigos inválidos, expirados, e abaixo do `min_purchase` (mensagens corretas).

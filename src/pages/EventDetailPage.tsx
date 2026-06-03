@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useEventFormFields } from '@/hooks/useEventFormFields';
+import { useEventCoupons, type CouponValidation } from '@/hooks/useEventCoupons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,8 @@ const EventDetailPage = () => {
   
   const { useEventsList, useCreateRegistration } = useEvents();
   const formFieldsHook = useEventFormFields();
+  const { useValidateCoupon } = useEventCoupons();
+  const validateCoupon = useValidateCoupon();
   const { data: events, isLoading } = useEventsList({ status: 'published' });
   const createRegistration = useCreateRegistration();
 
@@ -51,6 +54,44 @@ const EventDetailPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidation | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const isPaidEvent = !!event && !event.free && !!event.price && event.price > 0;
+  const finalAmount = appliedCoupon?.final_amount ?? event?.price ?? 0;
+
+  const handleApplyCoupon = async () => {
+    if (!event || !couponCode.trim()) return;
+    if (!formData.email.trim()) {
+      setCouponError('Informe o email antes de aplicar o cupom.');
+      return;
+    }
+    setCouponError(null);
+    try {
+      const result = await validateCoupon.mutateAsync({
+        code: couponCode.trim().toUpperCase(),
+        eventId: event.id,
+        email: formData.email,
+        amount: event.price || 0,
+      });
+      if (result.valid) {
+        setAppliedCoupon(result);
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.error || 'Cupom inválido.');
+      }
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponError(err?.message || 'Erro ao validar cupom.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +139,8 @@ const EventDetailPage = () => {
               custom_fields: customFieldsData,
             },
             payment_method: 'PIX',
+            coupon_id: appliedCoupon?.coupon_id || null,
+            coupon_code: appliedCoupon ? couponCode.trim().toUpperCase() : null,
           },
         });
 
@@ -425,9 +468,70 @@ const EventDetailPage = () => {
                       ))}
 
                       <Separator />
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">Valor:</span>
-                        <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                      {isPaidEvent && (
+                        <div className="space-y-2">
+                          <Label htmlFor="coupon">Cupom de desconto</Label>
+                          {appliedCoupon ? (
+                            <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900">
+                              <div className="text-sm">
+                                <span className="font-semibold text-green-700 dark:text-green-300">
+                                  {couponCode.toUpperCase()}
+                                </span>
+                                <span className="text-muted-foreground ml-2">
+                                  -R$ {(appliedCoupon.discount || 0).toFixed(2)}
+                                </span>
+                              </div>
+                              <Button type="button" variant="ghost" size="sm" onClick={handleRemoveCoupon}>
+                                Remover
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                id="coupon"
+                                placeholder="Digite o código"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                disabled={validateCoupon.isPending}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleApplyCoupon}
+                                disabled={!couponCode.trim() || validateCoupon.isPending}
+                              >
+                                {validateCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Aplicar'}
+                              </Button>
+                            </div>
+                          )}
+                          {couponError && (
+                            <p className="text-xs text-destructive">{couponError}</p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="space-y-1 text-sm">
+                        {isPaidEvent && appliedCoupon ? (
+                          <>
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Valor original:</span>
+                              <span className="line-through">R$ {event.price?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-green-600">
+                              <span>Desconto:</span>
+                              <span>-R$ {(appliedCoupon.discount || 0).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-1 border-t">
+                              <span className="text-muted-foreground">Total:</span>
+                              <span className="font-bold text-lg">R$ {finalAmount.toFixed(2)}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Valor:</span>
+                            <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                          </div>
+                        )}
                       </div>
 
                       <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>

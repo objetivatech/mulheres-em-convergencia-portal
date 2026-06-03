@@ -25,7 +25,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { event_id, registration_data, payment_method = "PIX" } = await req.json();
+    const { event_id, registration_data, payment_method = "PIX", coupon_id, coupon_code } = await req.json();
 
     if (!event_id || !registration_data) {
       throw new Error("event_id and registration_data are required");
@@ -49,6 +49,31 @@ serve(async (req) => {
     }
 
     logStep("Event found", { title: event.title, price: event.price });
+
+    // Server-side coupon revalidation (never trust client-sent discount)
+    let finalAmount: number = Number(event.price);
+    let validatedCouponId: string | null = null;
+    let discountApplied: number = 0;
+    if (coupon_code) {
+      const { data: couponResult, error: couponError } = await supabaseClient.rpc('validate_coupon', {
+        p_code: String(coupon_code).toUpperCase(),
+        p_event_id: event_id,
+        p_email: registration_data.email,
+        p_amount: finalAmount,
+      });
+      if (couponError) {
+        logStep("Coupon validation error", couponError);
+      } else if (couponResult && (couponResult as any).valid) {
+        const r = couponResult as any;
+        validatedCouponId = r.coupon_id;
+        discountApplied = Number(r.discount) || 0;
+        finalAmount = Number(r.final_amount) || finalAmount;
+        logStep("Coupon applied", { validatedCouponId, discountApplied, finalAmount });
+      } else {
+        logStep("Coupon invalid", couponResult);
+        throw new Error((couponResult as any)?.error || 'Cupom inválido');
+      }
+    }
 
     // Dedupe: log pending registration from same email in last 24h
     const { data: existingPending } = await supabaseClient
@@ -142,7 +167,10 @@ serve(async (req) => {
         cpf: customerCpf || null,
         status: 'pending',
         paid: false,
-        payment_amount: event.price,
+        payment_amount: finalAmount,
+        original_amount: event.price,
+        coupon_id: validatedCouponId,
+        discount_applied: discountApplied,
         metadata: registration_data.custom_fields || {},
       })
       .select()
@@ -160,7 +188,7 @@ serve(async (req) => {
       customer: customerId,
       // Use UNDEFINED to allow all payment methods (PIX, Boleto, Credit Card) in ASAAS checkout
       billingType: "UNDEFINED",
-      value: event.price,
+      value: finalAmount,
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days from now
       description: `Inscrição: ${event.title}`,
       externalReference: `event_registration_${registration.id}`,
@@ -199,6 +227,17 @@ serve(async (req) => {
         payment_id: paymentData.id,
       })
       .eq('id', registration.id);
+
+    // Register coupon usage now that the charge has been created
+    if (validatedCouponId) {
+      const { error: applyErr } = await supabaseClient.rpc('apply_coupon', {
+        p_coupon_id: validatedCouponId,
+        p_registration_id: registration.id,
+        p_email: registration_data.email,
+        p_discount: discountApplied,
+      });
+      if (applyErr) logStep("apply_coupon error", applyErr);
+    }
 
     // Create CRM lead if CPF provided
     if (customerCpf) {
