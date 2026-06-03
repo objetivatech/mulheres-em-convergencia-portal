@@ -117,6 +117,41 @@ Quando um negócio do pipeline é vinculado a um evento com **Inscrever automati
 6. **Campos opcionais vazios viram `null`**: ex. data/hora fim (`date_end`)
 7. **Inscrição pelo pipeline exige participante válido**: para atualizar as vagas, informe lead vinculado ou nome/email no negócio.
 
+## Lotes de Ingresso
+
+Eventos podem ter múltiplos **lotes de ingresso** (`event_ticket_batches`) com preço, quantidade e janela de venda próprios. Quando há ao menos um lote configurado, o **preço base do evento é ignorado** e o sistema passa a operar exclusivamente pelos lotes.
+
+### Criar/gerenciar lotes (admin)
+
+- Acesse `/admin/crm/eventos` → selecione o evento → aba **Lotes**.
+- Cada lote tem: nome, preço (pode ser **0** para lote gratuito), quantidade opcional, `starts_at`, `ends_at`, ordem de exibição e flag `active`.
+- É permitido combinar lotes gratuitos e pagos no mesmo evento (ex.: até a data X gratuito, depois passa a cobrar).
+
+### Seleção automática do lote ativo
+
+Na página pública (`/eventos/:slug`) o sistema escolhe o lote vendável seguindo a regra:
+
+1. `active = true`
+2. `starts_at <= agora` (ou nulo) e `ends_at >= agora` (ou nulo)
+3. Ainda tem estoque (`sold_count < quantity`, ou `quantity` nulo)
+4. Ordenação: `display_order ASC, price ASC`
+
+O usuário também vê todos os lotes (em ordem) com status `Em breve / Disponível / Encerrado / Esgotado`. Quando mais de um lote está ativo simultaneamente, o usuário pode alternar manualmente.
+
+### Fluxo de cobrança
+
+- Lote **pago** (`price > 0`) → `create-event-payment` revalida o lote server-side, usa `batch.price` como base, aplica cupom (se houver) e cria cobrança Asaas. `event_registrations.batch_id` é persistido.
+- Lote **gratuito** (`price = 0`) → `create-event-registration` revalida o lote, recusa lotes pagos nesse fluxo, e cria a inscrição confirmada com `payment_amount = 0`.
+- Trigger `sync_batch_sold_count` incrementa/decrementa `sold_count` automaticamente quando `event_registrations.paid` muda.
+
+### Cupons
+
+Cupons continuam sendo aplicados em cima do preço do lote selecionado. Trocar de lote limpa o cupom aplicado (o usuário precisa reaplicar).
+
+### Eventos sem lotes
+
+Quando o evento **não tem nenhum lote** configurado, o comportamento legado é mantido: usa `events.free` e `events.price`.
+
 ## Navegação
 
 Os eventos estão acessíveis via:
