@@ -621,7 +621,7 @@ const EventDetailPage = () => {
                           <>
                             <div className="flex justify-between text-muted-foreground">
                               <span>Valor original:</span>
-                              <span className="line-through">R$ {event.price?.toFixed(2)}</span>
+                              <span className="line-through">R$ {basePrice.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-green-600">
                               <span>Desconto:</span>
@@ -635,15 +635,15 @@ const EventDetailPage = () => {
                         ) : (
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Valor:</span>
-                            <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                            <span className="font-bold text-lg">{formatBatchPrice(basePrice)}</span>
                           </div>
                         )}
                       </div>
 
-                      <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                      <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || batchBlocksRegistration}>
                         {isSubmitting ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processando...</>
-                        ) : !event.free ? (
+                        ) : isPaidEvent ? (
                           <><CreditCard className="h-4 w-4 mr-2" />Pagar e Inscrever</>
                         ) : (
                           'Confirmar Inscrição'
