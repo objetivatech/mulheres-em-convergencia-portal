@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { useEventFormFields } from '@/hooks/useEventFormFields';
+import { useEventCoupons, type CouponValidation } from '@/hooks/useEventCoupons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,8 @@ const EventDetailPage = () => {
   
   const { useEventsList, useCreateRegistration } = useEvents();
   const formFieldsHook = useEventFormFields();
+  const { useValidateCoupon } = useEventCoupons();
+  const validateCoupon = useValidateCoupon();
   const { data: events, isLoading } = useEventsList({ status: 'published' });
   const createRegistration = useCreateRegistration();
 
@@ -51,6 +54,44 @@ const EventDetailPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidation | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const isPaidEvent = !!event && !event.free && !!event.price && event.price > 0;
+  const finalAmount = appliedCoupon?.final_amount ?? event?.price ?? 0;
+
+  const handleApplyCoupon = async () => {
+    if (!event || !couponCode.trim()) return;
+    if (!formData.email.trim()) {
+      setCouponError('Informe o email antes de aplicar o cupom.');
+      return;
+    }
+    setCouponError(null);
+    try {
+      const result = await validateCoupon.mutateAsync({
+        code: couponCode.trim().toUpperCase(),
+        eventId: event.id,
+        email: formData.email,
+        amount: event.price || 0,
+      });
+      if (result.valid) {
+        setAppliedCoupon(result);
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.error || 'Cupom inválido.');
+      }
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponError(err?.message || 'Erro ao validar cupom.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +139,8 @@ const EventDetailPage = () => {
               custom_fields: customFieldsData,
             },
             payment_method: 'PIX',
+            coupon_id: appliedCoupon?.coupon_id || null,
+            coupon_code: appliedCoupon ? couponCode.trim().toUpperCase() : null,
           },
         });
 
