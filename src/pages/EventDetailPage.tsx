@@ -468,9 +468,70 @@ const EventDetailPage = () => {
                       ))}
 
                       <Separator />
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">Valor:</span>
-                        <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                      {isPaidEvent && (
+                        <div className="space-y-2">
+                          <Label htmlFor="coupon">Cupom de desconto</Label>
+                          {appliedCoupon ? (
+                            <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900">
+                              <div className="text-sm">
+                                <span className="font-semibold text-green-700 dark:text-green-300">
+                                  {couponCode.toUpperCase()}
+                                </span>
+                                <span className="text-muted-foreground ml-2">
+                                  -R$ {(appliedCoupon.discount || 0).toFixed(2)}
+                                </span>
+                              </div>
+                              <Button type="button" variant="ghost" size="sm" onClick={handleRemoveCoupon}>
+                                Remover
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                id="coupon"
+                                placeholder="Digite o código"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                disabled={validateCoupon.isPending}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleApplyCoupon}
+                                disabled={!couponCode.trim() || validateCoupon.isPending}
+                              >
+                                {validateCoupon.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Aplicar'}
+                              </Button>
+                            </div>
+                          )}
+                          {couponError && (
+                            <p className="text-xs text-destructive">{couponError}</p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="space-y-1 text-sm">
+                        {isPaidEvent && appliedCoupon ? (
+                          <>
+                            <div className="flex justify-between text-muted-foreground">
+                              <span>Valor original:</span>
+                              <span className="line-through">R$ {event.price?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-green-600">
+                              <span>Desconto:</span>
+                              <span>-R$ {(appliedCoupon.discount || 0).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-1 border-t">
+                              <span className="text-muted-foreground">Total:</span>
+                              <span className="font-bold text-lg">R$ {finalAmount.toFixed(2)}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Valor:</span>
+                            <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                          </div>
+                        )}
                       </div>
 
                       <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
