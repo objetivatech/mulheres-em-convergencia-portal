@@ -25,7 +25,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { event_id, registration_data, payment_method = "PIX", coupon_id, coupon_code } = await req.json();
+    const { event_id, registration_data, payment_method = "PIX", coupon_id, coupon_code, batch_id } = await req.json();
 
     if (!event_id || !registration_data) {
       throw new Error("event_id and registration_data are required");
@@ -44,14 +44,40 @@ serve(async (req) => {
       throw new Error("Event not found");
     }
 
-    if (event.free || !event.price || event.price <= 0) {
-      throw new Error("This event is free - no payment required");
+    // Determine base price: batch overrides event.price when provided
+    let basePrice: number = Number(event.price || 0);
+    let validatedBatchId: string | null = null;
+
+    if (batch_id) {
+      const { data: batch, error: batchError } = await supabaseClient
+        .from('event_ticket_batches')
+        .select('*')
+        .eq('id', batch_id)
+        .eq('event_id', event_id)
+        .maybeSingle();
+      if (batchError || !batch) {
+        throw new Error("Lote não encontrado");
+      }
+      if (!batch.active) throw new Error("Lote indisponível");
+      const now = new Date();
+      if (batch.starts_at && new Date(batch.starts_at) > now) throw new Error("Lote ainda não está em vendas");
+      if (batch.ends_at && new Date(batch.ends_at) < now) throw new Error("Lote encerrado");
+      if (batch.quantity !== null && batch.quantity !== undefined && (batch.sold_count || 0) >= batch.quantity) {
+        throw new Error("Lote esgotado");
+      }
+      basePrice = Number(batch.price || 0);
+      validatedBatchId = batch.id;
+      logStep("Batch validated", { batchId: validatedBatchId, basePrice });
     }
 
-    logStep("Event found", { title: event.title, price: event.price });
+    if (basePrice <= 0) {
+      throw new Error("This event/batch is free - no payment required");
+    }
+
+    logStep("Event found", { title: event.title, basePrice });
 
     // Server-side coupon revalidation (never trust client-sent discount)
-    let finalAmount: number = Number(event.price);
+    let finalAmount: number = basePrice;
     let validatedCouponId: string | null = null;
     let discountApplied: number = 0;
     if (coupon_code) {
@@ -168,7 +194,8 @@ serve(async (req) => {
         status: 'pending',
         paid: false,
         payment_amount: finalAmount,
-        original_amount: event.price,
+        original_amount: basePrice,
+        batch_id: validatedBatchId,
         coupon_id: validatedCouponId,
         discount_applied: discountApplied,
         metadata: registration_data.custom_fields || {},
