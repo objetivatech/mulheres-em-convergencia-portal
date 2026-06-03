@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
@@ -16,6 +16,7 @@ import {
 import { useEvents } from '@/hooks/useEvents';
 import { useEventFormFields } from '@/hooks/useEventFormFields';
 import { useEventCoupons, type CouponValidation } from '@/hooks/useEventCoupons';
+import { pickActiveBatch, sortBatchesForDisplay, getBatchStatus, batchStatusLabel, formatBatchPrice } from '@/lib/eventBatches';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +37,7 @@ const EventDetailPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const { useEventsList, useCreateRegistration } = useEvents();
+  const { useEventsList, useCreateRegistration, useEventBatches } = useEvents();
   const formFieldsHook = useEventFormFields();
   const { useValidateCoupon } = useEventCoupons();
   const validateCoupon = useValidateCoupon();
@@ -45,6 +46,7 @@ const EventDetailPage = () => {
 
   const event = events?.find(e => e.slug === slug);
   const { data: customFields } = formFieldsHook.useFormFields(event?.id || null);
+  const { data: batches } = useEventBatches(event?.id || null);
 
   const [formData, setFormData] = useState<Record<string, string>>({
     full_name: '',
@@ -57,9 +59,44 @@ const EventDetailPage = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<CouponValidation | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
-  const isPaidEvent = !!event && !event.free && !!event.price && event.price > 0;
-  const finalAmount = appliedCoupon?.final_amount ?? event?.price ?? 0;
+  const hasBatches = !!batches && batches.length > 0;
+  const sortedBatches = useMemo(() => sortBatchesForDisplay(batches), [batches]);
+  const activeBatch = useMemo(() => pickActiveBatch(batches), [batches]);
+
+  // Auto-select the active batch when none is chosen
+  useEffect(() => {
+    if (hasBatches && !selectedBatchId && activeBatch) {
+      setSelectedBatchId(activeBatch.id);
+    }
+  }, [hasBatches, selectedBatchId, activeBatch]);
+
+  const selectedBatch = useMemo(
+    () => (selectedBatchId ? batches?.find((b) => b.id === selectedBatchId) || null : null),
+    [batches, selectedBatchId]
+  );
+
+  // Base price respects batch selection when batches exist
+  const basePrice = hasBatches
+    ? selectedBatch?.price ?? 0
+    : event?.price ?? 0;
+
+  // An event is paid when the price being charged is > 0
+  const isPaidEvent = !!event && basePrice > 0;
+  const finalAmount = appliedCoupon?.final_amount ?? basePrice;
+
+  // If batches exist, registration is only allowed when a sellable batch is selected
+  const batchBlocksRegistration = hasBatches && (!selectedBatch || getBatchStatus(selectedBatch) !== 'active');
+
+  // Clear coupon if base price changes (different batch picked)
+  useEffect(() => {
+    if (appliedCoupon) {
+      setAppliedCoupon(null);
+      setCouponError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBatchId]);
 
   const handleApplyCoupon = async () => {
     if (!event || !couponCode.trim()) return;
@@ -73,7 +110,7 @@ const EventDetailPage = () => {
         code: couponCode.trim().toUpperCase(),
         eventId: event.id,
         email: formData.email,
-        amount: event.price || 0,
+        amount: basePrice,
       });
       if (result.valid) {
         setAppliedCoupon(result);
@@ -97,6 +134,11 @@ const EventDetailPage = () => {
     e.preventDefault();
     if (!event) return;
 
+    if (batchBlocksRegistration) {
+      toast({ title: 'Selecione um lote disponível para se inscrever', variant: 'destructive' });
+      return;
+    }
+
     if (!formData.full_name.trim() || !formData.email.trim()) {
       toast({ title: 'Preencha todos os campos obrigatórios', variant: 'destructive' });
       return;
@@ -119,8 +161,8 @@ const EventDetailPage = () => {
     setIsSubmitting(true);
 
     try {
-      // If paid event, redirect to payment
-      if (!event.free && event.price && event.price > 0) {
+      // Paid flow: when the selected batch (or event price, if no batches) is > 0
+      if (isPaidEvent) {
         const customFieldsData: Record<string, string> = {};
         customFields?.forEach(f => {
           if (formData[f.field_name]) {
@@ -131,6 +173,7 @@ const EventDetailPage = () => {
         const { data, error } = await supabase.functions.invoke('create-event-payment', {
           body: {
             event_id: event.id,
+            batch_id: selectedBatchId,
             registration_data: {
               full_name: formData.full_name,
               email: formData.email,
@@ -154,7 +197,7 @@ const EventDetailPage = () => {
         }
       }
 
-      // Free event - register via edge function (no login required)
+      // Free flow: event has no batches and is free, OR the selected batch is free
       const metadata: Record<string, string> = {};
       customFields?.forEach(f => {
         if (formData[f.field_name]) {
@@ -165,6 +208,7 @@ const EventDetailPage = () => {
       const { data, error } = await supabase.functions.invoke('create-event-registration', {
         body: {
           event_id: event.id,
+          batch_id: selectedBatchId,
           full_name: formData.full_name,
           email: formData.email,
           phone: formData.phone || null,
@@ -313,7 +357,11 @@ const EventDetailPage = () => {
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <Badge variant={formatConfig.variant}>{formatConfig.label}</Badge>
                     <Badge variant="outline">{event.type}</Badge>
-                    {event.free ? (
+                    {hasBatches ? (
+                      <Badge variant="outline">
+                        {activeBatch ? `Lote atual: ${formatBatchPrice(activeBatch.price)}` : 'Lotes em breve'}
+                      </Badge>
+                    ) : event.free ? (
                       <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Gratuito</Badge>
                     ) : (
                       <Badge variant="outline">R$ {event.price?.toFixed(2)}</Badge>
@@ -414,6 +462,64 @@ const EventDetailPage = () => {
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
+                      {hasBatches && (
+                        <div className="space-y-2">
+                          <Label>Lote do ingresso</Label>
+                          <div className="space-y-2">
+                            {sortedBatches.map((b) => {
+                              const status = getBatchStatus(b);
+                              const selectable = status === 'active';
+                              const isSelected = selectedBatchId === b.id;
+                              return (
+                                <button
+                                  key={b.id}
+                                  type="button"
+                                  onClick={() => selectable && setSelectedBatchId(b.id)}
+                                  disabled={!selectable}
+                                  className={`w-full text-left rounded-lg border p-3 transition ${
+                                    isSelected
+                                      ? 'border-primary bg-primary/5'
+                                      : selectable
+                                      ? 'border-input hover:bg-muted/50'
+                                      : 'border-input opacity-60 cursor-not-allowed'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div>
+                                      <div className="font-medium text-sm flex items-center gap-2 flex-wrap">
+                                        {b.name}
+                                        {!selectable && (
+                                          <Badge variant="secondary" className="text-[10px]">
+                                            {batchStatusLabel(status)}
+                                          </Badge>
+                                        )}
+                                        {isSelected && selectable && (
+                                          <Badge variant="default" className="text-[10px]">Selecionado</Badge>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-0.5">
+                                        {b.starts_at && `de ${format(new Date(b.starts_at), "dd/MM HH:mm", { locale: ptBR })} `}
+                                        {b.ends_at && `até ${format(new Date(b.ends_at), "dd/MM HH:mm", { locale: ptBR })}`}
+                                        {!b.starts_at && !b.ends_at && 'Sem janela definida'}
+                                        {b.quantity && ` · ${Math.max(0, b.quantity - (b.sold_count || 0))} restantes`}
+                                      </div>
+                                    </div>
+                                    <div className="text-right font-semibold">
+                                      {formatBatchPrice(b.price)}
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {batchBlocksRegistration && (
+                            <p className="text-xs text-destructive">
+                              Nenhum lote disponível no momento.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                       <div>
                         <Label htmlFor="full_name">Nome completo *</Label>
                         <Input id="full_name" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} required />
@@ -515,7 +621,7 @@ const EventDetailPage = () => {
                           <>
                             <div className="flex justify-between text-muted-foreground">
                               <span>Valor original:</span>
-                              <span className="line-through">R$ {event.price?.toFixed(2)}</span>
+                              <span className="line-through">R$ {basePrice.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-green-600">
                               <span>Desconto:</span>
@@ -529,15 +635,15 @@ const EventDetailPage = () => {
                         ) : (
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Valor:</span>
-                            <span className="font-bold text-lg">{event.free ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}</span>
+                            <span className="font-bold text-lg">{formatBatchPrice(basePrice)}</span>
                           </div>
                         )}
                       </div>
 
-                      <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                      <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || batchBlocksRegistration}>
                         {isSubmitting ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processando...</>
-                        ) : !event.free ? (
+                        ) : isPaidEvent ? (
                           <><CreditCard className="h-4 w-4 mr-2" />Pagar e Inscrever</>
                         ) : (
                           'Confirmar Inscrição'

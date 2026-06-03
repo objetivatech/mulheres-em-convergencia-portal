@@ -18,6 +18,7 @@ interface RegistrationRequest {
   phone?: string | null;
   cpf?: string | null;
   metadata?: Record<string, unknown>;
+  batch_id?: string | null;
 }
 
 // Generate a temporary password for guest accounts
@@ -47,7 +48,7 @@ serve(async (req) => {
     );
 
     const body: RegistrationRequest = await req.json();
-    const { event_id, full_name, email, phone, cpf, metadata } = body;
+    const { event_id, full_name, email, phone, cpf, metadata, batch_id } = body;
 
     if (!event_id || !full_name || !email) {
       throw new Error("event_id, full_name and email are required");
@@ -68,6 +69,32 @@ serve(async (req) => {
 
     if (event.status !== 'published') {
       throw new Error("Event is not available for registration");
+    }
+
+    // Validate batch (if provided). Only free batches are allowed in this flow.
+    let validatedBatchId: string | null = null;
+    let batchPrice: number | null = null;
+    if (batch_id) {
+      const { data: batch, error: batchError } = await supabaseClient
+        .from('event_ticket_batches')
+        .select('*')
+        .eq('id', batch_id)
+        .eq('event_id', event_id)
+        .maybeSingle();
+      if (batchError || !batch) throw new Error("Lote não encontrado");
+      if (!batch.active) throw new Error("Lote indisponível");
+      const now = new Date();
+      if (batch.starts_at && new Date(batch.starts_at) > now) throw new Error("Lote ainda não está em vendas");
+      if (batch.ends_at && new Date(batch.ends_at) < now) throw new Error("Lote encerrado");
+      if (batch.quantity !== null && batch.quantity !== undefined && (batch.sold_count || 0) >= batch.quantity) {
+        throw new Error("Lote esgotado");
+      }
+      if (Number(batch.price || 0) > 0) {
+        throw new Error("Este lote requer pagamento - use o fluxo de pagamento");
+      }
+      validatedBatchId = batch.id;
+      batchPrice = Number(batch.price || 0);
+      logStep("Batch validated (free)", { batchId: validatedBatchId });
     }
 
     // Check if event is full
@@ -211,8 +238,9 @@ serve(async (req) => {
         phone: phone || null,
         cpf: cleanCpf,
         status: 'confirmed',
-        paid: event.free ?? true,
-        payment_amount: event.free ? 0 : event.price,
+        paid: true,
+        payment_amount: batchPrice !== null ? batchPrice : (event.free ? 0 : event.price),
+        batch_id: validatedBatchId,
         cost_center_id: event.cost_center_id,
         metadata: metadata || {},
       })
