@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Navigate, Link, useSearchParams } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,15 +70,7 @@ export const UserDashboard = () => {
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'visao-geral';
-  const handleTabChange = (value: string) => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      next.set('tab', value);
-      return next;
-    }, { replace: true });
-  };
+  const [activeTab, setActiveTab] = useState('visao-geral');
 
   useEffect(() => {
     if (user) loadUserData();
@@ -171,8 +163,8 @@ export const UserDashboard = () => {
               </Button>
             </div>
 
-            {/* Tabs - controlled + forceMount so forms preserve state across tab switches */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            {/* Tabs - local state + forceMount so forms preserve state across tab switches */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">
                   <LayoutDashboard className="h-4 w-4 mr-1" /> Visão Geral
