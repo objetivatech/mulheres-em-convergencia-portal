@@ -188,6 +188,19 @@ export const SocioeconomicForm = () => {
         .upsert(payload, { onConflict: 'user_id' });
 
       if (error) throw error;
+
+      // Best-effort sync: mirror birthday to CONECTA+ profile so birthday list stays consistent
+      if (formData.date_of_birth) {
+        try {
+          await supabase
+            .from('conecta_profiles')
+            .update({ birthday: formData.date_of_birth })
+            .eq('id', user.id);
+        } catch (syncErr) {
+          console.warn('Birthday sync to conecta_profiles skipped:', syncErr);
+        }
+      }
+
       toast({ title: 'Sucesso', description: 'Dados socioeconômicos salvos com sucesso!' });
     } catch (error: any) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' });
