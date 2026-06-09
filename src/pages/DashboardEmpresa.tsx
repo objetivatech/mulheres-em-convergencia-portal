@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUploader } from '@/components/blog/ImageUploader';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
 import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
