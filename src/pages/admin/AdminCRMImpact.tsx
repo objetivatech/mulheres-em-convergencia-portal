@@ -2,6 +2,7 @@ import Layout from '@/components/layout/Layout';
 import { Helmet } from 'react-helmet-async';
 import { CRMNavigation } from '@/components/admin/crm/CRMNavigation';
 import { SocialImpactDashboard } from '@/components/admin/crm/SocialImpactDashboard';
+import { DemographicProfileReport } from '@/components/admin/crm/DemographicProfileReport';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 
 const AdminCRMImpact = () => {
@@ -25,6 +26,10 @@ const AdminCRMImpact = () => {
           </div>
 
           <SocialImpactDashboard />
+
+          <div className="mt-8">
+            <DemographicProfileReport />
+          </div>
         </div>
       </Layout>
     </>
