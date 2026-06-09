@@ -28,6 +28,16 @@ user_socioeconomic_data (Dados Demográficos)
 - Atualiza `conecta_profiles` com COALESCE (não sobrescreve dados existentes com null)
 - NÃO atualiza `ambassadors` (dados públicos são curados pelo admin)
 
+### conecta_profiles → profiles (Trigger: `trg_sync_conecta_to_profile`)
+- Dispara ao atualizar: `bio`, `phone`, `linkedin_url`, `instagram_url`, `website_url`
+- Atualiza `profiles` com COALESCE para preservar dados existentes
+- Usa `pg_trigger_depth()` para evitar loop com o trigger inverso
+- Após salvar em CONECTA+, `useConectaProfile` invalida também `['profile']` para o "Meu Painel" refletir as mudanças imediatamente
+
+### user_socioeconomic_data → conecta_profiles (best-effort)
+- `SocioeconomicForm.onSubmit` espelha `date_of_birth` em `conecta_profiles.birthday` quando preenchido
+- Mantém a lista de aniversariantes consistente com o perfil socioeconômico
+
 ### user_socioeconomic_data → social_impact_metrics (Trigger: `trg_sync_socioeconomic_to_impact`)
 - Dispara ao inserir/atualizar dados socioeconômicos
 - Gera registro com `metric_type = 'demographic_profile'`

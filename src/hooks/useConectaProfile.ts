@@ -36,6 +36,9 @@ export function useConectaProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conecta-profile-full', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['conecta-profile', user?.id] });
+      // Profile is the SSOT — invalidate so Meu Painel reflects changes
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success('Perfil CONECTA+ atualizado!');
     },
     onError: () => {

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUploader } from '@/components/blog/ImageUploader';
+import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 import { BusinessReviewsTab } from '@/components/business/BusinessReviewsTab';
 import BusinessMessages from '@/components/business/BusinessMessages';
 import BusinessReviewModeration from '@/components/business/BusinessReviewModeration';
@@ -1010,26 +1011,21 @@ export const DashboardEmpresa = () => {
                 <CardHeader>
                   <CardTitle>Logo da Empresa</CardTitle>
                   <CardDescription>
-                    Imagem quadrada, recomendado 300x300px
+                    Imagem quadrada, recomendado 400×400px. O recorte é salvo automaticamente.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <ImageUploader
+                  <ImageCropUploader
                     value={logoUrl}
-                    onChange={setLogoUrl}
-                    bucket="business-logos"
+                    onChange={(url) => {
+                      const next = url || '';
+                      setLogoUrl(next);
+                      if (business?.id) saveImages(next, coverUrl, galleryImages);
+                    }}
+                    folder="business-logos"
                     label="Carregar Logo"
+                    dimensions={IMAGE_PRESETS.businessLogo}
                   />
-                  {logoUrl && (
-                    <Button
-                      type="button"
-                      onClick={() => saveImages(logoUrl, coverUrl, galleryImages)}
-                      disabled={!business?.id}
-                      className="w-full"
-                    >
-                      Salvar Logo
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
 
@@ -1037,26 +1033,21 @@ export const DashboardEmpresa = () => {
                 <CardHeader>
                   <CardTitle>Imagem de Capa</CardTitle>
                   <CardDescription>
-                    Imagem panorâmica, recomendado 1200x400px
+                    Imagem panorâmica, recomendado 1200×675px. O recorte é salvo automaticamente.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <ImageUploader
+                  <ImageCropUploader
                     value={coverUrl}
-                    onChange={setCoverUrl}
-                    bucket="business-covers"
+                    onChange={(url) => {
+                      const next = url || '';
+                      setCoverUrl(next);
+                      if (business?.id) saveImages(logoUrl, next, galleryImages);
+                    }}
+                    folder="business-covers"
                     label="Carregar Capa"
+                    dimensions={IMAGE_PRESETS.businessCover}
                   />
-                  {coverUrl && (
-                    <Button
-                      type="button"
-                      onClick={() => saveImages(logoUrl, coverUrl, galleryImages)}
-                      disabled={!business?.id}
-                      className="w-full"
-                    >
-                      Salvar Capa
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             </div>

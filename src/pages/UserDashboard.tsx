@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +70,15 @@ export const UserDashboard = () => {
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'visao-geral';
+  const handleTabChange = (value: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', value);
+      return next;
+    }, { replace: true });
+  };
 
   useEffect(() => {
     if (user) loadUserData();
@@ -162,8 +171,8 @@ export const UserDashboard = () => {
               </Button>
             </div>
 
-            {/* Tabs */}
-            <Tabs defaultValue="visao-geral" className="w-full">
+            {/* Tabs - controlled + forceMount so forms preserve state across tab switches */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">
                   <LayoutDashboard className="h-4 w-4 mr-1" /> Visão Geral
@@ -202,7 +211,7 @@ export const UserDashboard = () => {
               </TabsList>
 
               {/* ====== VISÃO GERAL ====== */}
-              <TabsContent value="visao-geral" className="mt-6 space-y-6">
+              <TabsContent value="visao-geral" forceMount className="mt-6 space-y-6 data-[state=inactive]:hidden">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <QuickCard icon={User} title="Meus Dados" desc="Editar perfil e contatos" href="/configuracoes/dados-pessoais" />
                   <QuickCard icon={Network} title="CONECTA+" desc="Acessar networking" href="/conecta" />
@@ -245,13 +254,13 @@ export const UserDashboard = () => {
               </TabsContent>
 
               {/* ====== SOCIOECONÔMICO ====== */}
-              <TabsContent value="socioeconomico" className="mt-6">
+              <TabsContent value="socioeconomico" forceMount className="mt-6 data-[state=inactive]:hidden">
                 <SocioeconomicForm />
               </TabsContent>
 
               {/* ====== MEU NEGÓCIO ====== */}
               {isBusinessOwner && (
-                <TabsContent value="meu-negocio" className="mt-6 space-y-4">
+                <TabsContent value="meu-negocio" forceMount className="mt-6 space-y-4 data-[state=inactive]:hidden">
                   {businessProfile ? (
                     <>
                       <Card>
@@ -290,7 +299,7 @@ export const UserDashboard = () => {
 
               {/* ====== EMBAIXADORA ====== */}
               {isAmbassador && (
-                <TabsContent value="embaixadora" className="mt-6">
+                <TabsContent value="embaixadora" forceMount className="mt-6 data-[state=inactive]:hidden">
                   <Card>
                     <CardHeader>
                       <CardTitle>Painel da Embaixadora</CardTitle>
@@ -304,7 +313,7 @@ export const UserDashboard = () => {
               )}
 
               {/* ====== CONECTA+ ====== */}
-              <TabsContent value="conecta" className="mt-6">
+              <TabsContent value="conecta" forceMount className="mt-6 data-[state=inactive]:hidden">
                 <Card>
                   <CardHeader>
                     <CardTitle>CONECTA+</CardTitle>
@@ -322,7 +331,7 @@ export const UserDashboard = () => {
 
               {/* ====== ACADEMY ====== */}
               {(isStudent || isBusinessOwner || isAmbassador || isAdmin) && (
-                <TabsContent value="academy" className="mt-6">
+                <TabsContent value="academy" forceMount className="mt-6 data-[state=inactive]:hidden">
                   <Card>
                     <CardHeader>
                       <CardTitle>MeC Academy</CardTitle>
@@ -337,7 +346,7 @@ export const UserDashboard = () => {
 
               {/* ====== BLOG ====== */}
               {(isBlogEditor || canEditBlog) && (
-                <TabsContent value="blog" className="mt-6 space-y-4">
+                <TabsContent value="blog" forceMount className="mt-6 space-y-4 data-[state=inactive]:hidden">
                   <Card>
                     <CardHeader>
                       <CardTitle>Gerenciamento do Blog</CardTitle>
@@ -353,7 +362,7 @@ export const UserDashboard = () => {
 
               {/* ====== ASSINATURA ====== */}
               {userSubscription && (
-                <TabsContent value="assinatura" className="mt-6">
+                <TabsContent value="assinatura" forceMount className="mt-6 data-[state=inactive]:hidden">
                   <Card>
                     <CardHeader>
                       <CardTitle>Minha Assinatura</CardTitle>
