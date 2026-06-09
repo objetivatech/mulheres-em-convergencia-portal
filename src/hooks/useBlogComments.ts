@@ -21,12 +21,12 @@ export const useBlogComments = (postId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('blog_comments')
-        .select('*')
+        .select('id, post_id, author_name, content, status, user_id, parent_id, created_at')
         .eq('post_id', postId)
         .eq('status', 'approved')
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data as BlogComment[];
+      return data as Omit<BlogComment, 'author_email'>[];
     },
     enabled: !!postId,
   });
