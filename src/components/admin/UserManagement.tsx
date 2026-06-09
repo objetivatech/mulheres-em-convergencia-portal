@@ -380,7 +380,7 @@ export const UserManagement = () => {
                                         <div className="font-medium flex items-center gap-1">
                                           {label}
                                           {role === 'community_member' && (
-                                            <Lock className="h-3 w-3 text-muted-foreground" title="Função de sistema" />
+                                            <Lock className="h-3 w-3 text-muted-foreground" aria-label="Função de sistema" />
                                           )}
                                           {role === 'business_owner' && (
                                             <span className="text-xs font-normal text-muted-foreground ml-1">(CONECTA+ Membro)</span>

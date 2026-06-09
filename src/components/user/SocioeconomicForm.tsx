@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -100,23 +100,29 @@ export const SocioeconomicForm = () => {
     cityFromProfile: null,
     stateFromProfile: null,
   });
+  const hydratedUserIdRef = useRef<string | null>(null);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm<SocioeconomicFormData>({
     resolver: zodResolver(socioeconomicSchema),
+    shouldUnregister: false,
   });
 
   const hasBusiness = watch('has_business');
 
   useEffect(() => {
-    if (user) fetchAllData();
-  }, [user]);
+    if (!user?.id || hydratedUserIdRef.current === user.id) return;
 
-  const fetchAllData = async () => {
+    hydratedUserIdRef.current = user.id;
+    setInitialLoading(true);
+    fetchAllData(user.id);
+  }, [user?.id]);
+
+  const fetchAllData = async (userId: string) => {
     try {
       const [socioRes, profileRes, bizRes] = await Promise.all([
-        supabase.from('user_socioeconomic_data').select('*').eq('user_id', user!.id).maybeSingle(),
-        supabase.from('profiles').select('city, state').eq('id', user!.id).single(),
-        supabase.from('businesses').select('id, name, category, subcategory').eq('owner_id', user!.id).maybeSingle(),
+        supabase.from('user_socioeconomic_data').select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('city, state').eq('id', userId).single(),
+        supabase.from('businesses').select('id, name, category, subcategory').eq('owner_id', userId).maybeSingle(),
       ]);
 
       const profileData = profileRes.data;
