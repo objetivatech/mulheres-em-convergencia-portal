@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { ensureTipTapDoc } from '@/lib/migrateBlocksToTipTap';
 import type { TipTapDoc } from '@/lib/migrateBlocksToTipTap';
@@ -79,6 +80,7 @@ export function useSavePage() {
       const { id, ...rest } = payload;
       const body = {
         ...rest,
+        content: rest.content as unknown as Json,
         updated_at: new Date().toISOString(),
       };
 
