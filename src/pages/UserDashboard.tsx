@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -71,30 +71,34 @@ export const UserDashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState('visao-geral');
+  const loadedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (user) loadUserData();
-  }, [user]);
+    if (!user?.id || loadedUserIdRef.current === user.id) return;
 
-  const loadUserData = async () => {
+    loadedUserIdRef.current = user.id;
+    loadUserData(user.id);
+  }, [user?.id]);
+
+  const loadUserData = async (userId: string) => {
     setLoadingData(true);
     try {
       const [subRes, profileRes, bizRes] = await Promise.all([
         supabase
           .from('user_subscriptions')
           .select('*, subscription_plans(display_name, name)')
-          .eq('user_id', user!.id)
+          .eq('user_id', userId)
           .eq('status', 'active')
           .maybeSingle(),
         supabase
           .from('profiles')
           .select('*')
-          .eq('id', user!.id)
+          .eq('id', userId)
           .single(),
         supabase
           .from('businesses')
           .select('id, name, slug, subscription_active, views_count, clicks_count, contacts_count')
-          .eq('owner_id', user!.id)
+          .eq('owner_id', userId)
           .maybeSingle(),
       ]);
 
