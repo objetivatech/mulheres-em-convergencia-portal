@@ -7,6 +7,40 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Settings, Users, FileText, Mail, BarChart3, Shield, UserCheck, Calendar, DollarSign, TrendingUp, Award, Store, Crown, Clock, GraduationCap, LayoutTemplate, BookOpen } from 'lucide-react';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+
+const openSeoResource = async (
+  functionName: 'generate-rss' | 'generate-sitemap',
+  label: string,
+) => {
+  try {
+    const { data, error } = await supabase.functions.invoke(functionName);
+    if (error) throw error;
+    const xml = typeof data === 'string' ? data : await new Response(data as BodyInit).text();
+    const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (err) {
+    console.error(`Erro ao carregar ${label}:`, err);
+    toast({
+      title: `Não foi possível abrir o ${label}`,
+      description: 'Tente novamente em instantes.',
+      variant: 'destructive',
+    });
+  }
+};
+
+const copyCanonicalUrl = async (path: '/rss.xml' | '/sitemap.xml') => {
+  const url = `${PRODUCTION_DOMAIN}${path}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    toast({ title: 'URL copiada', description: url });
+  } catch {
+    toast({ title: 'URL', description: url });
+  }
+};
 
 const Admin = () => {
   const { user, loading, isAdmin, canEditBlog } = useAuth();
@@ -385,14 +419,14 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/rss.xml`, '_blank', 'noopener,noreferrer')}
+                          onClick={() => openSeoResource('generate-rss', 'RSS')}
                         >
                           Visualizar RSS
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/rss.xml`)}
+                          onClick={() => copyCanonicalUrl('/rss.xml')}
                         >
                           Copiar URL
                         </Button>
@@ -408,14 +442,14 @@ const Admin = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => window.open(`${PRODUCTION_DOMAIN}/sitemap.xml`, '_blank', 'noopener,noreferrer')}
+                          onClick={() => openSeoResource('generate-sitemap', 'Sitemap')}
                         >
                           Visualizar Sitemap
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(`${PRODUCTION_DOMAIN}/sitemap.xml`)}
+                          onClick={() => copyCanonicalUrl('/sitemap.xml')}
                         >
                           Copiar URL
                         </Button>
