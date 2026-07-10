@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { CRMNavigation } from '@/components/admin/crm/CRMNavigation';
 import { DonationsManagement } from '@/components/admin/crm/DonationsManagement';
 import { EventFinancialDashboard } from '@/components/admin/crm/EventFinancialDashboard';
+import { SubscriptionHealthPanel } from '@/components/admin/crm/SubscriptionHealthPanel';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -30,6 +31,7 @@ const AdminCRMFinancial = () => {
             <TabsList>
               <TabsTrigger value="dashboard">Dashboard de Eventos</TabsTrigger>
               <TabsTrigger value="donations">Doações e Patrocínios</TabsTrigger>
+              <TabsTrigger value="health">Saúde das Assinaturas</TabsTrigger>
             </TabsList>
             
             <TabsContent value="dashboard">
@@ -38,6 +40,10 @@ const AdminCRMFinancial = () => {
             
             <TabsContent value="donations">
               <DonationsManagement />
+            </TabsContent>
+
+            <TabsContent value="health">
+              <SubscriptionHealthPanel />
             </TabsContent>
           </Tabs>
         </div>
