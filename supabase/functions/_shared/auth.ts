@@ -61,6 +61,10 @@ export async function requireAdminOrCron(req: Request): Promise<{ ok: true } | {
   const cronSecret = Deno.env.get('CRON_SECRET');
   const provided = req.headers.get('x-cron-secret');
   if (cronSecret && provided && provided === cronSecret) return { ok: true };
+  // Also accept the service-role JWT as Bearer (used by pg_cron / server-to-server).
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (authHeader && serviceKey && authHeader === `Bearer ${serviceKey}`) return { ok: true };
   const res = await requireAdmin(req);
   if ('error' in res) return { error: res.error };
   return { ok: true };
