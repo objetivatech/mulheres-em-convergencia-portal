@@ -773,6 +773,13 @@ export type Database = {
             referencedRelation: "user_subscriptions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ambassador_referrals_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["subscription_id"]
+          },
         ]
       }
       ambassador_tiers: {
@@ -969,6 +976,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambassadors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1219,6 +1233,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "blog_posts_author_profile_id_fkey"
             columns: ["author_profile_id"]
             isOneToOne: false
@@ -1288,6 +1309,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_amenities_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_analytics: {
@@ -1335,6 +1363,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_analytics_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_boosts: {
@@ -1379,6 +1414,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_boosts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_credits: {
@@ -1417,6 +1459,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_credits_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_menu_categories: {
@@ -1454,6 +1503,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_menu_categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
           },
         ]
       }
@@ -1510,6 +1566,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_menu_items_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
           },
           {
             foreignKeyName: "business_menu_items_category_id_fkey"
@@ -1600,6 +1663,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_reviews: {
@@ -1656,6 +1726,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       business_service_areas: {
@@ -1699,6 +1776,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_service_areas_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
           },
         ]
       }
@@ -1749,6 +1833,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
           },
           {
             foreignKeyName: "business_subscriptions_plan_id_fkey"
@@ -1914,6 +2005,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "businesses_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       categories: {
@@ -2004,6 +2102,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       community_groups: {
@@ -2044,6 +2149,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2092,6 +2204,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "community_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
       }
       complimentary_audit_log: {
@@ -2132,6 +2251,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complimentary_audit_log_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
           },
         ]
       }
@@ -2174,6 +2300,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conecta_activity_feed_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       conecta_attendances: {
@@ -2209,6 +2342,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_attendances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2252,11 +2392,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_business_deals_closed_by_user_id_fkey"
+            columns: ["closed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_business_deals_referred_by_user_id_fkey"
             columns: ["referred_by_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_business_deals_referred_by_user_id_fkey"
+            columns: ["referred_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2304,6 +2458,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_contents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2595,11 +2756,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_invitations_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "conecta_invitations_meeting_id_fkey"
@@ -2653,6 +2828,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_meetings_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
@@ -2699,6 +2881,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_monthly_points_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2787,11 +2976,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_one_on_ones_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_one_on_ones_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_one_on_ones_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2870,6 +3073,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_points_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2960,6 +3170,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conecta_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       conecta_referrals: {
@@ -3005,11 +3222,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_referrals_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_referrals_to_user_id_fkey"
             columns: ["to_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_referrals_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3049,6 +3280,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3113,11 +3351,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conecta_testimonials_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "conecta_testimonials_to_user_id_fkey"
             columns: ["to_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_testimonials_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3283,6 +3535,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "courses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       cpf_access_log: {
@@ -3320,6 +3579,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cpf_access_log_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5470,11 +5736,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
+          {
             foreignKeyName: "transactions_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "transactions_product_id_fkey"
@@ -5581,6 +5861,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       user_contacts: {
@@ -5621,6 +5908,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_contacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5694,11 +5988,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "user_permissions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5825,6 +6133,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_socioeconomic_data_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -6007,7 +6322,35 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "v_subscriber_status"
+            referencedColumns: ["business_id"]
+          },
         ]
+      }
+      v_subscriber_status: {
+        Row: {
+          billing_cycle: string | null
+          business_active: boolean | null
+          business_id: string | null
+          business_name: string | null
+          cpf: string | null
+          email: string | null
+          external_subscription_id: string | null
+          full_name: string | null
+          health_status: string | null
+          is_complimentary: boolean | null
+          subscription_expires: string | null
+          subscription_expires_at: string | null
+          subscription_id: string | null
+          subscription_renewal_date: string | null
+          subscription_status: string | null
+          user_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -6583,18 +6926,32 @@ export type Database = {
         Args: { new_status: string; review_uuid: string }
         Returns: Json
       }
-      process_subscription_payment: {
-        Args: {
-          p_amount: number
-          p_external_payment_id: string
-          p_user_id: string
-        }
-        Returns: Json
-      }
+      process_subscription_payment:
+        | {
+            Args: {
+              p_amount: number
+              p_external_payment_id: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_amount: number
+              p_external_payment_id: string
+              p_subscription_id?: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       publish_scheduled_posts: { Args: never; Returns: number }
       recalculate_event_current_participants: {
         Args: { _event_id: string }
         Returns: undefined
+      }
+      reconcile_subscription_business_consistency: {
+        Args: never
+        Returns: Json
       }
       reject_community_request: {
         Args: { admin_notes: string; request_id: string }
