@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20"
+import { getAuthenticatedUserId, requireAdmin } from "../_shared/auth.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +47,38 @@ serve(async (req) => {
   }
 
   try {
+    // All r2-storage actions require an authenticated user. Destructive/enumeration
+    // actions (delete, list) additionally require admin role.
+    const url0 = new URL(req.url)
+    let previewAction = url0.searchParams.get('action') || ''
+    const ct = req.headers.get('content-type') || ''
+    if (!previewAction && !ct.includes('multipart')) {
+      try {
+        const cloned = req.clone()
+        const body = await cloned.json()
+        previewAction = body?.action || ''
+      } catch { /* ignore */ }
+    }
+    const isPrivileged = previewAction === 'delete' || previewAction === 'list'
+    if (isPrivileged) {
+      const adminCheck = await requireAdmin(req)
+      if ('error' in adminCheck) {
+        const body = await adminCheck.error.text()
+        return new Response(body, {
+          status: adminCheck.error.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    } else {
+      const uid = await getAuthenticatedUserId(req)
+      if (!uid) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     const config = getR2Config()
     const aws = new AwsClient({
       accessKeyId: config.accessKeyId,

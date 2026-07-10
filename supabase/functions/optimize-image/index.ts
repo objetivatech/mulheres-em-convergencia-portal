@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20"
+import { getAuthenticatedUserId } from "../_shared/auth.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +23,14 @@ serve(async (req) => {
   }
 
   try {
+    const uid = await getAuthenticatedUserId(req)
+    if (!uid) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const config = getR2Config()
     const aws = new AwsClient({
       accessKeyId: config.accessKeyId,
