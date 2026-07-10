@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,16 @@ serve(async (req) => {
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Only authenticated admins may cancel arbitrary Asaas payments.
+    const auth = await requireAdmin(req);
+    if ('error' in auth) {
+      const body = await auth.error.text();
+      return new Response(body, {
+        status: auth.error.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
