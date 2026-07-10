@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireAdminOrCron } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,15 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await requireAdminOrCron(req);
+    if ('error' in auth) {
+      const body = await auth.error.text();
+      return new Response(body, {
+        status: auth.error.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     logStep("Sync function started");
 
     const supabaseClient = createClient(
