@@ -752,7 +752,8 @@ serve(async (req) => {
           .rpc('process_subscription_payment', {
             p_user_id: subscription.user_id,
             p_external_payment_id: payment.id,
-            p_amount: payment.value
+            p_amount: payment.value,
+            p_subscription_id: subscription.id
           });
 
         if (renewalError) {
@@ -762,6 +763,13 @@ serve(async (req) => {
             count: renewalResult?.businesses_renewed || 0,
             renewal_date: renewalResult?.renewal_date || null
           });
+          if (!renewalResult?.businesses_renewed || renewalResult.businesses_renewed === 0) {
+            logStep('CRITICAL: Payment received but no business renewed', {
+              userId: subscription.user_id,
+              paymentId: payment.id,
+              subscriptionId: subscription.id
+            });
+          }
         }
 
         // Grant business_owner and subscriber roles (idempotent upsert)
