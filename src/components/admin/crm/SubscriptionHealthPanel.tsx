@@ -40,7 +40,7 @@ export function SubscriptionHealthPanel() {
     queryFn: async () => {
       const { data, error } = await supabase.from('v_subscriber_status' as any).select('*').limit(1000);
       if (error) throw error;
-      return (data ?? []) as Row[];
+      return ((data ?? []) as unknown) as Row[];
     },
   });
 
