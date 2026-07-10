@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -184,6 +185,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const auth = await requireAdmin(req);
+    if ('error' in auth) {
+      const body = await auth.error.text();
+      return new Response(body, {
+        status: auth.error.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (!MAILRELAY_HOST || !MAILRELAY_API_KEY) {
       throw new Error('Mailrelay configuration missing');
     }
