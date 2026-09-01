@@ -1,0 +1,66 @@
+<svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
+<style>
+  text { font-family: var(--font-sans); fill: hsl(var(--foreground)); }
+  .lbl { font-size: 14px; font-weight: 480; }
+  .sm { font-size: 12px; fill: hsl(var(--muted-foreground)); }
+  .mono { font-family: var(--font-mono); font-size: 11px; fill: hsl(var(--muted-foreground)); }
+  .bx { fill: none; stroke: hsl(var(--muted-foreground)); stroke-width: 1; }
+  .zn { fill: none; stroke: hsl(var(--border)); stroke-width: 1; stroke-dasharray: 4 3; }
+  .w { stroke: hsl(var(--muted-foreground)); stroke-width: 1; fill: none; marker-end: url(#a); }
+  .acc { fill: none; stroke: hsl(var(--accent)); stroke-width: 1.5; }
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L8 4 L0 8" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1"/>
+  </marker>
+</defs>
+
+<text x="8" y="16" class="sm">hoje — cada tela calcula o status por conta própria</text>
+<rect x="8" y="28" width="120" height="40" rx="8" class="bx"/>
+<text x="68" y="52" class="lbl" text-anchor="middle">Asaas</text>
+<rect x="8" y="88" width="120" height="40" rx="8" class="bx"/>
+<text x="68" y="112" class="lbl" text-anchor="middle">triggers SQL</text>
+
+<path d="M132 48 L196 40" class="w"/><path d="M132 52 L196 92" class="w"/><path d="M132 56 L196 144" class="w"/>
+<path d="M132 104 L196 48" class="w"/><path d="M132 108 L196 100" class="w"/><path d="M132 112 L196 148" class="w"/>
+
+<rect x="200" y="22" width="150" height="34" rx="8" class="bx"/>
+<text x="275" y="43" class="lbl" text-anchor="middle">Gestão de Usuários</text>
+<rect x="200" y="78" width="150" height="34" rx="8" class="bx"/>
+<text x="275" y="99" class="lbl" text-anchor="middle">Jornada do Cliente</text>
+<rect x="200" y="132" width="150" height="34" rx="8" class="bx"/>
+<text x="275" y="153" class="lbl" text-anchor="middle">Contatos / Diretório</text>
+<text x="366" y="43" class="sm">inativo</text>
+<text x="366" y="99" class="sm">pago</text>
+<text x="366" y="153" class="sm">divergente</text>
+
+<line x1="8" y1="192" x2="632" y2="192" stroke="hsl(var(--border))" stroke-width="1"/>
+
+<text x="8" y="220" class="sm">novo — um só módulo decide, todas as telas leem</text>
+<rect x="8" y="232" width="120" height="40" rx="8" class="bx"/>
+<text x="68" y="256" class="lbl" text-anchor="middle">Asaas</text>
+<rect x="8" y="292" width="120" height="40" rx="8" class="bx"/>
+<text x="68" y="316" class="lbl" text-anchor="middle">cortesia / admin</text>
+
+<path d="M132 252 L206 288" class="w"/>
+<path d="M132 312 L206 300" class="w"/>
+
+<rect x="212" y="262" width="150" height="76" rx="8" class="acc"/>
+<text x="287" y="292" class="lbl" text-anchor="middle">Núcleo de Acesso</text>
+<text x="287" y="310" class="sm" text-anchor="middle">única fonte de verdade</text>
+<text x="287" y="328" class="mono" text-anchor="middle">status + validade</text>
+
+<path d="M366 288 L426 250" class="w"/>
+<path d="M366 300 L426 300" class="w"/>
+<path d="M366 312 L426 350" class="w"/>
+
+<rect x="432" y="232" width="150" height="34" rx="8" class="bx"/>
+<text x="507" y="253" class="lbl" text-anchor="middle">Painel admin</text>
+<rect x="432" y="283" width="150" height="34" rx="8" class="bx"/>
+<text x="507" y="304" class="lbl" text-anchor="middle">Diretório público</text>
+<rect x="432" y="334" width="150" height="34" rx="8" class="bx"/>
+<text x="507" y="355" class="lbl" text-anchor="middle">Conecta+ / Academy</text>
+
+<rect x="424" y="222" width="166" height="156" rx="8" class="zn"/>
+<text x="432" y="392" class="sm">leitores — nunca recalculam</text>
+</svg>
