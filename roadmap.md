@@ -30,11 +30,11 @@ Atualizado: 02/09/2026
 - [x] `roadmap.md` e `CHANGELOG.md`
 - [x] Padrões gravados na memória do projeto
 
-### Fase 1 — Núcleo de Acesso — *a iniciar*
-- [ ] Migration do domínio de acesso (pessoas, concessões, pagamentos, webhooks)
-- [ ] Webhook Asaas modular, idempotente
-- [ ] Função única de consulta de acesso
-- [ ] Painel de operação de assinaturas
+### Fase 1 — Núcleo de Acesso — *em andamento*
+- [x] Migration do domínio de acesso (`reboot/sql/0001_nucleo_acesso.sql`) — escrita, aguardando aplicação manual no projeto novo
+- [x] Webhook Asaas modular, idempotente (`reboot/functions/asaas-webhook/`, 6 peças)
+- [x] Função única de consulta de acesso (`acesso_vigente` / `tenho_acesso` / `situacao_acesso`)
+- [ ] Painel de operação de assinaturas (depende da conexão com o projeto novo)
 - [ ] 7 testes de aceitação de `02-nucleo-acesso.md`
 - [ ] Documentação tripla do módulo
 
