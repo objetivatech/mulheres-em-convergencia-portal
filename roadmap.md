@@ -2,7 +2,7 @@
 
 Plano aprovado em 01/09/2026, revisado em 02/09/2026. Banco novo + migração, portal atual no ar, mesma identidade visual com design system novo, pagamentos primeiro.
 
-**Projeto Supabase novo:** `tysvpeprhokdijquprkd` (aguardando conexão pelo usuário). Antigo `ngqymbjatenxztrjjdxa` fica congelado para leitura/comparativo; migração por scripts duais idempotentes com conferência assinante por assinante.
+**Projeto Supabase novo:** `tysvpeprhokdijquprkd` (criado; conexão autorizada pelo usuário em 02/09/2026 — passo final executado nas configurações do Lovable). Antigo `ngqymbjatenxztrjjdxa` fica congelado para leitura/comparativo; migração por scripts duais idempotentes com conferência assinante por assinante.
 
 **Padrões permanentes (02/09/2026):**
 1. Documentação tripla em toda entrega: técnica + operacional + manual para leigos.
@@ -18,7 +18,7 @@ Plano aprovado em 01/09/2026, revisado em 02/09/2026. Banco novo + migração, p
 - [x] Registro das funcionalidades diferidas (tabelas vazias) — `docs/_reboot/03-funcionalidades-diferidas.md`
 
 ## Fase 1 — Núcleo de Acesso (pagamentos e assinaturas)
-- [ ] Usuário cria o projeto Supabase novo e conecta a este branch
+- [x] Usuário cria o projeto Supabase novo (tysvpeprhokdijquprkd) e autoriza a conexão
 - [ ] Schema inicial único (identidade, acesso, negócios)
 - [ ] Registro bruto de eventos de pagamento + reprocessamento
 - [ ] Concessões de acesso e função única de leitura
