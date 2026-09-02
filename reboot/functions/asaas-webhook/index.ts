@@ -111,10 +111,9 @@ export async function processar(
     return { pessoaId, pagamentoId, concessaoId };
   } catch (e) {
     console.error("falha ao processar webhook", e);
-    await supabase.rpc("noop").catch(() => {});
     await supabase
       .from("webhooks_recebidos")
-      .update({ erro: String(e), tentativas: undefined })
+      .update({ erro: String(e) })
       .eq("id", registroId);
     return { erro: String(e) };
   }
