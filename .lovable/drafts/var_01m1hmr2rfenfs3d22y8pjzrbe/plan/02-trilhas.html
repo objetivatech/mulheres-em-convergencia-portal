@@ -1,0 +1,55 @@
+<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    text { font-family: var(--font-sans); fill: hsl(var(--foreground)); }
+    .lbl { font-size: 14px; font-weight: 480; }
+    .sm { font-size: 12px; fill: hsl(var(--muted-foreground)); }
+    .box { fill: none; stroke: hsl(var(--muted-foreground)); stroke-width: 1; }
+    .zone { fill: none; stroke: hsl(var(--border)); stroke-width: 1; stroke-dasharray: 4 3; }
+    .wire { stroke: hsl(var(--muted-foreground)); stroke-width: 1; fill: none; }
+    .dash { stroke-dasharray: 4 3; }
+    .acc { fill: hsl(var(--accent)); stroke: none; }
+    .accs { stroke: hsl(var(--accent)); }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="zone" x="8" y="20" width="380" height="130" rx="8"/>
+  <text class="sm" x="20" y="38">trilha documental e de código — aqui, neste rascunho</text>
+  <rect class="box" x="24" y="52" width="100" height="46" rx="8"/>
+  <text class="lbl" x="74" y="72" text-anchor="middle">Inventário</text>
+  <text class="sm" x="74" y="88" text-anchor="middle">fica/reescreve</text>
+  <rect class="box" x="140" y="52" width="100" height="46" rx="8"/>
+  <text class="lbl" x="190" y="72" text-anchor="middle">Schema novo</text>
+  <text class="sm" x="190" y="88" text-anchor="middle">~45 tabelas</text>
+  <rect class="box accs" x="256" y="52" width="112" height="46" rx="8"/>
+  <text class="lbl" x="312" y="72" text-anchor="middle">Núcleo de Acesso</text>
+  <text class="sm" x="312" y="88" text-anchor="middle">pagamentos</text>
+  <text class="sm" x="24" y="128">design system · telas · funções · manuais · changelog</text>
+
+  <rect class="zone" x="8" y="176" width="380" height="106" rx="8"/>
+  <text class="sm" x="20" y="194">trilha de banco — depois da sua aprovação</text>
+  <rect class="box" x="24" y="208" width="108" height="46" rx="8"/>
+  <text class="lbl" x="78" y="228" text-anchor="middle">Trocar conexão</text>
+  <text class="sm" x="78" y="244" text-anchor="middle">projeto novo</text>
+  <rect class="box" x="148" y="208" width="104" height="46" rx="8"/>
+  <text class="lbl" x="200" y="228" text-anchor="middle">Aplicar schema</text>
+  <rect class="box" x="268" y="208" width="100" height="46" rx="8"/>
+  <text class="lbl" x="318" y="228" text-anchor="middle">Migrar dados</text>
+  <text class="sm" x="318" y="244" text-anchor="middle">do banco antigo</text>
+
+  <path class="wire dash" d="M196 152 L196 174" marker-end="url(#a)"/>
+
+  <rect class="box" x="424" y="52" width="196" height="60" rx="8"/>
+  <text class="lbl" x="522" y="76" text-anchor="middle">Portal em produção</text>
+  <text class="sm" x="522" y="94" text-anchor="middle">banco antigo, no ar, intocado</text>
+  <rect class="box" x="424" y="208" width="196" height="46" rx="8"/>
+  <text class="lbl" x="522" y="228" text-anchor="middle">Corte final</text>
+  <text class="sm" x="522" y="244" text-anchor="middle">última fase, com janela combinada</text>
+  <path class="wire dash" d="M522 114 L522 205" marker-end="url(#a)"/>
+
+  <circle class="acc" cx="312" cy="42" r="8"/>
+  <text x="312" y="46" text-anchor="middle" font-size="11" fill="hsl(var(--accent-foreground))">1</text>
+</svg>
