@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-03 — Fase 1 (parte 2): migration aplicada + testes e documentação tripla
+- Migration `0001_nucleo_acesso.sql` aplicada pela cliente no SQL Editor do projeto novo (`tysvpeprhokdijquprkd`).
+- Criado `reboot/tests/0001_aceitacao_nucleo_acesso.sql`: os 7 testes de aceitação de `02-nucleo-acesso.md` em SQL executável (com limpeza automática dos dados de teste) + verificação bônus de `situacao_acesso`.
+- Criada a documentação tripla do módulo: técnica (`02-nucleo-acesso.md`), operacional (`docs/_reboot/04-nucleo-acesso-operacao.md` — implantação das functions, teste manual via curl, diagnóstico, reprocessamento, concessão/revogação manual) e manual para leigo (`docs/_reboot/05-nucleo-acesso-manual.md`).
+- Orientação registrada: edge functions podem ser implantadas já no projeto novo (com `ASAAS_WEBHOOK_TOKEN`), mas o webhook do Asaas só é apontado na Fase 7.
+
 ### 2026-09-02 — Fase 1 (parte 1): Núcleo de Acesso escrito
 - Criada a pasta `reboot/`, destinada exclusivamente ao projeto Supabase novo — nada aqui é aplicado nem implantado automaticamente (`reboot/README.md` explica como aplicar).
 - Criada a migration única `reboot/sql/0001_nucleo_acesso.sql`: `pessoas`, `pessoa_contatos`, `papeis`, `pagamentos`, `concessoes_acesso`, `webhooks_recebidos`; funções `pessoa_atual`, `tem_papel`, `e_admin`, `acesso_vigente`, `tenho_acesso`, `situacao_acesso`, `conceder_por_pagamento`; visão `v_acesso_operacao`. Toda tabela nasce com GRANT + RLS; papéis em tabela separada; nenhum estado derivado gravado.
