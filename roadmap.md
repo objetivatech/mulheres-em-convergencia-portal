@@ -1,6 +1,6 @@
 # Roadmap — Reboot do Portal Mulheres em Convergência
 
-Atualizado: 02/09/2026
+Atualizado: 03/09/2026
 
 ## Padrões permanentes deste projeto
 
@@ -31,12 +31,12 @@ Atualizado: 02/09/2026
 - [x] Padrões gravados na memória do projeto
 
 ### Fase 1 — Núcleo de Acesso — *em andamento*
-- [x] Migration do domínio de acesso (`reboot/sql/0001_nucleo_acesso.sql`) — escrita, aguardando aplicação manual no projeto novo
-- [x] Webhook Asaas modular, idempotente (`reboot/functions/asaas-webhook/`, 6 peças)
+- [x] Migration do domínio de acesso (`reboot/sql/0001_nucleo_acesso.sql`) — **aplicada no projeto novo em 03/09/2026**
+- [x] Webhook Asaas modular, idempotente (`reboot/functions/asaas-webhook/`, 6 peças) — implantar no projeto novo; apontar o Asaas só na Fase 7
 - [x] Função única de consulta de acesso (`acesso_vigente` / `tenho_acesso` / `situacao_acesso`)
+- [x] 7 testes de aceitação executáveis (`reboot/tests/0001_aceitacao_nucleo_acesso.sql`) — rodar no SQL Editor do projeto novo
+- [x] Documentação tripla do módulo (`02` técnica, `04` operacional, `05` manual leigo)
 - [ ] Painel de operação de assinaturas (depende da conexão com o projeto novo)
-- [ ] 7 testes de aceitação de `02-nucleo-acesso.md`
-- [ ] Documentação tripla do módulo
 
 ### Fase 2 — Identidade e perfis
 - [ ] Autenticação, CPF como identificador central, papéis
