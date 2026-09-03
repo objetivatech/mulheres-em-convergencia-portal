@@ -1,6 +1,6 @@
 # Roadmap — Reboot do Portal Mulheres em Convergência
 
-Atualizado: 02/09/2026
+Atualizado: 03/09/2026
 
 ## Padrões permanentes deste projeto
 
