@@ -4,6 +4,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-03 — Fase 1 (parte 3): versões de arquivo único das functions
+- O editor do painel do Supabase não aceita imports locais (erro "Module not found" ao implantar a versão em peças). Criada `reboot/functions-deploy/` com `asaas-webhook.ts` e `asaas-webhook-reprocessar.ts` em arquivo único — conteúdo idêntico às peças, pronto para colar no painel.
+- `docs/_reboot/04-nucleo-acesso-operacao.md` atualizado: passo a passo pelo painel (recomendado) e pela CLI (alternativa).
+- Testes de aceitação executados no projeto novo sem erros (7 testes OK).
+
 ### 2026-09-03 — Fase 1 (parte 2): migration aplicada + testes e documentação tripla
 - Migration `0001_nucleo_acesso.sql` aplicada pela cliente no SQL Editor do projeto novo (`tysvpeprhokdijquprkd`).
 - Criado `reboot/tests/0001_aceitacao_nucleo_acesso.sql`: os 7 testes de aceitação de `02-nucleo-acesso.md` em SQL executável (com limpeza automática dos dados de teste) + verificação bônus de `situacao_acesso`.
