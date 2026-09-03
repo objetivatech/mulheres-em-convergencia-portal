@@ -13,21 +13,38 @@
 
 ## 2. Implantação das edge functions (projeto novo)
 
-Functions: `asaas-webhook` e `asaas-webhook-reprocessar`
-(código em `reboot/functions/`).
+Functions: `asaas-webhook` e `asaas-webhook-reprocessar`.
+
+**Importante:** o editor do painel do Supabase aceita **um único arquivo** por
+function. Por isso existem duas versões do código:
+
+- `reboot/functions/` — versão em peças (para leitura, revisão e CLI);
+- `reboot/functions-deploy/` — **versão de arquivo único, para colar no painel**.
+
+### Pelo painel (recomendado)
 
 1. Segredos (Dashboard → Edge Functions → Secrets):
    - `ASAAS_WEBHOOK_TOKEN` — o mesmo token configurado no painel do Asaas.
    - `ASAAS_API_KEY` — necessário nas fases seguintes.
    - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` já
      existem por padrão em todo projeto.
-2. Implantar via CLI apontando para o projeto novo:
-   ```bash
-   supabase functions deploy asaas-webhook --project-ref tysvpeprhokdijquprkd
-   supabase functions deploy asaas-webhook-reprocessar --project-ref tysvpeprhokdijquprkd
-   ```
-3. **Não apontar o webhook do Asaas para o projeto novo até a Fase 7.**
-   O webhook de produção continua indo para o projeto antigo.
+2. Dashboard → Edge Functions → **Create a new function** → nome
+   `asaas-webhook` → apagar o conteúdo de exemplo e colar **todo** o conteúdo
+   de `reboot/functions-deploy/asaas-webhook.ts` → Deploy.
+3. Repetir com o nome `asaas-webhook-reprocessar` e o conteúdo de
+   `reboot/functions-deploy/asaas-webhook-reprocessar.ts`.
+
+### Pela CLI (alternativa, usa a versão em peças)
+
+```bash
+supabase functions deploy asaas-webhook --project-ref tysvpeprhokdijquprkd
+supabase functions deploy asaas-webhook-reprocessar --project-ref tysvpeprhokdijquprkd
+```
+
+### Em qualquer dos caminhos
+
+**Não apontar o webhook do Asaas para o projeto novo até a Fase 7.**
+O webhook de produção continua indo para o projeto antigo.
 
 ## 3. Teste manual da function (antes do corte)
 
