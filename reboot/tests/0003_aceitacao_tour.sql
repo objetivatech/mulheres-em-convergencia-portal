@@ -9,7 +9,7 @@ declare
   v_linha public.tour_progresso;
   v_qtd integer;
 begin
-  insert into public.pessoas (nome_completo)
+  insert into public.pessoas (nome)
   values ('TESTE TOUR — apagar') returning id into v_pessoa;
 
   -- 1) primeiro registro do tour

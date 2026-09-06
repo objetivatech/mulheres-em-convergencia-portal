@@ -10,6 +10,7 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Criada `reboot/sql/0003_tour_guiado.sql`: tabela `tour_progresso` (GRANT + RLS, progresso só da própria pessoa) e funções `registrar_tour` (idempotente por pessoa+módulo+versão, conclusão nunca desfeita) e `tour_pendente` (decide só a abertura automática — o botão de reabrir nunca some).
 - Criado `reboot/tests/0003_aceitacao_tour.sql` com 5 testes e limpeza automática.
 - Documentação tripla: `docs/_reboot/09-design-system.md`, `10-design-operacao.md`, `11-design-manual.md`.
+- Correção no teste do tour: o insert de pessoa usava a coluna inexistente `nome_completo`; ajustado para `nome`, como definido na ficha da pessoa (migration 0001).
 
 
 ### 2026-09-06 — Fase 2 (parte 1): Identidade e Perfis escrita
