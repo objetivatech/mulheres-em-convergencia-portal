@@ -4,6 +4,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-06 — Fase 3 (parte 2): camada de tela do tour guiado
+- Testes `0003_aceitacao_tour.sql` executados no projeto novo sem erro (5 testes OK).
+- Criada `reboot/frontend/` (fora do build): `tour/useTour.ts` (chama `tour_pendente` e `registrar_tour`, abre sozinho só uma vez, conclusão nunca desfeita), `tour/TourGuiado.tsx` (janela do tour + `BotaoTour` fixo que nunca some para usuária logada) e `tour/passos.ts` (roteiros de meu-painel, conecta, academy, embaixadoras, meu-negócio, com versão por módulo).
+- `reboot/frontend/README.md` com o passo a passo de ativação na Fase 4. Nada importado por `src/` ainda — o preview continua no banco antigo.
+
 ### 2026-09-06 — Fase 2 aplicada + Fase 3 (parte 1): Sistema de Design e Tour
 - `0002_identidade_perfis.sql` aplicada no projeto novo e os 8 testes de aceitação executados sem erro.
 - Criado `reboot/design/tokens.css`: identidade de marca preservada (rosa `#C75A92`, lilás `#9191C0`, azul `#ADBBDD`) separada dos papéis de cor; acrescentados `--success`, `--warning`, `--surface-quente`, gradientes e transição como token; escala única de sombra, raio e tipografia fluida; modo escuro completo. Nada aplicado em `src/` ainda.
