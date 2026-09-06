@@ -74,5 +74,5 @@ Atualizado: 06/09/2026
 
 ## Passos que dependem do cliente
 
-- [ ] Trocar a conexão Supabase para `tysvpeprhokdijquprkd` (Settings → Integrations → Supabase) quando a Fase 1 for iniciada
+- [ ] Trocar a conexão Supabase para `tysvpeprhokdijquprkd` (Settings → Integrations → Supabase) — passo a passo e reversão em `docs/_reboot/12-troca-de-conexao.md`
 - [ ] Fornecer a service role key do projeto novo como segredo (nunca no frontend)
