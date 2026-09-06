@@ -47,7 +47,7 @@ create policy tour_self_update on public.tour_progresso
 drop trigger if exists tg_tour_atualizado_em on public.tour_progresso;
 create trigger tg_tour_atualizado_em
   before update on public.tour_progresso
-  for each row execute function public.tocar_atualizado_em();
+  for each row execute function public.tg_set_atualizado_em();
 
 -- Registrar/atualizar o progresso do tour em uma única chamada do front.
 create or replace function public.registrar_tour(
