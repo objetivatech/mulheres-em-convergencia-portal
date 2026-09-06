@@ -36,7 +36,7 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Criada a documentação tripla do módulo: técnica (`02-nucleo-acesso.md`), operacional (`docs/_reboot/04-nucleo-acesso-operacao.md` — implantação das functions, teste manual via curl, diagnóstico, reprocessamento, concessão/revogação manual) e manual para leigo (`docs/_reboot/05-nucleo-acesso-manual.md`).
 - Orientação registrada: edge functions podem ser implantadas já no projeto novo (com `ASAAS_WEBHOOK_TOKEN`), mas o webhook do Asaas só é apontado na Fase 7.
 
-## 2026-09-06 — Segurança e preparação da troca de conexão
+### 2026-09-06 — Segurança e preparação da troca de conexão
 - Exposição de dados de contato corrigida no banco de produção: visitantes não autenticados perderam acesso de leitura a `blog_comments.author_email`, `business_reviews.reviewer_email` e `sponsors.contact_email/contact_phone/cnpj` (permissões por coluna; leitura pública das demais colunas preservada). Telas administrativas seguem lendo tudo por estarem autenticadas.
 - Achados de scanner restantes (search_path, exposição via GraphQL, proteção contra senhas vazadas, inserts em `academy_subscriptions` e `webhook_events_log`) permanecem como marcados pelo cliente — sem alteração.
 - Criado `docs/_reboot/12-troca-de-conexao.md`: pré-requisitos, ponto de retorno, execução, checklist de verificação, três cenários de reversão e ordem correta em relação à Fase 7. Documentação tripla (técnica, operacional e manual simples).
