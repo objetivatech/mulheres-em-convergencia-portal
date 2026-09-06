@@ -1,6 +1,6 @@
 # Roadmap — Reboot do Portal Mulheres em Convergência
 
-Atualizado: 03/09/2026
+Atualizado: 06/09/2026
 
 ## Padrões permanentes deste projeto
 
@@ -47,12 +47,13 @@ Atualizado: 03/09/2026
 - [x] Migration aplicada no projeto novo
 - [ ] Telas de perfil (dependem da troca de conexão Supabase)
 
-### Fase 3 — Sistema de design — *escrita, aguardando aplicação*
+### Fase 3 — Sistema de design — **concluída no banco (06/09/2026)**
 - [x] Tokens de cor, tipografia, sombra e raio (`reboot/design/tokens.css`) — marca preservada, `success`/`warning` e modo escuro completos
 - [x] Tour guiado persistente no banco (`reboot/sql/0003_tour_guiado.sql`: `tour_progresso`, `registrar_tour`, `tour_pendente`)
 - [x] 5 testes de aceitação (`reboot/tests/0003_aceitacao_tour.sql`)
 - [x] Documentação tripla (`09` técnica, `10` operacional, `11` manual leigo)
-- [ ] Aplicar `0003` e rodar os testes no projeto novo
+- [x] Aplicar `0003` e rodar os testes no projeto novo — 5 testes OK
+- [x] Camada de tela do tour escrita (`reboot/frontend/tour/`), pronta para ativar na Fase 4
 - [ ] Componentes visuais e adoção dos tokens em `src/` (só na Fase 4, após a troca de conexão)
 
 
