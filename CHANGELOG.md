@@ -4,6 +4,14 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-06 — Fase 2 aplicada + Fase 3 (parte 1): Sistema de Design e Tour
+- `0002_identidade_perfis.sql` aplicada no projeto novo e os 8 testes de aceitação executados sem erro.
+- Criado `reboot/design/tokens.css`: identidade de marca preservada (rosa `#C75A92`, lilás `#9191C0`, azul `#ADBBDD`) separada dos papéis de cor; acrescentados `--success`, `--warning`, `--surface-quente`, gradientes e transição como token; escala única de sombra, raio e tipografia fluida; modo escuro completo. Nada aplicado em `src/` ainda.
+- Criada `reboot/sql/0003_tour_guiado.sql`: tabela `tour_progresso` (GRANT + RLS, progresso só da própria pessoa) e funções `registrar_tour` (idempotente por pessoa+módulo+versão, conclusão nunca desfeita) e `tour_pendente` (decide só a abertura automática — o botão de reabrir nunca some).
+- Criado `reboot/tests/0003_aceitacao_tour.sql` com 5 testes e limpeza automática.
+- Documentação tripla: `docs/_reboot/09-design-system.md`, `10-design-operacao.md`, `11-design-manual.md`.
+
+
 ### 2026-09-06 — Fase 2 (parte 1): Identidade e Perfis escrita
 - Criada `reboot/sql/0002_identidade_perfis.sql` (idempotente, depende da 0001): colunas de perfil em `pessoas`, tabela `pessoa_enderecos` com GRANT + RLS, funções `garantir_pessoa`, `vincular_cpf`, `registrar_contato`, `conceder_papel`, `revogar_papel`, `buscar_pessoas` e a visão `v_meu_perfil`.
 - Registro único da pessoa no primeiro acesso **sem gatilho em `auth.users`** (schema reservado): o portal chama `garantir_pessoa`, que casa por CPF, depois por e-mail, e só então cria. Preenchimento sempre aditivo — nada é sobrescrito.

@@ -38,18 +38,23 @@ Atualizado: 03/09/2026
 - [x] Documentação tripla do módulo (`02` técnica, `04` operacional, `05` manual leigo)
 - [ ] Painel de operação de assinaturas (depende da conexão com o projeto novo)
 
-### Fase 2 — Identidade e perfis — *escrita, aguardando aplicação*
+### Fase 2 — Identidade e perfis — **concluída no banco (06/09/2026)**
 - [x] Migration `reboot/sql/0002_identidade_perfis.sql` (perfil, endereços, papéis, `v_meu_perfil`)
 - [x] Registro único de pessoa no primeiro acesso (`garantir_pessoa`), sem gatilho em `auth.*`
 - [x] CPF como identificador central (`vincular_cpf`), contatos aditivos (`registrar_contato`)
-- [x] 8 testes de aceitação (`reboot/tests/0002_aceitacao_identidade.sql`)
+- [x] 8 testes de aceitação (`reboot/tests/0002_aceitacao_identidade.sql`) — executados sem erro
 - [x] Documentação tripla (`06` técnica, `07` operacional, `08` manual leigo)
-- [ ] Aplicar a migration e rodar os testes no projeto novo
+- [x] Migration aplicada no projeto novo
 - [ ] Telas de perfil (dependem da troca de conexão Supabase)
 
-### Fase 3 — Sistema de design
-- [ ] Tokens, tipografia, componentes
-- [ ] Padrão de tour guiado persistente
+### Fase 3 — Sistema de design — *escrita, aguardando aplicação*
+- [x] Tokens de cor, tipografia, sombra e raio (`reboot/design/tokens.css`) — marca preservada, `success`/`warning` e modo escuro completos
+- [x] Tour guiado persistente no banco (`reboot/sql/0003_tour_guiado.sql`: `tour_progresso`, `registrar_tour`, `tour_pendente`)
+- [x] 5 testes de aceitação (`reboot/tests/0003_aceitacao_tour.sql`)
+- [x] Documentação tripla (`09` técnica, `10` operacional, `11` manual leigo)
+- [ ] Aplicar `0003` e rodar os testes no projeto novo
+- [ ] Componentes visuais e adoção dos tokens em `src/` (só na Fase 4, após a troca de conexão)
+
 
 ### Fase 4 — Site público
 - [ ] Home, diretório, blog, páginas institucionais, eventos
