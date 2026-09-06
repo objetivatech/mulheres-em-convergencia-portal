@@ -43,3 +43,14 @@ update public.tour_progresso
 - [ ] Títulos pela escala tipográfica, sem tamanho ad hoc
 - [ ] Testada em modo claro e escuro
 - [ ] Módulo tem botão de tour sempre visível para usuária logada
+
+## 7. Ativar o tour nas telas (Fase 4)
+
+O código já está escrito em `reboot/frontend/tour/` e ainda não é usado por `src/` — as funções `tour_pendente` e `registrar_tour` só existem no banco novo.
+
+1. Mover `reboot/frontend/tour/` para `src/components/tour/`.
+2. Em cada página de módulo, usar `useTour` + `<TourGuiado />` + `<BotaoTour />` (exemplo em `reboot/frontend/README.md`).
+3. Marcar os elementos citados em `passos.ts` com `data-tour="..."`.
+4. Rever os textos dos passos com a cliente antes de publicar: linguagem simples, sem jargão.
+
+O `BotaoTour` só aparece para usuária logada e nunca some depois do tour concluído.
