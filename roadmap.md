@@ -38,9 +38,14 @@ Atualizado: 03/09/2026
 - [x] Documentação tripla do módulo (`02` técnica, `04` operacional, `05` manual leigo)
 - [ ] Painel de operação de assinaturas (depende da conexão com o projeto novo)
 
-### Fase 2 — Identidade e perfis
-- [ ] Autenticação, CPF como identificador central, papéis
-- [ ] Registro único de pessoa (fim da duplicação Meu Painel / Conecta+ / Embaixadoras)
+### Fase 2 — Identidade e perfis — *escrita, aguardando aplicação*
+- [x] Migration `reboot/sql/0002_identidade_perfis.sql` (perfil, endereços, papéis, `v_meu_perfil`)
+- [x] Registro único de pessoa no primeiro acesso (`garantir_pessoa`), sem gatilho em `auth.*`
+- [x] CPF como identificador central (`vincular_cpf`), contatos aditivos (`registrar_contato`)
+- [x] 8 testes de aceitação (`reboot/tests/0002_aceitacao_identidade.sql`)
+- [x] Documentação tripla (`06` técnica, `07` operacional, `08` manual leigo)
+- [ ] Aplicar a migration e rodar os testes no projeto novo
+- [ ] Telas de perfil (dependem da troca de conexão Supabase)
 
 ### Fase 3 — Sistema de design
 - [ ] Tokens, tipografia, componentes

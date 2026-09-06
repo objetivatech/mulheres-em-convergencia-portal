@@ -4,6 +4,13 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-06 — Fase 2 (parte 1): Identidade e Perfis escrita
+- Criada `reboot/sql/0002_identidade_perfis.sql` (idempotente, depende da 0001): colunas de perfil em `pessoas`, tabela `pessoa_enderecos` com GRANT + RLS, funções `garantir_pessoa`, `vincular_cpf`, `registrar_contato`, `conceder_papel`, `revogar_papel`, `buscar_pessoas` e a visão `v_meu_perfil`.
+- Registro único da pessoa no primeiro acesso **sem gatilho em `auth.users`** (schema reservado): o portal chama `garantir_pessoa`, que casa por CPF, depois por e-mail, e só então cria. Preenchimento sempre aditivo — nada é sobrescrito.
+- Fim das cópias de perfil: papéis, acessos e completude do cadastro passam a ser calculados na leitura de `v_meu_perfil`, eliminando os gatilhos de sincronização entre Meu Painel, Conecta+ e Embaixadoras.
+- Criado `reboot/tests/0002_aceitacao_identidade.sql` com 8 testes de aceitação e limpeza automática.
+- Documentação tripla: `docs/_reboot/06-identidade-perfis.md` (técnica), `07-identidade-operacao.md` (operacional, com contrato de chamadas para o front e roteiro de conciliação de duplicadas) e `08-identidade-manual.md` (manual para leigo).
+
 ### 2026-09-03 — Fase 1 (parte 3): versões de arquivo único das functions
 - O editor do painel do Supabase não aceita imports locais (erro "Module not found" ao implantar a versão em peças). Criada `reboot/functions-deploy/` com `asaas-webhook.ts` e `asaas-webhook-reprocessar.ts` em arquivo único — conteúdo idêntico às peças, pronto para colar no painel.
 - `docs/_reboot/04-nucleo-acesso-operacao.md` atualizado: passo a passo pelo painel (recomendado) e pela CLI (alternativa).
