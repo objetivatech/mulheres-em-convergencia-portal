@@ -9,6 +9,9 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Destino da troca: `tysvpeprhokdijquprkd`. Reversão descrita em `docs/_reboot/12-troca-de-conexao.md` (A.4).
 - Site publicado continua no build anterior; webhook do Asaas permanece no projeto antigo.
 
+### 2026-09-07
+- Conexão Supabase trocada para o projeto novo do reboot (`tysvpeprhokdijquprkd`, MeC-v6). Tipos regenerados; funções `situacao_acesso`, `tenho_acesso`, `garantir_pessoa`, `registrar_tour` e a view `v_meu_perfil` confirmadas no banco novo. Webhook do Asaas permanece apontando para o projeto antigo até a Fase 7. Reversão em `docs/_reboot/12-troca-de-conexao.md`.
+
 ### 2026-09-06 — Fase 3 (parte 2): camada de tela do tour guiado
 - Testes `0003_aceitacao_tour.sql` executados no projeto novo sem erro (5 testes OK).
 - Criada `reboot/frontend/` (fora do build): `tour/useTour.ts` (chama `tour_pendente` e `registrar_tour`, abre sozinho só uma vez, conclusão nunca desfeita), `tour/TourGuiado.tsx` (janela do tour + `BotaoTour` fixo que nunca some para usuária logada) e `tour/passos.ts` (roteiros de meu-painel, conecta, academy, embaixadoras, meu-negócio, com versão por módulo).
