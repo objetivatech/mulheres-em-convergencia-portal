@@ -182,7 +182,7 @@ export const UserDashboard = () => {
             {/* Tabs - local state + forceMount so forms preserve state across tab switches */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
-                <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">
+                <TabsTrigger value="visao-geral" data-tour="painel-perfil" className="text-xs sm:text-sm">
                   <LayoutDashboard className="h-4 w-4 mr-1" /> Visão Geral
                 </TabsTrigger>
                 <TabsTrigger value="socioeconomico" className="text-xs sm:text-sm">
@@ -212,7 +212,7 @@ export const UserDashboard = () => {
                   </TabsTrigger>
                 )}
                 {userSubscription && (
-                  <TabsTrigger value="assinatura" className="text-xs sm:text-sm">
+                  <TabsTrigger value="assinatura" data-tour="painel-assinatura" className="text-xs sm:text-sm">
                     <CreditCard className="h-4 w-4 mr-1" /> Assinatura
                   </TabsTrigger>
                 )}
