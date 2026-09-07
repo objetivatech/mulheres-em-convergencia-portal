@@ -4,6 +4,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-07 — Ponto de retorno registrado para a troca de conexão
+- Commit de referência: `cd5bd4b`; conexão ativa no momento: `ngqymbjatenxztrjjdxa` (produção).
+- Destino da troca: `tysvpeprhokdijquprkd`. Reversão descrita em `docs/_reboot/12-troca-de-conexao.md` (A.4).
+- Site publicado continua no build anterior; webhook do Asaas permanece no projeto antigo.
+
 ### 2026-09-06 — Fase 3 (parte 2): camada de tela do tour guiado
 - Testes `0003_aceitacao_tour.sql` executados no projeto novo sem erro (5 testes OK).
 - Criada `reboot/frontend/` (fora do build): `tour/useTour.ts` (chama `tour_pendente` e `registrar_tour`, abre sozinho só uma vez, conclusão nunca desfeita), `tour/TourGuiado.tsx` (janela do tour + `BotaoTour` fixo que nunca some para usuária logada) e `tour/passos.ts` (roteiros de meu-painel, conecta, academy, embaixadoras, meu-negócio, com versão por módulo).
