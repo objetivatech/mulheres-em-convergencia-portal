@@ -125,7 +125,7 @@ const Post = () => {
           tags: data.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
         };
 
-        setPost(formattedPost);
+        setPost(formattedPost as any);
 
         // Increment view count using RPC for security
         await supabase.rpc('increment_blog_post_views', { p_slug: slug });
@@ -137,8 +137,9 @@ const Post = () => {
           .eq('post_id', data.id);
         
         const catIds = postCats?.map(pc => pc.category_id) || [];
-        if (data.blog_categories?.id && !catIds.includes(data.blog_categories.id)) {
-          catIds.push(data.blog_categories.id);
+        const catRel = data.blog_categories as any;
+        if (catRel?.id && !catIds.includes(catRel.id)) {
+          catIds.push(catRel.id);
         }
 
         if (catIds.length > 0) {
@@ -192,13 +193,13 @@ const Post = () => {
                 seo_keywords: null,
                 category: post.blog_categories,
                 author: post.profiles ? { 
-                  full_name: post.profiles.full_name,
+                  full_name: (post.profiles as any).full_name,
                   avatar_url: null 
                 } : null,
                 author_profile: null,
                 tags: []
               }));
-              setRelatedPosts(formattedRelated);
+              setRelatedPosts(formattedRelated as any);
             }
           }
         }

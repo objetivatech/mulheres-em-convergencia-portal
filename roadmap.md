@@ -54,10 +54,12 @@ Atualizado: 06/09/2026
 - [x] Documentação tripla (`09` técnica, `10` operacional, `11` manual leigo)
 - [x] Aplicar `0003` e rodar os testes no projeto novo — 5 testes OK
 - [x] Camada de tela do tour escrita (`reboot/frontend/tour/`), pronta para ativar na Fase 4
-- [ ] Componentes visuais e adoção dos tokens em `src/` (só na Fase 4, após a troca de conexão)
+- [x] Tokens aplicados em `src/index.css` e `tailwind.config.ts` (`success`, `warning`, `surface-quente`) — 07/09/2026
+- [x] Tour guiado ativo em `src/components/tour/` e ligado ao Meu Painel — 07/09/2026
 
 
 ### Fase 4 — Site público
+- [x] Funções de pagamento publicadas no projeto novo (`asaas-webhook`, `asaas-webhook-reprocessar`) — 07/09/2026
 - [ ] Home, diretório, blog, páginas institucionais, eventos
 
 ### Fase 5 — Painéis

@@ -1,1 +1,10 @@
 project_id = "tysvpeprhokdijquprkd"
+
+# Webhook do Asaas: chamado pelo provedor, sem JWT. A autenticação é feita
+# dentro da função pelo token ASAAS_WEBHOOK_TOKEN.
+[functions.asaas-webhook]
+verify_jwt = false
+
+# Reprocessamento manual: exige JWT de administradora.
+[functions.asaas-webhook-reprocessar]
+verify_jwt = true

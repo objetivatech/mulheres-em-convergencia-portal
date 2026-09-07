@@ -28,9 +28,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { Database } from '@/integrations/supabase/types';
+// Reboot: as tabelas do portal legado ainda não existem no banco novo.
+// Tipos locais transitórios até a migração das telas (Fases 4 a 6).
+type BusinessInsertLegado = Record<string, any>;
 
-type BusinessCategory = Database['public']['Enums']['business_category'];
+type BusinessCategory = string;
 
 const businessSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -387,7 +389,7 @@ export const DashboardEmpresa = () => {
         return;
       }
 
-      const businessData: Database['public']['Tables']['businesses']['Insert'] = {
+      const businessData: BusinessInsertLegado = {
         name: data.name,
         slug: data.name
           .toLowerCase()
@@ -417,7 +419,7 @@ export const DashboardEmpresa = () => {
         logo_url: logoUrl || null,
         cover_image_url: coverUrl || null,
         gallery_images: galleryImages.length > 0 ? galleryImages : null,
-        opening_hours: openingHours ? openingHours as unknown as Database['public']['Tables']['businesses']['Insert']['opening_hours'] : null,
+        opening_hours: openingHours ? openingHours as unknown as BusinessInsertLegado : null,
         community_id: selectedCommunityId,
         owner_id: user?.id,
         subscription_active: (business?.is_complimentary === true) ||
@@ -848,7 +850,7 @@ export const DashboardEmpresa = () => {
                       <Label htmlFor="category">Categoria *</Label>
                       <Select
                         value={watch('category')}
-                        onValueChange={(value) => setValue('category', value as BusinessCategory)}
+                        onValueChange={(value) => setValue('category', value as any)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria" />
