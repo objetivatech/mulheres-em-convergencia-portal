@@ -178,7 +178,7 @@ const Convergindo = () => {
           tags: post.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
         })) || [];
 
-        setPosts(formattedPosts);
+        setPosts(formattedPosts as any);
         setHasMore(formattedPosts.length === POSTS_PER_PAGE);
       } catch (error) {
         console.error('Error loading posts:', error);
@@ -271,7 +271,7 @@ const Convergindo = () => {
         tags: post.blog_post_tags?.map(pt => pt.blog_tags).filter(Boolean) || []
       })) || [];
 
-      setPosts(prev => [...prev, ...formattedPosts]);
+      setPosts(prev => [...prev, ...(formattedPosts as any[])]);
       setHasMore(formattedPosts.length === POSTS_PER_PAGE);
     } catch (error) {
       console.error('Error loading more posts:', error);
