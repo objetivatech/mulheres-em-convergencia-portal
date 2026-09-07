@@ -1,8 +1,12 @@
 // ============================================================================
-// asaas-webhook — VERSÃO DE ARQUIVO ÚNICO (para colar no painel do Supabase)
+// asaas-webhook-reprocessar — VERSÃO DE ARQUIVO ÚNICO (painel do Supabase)
 // ============================================================================
-// Conteúdo idêntico às 5 peças de reboot/functions/asaas-webhook/, juntadas
-// em um só arquivo porque o editor do painel não aceita imports locais.
+// Peça 6 de 6: REPROCESSAR — botão no painel de operação: roda de novo um
+// evento já recebido. Exige administradora autenticada. Como todas as peças
+// são idempotentes, reprocessar nunca duplica pagamento nem concessão.
+//
+// Contém a lógica de processamento copiada da asaas-webhook (versão de
+// arquivo único), porque o editor do painel não aceita imports locais.
 // Destino: projeto NOVO (tysvpeprhokdijquprkd). Não implantar no antigo.
 // ============================================================================
 
@@ -10,21 +14,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, asaas-access-token",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ---------------------------------------------------------------------------
+// Lógica de processamento (idêntica à asaas-webhook de arquivo único)
+// ---------------------------------------------------------------------------
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   { auth: { persistSession: false } },
 );
 
-// ---------------------------------------------------------------------------
-// Peça 2 de 6: IDENTIFICAR PESSOA
-// Ordem: CPF → referência externa → cliente Asaas → e-mail.
-// Nunca cria pessoa "fantasma": se não identificar, devolve null e o
-// pagamento é registrado mesmo assim, para conciliação manual no painel.
-// ---------------------------------------------------------------------------
 const digitos = (v: unknown) => String(v ?? "").replace(/\D/g, "") || null;
 
 async function identificarPessoa(
@@ -36,7 +37,6 @@ async function identificarPessoa(
     if (data) return data.id;
   }
 
-  // externalReference no formato "pessoa:<uuid>"
   const ref = String(pagamento.externalReference ?? "");
   const m = ref.match(/^pessoa:([0-9a-f-]{36})$/i);
   if (m) {
@@ -72,10 +72,6 @@ async function identificarPessoa(
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// Peça 3 de 6: REGISTRAR PAGAMENTO
-// Grava o fato financeiro. Idempotente pela chave (provedor, cobrança).
-// ---------------------------------------------------------------------------
 const CONFIRMADOS = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_RECEIVED_IN_CASH"]);
 const ESTORNADOS = new Set(["PAYMENT_REFUNDED", "PAYMENT_CHARGEBACK_REQUESTED"]);
 const CANCELADOS = new Set(["PAYMENT_DELETED", "PAYMENT_CANCELED"]);
@@ -132,15 +128,8 @@ async function registrarPagamento(
   return data.id;
 }
 
-// ---------------------------------------------------------------------------
-// Peça 4 de 6: CONCEDER ACESSO
-// Todo pagamento confirmado cria uma concessão a partir do dia da confirmação.
-// Pagamento em atraso deixa de ser caso especial: não existe estado
-// "desativado" para desfazer (casos Luciana e Paola).
-// ---------------------------------------------------------------------------
 type TipoAcesso = "diretorio" | "conecta" | "academy" | "evento" | "area_embaixadora";
 
-// A descrição/referência da cobrança define o que foi comprado.
 function tipoPorCobranca(pagamento: Record<string, unknown>): { tipo: TipoAcesso; dias: number } {
   const texto = `${pagamento.description ?? ""} ${pagamento.externalReference ?? ""}`.toLowerCase();
   if (texto.includes("conecta")) return { tipo: "conecta", dias: 31 };
@@ -166,12 +155,6 @@ async function concederAcesso(
   return (data as string | null) ?? null;
 }
 
-// ---------------------------------------------------------------------------
-// Peça 5 de 6: EFEITOS
-// Comissão de embaixadora, e-mail, linha do tempo do CRM.
-// Regra dura: qualquer falha aqui é registrada e engolida — o acesso já foi
-// concedido e não pode depender de e-mail nem de CRM.
-// ---------------------------------------------------------------------------
 async function aplicarEfeitos(ctx: {
   pessoaId: string | null;
   pagamentoId: string | null;
@@ -180,7 +163,6 @@ async function aplicarEfeitos(ctx: {
 }) {
   const tarefas: Array<Promise<unknown>> = [];
 
-  // Linha do tempo única do relacionamento (contato_eventos, Fase 6).
   if (ctx.pessoaId) {
     tarefas.push(
       supabase.from("eventos_sistema").insert({
@@ -197,9 +179,6 @@ async function aplicarEfeitos(ctx: {
     .forEach((r) => console.error("efeito falhou", (r as PromiseRejectedResult).reason));
 }
 
-// ---------------------------------------------------------------------------
-// PROCESSAR (compartilhado com a function de reprocessar)
-// ---------------------------------------------------------------------------
 async function processar(
   registroId: string,
   tipoEvento: string,
@@ -216,7 +195,6 @@ async function processar(
       concessaoId = await concederAcesso(pagamentoId, pagamentoAsaas);
     }
 
-    // Efeitos nunca bloqueiam o acesso.
     aplicarEfeitos({ pessoaId, pagamentoId, concessaoId, tipoEvento })
       .catch((e) => console.error("efeitos falharam (acesso preservado)", e));
 
@@ -237,67 +215,49 @@ async function processar(
 }
 
 // ---------------------------------------------------------------------------
-// Peça 1 de 6: RECEBER
-// Valida o segredo, registra o evento de forma idempotente e devolve 200
-// rápido. Uma falha no processamento nunca faz o Asaas reenviar em loop.
+// Entrada: valida administradora e reprocessa o evento pedido
 // ---------------------------------------------------------------------------
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
-  const token = req.headers.get("asaas-access-token");
-  if (!token || token !== Deno.env.get("ASAAS_WEBHOOK_TOKEN")) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
-      status: 401,
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const anon = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } },
+  );
+
+  const { data: ehAdmin, error: erroAdmin } = await anon.rpc("e_admin");
+  if (erroAdmin || !ehAdmin) {
+    return new Response(JSON.stringify({ error: "forbidden" }), {
+      status: 403,
       headers: { ...cors, "Content-Type": "application/json" },
     });
   }
 
-  let carga: Record<string, unknown>;
-  try {
-    carga = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "invalid json" }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
+  const { webhookId } = await req.json();
 
-  const eventoId = String(carga.id ?? "");
-  const tipoEvento = String(carga.event ?? "");
-  if (!eventoId) {
-    return new Response(JSON.stringify({ error: "missing event id" }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
-
-  // Registro idempotente: o mesmo evento reenviado não cria nova linha.
   const { data: registro, error } = await supabase
     .from("webhooks_recebidos")
-    .upsert(
-      { provedor: "asaas", evento_externo_id: eventoId, tipo_evento: tipoEvento, carga },
-      { onConflict: "provedor,evento_externo_id", ignoreDuplicates: false },
-    )
-    .select("id, processado_em")
+    .select("id, tipo_evento, carga, tentativas")
+    .eq("id", webhookId)
     .single();
 
-  if (error) {
-    console.error("falha ao registrar webhook", error);
-    return new Response(JSON.stringify({ error: "storage" }), {
-      status: 500,
+  if (error || !registro) {
+    return new Response(JSON.stringify({ error: "not found" }), {
+      status: 404,
       headers: { ...cors, "Content-Type": "application/json" },
     });
   }
 
-  if (registro.processado_em) {
-    return new Response(JSON.stringify({ ok: true, jaProcessado: true }), {
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
+  await supabase
+    .from("webhooks_recebidos")
+    .update({ tentativas: (registro.tentativas ?? 0) + 1 })
+    .eq("id", registro.id);
 
-  const resultado = await processar(registro.id, tipoEvento, carga);
+  const resultado = await processar(registro.id, registro.tipo_evento ?? "", registro.carga);
 
-  return new Response(JSON.stringify({ ok: true, ...resultado }), {
+  return new Response(JSON.stringify({ ok: true, resultado }), {
     headers: { ...cors, "Content-Type": "application/json" },
   });
 });
