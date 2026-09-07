@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-07 — Fase 4 (parte 1): pagamentos no banco novo, tokens e tour ativos
+- Publicadas no projeto novo as funções `asaas-webhook` (sem JWT, protegida por token) e `asaas-webhook-reprocessar` (só administradora). Chamada sem token responde 401, como esperado.
+- Tokens do reboot aplicados em `src/index.css` (papéis de cor, `--success`, `--warning`, `--surface-quente`, sombras, gradientes e tipografia fluida) e expostos no `tailwind.config.ts`. Variáveis `--brand-*` do portal legado mantidas apontando para a marca, para não quebrar telas antigas.
+- Tour guiado movido de `reboot/frontend/tour/` para `src/components/tour/` e ligado ao Meu Painel (botão "Ver o passo a passo" sempre visível, marcações `data-tour` nas abas de perfil e assinatura).
+- Telas legadas voltaram a compilar com o banco novo: tipagens de blog (`Convergindo`, `Post`) e do painel da empresa afrouxadas enquanto essas tabelas não existirem no projeto novo.
+
 ### 2026-09-07 — Ponto de retorno registrado para a troca de conexão
 - Commit de referência: `cd5bd4b`; conexão ativa no momento: `ngqymbjatenxztrjjdxa` (produção).
 - Destino da troca: `tysvpeprhokdijquprkd`. Reversão descrita em `docs/_reboot/12-troca-de-conexao.md` (A.4).
