@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { SocioeconomicForm } from '@/components/user/SocioeconomicForm';
+import { useTour } from '@/components/tour/useTour';
+import { TourGuiado, BotaoTour } from '@/components/tour/TourGuiado';
+import { TOUR_PASSOS, TOUR_VERSAO } from '@/components/tour/passos';
 import {
   LayoutDashboard,
   User,
@@ -127,6 +130,12 @@ export const UserDashboard = () => {
   const displayName = profile?.full_name || user.user_metadata?.full_name || user.email;
   const initials = (displayName || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
+  const tour = useTour({
+    modulo: 'meu-painel',
+    versao: TOUR_VERSAO['meu-painel'],
+    passos: TOUR_PASSOS['meu-painel'],
+  });
+
   // Build visible roles for badges (filter out common ones for cleaner display)
   const displayRoles = roles.filter(r => r !== 'community_member' && r !== 'customer');
 
@@ -162,9 +171,12 @@ export const UserDashboard = () => {
                   })}
                 </div>
               </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/configuracoes/conta"><Settings className="h-4 w-4 mr-1" /> Configurações</Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <BotaoTour onClick={tour.abrir} />
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/configuracoes/conta"><Settings className="h-4 w-4 mr-1" /> Configurações</Link>
+                </Button>
+              </div>
             </div>
 
             {/* Tabs - local state + forceMount so forms preserve state across tab switches */}
@@ -380,6 +392,14 @@ export const UserDashboard = () => {
             </Tabs>
           </div>
         </main>
+        <TourGuiado
+          aberto={tour.aberto}
+          passo={tour.passo}
+          passos={TOUR_PASSOS['meu-painel']}
+          onAvancar={tour.avancar}
+          onVoltar={tour.voltar}
+          onPular={tour.pular}
+        />
       </Layout>
     </>
   );
