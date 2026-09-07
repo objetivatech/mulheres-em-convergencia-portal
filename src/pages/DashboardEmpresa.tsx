@@ -850,7 +850,7 @@ export const DashboardEmpresa = () => {
                       <Label htmlFor="category">Categoria *</Label>
                       <Select
                         value={watch('category')}
-                        onValueChange={(value) => setValue('category', value as BusinessCategory)}
+                        onValueChange={(value) => setValue('category', value as any)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria" />
