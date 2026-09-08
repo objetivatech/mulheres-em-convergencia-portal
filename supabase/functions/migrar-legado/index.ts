@@ -349,9 +349,14 @@ Deno.serve(async (req) => {
       // garante as administradoras mesmo que não existam no banco antigo
       for (const email of ADMINS) if (!antigos.some((a) => a.email === email)) antigos.push({ id: '', email });
 
+      // processa em lotes para caber no tempo de execução da função
+      const limite = Math.min(Math.max(Number(body.limite ?? 150), 1), 500);
+      const fila = antigos.filter((a) => !existentes.has(a.email) || ADMINS.includes(a.email));
+      const lote = fila.slice(0, limite);
+
       let criadas = 0, jaExistiam = 0, falhas = 0;
       const erros: string[] = [];
-      for (const antigo of antigos) {
+      for (const antigo of lote) {
         const perfil = (antigo.id && perfilPorId.get(antigo.id)) || perfilPorEmail.get(antigo.email) || {};
         const nome = txt(perfil.full_name) ?? txt(perfil.name) ?? antigo.email.split('@')[0];
         const cpf = String(txt(perfil.cpf) ?? '').replace(/\D/g, '') || null;
