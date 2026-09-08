@@ -185,11 +185,12 @@ function AppContent() {
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/convergindo" element={<BlogPage />} />
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
-        <Route path="/planos" element={<Planos />} />
+        <Route path="/planos" element={<PlanosPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
-        <Route path="/eventos" element={<EventsPage />} />
+        <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />
-        <Route path="/eventos/:slug" element={<EventDetailPage />} />
+        <Route path="/eventos/:slug" element={<EventoPage />} />
+
         <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
