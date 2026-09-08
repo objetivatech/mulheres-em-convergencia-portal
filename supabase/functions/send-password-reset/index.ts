@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const body: PasswordResetRequest = await req.json();
-    const { email } = body;
+    const { email, origem } = body;
 
     if (!email) {
       return new Response(
