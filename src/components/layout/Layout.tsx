@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
-import { Header } from './Header';
-import Footer from './Footer';
+import SiteLayout from '@/components/site/SiteLayout';
 import WhatsAppButton from './WhatsAppButton';
 import { SiteSchemaOrg } from '@/components/seo/SiteSchemaOrg';
 
@@ -10,15 +9,11 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <SiteLayout>
       <SiteSchemaOrg />
-      <Header />
-      <main className="flex-1">
-        {children}
-      </main>
-      <Footer />
+      {children}
       <WhatsAppButton />
-    </div>
+    </SiteLayout>
   );
 };
 
