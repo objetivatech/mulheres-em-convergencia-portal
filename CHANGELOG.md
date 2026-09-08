@@ -4,7 +4,16 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-09 — Área da associada e administração no banco novo (Fases 5B e 6)
+- Nova área autenticada `/minha-area`: visão geral, planos e pagamentos, encontros com ingresso em QR Code, Academy, Conecta+, Embaixadoras e Meus dados — tudo no banco novo, sem login separado.
+- Academy pública reescrita no banco novo (`/academy` e `/academy/curso/:slug`), com matrícula, aulas liberadas por acesso vigente ou aula gratuita e marcação de progresso.
+- Painel da equipe ganhou **Pessoas** (busca, ficha, papéis, cortesias com prazo, revogação, histórico), **Financeiro** (período, recebido, a receber, receita mensal, exportação em planilha), **Relacionamento** (funil com etapas e oportunidades) e **Automações** (avisos do Asaas, liberações, comunicados e reprocessamento).
+- Hooks novos: `useMinhaArea`, `useAcademyNova`, `useAdminNovo`; `useAuth` passou a usar `pessoa_atual`, `e_admin` e `tem_papel` do banco novo.
+- Estruturas de CRM, Academy, Conecta+ e Embaixadoras aplicadas conforme `reboot/sql/0006_area_associada_admin.sql`, com RLS, grants e views (`v_linha_tempo`, `v_financeiro_mensal`, `v_embaixadora_resumo`). Nenhum contador gravado.
+- Documentação: `docs/_reboot/22-area-associada-e-admin.md`.
+
 ### 2026-09-09 — Planos e encontros no banco novo (Fase 5A)
+
 - Schema `0005_planos_eventos.sql` aplicado: `planos`, `eventos`, `evento_lotes`, `evento_palestrantes`, `evento_cupons`, `evento_inscricoes`, `evento_presencas`, visão `v_evento_vagas` e função `lote_vigente`. Vagas e usos de cupom são consulta, nunca contador gravado.
 - Telas públicas novas: `/planos`, `/eventos` e `/eventos/:slug`, com lote vigente, vagas, palestrantes e JSON-LD de evento.
 - Edge function `criar-cobranca`: gera a cobrança no Asaas (API de produção intacta), registra o pagamento pendente e a inscrição; o acesso continua sendo concedido só pelo webhook.
