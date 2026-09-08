@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, NavLink, Navigate } from 'react-router-dom';
-import { Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone } from 'lucide-react';
+import { Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone, Ticket } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
 import { cn } from '@/lib/utils';
