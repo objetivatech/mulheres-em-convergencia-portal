@@ -167,7 +167,9 @@ function AppContent() {
         <Route path="/painel-conteudo/paginas" element={<PainelPaginas />} />
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
+        <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
         <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
+
 
 
         {/* Rotas Públicas */}

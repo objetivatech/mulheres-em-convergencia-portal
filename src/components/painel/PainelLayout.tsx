@@ -12,7 +12,9 @@ const ITENS = [
   { para: '/painel-conteudo/categorias', rotulo: 'Categorias e autoras', icone: Tags },
   { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
   { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
+  { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos e encontros', icone: Ticket },
   { para: '/painel-conteudo/comunicados', rotulo: 'Comunicados', icone: Megaphone },
+
 ];
 
 export default function PainelLayout({
