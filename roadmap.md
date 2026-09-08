@@ -1,6 +1,6 @@
 # Roadmap — Reboot do Portal Mulheres em Convergência
 
-Atualizado: 06/09/2026
+Atualizado: 08/09/2026
 
 ## Padrões permanentes deste projeto
 
@@ -91,5 +91,6 @@ Atualizado: 06/09/2026
 - [x] Migração dos dados reais de negócios e posts do banco antigo — feita em 08/09/2026 via `migrar-legado` (idempotente)
 - [x] Contas importadas do banco antigo (42) sem notificar ninguém, com as duas administradoras — 08/09/2026
 - [x] Comunicado em massa sob acionamento manual (`/painel-conteudo/comunicados`) e modelos de e-mail com a marca nova — 08/09/2026
+- [x] Recuperação de senha no banco novo corrigida: funções públicas protegidas por token único, bloqueio de envio duplicado e documentação — 08/09/2026
 - [ ] Telas de planos, eventos, Academy, Conecta+ e Embaixadoras no banco novo
 - [ ] Ajustes manuais no Supabase novo: templates do Auth, URLs de redirecionamento, SMTP próprio e limite de envio (`docs/_reboot/19-emails-e-comunicados.md`)

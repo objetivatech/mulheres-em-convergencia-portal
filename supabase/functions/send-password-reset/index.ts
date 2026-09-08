@@ -1,14 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { z } from 'https://esm.sh/zod@3.25.76'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface PasswordResetRequest {
-  email: string;
-  origem?: string;
-}
+const PasswordResetRequestSchema = z.object({
+  email: z.string().trim().email().max(320),
+  origem: z.string().url().max(2048).optional(),
+});
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -32,18 +33,17 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request body
-    const body: PasswordResetRequest = await req.json();
-    const { email, origem } = body;
-
-    if (!email) {
+    const parsed = PasswordResetRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Email is required' }),
+        JSON.stringify({ error: 'Informe um e-mail válido.' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
+    const { email, origem } = parsed.data;
 
     console.log(`[SEND-PASSWORD-RESET] Processing for email: ${email}`);
 
@@ -72,6 +72,29 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Evita e-mails duplicados por clique repetido ou reenvio do formulário.
+    const duplicateWindow = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentToken } = await supabase
+      .from('password_reset_tokens')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .gte('created_at', duplicateWindow)
+      .limit(1)
+      .maybeSingle();
+
+    if (recentToken) {
+      console.log(`[SEND-PASSWORD-RESET] Duplicate request suppressed for user: ${user.id}`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Se o email existir em nossa base, você receberá instruções para redefinir sua senha.'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate unique token (32 bytes = 64 hex characters)
     const tokenBytes = new Uint8Array(32);
     crypto.getRandomValues(tokenBytes);
@@ -82,6 +105,18 @@ Deno.serve(async (req) => {
     // Token expires in 1 hour
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Invalida links anteriores: apenas o pedido mais recente pode ser usado.
+    const { error: invalidationError } = await supabase
+      .from('password_reset_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .is('used_at', null);
+
+    if (invalidationError) {
+      console.error('[SEND-PASSWORD-RESET] Error invalidating old tokens:', invalidationError);
+      throw new Error('Failed to invalidate old reset tokens');
+    }
 
     // Save token to database
     const { error: tokenError } = await supabase

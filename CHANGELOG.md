@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-08 — Correção da recuperação de senha
+- `reset-password-with-token` passou a aceitar corretamente a chamada pública da tela de nova senha, mantendo validação interna por token aleatório, expiração e uso único.
+- `send-password-reset` agora bloqueia reenvios por cinco minutos e invalida links antigos quando um novo pedido é criado.
+- Validação de entrada reforçada nas duas funções e token consumido somente após a senha ser alterada com sucesso.
+- Documentação técnica, operacional e manual: `docs/_reboot/20-recuperacao-de-senha.md`.
+
 ### 2026-09-08 — Contas importadas, comunicados em massa e e-mails com o visual novo
 - Ação `usuarias` em `migrar-legado`: importou **42 contas** do Auth antigo para o banco novo com e-mail confirmado, **sem senha e sem nenhuma notificação**; criou 42 pessoas, 42 contatos e o papel `admin` para `mulheresemconvergencia@gmail.com` e `diogodevitte@outlook.com`. Idempotente e em lotes.
 - Novas tabelas `campanhas_email` e `campanha_envios` (RLS administrativo) e campanha rascunho `reboot-boas-vindas`.

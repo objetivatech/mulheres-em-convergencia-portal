@@ -1,14 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { z } from 'https://esm.sh/zod@3.25.76'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface ResetPasswordRequest {
-  token: string;
-  new_password: string;
-}
+const ResetPasswordRequestSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+  new_password: z.string().min(8).max(128),
+});
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -25,31 +26,20 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request body
-    const body: ResetPasswordRequest = await req.json();
-    const { token, new_password } = body;
-
-    if (!token || !new_password) {
+    const parsed = ResetPasswordRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Token and new password are required' }),
+        JSON.stringify({ error: 'Link ou senha inválidos.', code: 'INVALID_REQUEST' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
+    const { token, new_password } = parsed.data;
 
     // Validate password strength
-    if (new_password.length < 6) {
-      return new Response(
-        JSON.stringify({ error: 'A senha deve ter pelo menos 6 caracteres' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    console.log(`[RESET-PASSWORD] Validating token: ${token.substring(0, 10)}...`);
+    console.log('[RESET-PASSWORD] Validating one-time token');
 
     // Find token in database
     const { data: tokenData, error: tokenError } = await supabase
@@ -91,17 +81,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Mark token as used
-    const { error: updateTokenError } = await supabase
-      .from('password_reset_tokens')
-      .update({ used_at: new Date().toISOString() })
-      .eq('token', token);
-
-    if (updateTokenError) {
-      console.error('[RESET-PASSWORD] Error updating token:', updateTokenError);
-      throw new Error('Failed to mark token as used');
-    }
-
     // Update user's password
     const { error: updatePasswordError } = await supabase.auth.admin.updateUserById(
       tokenData.user_id,
@@ -111,13 +90,19 @@ Deno.serve(async (req) => {
     if (updatePasswordError) {
       console.error('[RESET-PASSWORD] Error updating password:', updatePasswordError);
       
-      // Rollback token usage
-      await supabase
-        .from('password_reset_tokens')
-        .update({ used_at: null })
-        .eq('token', token);
-      
       throw new Error('Failed to update password');
+    }
+
+    // Consome o token somente depois da senha ter sido alterada com sucesso.
+    const { error: updateTokenError } = await supabase
+      .from('password_reset_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token)
+      .is('used_at', null);
+
+    if (updateTokenError) {
+      console.error('[RESET-PASSWORD] Error consuming token:', updateTokenError);
+      throw new Error('Failed to consume reset token');
     }
 
     console.log(`[RESET-PASSWORD] Password reset successfully for user: ${tokenData.user_id}`);
