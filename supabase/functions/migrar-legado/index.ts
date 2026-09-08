@@ -409,7 +409,13 @@ Deno.serve(async (req) => {
             .upsert({ pessoa_id: pessoaId, papel: 'admin' }, { onConflict: 'pessoa_id,papel', ignoreDuplicates: true });
         }
       }
-      resumo.usuarias = { total: antigos.length, criadas, ja_existiam: jaExistiam, falhas, erros };
+      resumo.usuarias = {
+        total_antigo: antigos.length,
+        processadas_agora: lote.length,
+        criadas, ja_existiam: jaExistiam, falhas,
+        restantes: Math.max(fila.length - lote.length, 0),
+        erros,
+      };
     }
 
     return json({ ok: true, resumo });
