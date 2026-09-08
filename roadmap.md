@@ -88,5 +88,5 @@ Atualizado: 06/09/2026
 - [x] Rotas trocadas em `src/App.tsx`; telas antigas mantidas sem rota como paridade
 - [x] Documentação tripla (`13` técnica, `14` operacional, `15` manual leigo)
 - [x] Painel de conteúdo em `/painel-conteudo` (negócios, blog, categorias/autoras, páginas, blocos da home) — 07/09/2026
-- [ ] Migração dos dados reais de negócios e posts do banco antigo — Fase 6
+- [x] Migração dos dados reais de negócios e posts do banco antigo — feita em 08/09/2026 via `migrar-legado` (idempotente)
 - [ ] Telas de planos, eventos, Academy, Conecta+ e Embaixadoras no banco novo
