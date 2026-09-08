@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-07 — Painel de conteúdo no banco novo
+- Nova área `/painel-conteudo` (visão geral, negócios, blog, categorias e autoras, páginas, página inicial), só para `e_admin()` ou papel `editora`; guarda de interface em `PainelLayout`, autoridade real nas políticas RLS já criadas pela `0004`.
+- Arquivos: `src/hooks/usePainelConteudo.ts`, `src/components/painel/PainelLayout.tsx`, `src/pages/painel/*`; rotas registradas em `src/App.tsx`. Nenhuma migração nova e nenhuma alteração no banco antigo ou no painel legado `/admin/*`.
+- Imagens ainda por endereço (URL) até religar o `r2-storage` ao banco novo; texto do post e das páginas em HTML simples.
+- Documentação: `docs/_reboot/16-painel-conteudo.md` (técnica/operacional) e `17-painel-conteudo-manual.md` (manual simples).
+
 ### 2026-09-07 — Fase 4 (parte 2): site público no banco novo
 - Aplicada `reboot/sql/0004_site_publico.sql` no projeto novo: `negocios` (+ mídias, áreas, comodidades), `autores`, `posts` (+ categorias, tags, vínculos, comentários), `paginas` e `blocos_site`, todas com GRANT e RLS. Negócio só é público se estiver publicado **e** com acesso `diretorio` vigente; post/página exigem `situacao='publicado'` e `publicado_em <= now()`; comentário público nunca expõe e-mail.
 - Conteúdo inicial criado: páginas `sobre`, `termos-de-uso`, `politica-de-privacidade` e `politica-de-cookies`; blocos `home_hero` e `home_pilares`.

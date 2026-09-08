@@ -87,6 +87,6 @@ Atualizado: 06/09/2026
 - [x] Institucionais (`PaginaInstitucional`) lendo `paginas`: sobre, termos, privacidade, cookies
 - [x] Rotas trocadas em `src/App.tsx`; telas antigas mantidas sem rota como paridade
 - [x] Documentação tripla (`13` técnica, `14` operacional, `15` manual leigo)
-- [ ] Painel administrativo de conteúdo (negócios, blog, páginas, blocos) — Fase 5
+- [x] Painel de conteúdo em `/painel-conteudo` (negócios, blog, categorias/autoras, páginas, blocos da home) — 07/09/2026
 - [ ] Migração dos dados reais de negócios e posts do banco antigo — Fase 6
 - [ ] Telas de planos, eventos, Academy, Conecta+ e Embaixadoras no banco novo
