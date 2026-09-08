@@ -4,6 +4,14 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-08 — Contas importadas, comunicados em massa e e-mails com o visual novo
+- Ação `usuarias` em `migrar-legado`: importou **42 contas** do Auth antigo para o banco novo com e-mail confirmado, **sem senha e sem nenhuma notificação**; criou 42 pessoas, 42 contatos e o papel `admin` para `mulheresemconvergencia@gmail.com` e `diogodevitte@outlook.com`. Idempotente e em lotes.
+- Novas tabelas `campanhas_email` e `campanha_envios` (RLS administrativo) e campanha rascunho `reboot-boas-vindas`.
+- Nova função `notificar-usuarias` (só administradora) com `situacao`, `preparar`, `teste` e `disparar` em lotes; cada mensagem leva link para criar a nova senha.
+- Nova tela `/painel-conteudo/comunicados` para editar o texto, testar, atualizar a lista e enviar lote a lote — nada sai sem clique.
+- Modelos de e-mail com a marca nova: `supabase/functions/_shared/email-templates/marca.ts` (funções) e `supabase/templates/*.html` (e-mails automáticos do Supabase, para colar no painel).
+- Documentação: `docs/_reboot/19-emails-e-comunicados.md`, incluindo os ajustes manuais de Auth/SMTP/limites.
+
 ### 2026-09-08 — Migração dos dados reais (antigo → novo)
 - Nova função `supabase/functions/migrar-legado/index.ts`: lê **somente** o banco antigo `ngqymbjatenxztrjjdxa` (chave em cofre, `LEGACY_SUPABASE_SERVICE_ROLE_KEY`) e grava no banco novo. Idempotente por `slug` (rodar de novo não duplica). Autenticação: administradora (JWT) ou header `x-cron-secret`.
 - Copiados: 23 negócios (7 publicados) + 23 imagens de galeria, 22 posts (todos publicados), 1 autora, 9 categorias, 36 tags, 47 vínculos de categoria, 163 vínculos de tag e 5 páginas institucionais.
