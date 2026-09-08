@@ -8,3 +8,7 @@ verify_jwt = false
 # Reprocessamento manual: exige JWT de administradora.
 [functions.asaas-webhook-reprocessar]
 verify_jwt = true
+
+# Migração do banco antigo: exige JWT de administradora ou x-cron-secret.
+[functions.migrar-legado]
+verify_jwt = false
