@@ -78,3 +78,15 @@ Atualizado: 06/09/2026
 
 - [ ] Trocar a conexão Supabase para `tysvpeprhokdijquprkd` (Settings → Integrations → Supabase) — passo a passo e reversão em `docs/_reboot/12-troca-de-conexao.md`
 - [ ] Fornecer a service role key do projeto novo como segredo (nunca no frontend)
+
+### Fase 4 — Site público com o desenho novo — *em andamento*
+- [x] Migration `reboot/sql/0004_site_publico.sql` aplicada no projeto novo (negócios, blog, páginas, blocos da home)
+- [x] Home nova (`src/pages/site/HomePage.tsx`) com hero e pilares editáveis por `blocos_site`
+- [x] Diretório e ficha do negócio (`DiretorioPage`, `NegocioPage`) com busca, filtro e galeria
+- [x] Blog Convergindo (`BlogPage`, `BlogPostPage`) com busca, categorias e JSON-LD
+- [x] Institucionais (`PaginaInstitucional`) lendo `paginas`: sobre, termos, privacidade, cookies
+- [x] Rotas trocadas em `src/App.tsx`; telas antigas mantidas sem rota como paridade
+- [x] Documentação tripla (`13` técnica, `14` operacional, `15` manual leigo)
+- [ ] Painel administrativo de conteúdo (negócios, blog, páginas, blocos) — Fase 5
+- [ ] Migração dos dados reais de negócios e posts do banco antigo — Fase 6
+- [ ] Telas de planos, eventos, Academy, Conecta+ e Embaixadoras no banco novo

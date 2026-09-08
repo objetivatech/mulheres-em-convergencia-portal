@@ -4,6 +4,14 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-07 — Fase 4 (parte 2): site público no banco novo
+- Aplicada `reboot/sql/0004_site_publico.sql` no projeto novo: `negocios` (+ mídias, áreas, comodidades), `autores`, `posts` (+ categorias, tags, vínculos, comentários), `paginas` e `blocos_site`, todas com GRANT e RLS. Negócio só é público se estiver publicado **e** com acesso `diretorio` vigente; post/página exigem `situacao='publicado'` e `publicado_em <= now()`; comentário público nunca expõe e-mail.
+- Conteúdo inicial criado: páginas `sobre`, `termos-de-uso`, `politica-de-privacidade` e `politica-de-cookies`; blocos `home_hero` e `home_pilares`.
+- Front novo: `src/hooks/useSite.ts`, `src/components/site/SiteLayout.tsx` e `src/pages/site/` (HomePage, DiretorioPage, NegocioPage, BlogPage, BlogPostPage, PaginaInstitucional), só com tokens semânticos.
+- Rotas trocadas em `src/App.tsx`: `/`, `/diretorio`, `/diretorio/:slug`, `/convergindo`, `/convergindo/:slug`, `/sobre`, `/termos-de-uso`, `/politica-de-privacidade`, `/politica-de-cookies`. Telas antigas ficam no repositório sem rota, como referência de paridade.
+- SEO por página (título curto, descrição própria, H1 único, imagens com carregamento tardio) e JSON-LD `BlogPosting` no texto do blog.
+- Documentação tripla: `docs/_reboot/13-site-publico.md`, `14-site-publico-operacao.md`, `15-site-publico-manual.md`.
+
 ### 2026-09-07 — Fase 4 (parte 1): pagamentos no banco novo, tokens e tour ativos
 - Publicadas no projeto novo as funções `asaas-webhook` (sem JWT, protegida por token) e `asaas-webhook-reprocessar` (só administradora). Chamada sem token responde 401, como esperado.
 - Tokens do reboot aplicados em `src/index.css` (papéis de cor, `--success`, `--warning`, `--surface-quente`, sombras, gradientes e tipografia fluida) e expostos no `tailwind.config.ts`. Variáveis `--brand-*` do portal legado mantidas apontando para a marca, para não quebrar telas antigas.
