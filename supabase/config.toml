@@ -12,3 +12,7 @@ verify_jwt = true
 # Migração do banco antigo: exige JWT de administradora ou x-cron-secret.
 [functions.migrar-legado]
 verify_jwt = false
+
+# Comunicado em massa: exige JWT e é validado como administradora dentro da função.
+[functions.notificar-usuarias]
+verify_jwt = false
