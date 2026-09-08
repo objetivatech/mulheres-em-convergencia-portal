@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      autores: {
+        Row: {
+          bio: string | null
+          criado_em: string
+          foto_url: string | null
+          id: string
+          nome: string
+          pessoa_id: string | null
+          slug: string
+        }
+        Insert: {
+          bio?: string | null
+          criado_em?: string
+          foto_url?: string | null
+          id?: string
+          nome: string
+          pessoa_id?: string | null
+          slug: string
+        }
+        Update: {
+          bio?: string | null
+          criado_em?: string
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          pessoa_id?: string | null
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "autores_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "autores_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "autores_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      blocos_site: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          chave: string
+          conteudo: Json
+          id: string
+          ordem: number
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          chave: string
+          conteudo?: Json
+          id?: string
+          ordem?: number
+          tipo: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          chave?: string
+          conteudo?: Json
+          id?: string
+          ordem?: number
+          tipo?: string
+        }
+        Relationships: []
+      }
       concessoes_acesso: {
         Row: {
           criado_em: string
@@ -109,6 +191,193 @@ export type Database = {
           },
         ]
       }
+      negocio_areas_atendimento: {
+        Row: {
+          bairro: string | null
+          cidade: string | null
+          id: string
+          negocio_id: string
+          uf: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          cidade?: string | null
+          id?: string
+          negocio_id: string
+          uf?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          cidade?: string | null
+          id?: string
+          negocio_id?: string
+          uf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_areas_atendimento_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_comodidades: {
+        Row: {
+          id: string
+          negocio_id: string
+          nome: string
+        }
+        Insert: {
+          id?: string
+          negocio_id: string
+          nome: string
+        }
+        Update: {
+          id?: string
+          negocio_id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_comodidades_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_midias: {
+        Row: {
+          criado_em: string
+          id: string
+          legenda: string | null
+          negocio_id: string
+          ordem: number
+          tipo: Database["public"]["Enums"]["midia_tipo"]
+          url: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          legenda?: string | null
+          negocio_id: string
+          ordem?: number
+          tipo?: Database["public"]["Enums"]["midia_tipo"]
+          url: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          legenda?: string | null
+          negocio_id?: string
+          ordem?: number
+          tipo?: Database["public"]["Enums"]["midia_tipo"]
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_midias_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocios: {
+        Row: {
+          atualizado_em: string
+          bairro: string | null
+          capa_url: string | null
+          categoria: string | null
+          cidade: string | null
+          criado_em: string
+          descricao: string | null
+          destaque: boolean
+          email: string | null
+          id: string
+          instagram: string | null
+          logo_url: string | null
+          nome: string
+          pessoa_id: string | null
+          publicado: boolean
+          site: string | null
+          slug: string
+          telefone: string | null
+          uf: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          bairro?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          cidade?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          nome: string
+          pessoa_id?: string | null
+          publicado?: boolean
+          site?: string | null
+          slug: string
+          telefone?: string | null
+          uf?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          bairro?: string | null
+          capa_url?: string | null
+          categoria?: string | null
+          cidade?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          nome?: string
+          pessoa_id?: string | null
+          publicado?: boolean
+          site?: string | null
+          slug?: string
+          telefone?: string | null
+          uf?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "negocios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       pagamentos: {
         Row: {
           assinatura_externa_id: string | null
@@ -184,6 +453,45 @@ export type Database = {
             referencedColumns: ["pessoa_id"]
           },
         ]
+      }
+      paginas: {
+        Row: {
+          atualizado_em: string
+          conteudo: string | null
+          criado_em: string
+          id: string
+          publicado_em: string | null
+          seo_descricao: string | null
+          seo_titulo: string | null
+          situacao: Database["public"]["Enums"]["publicacao_situacao"]
+          slug: string
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          conteudo?: string | null
+          criado_em?: string
+          id?: string
+          publicado_em?: string | null
+          seo_descricao?: string | null
+          seo_titulo?: string | null
+          situacao?: Database["public"]["Enums"]["publicacao_situacao"]
+          slug: string
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          conteudo?: string | null
+          criado_em?: string
+          id?: string
+          publicado_em?: string | null
+          seo_descricao?: string | null
+          seo_titulo?: string | null
+          situacao?: Database["public"]["Enums"]["publicacao_situacao"]
+          slug?: string
+          titulo?: string
+        }
+        Relationships: []
       }
       papeis: {
         Row: {
@@ -430,6 +738,229 @@ export type Database = {
           ultimo_acesso_em?: string | null
         }
         Relationships: []
+      }
+      post_categoria_vinculo: {
+        Row: {
+          categoria_id: string
+          post_id: string
+        }
+        Insert: {
+          categoria_id: string
+          post_id: string
+        }
+        Update: {
+          categoria_id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_categoria_vinculo_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "post_categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_categoria_vinculo_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_categorias: {
+        Row: {
+          descricao: string | null
+          id: string
+          nome: string
+          ordem: number
+          slug: string
+        }
+        Insert: {
+          descricao?: string | null
+          id?: string
+          nome: string
+          ordem?: number
+          slug: string
+        }
+        Update: {
+          descricao?: string | null
+          id?: string
+          nome?: string
+          ordem?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      post_comentarios: {
+        Row: {
+          aprovado_em: string | null
+          conteudo: string
+          criado_em: string
+          email: string | null
+          id: string
+          nome: string
+          pessoa_id: string | null
+          post_id: string
+        }
+        Insert: {
+          aprovado_em?: string | null
+          conteudo: string
+          criado_em?: string
+          email?: string | null
+          id?: string
+          nome: string
+          pessoa_id?: string | null
+          post_id: string
+        }
+        Update: {
+          aprovado_em?: string | null
+          conteudo?: string
+          criado_em?: string
+          email?: string | null
+          id?: string
+          nome?: string
+          pessoa_id?: string | null
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comentarios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comentarios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "post_comentarios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "post_comentarios_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_tag_vinculo: {
+        Row: {
+          post_id: string
+          tag_id: string
+        }
+        Insert: {
+          post_id: string
+          tag_id: string
+        }
+        Update: {
+          post_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_tag_vinculo_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_tag_vinculo_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "post_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_tags: {
+        Row: {
+          id: string
+          nome: string
+          slug: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          slug: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          atualizado_em: string
+          autor_id: string | null
+          capa_url: string | null
+          conteudo: string | null
+          criado_em: string
+          destaque: boolean
+          id: string
+          publicado_em: string | null
+          resumo: string | null
+          seo_descricao: string | null
+          seo_titulo: string | null
+          situacao: Database["public"]["Enums"]["publicacao_situacao"]
+          slug: string
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          autor_id?: string | null
+          capa_url?: string | null
+          conteudo?: string | null
+          criado_em?: string
+          destaque?: boolean
+          id?: string
+          publicado_em?: string | null
+          resumo?: string | null
+          seo_descricao?: string | null
+          seo_titulo?: string | null
+          situacao?: Database["public"]["Enums"]["publicacao_situacao"]
+          slug: string
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          autor_id?: string | null
+          capa_url?: string | null
+          conteudo?: string | null
+          criado_em?: string
+          destaque?: boolean
+          id?: string
+          publicado_em?: string | null
+          resumo?: string | null
+          seo_descricao?: string | null
+          seo_titulo?: string | null
+          situacao?: Database["public"]["Enums"]["publicacao_situacao"]
+          slug?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "autores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tour_progresso: {
         Row: {
@@ -733,6 +1264,7 @@ export type Database = {
         | "evento"
         | "area_embaixadora"
       contato_tipo: "email" | "telefone" | "whatsapp"
+      midia_tipo: "logo" | "capa" | "galeria"
       pagamento_situacao: "pendente" | "confirmado" | "estornado" | "cancelado"
       papel_tipo:
         | "admin"
@@ -742,6 +1274,7 @@ export type Database = {
         | "assinante"
         | "aluna"
         | "facilitadora"
+      publicacao_situacao: "rascunho" | "agendado" | "publicado" | "arquivado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -878,6 +1411,7 @@ export const Constants = {
         "area_embaixadora",
       ],
       contato_tipo: ["email", "telefone", "whatsapp"],
+      midia_tipo: ["logo", "capa", "galeria"],
       pagamento_situacao: ["pendente", "confirmado", "estornado", "cancelado"],
       papel_tipo: [
         "admin",
@@ -888,6 +1422,7 @@ export const Constants = {
         "aluna",
         "facilitadora",
       ],
+      publicacao_situacao: ["rascunho", "agendado", "publicado", "arquivado"],
     },
   },
 } as const
