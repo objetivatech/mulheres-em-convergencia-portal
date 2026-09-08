@@ -96,6 +96,107 @@ export type Database = {
         }
         Relationships: []
       }
+      campanha_envios: {
+        Row: {
+          campanha_id: string
+          criado_em: string
+          email: string
+          enviado_em: string | null
+          erro: string | null
+          id: string
+          pessoa_id: string | null
+          situacao: string
+        }
+        Insert: {
+          campanha_id: string
+          criado_em?: string
+          email: string
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          pessoa_id?: string | null
+          situacao?: string
+        }
+        Update: {
+          campanha_id?: string
+          criado_em?: string
+          email?: string
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          pessoa_id?: string | null
+          situacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanha_envios_campanha_id_fkey"
+            columns: ["campanha_id"]
+            isOneToOne: false
+            referencedRelation: "campanhas_email"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campanha_envios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campanha_envios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "campanha_envios_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      campanhas_email: {
+        Row: {
+          assunto: string
+          atualizado_em: string
+          chave: string
+          corpo: string
+          criado_em: string
+          cta_rotulo: string
+          disparado_em: string | null
+          id: string
+          situacao: string
+          titulo: string
+        }
+        Insert: {
+          assunto: string
+          atualizado_em?: string
+          chave: string
+          corpo: string
+          criado_em?: string
+          cta_rotulo?: string
+          disparado_em?: string | null
+          id?: string
+          situacao?: string
+          titulo: string
+        }
+        Update: {
+          assunto?: string
+          atualizado_em?: string
+          chave?: string
+          corpo?: string
+          criado_em?: string
+          cta_rotulo?: string
+          disparado_em?: string | null
+          id?: string
+          situacao?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       concessoes_acesso: {
         Row: {
           criado_em: string
