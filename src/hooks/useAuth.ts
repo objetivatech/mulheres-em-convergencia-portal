@@ -63,22 +63,34 @@ export const useAuthProvider = () => {
           });
         }
 
-        // Check user permissions when session changes
+        // Permissões no banco novo (MeC-v6): papéis em `papeis`, negócio em `negocios`.
         if (session?.user) {
-          // Execute immediately without setTimeout to prevent race condition
           (async () => {
             try {
-              const { data: adminStatus } = await supabase.rpc('get_current_user_admin_status');
-              const { data: blogEditStatus } = await supabase.rpc('get_current_user_blog_edit_status');
-              const { data: businessStatus } = await supabase.rpc('user_has_business', { 
-                user_uuid: session.user.id 
-              });
-              const { data: ambassadorStatus } = await supabase.rpc('get_current_user_ambassador_status');
-              
-              setIsAdmin(adminStatus || false);
-              setCanEditBlog(blogEditStatus || false);
-              setHasBusiness(businessStatus || false);
-              setIsAmbassador(ambassadorStatus || false);
+              const cliente = supabase as any;
+              const [{ data: pessoaId }, { data: admin }] = await Promise.all([
+                cliente.rpc('pessoa_atual'),
+                cliente.rpc('e_admin'),
+              ]);
+
+              setIsAdmin(admin === true);
+
+              if (!pessoaId) {
+                setCanEditBlog(admin === true);
+                setHasBusiness(false);
+                setIsAmbassador(false);
+                return;
+              }
+
+              const [editora, embaixadora, negocio] = await Promise.all([
+                cliente.rpc('tem_papel', { _pessoa_id: pessoaId, _papel: 'editora' }),
+                cliente.rpc('tem_papel', { _pessoa_id: pessoaId, _papel: 'embaixadora' }),
+                cliente.from('negocios').select('id').eq('pessoa_id', pessoaId).limit(1),
+              ]);
+
+              setCanEditBlog(admin === true || editora.data === true);
+              setIsAmbassador(embaixadora.data === true);
+              setHasBusiness(((negocio.data as any[]) ?? []).length > 0);
             } catch (error) {
               console.error('Error checking user permissions:', error);
               // On error, default to no permissions for security
@@ -89,6 +101,7 @@ export const useAuthProvider = () => {
             }
           })();
         } else {
+
           setIsAdmin(false);
           setCanEditBlog(false);
           setHasBusiness(false);
