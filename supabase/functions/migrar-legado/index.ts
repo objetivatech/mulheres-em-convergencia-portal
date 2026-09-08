@@ -100,82 +100,188 @@ Deno.serve(async (req) => {
     if (alvos.includes('negocios')) {
       const origem = await lerTudo(src, 'businesses');
       const usados = new Set<string>();
+      const slugs: string[] = [];
       const registros = origem.map((b, i) => {
         let slug = slugify(String(b.slug ?? b.name ?? ''), `negocio-${i + 1}`);
         while (usados.has(slug)) slug = `${slug}-${i + 1}`;
         usados.add(slug);
+        slugs.push(slug);
         return {
           slug,
-          nome: txt(b.name) ?? txt(b.business_name) ?? 'Sem nome',
+          nome: txt(b.name) ?? 'Sem nome',
           descricao: txt(b.description),
-          categoria: txt(b.category),
+          categoria: txt(b.category) ?? txt(b.subcategory),
           cidade: txt(b.city),
           uf: txt(b.state),
-          bairro: txt(b.neighborhood),
+          bairro: null,
           telefone: txt(b.phone),
           whatsapp: txt(b.whatsapp),
           email: txt(b.email),
           site: txt(b.website),
           instagram: txt(b.instagram),
           logo_url: txt(b.logo_url),
-          capa_url: txt(b.cover_image_url) ?? txt(b.banner_url),
-          publicado: b.is_published === true || b.status === 'active' || b.is_active === true,
-          destaque: b.is_featured === true,
+          capa_url: txt(b.cover_image_url),
+          publicado: b.subscription_active === true || b.is_complimentary === true,
+          destaque: b.featured === true,
         };
       });
       for (let i = 0; i < registros.length; i += 200) {
         const { error } = await dst.from('negocios').upsert(registros.slice(i, i + 200), { onConflict: 'slug' });
         if (error) throw new Error(`negocios: ${error.message}`);
       }
+
+      // galeria: substitui as mídias de galeria de cada negócio (idempotente)
+      const { data: novos } = await dst.from('negocios').select('id,slug').in('slug', slugs);
+      const porSlug = new Map((novos ?? []).map((n) => [n.slug, n.id]));
+      let midias = 0;
+      for (let i = 0; i < origem.length; i++) {
+        const galeria = Array.isArray(origem[i].gallery_images) ? (origem[i].gallery_images as string[]) : [];
+        const negocioId = porSlug.get(slugs[i]);
+        if (!negocioId) continue;
+        await dst.from('negocio_midias').delete().eq('negocio_id', negocioId).eq('tipo', 'galeria');
+        const urls = galeria.filter((u) => typeof u === 'string' && u.trim() !== '');
+        if (!urls.length) continue;
+        const { error } = await dst.from('negocio_midias').insert(
+          urls.map((url, ordem) => ({ negocio_id: negocioId, tipo: 'galeria', url, ordem })),
+        );
+        if (error) throw new Error(`negocio_midias: ${error.message}`);
+        midias += urls.length;
+      }
       resumo.negocios = registros.length;
+      resumo.negocio_midias = midias;
     }
 
     // ---------- BLOG ----------
     if (alvos.includes('blog')) {
+      // autoras
       const autores = await lerTudo(src, 'blog_authors').catch(() => []);
       const mapaAutor = new Map<string, string>();
       if (autores.length) {
         const regs = autores.map((a, i) => ({
-          slug: slugify(String(a.slug ?? a.name ?? ''), `autora-${i + 1}`),
-          nome: txt(a.name) ?? 'Sem nome',
+          slug: slugify(String(a.display_name ?? ''), `autora-${i + 1}`),
+          nome: txt(a.display_name) ?? 'Sem nome',
           bio: txt(a.bio),
-          foto_url: txt(a.avatar_url) ?? txt(a.photo_url),
+          foto_url: txt(a.photo_url),
         }));
-        const { data, error } = await dst.from('autores').upsert(regs, { onConflict: 'slug' }).select('id,slug');
+        const { error } = await dst.from('autores').upsert(regs, { onConflict: 'slug' });
         if (error) throw new Error(`autores: ${error.message}`);
+        const { data } = await dst.from('autores').select('id,slug').in('slug', regs.map((r) => r.slug));
         autores.forEach((a, i) => {
-          const novo = data?.find((d) => d.slug === regs[i].slug);
+          const novo = (data ?? []).find((d) => d.slug === regs[i].slug);
           if (novo && a.id) mapaAutor.set(String(a.id), novo.id);
         });
         resumo.autores = regs.length;
       }
 
+      // categorias
+      const cats = await lerTudo(src, 'blog_categories').catch(() => []);
+      const mapaCat = new Map<string, string>();
+      if (cats.length) {
+        const regs = cats.map((c, i) => ({
+          slug: slugify(String(c.slug ?? c.name ?? ''), `categoria-${i + 1}`),
+          nome: txt(c.name) ?? 'Sem nome',
+          descricao: txt(c.description),
+          ordem: i,
+        }));
+        const { error } = await dst.from('post_categorias').upsert(regs, { onConflict: 'slug' });
+        if (error) throw new Error(`post_categorias: ${error.message}`);
+        const { data } = await dst.from('post_categorias').select('id,slug').in('slug', regs.map((r) => r.slug));
+        cats.forEach((c, i) => {
+          const novo = (data ?? []).find((d) => d.slug === regs[i].slug);
+          if (novo && c.id) mapaCat.set(String(c.id), novo.id);
+        });
+        resumo.categorias = regs.length;
+      }
+
+      // tags
+      const tags = await lerTudo(src, 'blog_tags').catch(() => []);
+      const mapaTag = new Map<string, string>();
+      if (tags.length) {
+        const regs = tags.map((t, i) => ({
+          slug: slugify(String(t.slug ?? t.name ?? ''), `tag-${i + 1}`),
+          nome: txt(t.name) ?? 'Sem nome',
+        }));
+        const { error } = await dst.from('post_tags').upsert(regs, { onConflict: 'slug' });
+        if (error) throw new Error(`post_tags: ${error.message}`);
+        const { data } = await dst.from('post_tags').select('id,slug').in('slug', regs.map((r) => r.slug));
+        tags.forEach((t, i) => {
+          const novo = (data ?? []).find((d) => d.slug === regs[i].slug);
+          if (novo && t.id) mapaTag.set(String(t.id), novo.id);
+        });
+        resumo.tags = regs.length;
+      }
+
+      // posts
       const posts = await lerTudo(src, 'blog_posts');
       const usados = new Set<string>();
+      const slugsPost: string[] = [];
       const regs = posts.map((p, i) => {
         let slug = slugify(String(p.slug ?? p.title ?? ''), `post-${i + 1}`);
         while (usados.has(slug)) slug = `${slug}-${i + 1}`;
         usados.add(slug);
-        const publicado = p.status === 'published' || p.is_published === true;
+        slugsPost.push(slug);
+        const publicado = p.status === 'published';
         return {
           slug,
           titulo: txt(p.title) ?? 'Sem título',
-          resumo: txt(p.excerpt) ?? txt(p.summary),
+          resumo: txt(p.excerpt),
           conteudo: txt(p.content),
-          capa_url: txt(p.cover_image_url) ?? txt(p.featured_image),
+          capa_url: txt(p.featured_image_url),
           autor_id: p.author_id ? mapaAutor.get(String(p.author_id)) ?? null : null,
           situacao: publicado ? 'publicado' : 'rascunho',
           publicado_em: publicado ? (p.published_at ?? p.created_at ?? new Date().toISOString()) : null,
-          destaque: p.is_featured === true,
-          seo_titulo: txt(p.seo_title) ?? txt(p.meta_title),
-          seo_descricao: txt(p.seo_description) ?? txt(p.meta_description),
+          destaque: false,
+          seo_titulo: txt(p.seo_title),
+          seo_descricao: txt(p.seo_description),
         };
       });
       for (let i = 0; i < regs.length; i += 200) {
         const { error } = await dst.from('posts').upsert(regs.slice(i, i + 200), { onConflict: 'slug' });
         if (error) throw new Error(`posts: ${error.message}`);
       }
+      const { data: novosPosts } = await dst.from('posts').select('id,slug').in('slug', slugsPost);
+      const mapaPost = new Map<string, string>();
+      posts.forEach((p, i) => {
+        const novo = (novosPosts ?? []).find((d) => d.slug === slugsPost[i]);
+        if (novo && p.id) mapaPost.set(String(p.id), novo.id);
+      });
       resumo.posts = regs.length;
+
+      // vínculos de categoria (inclui category_id direto do post)
+      const vincCat = new Map<string, string>();
+      posts.forEach((p) => {
+        const post = mapaPost.get(String(p.id));
+        const cat = p.category_id ? mapaCat.get(String(p.category_id)) : null;
+        if (post && cat) vincCat.set(`${post}|${cat}`, '');
+      });
+      const relCats = await lerTudo(src, 'blog_post_categories').catch(() => []);
+      relCats.forEach((r) => {
+        const post = mapaPost.get(String(r.post_id));
+        const cat = mapaCat.get(String(r.category_id));
+        if (post && cat) vincCat.set(`${post}|${cat}`, '');
+      });
+      if (vincCat.size) {
+        const linhas = [...vincCat.keys()].map((k) => {
+          const [post_id, categoria_id] = k.split('|');
+          return { post_id, categoria_id };
+        });
+        const { error } = await dst.from('post_categoria_vinculo')
+          .upsert(linhas, { onConflict: 'post_id,categoria_id', ignoreDuplicates: true });
+        if (error) throw new Error(`post_categoria_vinculo: ${error.message}`);
+        resumo.vinculos_categoria = linhas.length;
+      }
+
+      // vínculos de tag
+      const relTags = await lerTudo(src, 'blog_post_tags').catch(() => []);
+      const linhasTag = relTags
+        .map((r) => ({ post_id: mapaPost.get(String(r.post_id)), tag_id: mapaTag.get(String(r.tag_id)) }))
+        .filter((r): r is { post_id: string; tag_id: string } => !!r.post_id && !!r.tag_id);
+      if (linhasTag.length) {
+        const { error } = await dst.from('post_tag_vinculo')
+          .upsert(linhasTag, { onConflict: 'post_id,tag_id', ignoreDuplicates: true });
+        if (error) throw new Error(`post_tag_vinculo: ${error.message}`);
+        resumo.vinculos_tag = linhasTag.length;
+      }
     }
 
     // ---------- PÁGINAS ----------
@@ -186,13 +292,13 @@ Deno.serve(async (req) => {
         let slug = slugify(String(p.slug ?? p.title ?? ''), `pagina-${i + 1}`);
         while (usados.has(slug)) slug = `${slug}-${i + 1}`;
         usados.add(slug);
-        const publicado = p.status === 'published' || p.is_published === true;
+        const publicado = p.status === 'published' || p.is_public === true;
         return {
           slug,
           titulo: txt(p.title) ?? 'Sem título',
           conteudo: txt(p.content),
-          seo_titulo: txt(p.seo_title) ?? txt(p.meta_title),
-          seo_descricao: txt(p.seo_description) ?? txt(p.meta_description),
+          seo_titulo: txt(p.seo_title),
+          seo_descricao: txt(p.seo_description),
           situacao: publicado ? 'publicado' : 'rascunho',
           publicado_em: publicado ? (p.published_at ?? p.created_at ?? new Date().toISOString()) : null,
         };
