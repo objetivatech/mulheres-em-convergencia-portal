@@ -292,6 +292,64 @@ export type Database = {
           },
         ]
       }
+      contato_eventos: {
+        Row: {
+          criado_em: string
+          dados: Json
+          detalhe: string | null
+          email: string | null
+          id: string
+          ocorrido_em: string
+          pessoa_id: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          criado_em?: string
+          dados?: Json
+          detalhe?: string | null
+          email?: string | null
+          id?: string
+          ocorrido_em?: string
+          pessoa_id?: string | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          criado_em?: string
+          dados?: Json
+          detalhe?: string | null
+          email?: string | null
+          id?: string
+          ocorrido_em?: string
+          pessoa_id?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contato_eventos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contato_eventos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "contato_eventos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       evento_cupons: {
         Row: {
           ativo: boolean
@@ -659,6 +717,192 @@ export type Database = {
           vagas?: number | null
         }
         Relationships: []
+      }
+      funil_estagios: {
+        Row: {
+          criado_em: string
+          funil_id: string
+          ganho: boolean
+          id: string
+          nome: string
+          ordem: number
+          perdido: boolean
+        }
+        Insert: {
+          criado_em?: string
+          funil_id: string
+          ganho?: boolean
+          id?: string
+          nome: string
+          ordem?: number
+          perdido?: boolean
+        }
+        Update: {
+          criado_em?: string
+          funil_id?: string
+          ganho?: boolean
+          id?: string
+          nome?: string
+          ordem?: number
+          perdido?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funil_estagios_funil_id_fkey"
+            columns: ["funil_id"]
+            isOneToOne: false
+            referencedRelation: "funis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funis: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          id: string
+          nome: string
+          ordem: number
+          slug: string
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          id?: string
+          nome: string
+          ordem?: number
+          slug: string
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      negociacoes: {
+        Row: {
+          atualizado_em: string
+          contato_email: string | null
+          contato_nome: string | null
+          contato_telefone: string | null
+          criado_em: string
+          estagio_id: string | null
+          fechado_em: string | null
+          funil_id: string
+          id: string
+          negocio_id: string | null
+          observacoes: string | null
+          pessoa_id: string | null
+          responsavel_id: string | null
+          resultado: string | null
+          titulo: string
+          valor_centavos: number
+        }
+        Insert: {
+          atualizado_em?: string
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_telefone?: string | null
+          criado_em?: string
+          estagio_id?: string | null
+          fechado_em?: string | null
+          funil_id: string
+          id?: string
+          negocio_id?: string | null
+          observacoes?: string | null
+          pessoa_id?: string | null
+          responsavel_id?: string | null
+          resultado?: string | null
+          titulo: string
+          valor_centavos?: number
+        }
+        Update: {
+          atualizado_em?: string
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_telefone?: string | null
+          criado_em?: string
+          estagio_id?: string | null
+          fechado_em?: string | null
+          funil_id?: string
+          id?: string
+          negocio_id?: string | null
+          observacoes?: string | null
+          pessoa_id?: string | null
+          responsavel_id?: string | null
+          resultado?: string | null
+          titulo?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negociacoes_estagio_id_fkey"
+            columns: ["estagio_id"]
+            isOneToOne: false
+            referencedRelation: "funil_estagios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociacoes_funil_id_fkey"
+            columns: ["funil_id"]
+            isOneToOne: false
+            referencedRelation: "funis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociacoes_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "negociacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "negociacoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negociacoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "negociacoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
       }
       negocio_areas_atendimento: {
         Row: {
@@ -1630,6 +1874,25 @@ export type Database = {
           evento_id: string | null
           ocupadas: number | null
           vagas: number | null
+        }
+        Relationships: []
+      }
+      v_financeiro_mensal: {
+        Row: {
+          mes: string | null
+          quantidade: number | null
+          situacao: Database["public"]["Enums"]["pagamento_situacao"] | null
+          total_centavos: number | null
+        }
+        Relationships: []
+      }
+      v_linha_tempo: {
+        Row: {
+          detalhe: string | null
+          ocorrido_em: string | null
+          pessoa_id: string | null
+          tipo: string | null
+          titulo: string | null
         }
         Relationships: []
       }
