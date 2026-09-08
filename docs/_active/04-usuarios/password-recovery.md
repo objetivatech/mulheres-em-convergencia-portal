@@ -1,5 +1,5 @@
 
-# Recuperação de Senha (Supabase)
+# Recuperação de Senha (fluxo atual)
 
 Este portal implementa:
 - Link "Esqueceu a senha?" (rota `/forgot-password`)
@@ -8,19 +8,16 @@ Este portal implementa:
 
 ## Fluxo
 
-1. Usuária acessa `/forgot-password` e informa o email.
-2. Enviamos `resetPasswordForEmail` via Supabase com `redirectTo` para `/reset-password`.
-3. Ao abrir o link recebido por email, a usuária é autenticada automaticamente (evento `PASSWORD_RECOVERY`) e pode definir a nova senha em `/reset-password`.
-4. Após salvar, redirecionamos para `/auth`.
+1. Usuária acessa `/esqueci-senha` e informa o e-mail.
+2. A função `send-password-reset` cria um token de uso único e envia o link por e-mail.
+3. O link abre `/redefinir-senha`, onde a nova senha é enviada à função `reset-password-with-token`.
+4. Após salvar, a usuária é direcionada para `/entrar`.
 
 ## Configurações necessárias no Supabase
 
-- Authentication > URL Configuration:
-  - Adicionar a URL do site (produção e desenvolvimento) nos Allowed Redirect URLs, ex:
-    - `http://localhost:5173/reset-password`
-    - `https://SEU-DOMINIO/reset-password`
-
-Sem isso, o link pode não autenticar corretamente ao redirecionar.
+- As funções `send-password-reset` e `reset-password-with-token` são públicas porque a usuária ainda não iniciou uma sessão.
+- A segurança depende do token aleatório, expiração em uma hora, uso único e invalidação dos links anteriores.
+- A documentação técnica e operacional atual está em `docs/_reboot/20-recuperacao-de-senha.md`.
 
 ## Acessibilidade
 

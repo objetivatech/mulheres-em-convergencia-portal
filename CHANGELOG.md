@@ -7,6 +7,7 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 ### 2026-09-08 — Correção da recuperação de senha
 - `reset-password-with-token` passou a aceitar corretamente a chamada pública da tela de nova senha, mantendo validação interna por token aleatório, expiração e uso único.
 - `send-password-reset` agora bloqueia reenvios por cinco minutos e invalida links antigos quando um novo pedido é criado.
+- A procura da conta no Auth agora percorre todas as páginas, evitando falhas silenciosas quando houver mais de 50 usuárias.
 - Validação de entrada reforçada nas duas funções e token consumido somente após a senha ser alterada com sucesso.
 - Documentação técnica, operacional e manual: `docs/_reboot/20-recuperacao-de-senha.md`.
 

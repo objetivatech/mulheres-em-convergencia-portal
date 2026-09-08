@@ -47,15 +47,24 @@ Deno.serve(async (req) => {
 
     console.log(`[SEND-PASSWORD-RESET] Processing for email: ${email}`);
 
-    // Find user by email
-    const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
-    
-    if (userError) {
-      console.error('[SEND-PASSWORD-RESET] Error listing users:', userError);
-      throw new Error('Failed to find user');
-    }
+    // Find user by email across every Auth page (the Admin API is paginated).
+    const normalizedEmail = email.toLowerCase();
+    let user: Awaited<ReturnType<typeof supabase.auth.admin.listUsers>>['data']['users'][number] | undefined;
+    let page = 1;
+    const perPage = 1000;
 
-    const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    while (!user) {
+      const { data, error: userError } = await supabase.auth.admin.listUsers({ page, perPage });
+
+      if (userError) {
+        console.error('[SEND-PASSWORD-RESET] Error listing users:', userError);
+        throw new Error('Failed to find user');
+      }
+
+      user = data.users.find(candidate => candidate.email?.toLowerCase() === normalizedEmail);
+      if (user || data.users.length < perPage) break;
+      page += 1;
+    }
 
     if (!user) {
       // For security, don't reveal if user exists or not

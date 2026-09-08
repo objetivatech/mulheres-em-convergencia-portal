@@ -8,6 +8,8 @@ O pedido em `/esqueci-senha` chama `send-password-reset`, que cria um token alea
 
 As duas funções aceitam chamadas sem sessão porque a usuária ainda não consegue entrar. A proteção é feita por token imprevisível, expiração, uso único e validação de entrada. Um novo pedido invalida links anteriores; pedidos repetidos em até cinco minutos não enviam outro e-mail.
 
+A procura da conta percorre todas as páginas do cadastro do Auth, portanto continua encontrando usuárias quando a base ultrapassar o limite de uma página.
+
 ## Operação e diagnóstico
 
 1. Confirme que o link abre `/redefinir-senha` com o parâmetro `token`.
