@@ -24,3 +24,8 @@ verify_jwt = false
 
 [functions.reset-password-with-token]
 verify_jwt = false
+
+# Cobrança de plano ou evento: exige sessão, validada dentro da função.
+[functions.criar-cobranca]
+verify_jwt = false
+
