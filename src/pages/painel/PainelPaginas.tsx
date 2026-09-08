@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Pencil } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
@@ -11,8 +10,6 @@ import { usePainelPaginas } from '@/hooks/usePainelConteudo';
 export default function PainelPaginas() {
   const { data, isLoading } = usePainelPaginas();
   const navigate = useNavigate();
-  const [_, setNada] = useState(null);
-  void _; void setNada;
 
   return (
     <PainelLayout
