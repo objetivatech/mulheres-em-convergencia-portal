@@ -350,6 +350,133 @@ export type Database = {
           },
         ]
       }
+      curso_aulas: {
+        Row: {
+          criado_em: string
+          curso_id: string
+          descricao: string | null
+          duracao_min: number | null
+          gratuita: boolean
+          id: string
+          material_url: string | null
+          ordem: number
+          titulo: string
+          video_url: string | null
+        }
+        Insert: {
+          criado_em?: string
+          curso_id: string
+          descricao?: string | null
+          duracao_min?: number | null
+          gratuita?: boolean
+          id?: string
+          material_url?: string | null
+          ordem?: number
+          titulo: string
+          video_url?: string | null
+        }
+        Update: {
+          criado_em?: string
+          curso_id?: string
+          descricao?: string | null
+          duracao_min?: number | null
+          gratuita?: boolean
+          id?: string
+          material_url?: string | null
+          ordem?: number
+          titulo?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curso_aulas_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curso_categorias: {
+        Row: {
+          id: string
+          nome: string
+          ordem: number
+          slug: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          ordem?: number
+          slug: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          ordem?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      cursos: {
+        Row: {
+          atualizado_em: string
+          capa_url: string | null
+          carga_horaria_min: number | null
+          categoria_id: string | null
+          criado_em: string
+          descricao: string | null
+          destaque: boolean
+          gratuito: boolean
+          id: string
+          nivel: string
+          publicado: boolean
+          resumo: string | null
+          slug: string
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          capa_url?: string | null
+          carga_horaria_min?: number | null
+          categoria_id?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          gratuito?: boolean
+          id?: string
+          nivel?: string
+          publicado?: boolean
+          resumo?: string | null
+          slug: string
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          capa_url?: string | null
+          carga_horaria_min?: number | null
+          categoria_id?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          gratuito?: boolean
+          id?: string
+          nivel?: string
+          publicado?: boolean
+          resumo?: string | null
+          slug?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cursos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "curso_categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evento_cupons: {
         Row: {
           ativo: boolean
@@ -782,6 +909,59 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      matriculas: {
+        Row: {
+          concluido_em: string | null
+          criado_em: string
+          curso_id: string
+          id: string
+          pessoa_id: string
+        }
+        Insert: {
+          concluido_em?: string | null
+          criado_em?: string
+          curso_id: string
+          id?: string
+          pessoa_id: string
+        }
+        Update: {
+          concluido_em?: string | null
+          criado_em?: string
+          curso_id?: string
+          id?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matriculas_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "matriculas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
       }
       negociacoes: {
         Row: {
@@ -1753,6 +1933,56 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "autores"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      progresso_aulas: {
+        Row: {
+          aula_id: string
+          concluida_em: string
+          id: string
+          pessoa_id: string
+        }
+        Insert: {
+          aula_id: string
+          concluida_em?: string
+          id?: string
+          pessoa_id: string
+        }
+        Update: {
+          aula_id?: string
+          concluida_em?: string
+          id?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progresso_aulas_aula_id_fkey"
+            columns: ["aula_id"]
+            isOneToOne: false
+            referencedRelation: "curso_aulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progresso_aulas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progresso_aulas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "progresso_aulas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
           },
         ]
       }
