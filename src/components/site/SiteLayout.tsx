@@ -28,8 +28,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="font-semibold tracking-tight text-lg">
-            <span className="text-primary">Mulheres</span> em Convergência
+          <Link to="/" aria-label="Mulheres em Convergência — início" className="shrink-0">
+            <LogoComponent variant="horizontal" size="md" />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
