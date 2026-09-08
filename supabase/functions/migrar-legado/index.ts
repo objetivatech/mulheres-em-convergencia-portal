@@ -25,10 +25,10 @@ function legado() {
 }
 
 async function autorizado(req: Request): Promise<boolean> {
-  const cron = Deno.env.get('CRON_SECRET');
-  const migracao = Deno.env.get('MIGRACAO_TOKEN');
+  const tokens = ['CRON_SECRET', 'MIGRACAO_TOKEN', 'MIGRACAO_TOKEN_2']
+    .map((n) => Deno.env.get(n)).filter((v): v is string => !!v);
   const cabecalho = req.headers.get('x-cron-secret');
-  if (cabecalho && ((cron && cabecalho === cron) || (migracao && cabecalho === migracao))) return true;
+  if (cabecalho && tokens.includes(cabecalho)) return true;
 
   const auth = req.headers.get('Authorization') || '';
   if (!auth.startsWith('Bearer ')) return false;
