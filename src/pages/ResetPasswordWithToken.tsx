@@ -111,7 +111,7 @@ const ResetPasswordWithToken = () => {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Unexpected error:', error);
       toast({
         title: 'Erro',

@@ -16,3 +16,11 @@ verify_jwt = false
 # Comunicado em massa: exige JWT e é validado como administradora dentro da função.
 [functions.notificar-usuarias]
 verify_jwt = false
+
+# Recuperação de senha: chamadas públicas. A segurança é feita por token
+# aleatório, de uso único e com validade curta, validado dentro das funções.
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.reset-password-with-token]
+verify_jwt = false
