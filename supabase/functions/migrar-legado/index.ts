@@ -418,7 +418,115 @@ Deno.serve(async (req) => {
       };
     }
 
+    // ---------- PLANOS E EVENTOS ----------
+    if (alvos.includes('planos_eventos')) {
+      // Planos: cada periodicidade com preço vira um plano do banco novo.
+      const planosAntigos = await lerTudo(src, 'subscription_plans');
+      const planos: Record<string, unknown>[] = [];
+      for (const p of planosAntigos) {
+        if (p.is_active === false) continue;
+        const base = slugify(String(p.name ?? p.display_name ?? ''), `plano-${planos.length + 1}`);
+        const beneficios = Array.isArray((p.features as any)?.benefits) ? (p.features as any).benefits : [];
+        const descricao = txt((p.features as any)?.description);
+        const variantes: [string, number, string, number][] = [
+          ['mensal', Number(p.price_monthly ?? 0), 'mensal', 31],
+          ['semestral', Number(p.price_6monthly ?? 0), 'semestral', 186],
+          ['anual', Number(p.price_yearly ?? 0), 'anual', 366],
+        ];
+        for (const [sufixo, preco, periodicidade, dias] of variantes) {
+          if (!preco || preco <= 0) continue;
+          planos.push({
+            slug: `${base}-${sufixo}`,
+            nome: txt(p.display_name) ?? txt(p.name) ?? 'Plano',
+            descricao,
+            tipo: 'diretorio',
+            valor_centavos: Math.round(preco * 100),
+            periodicidade,
+            dias_acesso: dias,
+            beneficios,
+            destaque: p.is_featured === true && periodicidade === 'mensal',
+            ativo: true,
+            ordem: Number(p.sort_order ?? 0),
+          });
+        }
+      }
+      if (planos.length) {
+        const { error } = await dst.from('planos').upsert(planos, { onConflict: 'slug' });
+        if (error) throw new Error(`planos: ${error.message}`);
+      }
+      resumo.planos = { total_antigo: planosAntigos.length, gravados: planos.length };
+
+      // Eventos
+      const eventosAntigos = await lerTudo(src, 'events');
+      const usadosEv = new Set<string>();
+      const mapaSlug = new Map<string, string>(); // id antigo -> slug novo
+      const eventos = eventosAntigos.map((e, i) => {
+        let slug = slugify(String(e.slug ?? e.title ?? ''), `evento-${i + 1}`);
+        while (usadosEv.has(slug)) slug = `${slug}-${i + 1}`;
+        usadosEv.add(slug);
+        mapaSlug.set(String(e.id), slug);
+        const online = e.format === 'online';
+        return {
+          slug,
+          titulo: txt(e.title) ?? 'Encontro',
+          resumo: null,
+          descricao: txt(e.description),
+          capa_url: txt(e.image_url),
+          online,
+          link_online: online ? txt(e.location_url) : null,
+          local_nome: online ? null : txt(e.location),
+          endereco: null,
+          cidade: null,
+          uf: null,
+          inicio_em: e.date_start ?? new Date().toISOString(),
+          fim_em: e.date_end ?? null,
+          vagas: e.max_participants ?? null,
+          gratuito: e.free === true || !Number(e.price ?? 0),
+          publicado: e.status === 'published',
+          destaque: e.featured === true,
+        };
+      });
+      for (let i = 0; i < eventos.length; i += 200) {
+        const { error } = await dst.from('eventos').upsert(eventos.slice(i, i + 200), { onConflict: 'slug' });
+        if (error) throw new Error(`eventos: ${error.message}`);
+      }
+
+      const { data: novosEv } = await dst.from('eventos').select('id,slug').in('slug', [...usadosEv]);
+      const idPorSlug = new Map((novosEv ?? []).map((n) => [n.slug, n.id]));
+      const idNovo = (antigo: unknown) => idPorSlug.get(mapaSlug.get(String(antigo)) ?? '') ?? null;
+
+      // Lotes — substituídos por evento (idempotente)
+      let lotes = 0;
+      const lotesAntigos = await lerTudo(src, 'event_ticket_batches').catch(() => []);
+      const porEvento = new Map<string, Record<string, unknown>[]>();
+      for (const l of lotesAntigos) {
+        const alvo = idNovo(l.event_id);
+        if (!alvo) continue;
+        const lista = porEvento.get(alvo) ?? [];
+        lista.push({
+          evento_id: alvo,
+          nome: txt(l.name) ?? 'Lote',
+          valor_centavos: Math.round(Number(l.price ?? 0) * 100),
+          vagas: l.quantity ?? null,
+          inicio_em: l.starts_at ?? null,
+          fim_em: l.ends_at ?? null,
+          ativo: l.active !== false,
+          ordem: Number(l.display_order ?? 0),
+        });
+        porEvento.set(alvo, lista);
+      }
+      for (const [eventoId, lista] of porEvento) {
+        await dst.from('evento_lotes').delete().eq('evento_id', eventoId);
+        const { error } = await dst.from('evento_lotes').insert(lista);
+        if (error) throw new Error(`evento_lotes: ${error.message}`);
+        lotes += lista.length;
+      }
+
+      resumo.eventos = { total_antigo: eventosAntigos.length, gravados: eventos.length, lotes };
+    }
+
     return json({ ok: true, resumo });
+
   } catch (e) {
     return json({ error: String((e as Error)?.message ?? e) }, 500);
   }
