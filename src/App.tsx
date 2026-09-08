@@ -8,6 +8,15 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Index from "./pages/Index";
 import HomePage from "./pages/site/HomePage";
+import PainelHome from "./pages/painel/PainelHome";
+import PainelNegocios from "./pages/painel/PainelNegocios";
+import PainelNegocioEditor from "./pages/painel/PainelNegocioEditor";
+import PainelBlog from "./pages/painel/PainelBlog";
+import PainelPostEditor from "./pages/painel/PainelPostEditor";
+import PainelCategorias from "./pages/painel/PainelCategorias";
+import PainelPaginas from "./pages/painel/PainelPaginas";
+import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
+import PainelBlocos from "./pages/painel/PainelBlocos";
 import DiretorioPage from "./pages/site/DiretorioPage";
 import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
@@ -146,6 +155,17 @@ function AppContent() {
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
+        {/* Painel de conteúdo — banco novo */}
+        <Route path="/painel-conteudo" element={<PainelHome />} />
+        <Route path="/painel-conteudo/negocios" element={<PainelNegocios />} />
+        <Route path="/painel-conteudo/negocios/:id" element={<PainelNegocioEditor />} />
+        <Route path="/painel-conteudo/blog" element={<PainelBlog />} />
+        <Route path="/painel-conteudo/blog/:id" element={<PainelPostEditor />} />
+        <Route path="/painel-conteudo/categorias" element={<PainelCategorias />} />
+        <Route path="/painel-conteudo/paginas" element={<PainelPaginas />} />
+        <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
+        <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
+
         {/* Rotas Públicas */}
         <Route path="/" element={<HomePage />} />
         <Route path="/sobre" element={<PaginaInstitucional slug="sobre" />} />
