@@ -34,6 +34,22 @@ import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import PlanosPage from './pages/site/PlanosPage';
 import EventosPage from './pages/site/EventosPage';
 import EventoPage from './pages/site/EventoPage';
+import AcademyPage from './pages/site/AcademyPage';
+import AcademyCursoPage from './pages/site/AcademyCursoPage';
+import MinhaAreaHome from './pages/area/MinhaAreaHome';
+import MeusPlanos from './pages/area/MeusPlanos';
+import MeusEncontros from './pages/area/MeusEncontros';
+import MeuIngresso from './pages/area/MeuIngresso';
+import MeusDados from './pages/area/MeusDados';
+import MinhaAcademy from './pages/area/MinhaAcademy';
+import MeuConecta from './pages/area/MeuConecta';
+import MinhaEmbaixadora from './pages/area/MinhaEmbaixadora';
+import PainelPessoas from './pages/painel/PainelPessoas';
+import PainelFinanceiro from './pages/painel/PainelFinanceiro';
+import PainelCRM from './pages/painel/PainelCRM';
+import PainelAutomacoes from './pages/painel/PainelAutomacoes';
+
+
 
 
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
@@ -171,6 +187,21 @@ function AppContent() {
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
         <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
         <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
+        <Route path="/painel-conteudo/pessoas" element={<PainelPessoas />} />
+        <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
+        <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
+        <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
+
+        {/* Área da associada — banco novo */}
+        <Route path="/minha-area" element={<MinhaAreaHome />} />
+        <Route path="/minha-area/planos" element={<MeusPlanos />} />
+        <Route path="/minha-area/encontros" element={<MeusEncontros />} />
+        <Route path="/minha-area/encontros/:id" element={<MeuIngresso />} />
+        <Route path="/minha-area/academy" element={<MinhaAcademy />} />
+        <Route path="/minha-area/conecta" element={<MeuConecta />} />
+        <Route path="/minha-area/embaixadora" element={<MinhaEmbaixadora />} />
+        <Route path="/minha-area/dados" element={<MeusDados />} />
+
 
 
 
@@ -204,9 +235,10 @@ function AppContent() {
         <Route path="/politica-de-privacidade" element={<PaginaInstitucional slug="politica-de-privacidade" />} />
         <Route path="/politica-de-cookies" element={<PaginaInstitucional slug="politica-de-cookies" />} />
         <Route path="/quem-e-elisangela-aranda" element={<QuemEElisangelaAranda />} />
-        <Route path="/academy" element={<Academy />} />
-        <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
-        <Route path="/academy/curso/:slug" element={<AcademyCurso />} />
+        <Route path="/academy" element={<AcademyPage />} />
+        <Route path="/academy/catalogo" element={<Navigate to="/academy" replace />} />
+        <Route path="/academy/curso/:slug" element={<AcademyCursoPage />} />
+
         <Route path="/lp/:slug" element={<DynamicLandingPage />} />
         <Route path="/conecta/convite/:code" element={<ConectaConviteLanding />} />
         

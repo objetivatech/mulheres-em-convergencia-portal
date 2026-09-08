@@ -292,6 +292,208 @@ export type Database = {
           },
         ]
       }
+      conecta_grupo_membros: {
+        Row: {
+          entrou_em: string
+          grupo_id: string
+          id: string
+          pessoa_id: string
+        }
+        Insert: {
+          entrou_em?: string
+          grupo_id: string
+          id?: string
+          pessoa_id: string
+        }
+        Update: {
+          entrou_em?: string
+          grupo_id?: string
+          id?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_grupo_membros_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "conecta_grupos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_grupo_membros_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_grupo_membros_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_grupo_membros_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      conecta_grupos: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          descricao: string | null
+          id: string
+          nome: string
+          slug: string
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          slug: string
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      conecta_indicacoes: {
+        Row: {
+          criado_em: string
+          de_pessoa_id: string
+          descricao: string
+          id: string
+          para_pessoa_id: string | null
+          situacao: string
+        }
+        Insert: {
+          criado_em?: string
+          de_pessoa_id: string
+          descricao: string
+          id?: string
+          para_pessoa_id?: string | null
+          situacao?: string
+        }
+        Update: {
+          criado_em?: string
+          de_pessoa_id?: string
+          descricao?: string
+          id?: string
+          para_pessoa_id?: string | null
+          situacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_indicacoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_indicacoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_indicacoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_indicacoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_indicacoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_indicacoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      conecta_perfis: {
+        Row: {
+          aceita_contato: boolean
+          apresentacao: string | null
+          atualizado_em: string
+          cargo: string | null
+          criado_em: string
+          empresa: string | null
+          interesses: string[]
+          pessoa_id: string
+        }
+        Insert: {
+          aceita_contato?: boolean
+          apresentacao?: string | null
+          atualizado_em?: string
+          cargo?: string | null
+          criado_em?: string
+          empresa?: string | null
+          interesses?: string[]
+          pessoa_id: string
+        }
+        Update: {
+          aceita_contato?: boolean
+          apresentacao?: string | null
+          atualizado_em?: string
+          cargo?: string | null
+          criado_em?: string
+          empresa?: string | null
+          interesses?: string[]
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_perfis_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_perfis_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_perfis_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       contato_eventos: {
         Row: {
           criado_em: string
@@ -474,6 +676,258 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "curso_categorias"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      embaixadora_indicacoes: {
+        Row: {
+          criado_em: string
+          email: string | null
+          embaixadora_id: string
+          id: string
+          nome: string | null
+          pagamento_id: string | null
+          pessoa_indicada_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          email?: string | null
+          embaixadora_id: string
+          id?: string
+          nome?: string | null
+          pagamento_id?: string | null
+          pessoa_indicada_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          email?: string | null
+          embaixadora_id?: string
+          id?: string
+          nome?: string | null
+          pagamento_id?: string | null
+          pessoa_indicada_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "embaixadora_indicacoes_embaixadora_id_fkey"
+            columns: ["embaixadora_id"]
+            isOneToOne: false
+            referencedRelation: "embaixadoras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadora_indicacoes_embaixadora_id_fkey"
+            columns: ["embaixadora_id"]
+            isOneToOne: false
+            referencedRelation: "v_embaixadora_resumo"
+            referencedColumns: ["embaixadora_id"]
+          },
+          {
+            foreignKeyName: "embaixadora_indicacoes_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "pagamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadora_indicacoes_pessoa_indicada_id_fkey"
+            columns: ["pessoa_indicada_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadora_indicacoes_pessoa_indicada_id_fkey"
+            columns: ["pessoa_indicada_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "embaixadora_indicacoes_pessoa_indicada_id_fkey"
+            columns: ["pessoa_indicada_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      embaixadora_materiais: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          descricao: string | null
+          id: string
+          ordem: number
+          tipo: string
+          titulo: string
+          url: string
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          tipo?: string
+          titulo: string
+          url: string
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          tipo?: string
+          titulo?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      embaixadora_niveis: {
+        Row: {
+          comissao_percentual: number
+          id: string
+          minimo_indicacoes: number
+          nome: string
+          ordem: number
+          slug: string
+        }
+        Insert: {
+          comissao_percentual?: number
+          id?: string
+          minimo_indicacoes?: number
+          nome: string
+          ordem?: number
+          slug: string
+        }
+        Update: {
+          comissao_percentual?: number
+          id?: string
+          minimo_indicacoes?: number
+          nome?: string
+          ordem?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      embaixadora_repasses: {
+        Row: {
+          competencia: string
+          criado_em: string
+          embaixadora_id: string
+          id: string
+          observacao: string | null
+          pago_em: string | null
+          situacao: string
+          valor_centavos: number
+        }
+        Insert: {
+          competencia: string
+          criado_em?: string
+          embaixadora_id: string
+          id?: string
+          observacao?: string | null
+          pago_em?: string | null
+          situacao?: string
+          valor_centavos?: number
+        }
+        Update: {
+          competencia?: string
+          criado_em?: string
+          embaixadora_id?: string
+          id?: string
+          observacao?: string | null
+          pago_em?: string | null
+          situacao?: string
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "embaixadora_repasses_embaixadora_id_fkey"
+            columns: ["embaixadora_id"]
+            isOneToOne: false
+            referencedRelation: "embaixadoras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadora_repasses_embaixadora_id_fkey"
+            columns: ["embaixadora_id"]
+            isOneToOne: false
+            referencedRelation: "v_embaixadora_resumo"
+            referencedColumns: ["embaixadora_id"]
+          },
+        ]
+      }
+      embaixadoras: {
+        Row: {
+          apresentacao: string | null
+          ativa: boolean
+          atualizado_em: string
+          cidade: string | null
+          codigo: string
+          criado_em: string
+          id: string
+          nivel_id: string | null
+          pessoa_id: string
+          publicada: boolean
+          uf: string | null
+        }
+        Insert: {
+          apresentacao?: string | null
+          ativa?: boolean
+          atualizado_em?: string
+          cidade?: string | null
+          codigo: string
+          criado_em?: string
+          id?: string
+          nivel_id?: string | null
+          pessoa_id: string
+          publicada?: boolean
+          uf?: string | null
+        }
+        Update: {
+          apresentacao?: string | null
+          ativa?: boolean
+          atualizado_em?: string
+          cidade?: string | null
+          codigo?: string
+          criado_em?: string
+          id?: string
+          nivel_id?: string | null
+          pessoa_id?: string
+          publicada?: boolean
+          uf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "embaixadoras_nivel_id_fkey"
+            columns: ["nivel_id"]
+            isOneToOne: false
+            referencedRelation: "embaixadora_niveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -2097,6 +2551,40 @@ export type Database = {
           vigente: boolean | null
         }
         Relationships: []
+      }
+      v_embaixadora_resumo: {
+        Row: {
+          codigo: string | null
+          comissao_centavos: number | null
+          embaixadora_id: string | null
+          indicacoes: number | null
+          indicacoes_pagas: number | null
+          pessoa_id: string | null
+          receita_centavos: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "embaixadoras_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
       }
       v_evento_vagas: {
         Row: {
