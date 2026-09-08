@@ -51,5 +51,6 @@ Só depois de tudo validado. Entrego um guia operacional passo a passo e faço o
 
 ## O que preciso de você
 
-- Confirmar se posso remover as telas legadas equivalentes assim que a versão nova entrar.
-- No corte: acesso ao painel de DNS e ao Asaas (eu passo os valores; você aplica).
+- Confirmar se posso remover as telas legadas equivalentes assim que a versão nova entrar. - APROVADO
+- No corte: acesso ao painel de DNS e ao Asaas (eu passo os valores; você aplica). - OK!
+  &nbsp;
