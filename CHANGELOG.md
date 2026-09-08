@@ -4,6 +4,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-08 — Migração dos dados reais (antigo → novo)
+- Nova função `supabase/functions/migrar-legado/index.ts`: lê **somente** o banco antigo `ngqymbjatenxztrjjdxa` (chave em cofre, `LEGACY_SUPABASE_SERVICE_ROLE_KEY`) e grava no banco novo. Idempotente por `slug` (rodar de novo não duplica). Autenticação: administradora (JWT) ou header `x-cron-secret`.
+- Copiados: 23 negócios (7 publicados) + 23 imagens de galeria, 22 posts (todos publicados), 1 autora, 9 categorias, 36 tags, 47 vínculos de categoria, 163 vínculos de tag e 5 páginas institucionais.
+- Regra de publicação do negócio no novo: `subscription_active` ou cortesia no antigo. Nada foi escrito no banco antigo.
+
 ### 2026-09-07 — Painel de conteúdo no banco novo
 - Nova área `/painel-conteudo` (visão geral, negócios, blog, categorias e autoras, páginas, página inicial), só para `e_admin()` ou papel `editora`; guarda de interface em `PainelLayout`, autoridade real nas políticas RLS já criadas pela `0004`.
 - Arquivos: `src/hooks/usePainelConteudo.ts`, `src/components/painel/PainelLayout.tsx`, `src/pages/painel/*`; rotas registradas em `src/App.tsx`. Nenhuma migração nova e nenhuma alteração no banco antigo ou no painel legado `/admin/*`.
