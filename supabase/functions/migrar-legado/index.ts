@@ -25,13 +25,15 @@ function legado() {
 }
 
 async function autorizado(req: Request): Promise<boolean> {
-  const cron = Deno.env.get('CRON_SECRET');
-  const migracao = Deno.env.get('MIGRACAO_TOKEN');
+  const tokens = ['CRON_SECRET', 'MIGRACAO_TOKEN', 'MIGRACAO_TOKEN_2']
+    .map((n) => Deno.env.get(n)).filter((v): v is string => !!v);
   const cabecalho = req.headers.get('x-cron-secret');
-  if (cabecalho && ((cron && cabecalho === cron) || (migracao && cabecalho === migracao))) return true;
+  if (cabecalho && tokens.includes(cabecalho)) return true;
 
   const auth = req.headers.get('Authorization') || '';
   if (!auth.startsWith('Bearer ')) return false;
+  const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (service && auth === `Bearer ${service}`) return true;
   const token = auth.slice(7).trim();
   const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
   const { data, error } = await anon.auth.getUser(token);
@@ -308,6 +310,112 @@ Deno.serve(async (req) => {
         if (error) throw new Error(`paginas: ${error.message}`);
       }
       resumo.paginas = regs.length;
+    }
+
+    // ---------- USUÁRIAS ----------
+    // Cria as contas no banco novo SEM enviar nenhum e-mail (email_confirm = true,
+    // sem senha). Cada pessoa define a senha quando o comunicado for disparado.
+    if (alvos.includes('usuarias')) {
+      const ADMINS = ['mulheresemconvergencia@gmail.com', 'diogodevitte@outlook.com'];
+
+      const perfis = await lerTudo(src, 'profiles').catch(() => []);
+      const perfilPorId = new Map<string, Record<string, unknown>>();
+      const perfilPorEmail = new Map<string, Record<string, unknown>>();
+      for (const p of perfis) {
+        if (p.user_id) perfilPorId.set(String(p.user_id), p);
+        else if (p.id) perfilPorId.set(String(p.id), p);
+        const em = txt(p.email);
+        if (em) perfilPorEmail.set(em.toLowerCase(), p);
+      }
+
+      // usuárias do banco antigo
+      const antigos: { id: string; email: string; created_at?: string }[] = [];
+      for (let pagina = 1; ; pagina++) {
+        const { data, error } = await src.auth.admin.listUsers({ page: pagina, perPage: 1000 });
+        if (error) throw new Error(`auth antigo: ${error.message}`);
+        for (const u of data.users) if (u.email) antigos.push({ id: u.id, email: u.email.toLowerCase() });
+        if (data.users.length < 1000) break;
+      }
+
+      // usuárias que já existem no banco novo
+      const existentes = new Map<string, string>();
+      for (let pagina = 1; ; pagina++) {
+        const { data, error } = await dst.auth.admin.listUsers({ page: pagina, perPage: 1000 });
+        if (error) throw new Error(`auth novo: ${error.message}`);
+        for (const u of data.users) if (u.email) existentes.set(u.email.toLowerCase(), u.id);
+        if (data.users.length < 1000) break;
+      }
+
+      // garante as administradoras mesmo que não existam no banco antigo
+      for (const email of ADMINS) if (!antigos.some((a) => a.email === email)) antigos.push({ id: '', email });
+
+      // processa em lotes para caber no tempo de execução da função
+      const limite = Math.min(Math.max(Number(body.limite ?? 150), 1), 500);
+      const fila = antigos.filter((a) => !existentes.has(a.email) || ADMINS.includes(a.email));
+      const lote = fila.slice(0, limite);
+
+      let criadas = 0, jaExistiam = 0, falhas = 0;
+      const erros: string[] = [];
+      for (const antigo of lote) {
+        const perfil = (antigo.id && perfilPorId.get(antigo.id)) || perfilPorEmail.get(antigo.email) || {};
+        const nome = txt(perfil.full_name) ?? txt(perfil.name) ?? antigo.email.split('@')[0];
+        const cpf = String(txt(perfil.cpf) ?? '').replace(/\D/g, '') || null;
+
+        let novoId = existentes.get(antigo.email);
+        if (!novoId) {
+          const { data, error } = await dst.auth.admin.createUser({
+            email: antigo.email,
+            email_confirm: true, // não dispara e-mail de confirmação
+            user_metadata: { full_name: nome, legado_user_id: antigo.id || null },
+          });
+          if (error || !data?.user) {
+            falhas++;
+            if (erros.length < 20) erros.push(`${antigo.email}: ${error?.message ?? 'falha'}`);
+            continue;
+          }
+          novoId = data.user.id;
+          criadas++;
+        } else {
+          jaExistiam++;
+        }
+
+        // pessoa (perfil) vinculada, sem sobrescrever dados já existentes
+        let pessoaId: string | null = null;
+        const { data: porAuth } = await dst.from('pessoas').select('id').eq('auth_user_id', novoId).maybeSingle();
+        if (porAuth) pessoaId = porAuth.id;
+        if (!pessoaId && cpf) {
+          const { data: porCpf } = await dst.from('pessoas').select('id,auth_user_id').eq('cpf', cpf).maybeSingle();
+          if (porCpf) {
+            pessoaId = porCpf.id;
+            if (!porCpf.auth_user_id) await dst.from('pessoas').update({ auth_user_id: novoId }).eq('id', pessoaId);
+          }
+        }
+        if (!pessoaId) {
+          const { data: nova, error } = await dst.from('pessoas')
+            .insert({ auth_user_id: novoId, cpf, nome }).select('id').maybeSingle();
+          if (error || !nova) {
+            if (erros.length < 20) erros.push(`pessoa ${antigo.email}: ${error?.message}`);
+            continue;
+          }
+          pessoaId = nova.id;
+        }
+
+        await dst.from('pessoa_contatos')
+          .upsert({ pessoa_id: pessoaId, tipo: 'email', valor: antigo.email, principal: true },
+            { onConflict: 'pessoa_id,tipo,valor', ignoreDuplicates: true });
+
+        if (ADMINS.includes(antigo.email)) {
+          await dst.from('papeis')
+            .upsert({ pessoa_id: pessoaId, papel: 'admin' }, { onConflict: 'pessoa_id,papel', ignoreDuplicates: true });
+        }
+      }
+      resumo.usuarias = {
+        total_antigo: antigos.length,
+        processadas_agora: lote.length,
+        criadas, ja_existiam: jaExistiam, falhas,
+        restantes: Math.max(fila.length - lote.length, 0),
+        erros,
+      };
     }
 
     return json({ ok: true, resumo });
