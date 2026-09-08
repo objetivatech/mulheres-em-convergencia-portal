@@ -119,12 +119,12 @@ Deno.serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[RESET-PASSWORD] Error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to reset password';
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to reset password',
-        details: error.toString()
+        error: message
       }),
       { 
         status: 500, 

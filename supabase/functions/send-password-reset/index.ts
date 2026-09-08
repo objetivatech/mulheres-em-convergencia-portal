@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
 
     // Check if response is JSON before parsing
     const contentType = mailrelayResponse.headers.get('content-type');
-    let mailrelayResult: any;
+    let mailrelayResult: unknown;
     
     if (contentType && contentType.includes('application/json')) {
       mailrelayResult = await mailrelayResponse.json();
@@ -220,12 +220,12 @@ Deno.serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[SEND-PASSWORD-RESET] Error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to send password reset email';
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to send password reset email',
-        details: error.toString()
+        error: message
       }),
       { 
         status: 500, 
