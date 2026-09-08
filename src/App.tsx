@@ -29,9 +29,10 @@ import Convergindo from "./pages/Convergindo";
 import Post from "./pages/Post";
 import Diretorio from "./pages/Diretorio";
 import DiretorioEmpresa from "./pages/DiretorioEmpresa";
-import Planos from './pages/Planos';
-import EventsPage from './pages/EventsPage';
-import EventDetailPage from './pages/EventDetailPage';
+import PlanosPage from './pages/site/PlanosPage';
+import EventosPage from './pages/site/EventosPage';
+import EventoPage from './pages/site/EventoPage';
+
 
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
 import EventoConfirmacaoPage from './pages/EventoConfirmacaoPage';
