@@ -34,6 +34,22 @@ import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import PlanosPage from './pages/site/PlanosPage';
 import EventosPage from './pages/site/EventosPage';
 import EventoPage from './pages/site/EventoPage';
+import AcademyPage from './pages/site/AcademyPage';
+import AcademyCursoPage from './pages/site/AcademyCursoPage';
+import MinhaAreaHome from './pages/area/MinhaAreaHome';
+import MeusPlanos from './pages/area/MeusPlanos';
+import MeusEncontros from './pages/area/MeusEncontros';
+import MeuIngresso from './pages/area/MeuIngresso';
+import MeusDados from './pages/area/MeusDados';
+import MinhaAcademy from './pages/area/MinhaAcademy';
+import MeuConecta from './pages/area/MeuConecta';
+import MinhaEmbaixadora from './pages/area/MinhaEmbaixadora';
+import PainelPessoas from './pages/painel/PainelPessoas';
+import PainelFinanceiro from './pages/painel/PainelFinanceiro';
+import PainelCRM from './pages/painel/PainelCRM';
+import PainelAutomacoes from './pages/painel/PainelAutomacoes';
+
+
 
 
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
