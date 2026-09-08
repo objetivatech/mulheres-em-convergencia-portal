@@ -7,6 +7,7 @@ const corsHeaders = {
 
 interface PasswordResetRequest {
   email: string;
+  origem?: string;
 }
 
 Deno.serve(async (req) => {
