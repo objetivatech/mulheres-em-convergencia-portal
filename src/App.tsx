@@ -18,6 +18,8 @@ import PainelPaginas from "./pages/painel/PainelPaginas";
 import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
 import PainelBlocos from "./pages/painel/PainelBlocos";
 import PainelComunicados from "./pages/painel/ComunicadosPage";
+import PainelPlanosEventos from "./pages/painel/PainelPlanosEventos";
+
 import DiretorioPage from "./pages/site/DiretorioPage";
 import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
