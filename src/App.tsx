@@ -18,6 +18,8 @@ import PainelPaginas from "./pages/painel/PainelPaginas";
 import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
 import PainelBlocos from "./pages/painel/PainelBlocos";
 import PainelComunicados from "./pages/painel/ComunicadosPage";
+import PainelPlanosEventos from "./pages/painel/PainelPlanosEventos";
+
 import DiretorioPage from "./pages/site/DiretorioPage";
 import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
@@ -29,9 +31,10 @@ import Convergindo from "./pages/Convergindo";
 import Post from "./pages/Post";
 import Diretorio from "./pages/Diretorio";
 import DiretorioEmpresa from "./pages/DiretorioEmpresa";
-import Planos from './pages/Planos';
-import EventsPage from './pages/EventsPage';
-import EventDetailPage from './pages/EventDetailPage';
+import PlanosPage from './pages/site/PlanosPage';
+import EventosPage from './pages/site/EventosPage';
+import EventoPage from './pages/site/EventoPage';
+
 
 import EventConfirmPresencePage from './pages/EventConfirmPresencePage';
 import EventoConfirmacaoPage from './pages/EventoConfirmacaoPage';
@@ -166,7 +169,9 @@ function AppContent() {
         <Route path="/painel-conteudo/paginas" element={<PainelPaginas />} />
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
+        <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
         <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
+
 
 
         {/* Rotas Públicas */}
@@ -184,11 +189,12 @@ function AppContent() {
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/convergindo" element={<BlogPage />} />
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
-        <Route path="/planos" element={<Planos />} />
+        <Route path="/planos" element={<PlanosPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
-        <Route path="/eventos" element={<EventsPage />} />
+        <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />
-        <Route path="/eventos/:slug" element={<EventDetailPage />} />
+        <Route path="/eventos/:slug" element={<EventoPage />} />
+
         <Route path="/criar-converter" element={<Navigate to="/lp/criar-e-converter" replace />} />
         <Route path="/convite/:codigo" element={<ConvitePage />} />
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />

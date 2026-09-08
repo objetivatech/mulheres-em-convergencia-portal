@@ -63,7 +63,9 @@ Atualizado: 08/09/2026
 - [ ] Home, diretório, blog, páginas institucionais, eventos
 
 ### Fase 5 — Painéis
+- [x] 5A — Planos e encontros: schema, telas públicas, cobrança Asaas e painel de gestão (`docs/_reboot/21-planos-e-eventos.md`)
 - [ ] Meu Painel, Dashboard do Negócio, Conecta+, Embaixadoras, Academy
+
 
 ### Fase 6 — Admin, CRM e automações
 - [ ] Gestão de usuárias, CRM, financeiro, eventos, Mailrelay, e-mails, rotinas agendadas

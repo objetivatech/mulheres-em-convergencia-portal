@@ -4,6 +4,16 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-09 — Planos e encontros no banco novo (Fase 5A)
+- Schema `0005_planos_eventos.sql` aplicado: `planos`, `eventos`, `evento_lotes`, `evento_palestrantes`, `evento_cupons`, `evento_inscricoes`, `evento_presencas`, visão `v_evento_vagas` e função `lote_vigente`. Vagas e usos de cupom são consulta, nunca contador gravado.
+- Telas públicas novas: `/planos`, `/eventos` e `/eventos/:slug`, com lote vigente, vagas, palestrantes e JSON-LD de evento.
+- Edge function `criar-cobranca`: gera a cobrança no Asaas (API de produção intacta), registra o pagamento pendente e a inscrição; o acesso continua sendo concedido só pelo webhook.
+- Painel de conteúdo ganhou "Planos e encontros", com publicação/despublicação e importação dos dados reais do site antigo.
+- `migrar-legado` ganhou o alvo `planos_eventos`, idempotente.
+- Documentação: `docs/_reboot/21-planos-e-eventos.md`.
+
+
+
 ### 2026-09-08 — Correção da recuperação de senha
 - `reset-password-with-token` passou a aceitar corretamente a chamada pública da tela de nova senha, mantendo validação interna por token aleatório, expiração e uso único.
 - `send-password-reset` agora bloqueia reenvios por cinco minutos e invalida links antigos quando um novo pedido é criado.
