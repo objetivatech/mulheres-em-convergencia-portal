@@ -32,6 +32,8 @@ async function autorizado(req: Request): Promise<boolean> {
 
   const auth = req.headers.get('Authorization') || '';
   if (!auth.startsWith('Bearer ')) return false;
+  const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (service && auth === `Bearer ${service}`) return true;
   const token = auth.slice(7).trim();
   const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
   const { data, error } = await anon.auth.getUser(token);
