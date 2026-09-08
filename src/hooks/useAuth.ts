@@ -237,7 +237,7 @@ export const useAuthProvider = () => {
     try {
       // Use MailRelay edge function instead of Supabase Auth
       const { error } = await supabase.functions.invoke('send-password-reset', {
-        body: { email }
+        body: { email, origem: window.location.origin }
       });
 
       if (error) {

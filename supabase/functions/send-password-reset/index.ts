@@ -7,6 +7,7 @@ const corsHeaders = {
 
 interface PasswordResetRequest {
   email: string;
+  origem?: string;
 }
 
 Deno.serve(async (req) => {
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const body: PasswordResetRequest = await req.json();
-    const { email } = body;
+    const { email, origem } = body;
 
     if (!email) {
       return new Response(
@@ -97,8 +98,11 @@ Deno.serve(async (req) => {
       throw new Error('Failed to create reset token');
     }
 
-    // Build reset URL
-    const resetUrl = `https://mulheresemconvergencia.com.br/redefinir-senha?token=${token}`;
+    // Build reset URL (usa a origem de quem pediu, com fallback para o domínio oficial)
+    const baseUrl = (origem && /^https?:\/\//.test(origem))
+      ? origem.replace(/\/$/, '')
+      : 'https://mulheresemconvergencia.com.br';
+    const resetUrl = `${baseUrl}/redefinir-senha?token=${token}`;
 
     // Get user's full name from metadata
     const fullName = user.user_metadata?.full_name || '';
