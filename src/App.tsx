@@ -7,6 +7,12 @@ import { useEffect, lazy, Suspense } from "react";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Index from "./pages/Index";
+import HomePage from "./pages/site/HomePage";
+import DiretorioPage from "./pages/site/DiretorioPage";
+import NegocioPage from "./pages/site/NegocioPage";
+import BlogPage from "./pages/site/BlogPage";
+import BlogPostPage from "./pages/site/BlogPostPage";
+import PaginaInstitucional from "./pages/site/PaginaInstitucional";
 import Sobre from "./pages/Sobre";
 import Auth from "./pages/Auth";
 import Convergindo from "./pages/Convergindo";
@@ -141,20 +147,20 @@ function AppContent() {
         <ScrollToTop />
         <Routes>
         {/* Rotas Públicas */}
-        <Route path="/" element={<Index />} />
-        <Route path="/sobre" element={<Sobre />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/sobre" element={<PaginaInstitucional slug="sobre" />} />
         <Route path="/entrar" element={<Auth />} />
         <Route path="/confirmar-email" element={<ConfirmEmail />} />
         <Route path="/confirmar-troca-email" element={<ConfirmarTrocaEmailPage />} />
         <Route path="/redefinir-senha" element={<ResetPasswordWithToken />} />
         <Route path="/esqueci-senha" element={<ForgotPassword />} />
         <Route path="/contato" element={<Contato />} />
-        <Route path="/diretorio" element={<Diretorio />} />
-        <Route path="/diretorio/:slug" element={<DiretorioEmpresa />} />
+        <Route path="/diretorio" element={<DiretorioPage />} />
+        <Route path="/diretorio/:slug" element={<NegocioPage />} />
         <Route path="/comunidades" element={<Comunidades />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
-        <Route path="/convergindo" element={<Convergindo />} />
-        <Route path="/convergindo/:slug" element={<Post />} />
+        <Route path="/convergindo" element={<BlogPage />} />
+        <Route path="/convergindo/:slug" element={<BlogPostPage />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventsPage />} />
@@ -165,9 +171,9 @@ function AppContent() {
         <Route path="/confirmar-presenca" element={<EventConfirmPresencePage />} />
         <Route path="/evento-checkin/:eventId" element={<EventoCheckin />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
-        <Route path="/termos-de-uso" element={<TermosDeUso />} />
-        <Route path="/politica-de-privacidade" element={<PoliticaDePrivacidade />} />
-        <Route path="/politica-de-cookies" element={<PoliticaDeCookies />} />
+        <Route path="/termos-de-uso" element={<PaginaInstitucional slug="termos-de-uso" />} />
+        <Route path="/politica-de-privacidade" element={<PaginaInstitucional slug="politica-de-privacidade" />} />
+        <Route path="/politica-de-cookies" element={<PaginaInstitucional slug="politica-de-cookies" />} />
         <Route path="/quem-e-elisangela-aranda" element={<QuemEElisangelaAranda />} />
         <Route path="/academy" element={<Academy />} />
         <Route path="/academy/catalogo" element={<AcademyCatalogo />} />
