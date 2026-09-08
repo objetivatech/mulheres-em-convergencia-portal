@@ -64,11 +64,14 @@ Atualizado: 08/09/2026
 
 ### Fase 5 — Painéis
 - [x] 5A — Planos e encontros: schema, telas públicas, cobrança Asaas e painel de gestão (`docs/_reboot/21-planos-e-eventos.md`)
-- [ ] Meu Painel, Dashboard do Negócio, Conecta+, Embaixadoras, Academy
-
+- [x] 5B — Área da associada `/minha-area`: visão geral, planos, encontros com ingresso, Academy, Conecta+, Embaixadoras e Meus dados (`docs/_reboot/22-area-associada-e-admin.md`)
+- [ ] Dashboard do Negócio no banco novo (edição completa do perfil pela dona)
 
 ### Fase 6 — Admin, CRM e automações
-- [ ] Gestão de usuárias, CRM, financeiro, eventos, Mailrelay, e-mails, rotinas agendadas
+- [x] Pessoas, Financeiro, Relacionamento (CRM) e Automações no painel da equipe (`docs/_reboot/22-area-associada-e-admin.md`)
+- [ ] Mailrelay, e-mails automáticos e rotinas agendadas no banco novo
+- [ ] Aposentar as telas legadas equivalentes em `/admin` no momento do corte
+
 
 ### Fase 7 — Migração e corte
 - [ ] Scripts de migração idempotentes (antigo → novo)
