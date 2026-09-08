@@ -17,6 +17,7 @@ import PainelCategorias from "./pages/painel/PainelCategorias";
 import PainelPaginas from "./pages/painel/PainelPaginas";
 import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
 import PainelBlocos from "./pages/painel/PainelBlocos";
+import PainelComunicados from "./pages/painel/ComunicadosPage";
 import DiretorioPage from "./pages/site/DiretorioPage";
 import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
@@ -165,6 +166,8 @@ function AppContent() {
         <Route path="/painel-conteudo/paginas" element={<PainelPaginas />} />
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
+        <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
+
 
         {/* Rotas Públicas */}
         <Route path="/" element={<HomePage />} />
