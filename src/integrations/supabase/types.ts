@@ -292,6 +292,374 @@ export type Database = {
           },
         ]
       }
+      evento_cupons: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          criado_em: string
+          desconto_tipo: string
+          desconto_valor: number
+          evento_id: string | null
+          id: string
+          limite_uso: number | null
+          valido_ate: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          criado_em?: string
+          desconto_tipo?: string
+          desconto_valor?: number
+          evento_id?: string | null
+          id?: string
+          limite_uso?: number | null
+          valido_ate?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          criado_em?: string
+          desconto_tipo?: string
+          desconto_valor?: number
+          evento_id?: string | null
+          id?: string
+          limite_uso?: number | null
+          valido_ate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_cupons_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_cupons_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+        ]
+      }
+      evento_inscricoes: {
+        Row: {
+          criado_em: string
+          cupom_id: string | null
+          email: string
+          evento_id: string
+          id: string
+          lote_id: string | null
+          nome: string
+          pagamento_id: string | null
+          pessoa_id: string | null
+          situacao: string
+          telefone: string | null
+          valor_centavos: number
+        }
+        Insert: {
+          criado_em?: string
+          cupom_id?: string | null
+          email: string
+          evento_id: string
+          id?: string
+          lote_id?: string | null
+          nome: string
+          pagamento_id?: string | null
+          pessoa_id?: string | null
+          situacao?: string
+          telefone?: string | null
+          valor_centavos?: number
+        }
+        Update: {
+          criado_em?: string
+          cupom_id?: string | null
+          email?: string
+          evento_id?: string
+          id?: string
+          lote_id?: string | null
+          nome?: string
+          pagamento_id?: string | null
+          pessoa_id?: string | null
+          situacao?: string
+          telefone?: string | null
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_inscricoes_cupom_id_fkey"
+            columns: ["cupom_id"]
+            isOneToOne: false
+            referencedRelation: "evento_cupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_lote_id_fkey"
+            columns: ["lote_id"]
+            isOneToOne: false
+            referencedRelation: "evento_lotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "pagamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      evento_lotes: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          evento_id: string
+          fim_em: string | null
+          id: string
+          inicio_em: string | null
+          nome: string
+          ordem: number
+          vagas: number | null
+          valor_centavos: number
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          evento_id: string
+          fim_em?: string | null
+          id?: string
+          inicio_em?: string | null
+          nome: string
+          ordem?: number
+          vagas?: number | null
+          valor_centavos?: number
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          evento_id?: string
+          fim_em?: string | null
+          id?: string
+          inicio_em?: string | null
+          nome?: string
+          ordem?: number
+          vagas?: number | null
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_lotes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_lotes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+        ]
+      }
+      evento_palestrantes: {
+        Row: {
+          evento_id: string
+          foto_url: string | null
+          id: string
+          minibio: string | null
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          evento_id: string
+          foto_url?: string | null
+          id?: string
+          minibio?: string | null
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          evento_id?: string
+          foto_url?: string | null
+          id?: string
+          minibio?: string | null
+          nome?: string
+          ordem?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_palestrantes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_palestrantes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+        ]
+      }
+      evento_presencas: {
+        Row: {
+          id: string
+          inscricao_id: string
+          registrado_em: string
+          registrado_por: string | null
+        }
+        Insert: {
+          id?: string
+          inscricao_id: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Update: {
+          id?: string
+          inscricao_id?: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_presencas_inscricao_id_fkey"
+            columns: ["inscricao_id"]
+            isOneToOne: true
+            referencedRelation: "evento_inscricoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_presencas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_presencas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "evento_presencas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      eventos: {
+        Row: {
+          atualizado_em: string
+          capa_url: string | null
+          cidade: string | null
+          criado_em: string
+          descricao: string | null
+          destaque: boolean
+          endereco: string | null
+          fim_em: string | null
+          gratuito: boolean
+          id: string
+          inicio_em: string
+          link_online: string | null
+          local_nome: string | null
+          online: boolean
+          publicado: boolean
+          resumo: string | null
+          slug: string
+          titulo: string
+          uf: string | null
+          vagas: number | null
+        }
+        Insert: {
+          atualizado_em?: string
+          capa_url?: string | null
+          cidade?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          endereco?: string | null
+          fim_em?: string | null
+          gratuito?: boolean
+          id?: string
+          inicio_em: string
+          link_online?: string | null
+          local_nome?: string | null
+          online?: boolean
+          publicado?: boolean
+          resumo?: string | null
+          slug: string
+          titulo: string
+          uf?: string | null
+          vagas?: number | null
+        }
+        Update: {
+          atualizado_em?: string
+          capa_url?: string | null
+          cidade?: string | null
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          endereco?: string | null
+          fim_em?: string | null
+          gratuito?: boolean
+          id?: string
+          inicio_em?: string
+          link_online?: string | null
+          local_nome?: string | null
+          online?: boolean
+          publicado?: boolean
+          resumo?: string | null
+          slug?: string
+          titulo?: string
+          uf?: string | null
+          vagas?: number | null
+        }
+        Relationships: []
+      }
       negocio_areas_atendimento: {
         Row: {
           bairro: string | null
@@ -870,6 +1238,57 @@ export type Database = {
         }
         Relationships: []
       }
+      planos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          beneficios: Json
+          criado_em: string
+          descricao: string | null
+          destaque: boolean
+          dias_acesso: number
+          id: string
+          nome: string
+          ordem: number
+          periodicidade: string
+          slug: string
+          tipo: Database["public"]["Enums"]["acesso_tipo"]
+          valor_centavos: number
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          beneficios?: Json
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          dias_acesso?: number
+          id?: string
+          nome: string
+          ordem?: number
+          periodicidade?: string
+          slug: string
+          tipo?: Database["public"]["Enums"]["acesso_tipo"]
+          valor_centavos?: number
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          beneficios?: Json
+          criado_em?: string
+          descricao?: string | null
+          destaque?: boolean
+          dias_acesso?: number
+          id?: string
+          nome?: string
+          ordem?: number
+          periodicidade?: string
+          slug?: string
+          tipo?: Database["public"]["Enums"]["acesso_tipo"]
+          valor_centavos?: number
+        }
+        Relationships: []
+      }
       post_categoria_vinculo: {
         Row: {
           categoria_id: string
@@ -1205,6 +1624,15 @@ export type Database = {
         }
         Relationships: []
       }
+      v_evento_vagas: {
+        Row: {
+          disponiveis: number | null
+          evento_id: string | null
+          ocupadas: number | null
+          vagas: number | null
+        }
+        Relationships: []
+      }
       v_meu_perfil: {
         Row: {
           acesso_academy: boolean | null
@@ -1313,6 +1741,7 @@ export type Database = {
         Args: { _cpf?: string; _email?: string; _nome?: string }
         Returns: string
       }
+      lote_vigente: { Args: { _evento_id: string }; Returns: string }
       pessoa_atual: { Args: never; Returns: string }
       registrar_contato: {
         Args: {
