@@ -235,6 +235,7 @@ Deno.serve(async (req) => {
       .upsert(
         {
           pessoa_id: pessoaId,
+          plano_id: planoId,
           provedor: 'asaas',
           cobranca_externa_id: cobranca.id,
           cliente_externo_id: clienteId,
