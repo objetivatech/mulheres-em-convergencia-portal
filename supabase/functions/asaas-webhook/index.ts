@@ -140,49 +140,56 @@ async function registrarPagamento(
 // ---------------------------------------------------------------------------
 type TipoAcesso = "diretorio" | "conecta" | "academy" | "evento" | "area_embaixadora";
 
-// O que a cobrança libera vem do cadastro do plano (`planos.tipo` e
+// O que a cobrança libera vem do cadastro do plano (`planos.tipos` e
 // `planos.dias_acesso`), identificado pela referência `plano:<slug>`.
+// Um plano pode liberar várias áreas de uma vez.
 // O texto da cobrança só é usado como último recurso, para cobranças
 // antigas que não carregam a referência.
-async function tipoPorCobranca(
+async function tiposPorCobranca(
   pagamento: Record<string, unknown>,
-): Promise<{ tipo: TipoAcesso; dias: number }> {
+): Promise<{ tipos: TipoAcesso[]; dias: number }> {
   const ref = String(pagamento.externalReference ?? "");
 
   const plano = ref.match(/^plano:(.+)$/i);
   if (plano) {
     const { data } = await supabase
       .from("planos")
-      .select("tipo, dias_acesso")
+      .select("tipo, tipos, dias_acesso")
       .eq("slug", plano[1])
       .maybeSingle();
-    if (data) return { tipo: data.tipo as TipoAcesso, dias: Number(data.dias_acesso) || 31 };
+    if (data) {
+      const lista = (Array.isArray(data.tipos) && data.tipos.length ? data.tipos : [data.tipo]) as TipoAcesso[];
+      return { tipos: lista, dias: Number(data.dias_acesso) || 31 };
+    }
   }
 
-  if (/^evento:/i.test(ref)) return { tipo: "evento", dias: 366 };
+  if (/^evento:/i.test(ref)) return { tipos: ["evento"], dias: 366 };
 
   const texto = `${pagamento.description ?? ""} ${ref}`.toLowerCase();
-  if (texto.includes("conecta")) return { tipo: "conecta", dias: 31 };
-  if (texto.includes("academy") || texto.includes("curso")) return { tipo: "academy", dias: 366 };
-  if (texto.includes("evento") || texto.includes("ingresso")) return { tipo: "evento", dias: 366 };
-  if (texto.includes("anual")) return { tipo: "diretorio", dias: 366 };
-  return { tipo: "diretorio", dias: 31 };
+  if (texto.includes("conecta")) return { tipos: ["conecta"], dias: 31 };
+  if (texto.includes("academy") || texto.includes("curso")) return { tipos: ["academy"], dias: 366 };
+  if (texto.includes("evento") || texto.includes("ingresso")) return { tipos: ["evento"], dias: 366 };
+  if (texto.includes("anual")) return { tipos: ["diretorio"], dias: 366 };
+  return { tipos: ["diretorio"], dias: 31 };
 }
 
 async function concederAcesso(
   pagamentoId: string,
   pagamento: Record<string, unknown>,
 ): Promise<string | null> {
-  const { tipo, dias } = await tipoPorCobranca(pagamento);
+  const { tipos, dias } = await tiposPorCobranca(pagamento);
 
-  const { data, error } = await supabase.rpc("conceder_por_pagamento", {
-    _pagamento_id: pagamentoId,
-    _tipo: tipo,
-    _dias: dias,
-  });
-
-  if (error) throw error;
-  return (data as string | null) ?? null;
+  let primeira: string | null = null;
+  for (const tipo of tipos) {
+    const { data, error } = await supabase.rpc("conceder_por_pagamento", {
+      _pagamento_id: pagamentoId,
+      _tipo: tipo,
+      _dias: dias,
+    });
+    if (error) throw error;
+    primeira = primeira ?? ((data as string | null) ?? null);
+  }
+  return primeira;
 }
 
 // ---------------------------------------------------------------------------
