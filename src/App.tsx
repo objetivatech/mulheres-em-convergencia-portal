@@ -42,6 +42,7 @@ import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
 import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
+import PainelAcessos from './pages/painel/PainelAcessos';
 
 
 
@@ -146,6 +147,7 @@ function AppContent() {
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
         <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
+        <Route path="/painel-conteudo/acessos" element={<PainelAcessos />} />
 
         {/* Área da associada — banco novo */}
         <Route path="/minha-area" element={<MinhaAreaHome />} />
