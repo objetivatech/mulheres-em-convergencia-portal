@@ -96,6 +96,22 @@ export default function PainelAutomacoes() {
         <Skeleton className="h-72 rounded-xl" />
       ) : (
         <div className="space-y-6">
+          {asaas && (
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="font-semibold">
+                {asaas.apontandoParaCa ? 'Asaas conectado ao portal novo' : 'Asaas ainda não aponta para o portal novo'}
+              </p>
+              <p className="text-xs text-muted-foreground break-all mt-1">Endereço esperado: {asaas.destinoEsperado}</p>
+              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                {asaas.webhooks.map((w, i) => (
+                  <li key={i} className="break-all">
+                    {w.nome ?? 'Aviso'} · {w.url} · {w.ativo === false ? 'desligado' : 'ativo'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-border bg-card p-5">
               <p className="text-sm text-muted-foreground">Avisos com problema</p>
