@@ -26,7 +26,7 @@ const INSTITUCIONAIS = [
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const itensUsuaria = useItensDaUsuaria();
 
 
