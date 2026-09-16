@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     const parsed = Corpo.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Dados incompletos ou inválidos.' }, 400);
-    const { tipo, slug, nome, cpf, telefone, cupom, metodo } = parsed.data;
+    const { tipo, slug, nome, cpf, telefone, cupom, codigo, metodo } = parsed.data;
 
     // Pessoa (CPF é o identificador central)
     const { data: pessoaId, error: erroPessoa } = await comoUsuaria.rpc('garantir_pessoa', {
