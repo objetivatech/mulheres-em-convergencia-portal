@@ -3,6 +3,19 @@
 
 export type Destinatario = { email: string; nome?: string | null };
 
+/** Diagnóstico do canal de e-mail, sem revelar nenhuma chave. */
+export function canalDeEmail() {
+  const remetente = Deno.env.get('ADMIN_EMAIL_FROM') ?? 'noreply@mulheresemconvergencia.com.br';
+  const mailrelay = !!(Deno.env.get('MAILRELAY_API_KEY') && Deno.env.get('MAILRELAY_HOST'));
+  const resend = !!Deno.env.get('RESEND_API_KEY');
+  return {
+    remetente,
+    canal: mailrelay ? 'MailRelay' : resend ? 'Resend' : 'nenhum',
+    mailrelay_configurado: mailrelay,
+    resend_configurado: resend,
+  };
+}
+
 export async function enviarEmail(dest: Destinatario, assunto: string, html: string): Promise<void> {
   const remetente = Deno.env.get('ADMIN_EMAIL_FROM') ?? 'noreply@mulheresemconvergencia.com.br';
   const mrKey = Deno.env.get('MAILRELAY_API_KEY');

@@ -55,7 +55,9 @@ export default function MeusEncontros() {
   );
 
   return (
-    <AreaLayout titulo="Meus encontros" descricao="Inscrições confirmadas e histórico.">
+    <AreaLayout
+      tour="encontros"
+ titulo="Meus encontros" descricao="Inscrições confirmadas e histórico.">
       <Helmet>
         <title>Meus encontros | Mulheres em Convergência</title>
         <meta name="robots" content="noindex,nofollow" />

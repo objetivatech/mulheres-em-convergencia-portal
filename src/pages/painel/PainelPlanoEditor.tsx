@@ -113,10 +113,13 @@ export default function PainelPlanoEditor() {
     if (novo) navigate(`/painel-conteudo/planos/${novoId}`, { replace: true });
   };
 
-  const linkOferta =
-    form.visibilidade === 'privado' && form.codigo_oferta
-      ? `${window.location.origin}/planos/oferta/${String(form.codigo_oferta).trim()}`
-      : null;
+  const chaveLink =
+    form.visibilidade === 'privado'
+      ? String(form.codigo_oferta ?? '').trim()
+      : form.visibilidade === 'oculto'
+        ? String(form.slug ?? '').trim()
+        : '';
+  const linkOferta = chaveLink ? `${window.location.origin}/planos/oferta/${chaveLink}` : null;
 
   return (
     <PainelLayout
@@ -280,18 +283,20 @@ export default function PainelPlanoEditor() {
                     <Input type="number" min={1} value={form.oferta_limite_usos}
                       onChange={(e) => campo('oferta_limite_usos', e.target.value)} />
                   </div>
-                  {linkOferta && (
-                    <div className="rounded-md bg-muted p-3 text-xs">
-                      <p className="mb-2 break-all">{linkOferta}</p>
-                      <Button type="button" size="sm" variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(linkOferta);
-                          toast({ title: 'Link copiado' });
-                        }}>
-                        <Copy className="mr-2 h-3.5 w-3.5" /> Copiar link
-                      </Button>
-                    </div>
-                  )}
+                </div>
+              )}
+
+              {linkOferta && (
+                <div className="rounded-md bg-muted p-3 text-xs">
+                  <p className="mb-1 text-muted-foreground">Link para enviar:</p>
+                  <p className="mb-2 break-all">{linkOferta}</p>
+                  <Button type="button" size="sm" variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(linkOferta);
+                      toast({ title: 'Link copiado' });
+                    }}>
+                    <Copy className="mr-2 h-3.5 w-3.5" /> Copiar link
+                  </Button>
                 </div>
               )}
 

@@ -46,8 +46,8 @@ import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
 import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
-import PainelAcessos from './pages/painel/PainelAcessos';
 import PainelAcademy from './pages/painel/PainelAcademy';
+import PainelImagens from './pages/painel/PainelImagens';
 import PainelConecta from './pages/painel/PainelConecta';
 import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
 
@@ -161,8 +161,9 @@ function AppContent() {
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
         <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
-        <Route path="/painel-conteudo/acessos" element={<PainelAcessos />} />
+        <Route path="/painel-conteudo/acessos" element={<Navigate to="/painel-conteudo/planos-eventos" replace />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />
+        <Route path="/painel-conteudo/imagens" element={<PainelImagens />} />
         <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
         <Route path="/painel-conteudo/embaixadoras" element={<PainelEmbaixadoras />} />
 
@@ -199,6 +200,7 @@ function AppContent() {
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
         <Route path="/planos" element={<PlanosPage />} />
         <Route path="/oferta/:codigo" element={<PlanoOfertaPage />} />
+        <Route path="/planos/oferta/:codigo" element={<PlanoOfertaPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />

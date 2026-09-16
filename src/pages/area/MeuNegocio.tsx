@@ -70,7 +70,9 @@ export default function MeuNegocio() {
 
   if (isLoading) {
     return (
-      <AreaLayout titulo="Meu negócio"><Skeleton className="h-96 w-full" /></AreaLayout>
+      <AreaLayout
+      tour="meu-negocio"
+ titulo="Meu negócio"><Skeleton className="h-96 w-full" /></AreaLayout>
     );
   }
 

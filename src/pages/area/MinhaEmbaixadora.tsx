@@ -55,7 +55,9 @@ export default function MinhaEmbaixadora() {
     );
 
   return (
-    <AreaLayout titulo="Embaixadoras" descricao="Suas indicações, comissões e materiais.">
+    <AreaLayout
+      tour="embaixadoras"
+ titulo="Embaixadoras" descricao="Suas indicações, comissões e materiais.">
       <Helmet>
         <title>Embaixadoras | Minha área</title>
         <meta name="robots" content="noindex,nofollow" />

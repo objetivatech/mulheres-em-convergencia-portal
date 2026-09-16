@@ -2,10 +2,11 @@ import { ReactNode } from 'react';
 import { Link, NavLink, Navigate } from 'react-router-dom';
 import {
   Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone, Ticket,
-  Users, Wallet, Workflow, Zap, KeyRound, GraduationCap, Network, Heart,
+  Users, Wallet, Workflow, Zap, GraduationCap, Network, Heart, Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
+import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
 
 const ITENS = [
@@ -15,9 +16,9 @@ const ITENS = [
   { para: '/painel-conteudo/categorias', rotulo: 'Categorias e autoras', icone: Tags },
   { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
   { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
-  { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos e encontros', icone: Ticket },
-  { para: '/painel-conteudo/acessos', rotulo: 'Acessos e planos', icone: KeyRound },
+  { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos, encontros e acessos', icone: Ticket },
   { para: '/painel-conteudo/academy', rotulo: 'Academy', icone: GraduationCap },
+  { para: '/painel-conteudo/imagens', rotulo: 'Imagens', icone: ImageIcon },
   { para: '/painel-conteudo/conecta', rotulo: 'Conecta+', icone: Network },
   { para: '/painel-conteudo/embaixadoras', rotulo: 'Embaixadoras', icone: Heart },
   { para: '/painel-conteudo/pessoas', rotulo: 'Pessoas', icone: Users },
@@ -108,6 +109,7 @@ export default function PainelLayout({
             {acoes}
           </header>
           {children}
+          <Tour modulo="painel-equipe" />
         </main>
       </div>
     </div>

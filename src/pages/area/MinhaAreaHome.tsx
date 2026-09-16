@@ -34,6 +34,7 @@ export default function MinhaAreaHome() {
 
   return (
     <AreaLayout
+      tour="meu-painel"
       titulo={`Olá, ${perfil?.nome_social || perfil?.nome?.split(' ')[0] || 'boas-vindas'}`}
       descricao="Aqui ficam seus planos, encontros e dados."
     >

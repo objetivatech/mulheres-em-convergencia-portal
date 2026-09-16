@@ -3,6 +3,7 @@ import { Link, NavLink, Navigate } from 'react-router-dom';
 import { Home, CreditCard, CalendarDays, GraduationCap, Users, Sparkles, UserCog, Store } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeuPerfil, useMeuNegocio } from '@/hooks/useMinhaArea';
+import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
 
 const ITENS = [
@@ -19,11 +20,14 @@ export default function AreaLayout({
   titulo,
   descricao,
   acoes,
+  tour,
   children,
 }: {
   titulo: string;
   descricao?: string;
   acoes?: ReactNode;
+  /** módulo do tour guiado desta tela */
+  tour?: string;
   children: ReactNode;
 }) {
   const { user, loading, isAdmin } = useAuth();
@@ -111,6 +115,7 @@ export default function AreaLayout({
             {acoes}
           </header>
           {children}
+          {tour && <Tour modulo={tour} />}
         </main>
       </div>
     </div>

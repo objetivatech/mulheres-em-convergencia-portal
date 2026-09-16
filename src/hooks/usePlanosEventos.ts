@@ -81,19 +81,24 @@ export function usePlanos() {
   });
 }
 
-/** Oferta privada: plano aberto apenas por código de convite. */
+/**
+ * Oferta por link: aceita o código de convite (planos privados) ou o
+ * endereço curto do plano (planos ocultos, só por link direto).
+ */
 export function usePlanoPorCodigo(codigo?: string) {
   return useQuery({
     queryKey: ['plano-oferta', codigo],
     enabled: !!codigo,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const chave = (codigo ?? '').trim();
+      const { data: lista, error } = await supabase
         .from('planos')
         .select(CAMPOS_PLANO)
         .eq('ativo', true)
-        .ilike('codigo_oferta', codigo!)
-        .maybeSingle();
+        .or(`codigo_oferta.ilike.${chave},slug.eq.${chave.toLowerCase()}`)
+        .limit(1);
       if (error) throw error;
+      const data = lista?.[0];
       if (!data) return { plano: null as Plano | null, motivo: 'inexistente' as const };
 
       const p = data as any;
