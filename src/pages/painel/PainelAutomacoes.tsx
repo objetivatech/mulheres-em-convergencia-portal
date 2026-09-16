@@ -82,9 +82,13 @@ export default function PainelAutomacoes() {
           <Button size="sm" variant="outline" onClick={importarAcessos} disabled={importando}>
             {importando ? 'Trazendo…' : 'Trazer acessos do site antigo'}
           </Button>
+          <Button size="sm" variant="outline" onClick={verificarAsaas} disabled={verificando}>
+            {verificando ? 'Verificando…' : 'Verificar conexão com o Asaas'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
+
         </div>
       }
     >
