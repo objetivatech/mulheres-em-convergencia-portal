@@ -14,6 +14,7 @@ const Corpo = z.object({
   cpf: z.string().transform((v) => v.replace(/\D/g, '')).refine((v) => v.length === 11, 'CPF inválido'),
   telefone: z.string().optional(),
   cupom: z.string().trim().max(40).optional(),
+  codigo: z.string().trim().max(60).optional(),
   metodo: z.enum(['PIX', 'BOLETO', 'CREDIT_CARD', 'UNDEFINED']).default('UNDEFINED'),
 });
 
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
 
     const parsed = Corpo.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Dados incompletos ou inválidos.' }, 400);
-    const { tipo, slug, nome, cpf, telefone, cupom, metodo } = parsed.data;
+    const { tipo, slug, nome, cpf, telefone, cupom, codigo, metodo } = parsed.data;
 
     // Pessoa (CPF é o identificador central)
     const { data: pessoaId, error: erroPessoa } = await comoUsuaria.rpc('garantir_pessoa', {
@@ -66,15 +67,40 @@ Deno.serve(async (req) => {
     let referencia = '';
     let evento: { id: string; titulo: string; gratuito: boolean } | null = null;
     let loteId: string | null = null;
+    let planoId: string | null = null;
 
     if (tipo === 'plano') {
       const { data: plano } = await admin
         .from('planos')
-        .select('id, nome, slug, valor_centavos, periodicidade, tipo')
+        .select('id, nome, slug, valor_centavos, periodicidade, tipo, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos')
         .eq('slug', slug)
         .eq('ativo', true)
         .maybeSingle();
       if (!plano) return json({ error: 'Plano não encontrado.' }, 404);
+
+      // Ofertas privadas exigem código válido, dentro da validade e do limite de usos.
+      if (plano.visibilidade === 'privado') {
+        const informado = (codigo ?? '').trim().toLowerCase();
+        const esperado = (plano.codigo_oferta ?? '').trim().toLowerCase();
+        if (!esperado || informado !== esperado) {
+          return json({ error: 'Esta oferta é por convite. Confira o código recebido.' }, 403);
+        }
+        if (plano.oferta_validade && new Date(plano.oferta_validade) < new Date()) {
+          return json({ error: 'Esta oferta expirou.' }, 410);
+        }
+        if (plano.oferta_limite_usos !== null && plano.oferta_limite_usos !== undefined) {
+          const { count } = await admin
+            .from('pagamentos')
+            .select('id', { count: 'exact', head: true })
+            .eq('plano_id', plano.id)
+            .eq('situacao', 'confirmado');
+          if ((count ?? 0) >= plano.oferta_limite_usos) {
+            return json({ error: 'Esta oferta já atingiu o limite de participantes.' }, 409);
+          }
+        }
+      }
+
+      planoId = plano.id;
       valorCentavos = plano.valor_centavos;
       descricao = `Plano ${plano.nome} (${plano.periodicidade}) — ${plano.tipo}`;
       referencia = `plano:${plano.slug}`;
@@ -209,6 +235,7 @@ Deno.serve(async (req) => {
       .upsert(
         {
           pessoa_id: pessoaId,
+          plano_id: planoId,
           provedor: 'asaas',
           cobranca_externa_id: cobranca.id,
           cliente_externo_id: clienteId,

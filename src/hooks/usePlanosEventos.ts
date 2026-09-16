@@ -58,20 +58,52 @@ export const dataLonga = (iso: string) =>
 const CAMPOS_EVENTO =
   'id, slug, titulo, resumo, descricao, capa_url, online, link_online, local_nome, endereco, cidade, uf, inicio_em, fim_em, vagas, gratuito, destaque';
 
+const CAMPOS_PLANO =
+  'id, slug, nome, descricao, tipo, valor_centavos, periodicidade, beneficios, destaque, ordem, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos';
+
+/** Planos que aparecem na página pública: ativos e com visibilidade pública. */
 export function usePlanos() {
   return useQuery({
     queryKey: ['planos'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('planos')
-        .select('id, slug, nome, descricao, tipo, valor_centavos, periodicidade, beneficios, destaque, ordem')
+        .select(CAMPOS_PLANO)
         .eq('ativo', true)
+        .eq('visibilidade', 'publico')
         .order('ordem');
       if (error) throw error;
       return (data ?? []).map((p: any) => ({
         ...p,
         beneficios: Array.isArray(p.beneficios) ? p.beneficios : [],
       })) as Plano[];
+    },
+  });
+}
+
+/** Oferta privada: plano aberto apenas por código de convite. */
+export function usePlanoPorCodigo(codigo?: string) {
+  return useQuery({
+    queryKey: ['plano-oferta', codigo],
+    enabled: !!codigo,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('planos')
+        .select(CAMPOS_PLANO)
+        .eq('ativo', true)
+        .ilike('codigo_oferta', codigo!)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return { plano: null as Plano | null, motivo: 'inexistente' as const };
+
+      const p = data as any;
+      if (p.oferta_validade && new Date(p.oferta_validade).getTime() < Date.now()) {
+        return { plano: null as Plano | null, motivo: 'vencida' as const };
+      }
+      return {
+        plano: { ...p, beneficios: Array.isArray(p.beneficios) ? p.beneficios : [] } as Plano,
+        motivo: 'ok' as const,
+      };
     },
   });
 }

@@ -18,6 +18,8 @@ import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
 import PainelBlocos from "./pages/painel/PainelBlocos";
 import PainelComunicados from "./pages/painel/ComunicadosPage";
 import PainelPlanosEventos from "./pages/painel/PainelPlanosEventos";
+import PainelPlanoEditor from "./pages/painel/PainelPlanoEditor";
+import PainelEventoEditor from "./pages/painel/PainelEventoEditor";
 
 import DiretorioPage from "./pages/site/DiretorioPage";
 import NegocioPage from "./pages/site/NegocioPage";
@@ -26,6 +28,7 @@ import BlogPostPage from "./pages/site/BlogPostPage";
 import PaginaInstitucional from "./pages/site/PaginaInstitucional";
 import Auth from "./pages/Auth";
 import PlanosPage from './pages/site/PlanosPage';
+import PlanoOfertaPage from './pages/site/PlanoOfertaPage';
 import EventosPage from './pages/site/EventosPage';
 import EventoPage from './pages/site/EventoPage';
 import AcademyPage from './pages/site/AcademyPage';
@@ -151,6 +154,8 @@ function AppContent() {
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
         <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
+        <Route path="/painel-conteudo/planos/:id" element={<PainelPlanoEditor />} />
+        <Route path="/painel-conteudo/eventos/:id" element={<PainelEventoEditor />} />
         <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
         <Route path="/painel-conteudo/pessoas" element={<PainelPessoas />} />
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
@@ -193,6 +198,7 @@ function AppContent() {
         <Route path="/blog/:slug" element={<BlogPostRedirect />} />
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
         <Route path="/planos" element={<PlanosPage />} />
+        <Route path="/oferta/:codigo" element={<PlanoOfertaPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />

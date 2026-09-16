@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { EditorRico } from '@/components/editor/EditorRico';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -99,7 +100,13 @@ export default function PainelNegocioEditor() {
               </div>
               <div className="sm:col-span-2">
                 <Label>Descrição</Label>
-                <Textarea rows={5} value={form.descricao} onChange={(e) => campo('descricao', e.target.value)} />
+                <EditorRico
+                  value={form.descricao}
+                  onChange={(html) => campo('descricao', html)}
+                  pasta="negocios"
+                  minHeight={220}
+                  placeholder="Conte o que o negócio faz..."
+                />
               </div>
               <div><Label>Tipo de negócio</Label>
                 <Input value={form.categoria} onChange={(e) => campo('categoria', e.target.value)} /></div>

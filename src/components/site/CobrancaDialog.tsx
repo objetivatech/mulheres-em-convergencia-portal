@@ -18,11 +18,13 @@ type Props = {
   titulo: string;
   valorTexto: string;
   permiteCupom?: boolean;
+  /** Código de convite, quando a oferta é privada. */
+  codigo?: string;
   aoConcluir?: () => void;
 };
 
 export default function CobrancaDialog({
-  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, aoConcluir,
+  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, aoConcluir,
 }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -45,7 +47,7 @@ export default function CobrancaDialog({
     setEnviando(true);
     try {
       const { data, error } = await supabase.functions.invoke('criar-cobranca', {
-        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined },
+        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined, codigo: codigo || undefined },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);

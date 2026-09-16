@@ -33,3 +33,8 @@ verify_jwt = false
 [functions.diagnostico-asaas]
 verify_jwt = false
 
+# Envio de imagens e arquivos para o Cloudflare R2: exige sessão, validada dentro da função.
+[functions.r2-storage]
+verify_jwt = false
+
+
