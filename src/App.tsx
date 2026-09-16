@@ -157,6 +157,7 @@ function AppContent() {
         <Route path="/minha-area/academy" element={<MinhaAcademy />} />
         <Route path="/minha-area/conecta" element={<MeuConecta />} />
         <Route path="/minha-area/embaixadora" element={<MinhaEmbaixadora />} />
+        <Route path="/minha-area/negocio" element={<MeuNegocio />} />
         <Route path="/minha-area/dados" element={<MeusDados />} />
 
 
