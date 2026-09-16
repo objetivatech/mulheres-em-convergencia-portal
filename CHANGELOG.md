@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-16 — Chave do Asaas e importação de acessos ativos
+- `ASAAS_API_KEY` de produção gravada no cofre do banco novo: os botões de pagamento de planos e encontros voltam a funcionar.
+- `migrar-legado` ganhou o alvo `acessos`: assinaturas ativas e cortesias do site antigo viram liberações de acesso no banco novo, sem duplicar em execuções repetidas (cada liberação guarda a origem legada).
+- Painel **Automações** ganhou o botão “Trazer acessos do site antigo”, com resumo de quantas liberações foram criadas e quantas pessoas não puderam ser identificadas.
+
+
 ### 2026-09-09 — Área da associada e administração no banco novo (Fases 5B e 6)
 - Nova área autenticada `/minha-area`: visão geral, planos e pagamentos, encontros com ingresso em QR Code, Academy, Conecta+, Embaixadoras e Meus dados — tudo no banco novo, sem login separado.
 - Academy pública reescrita no banco novo (`/academy` e `/academy/curso/:slug`), com matrícula, aulas liberadas por acesso vigente ou aula gratuita e marcação de progresso.

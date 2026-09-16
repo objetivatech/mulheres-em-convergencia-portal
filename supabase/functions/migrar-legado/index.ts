@@ -525,6 +525,129 @@ Deno.serve(async (req) => {
       resumo.eventos = { total_antigo: eventosAntigos.length, gravados: eventos.length, lotes };
     }
 
+    // ---------- ACESSOS (assinaturas ativas e cortesias) ----------
+    // Traz quem está com acesso liberado hoje no site antigo para as
+    // concessões do banco novo. Idempotente: a concessão guarda a origem
+    // legada em `motivo` e não é recriada.
+    if (alvos.includes('acessos')) {
+      const primeiraData = (linha: Record<string, unknown>, campos: string[]) => {
+        for (const c of campos) {
+          const v = linha[c];
+          if (typeof v === 'string' && v.trim() !== '') {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) return d;
+          }
+        }
+        return null;
+      };
+
+      // Mapa e-mail/cpf -> pessoa do banco novo
+      const pessoas = await lerTudo(dst as unknown as ReturnType<typeof legado>, 'pessoas', 'id,cpf,auth_user_id');
+      const contatos = await lerTudo(
+        dst as unknown as ReturnType<typeof legado>,
+        'pessoa_contatos',
+        'pessoa_id,tipo,valor',
+      );
+      const pessoaPorEmail = new Map<string, string>();
+      for (const c of contatos) {
+        if (String(c.tipo) === 'email' && c.valor) {
+          pessoaPorEmail.set(String(c.valor).toLowerCase(), String(c.pessoa_id));
+        }
+      }
+      const pessoaPorCpf = new Map<string, string>();
+      for (const p of pessoas) if (p.cpf) pessoaPorCpf.set(String(p.cpf), String(p.id));
+
+      // Perfis do site antigo: user_id -> e-mail/cpf
+      const perfis = await lerTudo(src, 'profiles').catch(() => []);
+      const perfilPorUser = new Map<string, Record<string, unknown>>();
+      for (const p of perfis) {
+        const chave = txt(p.user_id) ?? txt(p.id);
+        if (chave) perfilPorUser.set(String(chave), p);
+      }
+
+      const alvoPessoa = (userId: unknown, emailDireto?: unknown): string | null => {
+        const perfil = userId ? perfilPorUser.get(String(userId)) : null;
+        const cpf = String(txt(perfil?.cpf) ?? '').replace(/\D/g, '');
+        if (cpf && pessoaPorCpf.has(cpf)) return pessoaPorCpf.get(cpf)!;
+        const email = (txt(emailDireto) ?? txt(perfil?.email) ?? '').toLowerCase();
+        if (email && pessoaPorEmail.has(email)) return pessoaPorEmail.get(email)!;
+        return null;
+      };
+
+      // Concessões já importadas (para não duplicar)
+      const jaImportadas = new Set<string>();
+      {
+        const { data } = await dst.from('concessoes_acesso')
+          .select('motivo').eq('origem', 'importacao');
+        for (const c of data ?? []) if (c.motivo) jaImportadas.add(String(c.motivo));
+        const { data: cort } = await dst.from('concessoes_acesso')
+          .select('motivo').eq('origem', 'cortesia');
+        for (const c of cort ?? []) if (c.motivo) jaImportadas.add(String(c.motivo));
+      }
+
+      const novas: Record<string, unknown>[] = [];
+      let semPessoa = 0, vencidas = 0;
+
+      // 1) assinaturas ativas
+      const assinaturas = await lerTudo(src, 'user_subscriptions').catch(() => []);
+      for (const a of assinaturas) {
+        const status = String(a.status ?? '').toLowerCase();
+        if (!['active', 'ativa', 'trialing'].includes(status)) continue;
+        const marca = `legado:user_subscriptions:${a.id}`;
+        if (jaImportadas.has(marca)) continue;
+        const pessoaId = alvoPessoa(a.user_id, (a as Record<string, unknown>).email);
+        if (!pessoaId) { semPessoa++; continue; }
+        const fim = primeiraData(a, [
+          'expires_at', 'current_period_end', 'end_date', 'next_billing_date', 'renewal_date',
+        ]);
+        if (!fim || fim.getTime() < Date.now()) { vencidas++; continue; }
+        const inicio = primeiraData(a, ['started_at', 'current_period_start', 'start_date', 'created_at'])
+          ?? new Date();
+        novas.push({
+          pessoa_id: pessoaId,
+          tipo: 'diretorio',
+          origem: 'importacao',
+          inicio_em: inicio.toISOString(),
+          fim_em: fim.toISOString(),
+          motivo: marca,
+        });
+      }
+
+      // 2) cortesias de negócio (sem data de fim)
+      const negociosAntigos = await lerTudo(src, 'businesses').catch(() => []);
+      for (const b of negociosAntigos) {
+        if (b.is_complimentary !== true) continue;
+        const marca = `legado:businesses:${b.id}`;
+        if (jaImportadas.has(marca)) continue;
+        const pessoaId = alvoPessoa(b.user_id ?? b.owner_id, b.email);
+        if (!pessoaId) { semPessoa++; continue; }
+        novas.push({
+          pessoa_id: pessoaId,
+          tipo: 'diretorio',
+          origem: 'cortesia',
+          inicio_em: new Date().toISOString(),
+          fim_em: null,
+          motivo: marca,
+        });
+      }
+
+      let gravadas = 0;
+      for (let i = 0; i < novas.length; i += 200) {
+        const { error } = await dst.from('concessoes_acesso').insert(novas.slice(i, i + 200));
+        if (error) throw new Error(`concessoes_acesso: ${error.message}`);
+        gravadas += Math.min(200, novas.length - i);
+      }
+
+      resumo.acessos = {
+        assinaturas_antigas: assinaturas.length,
+        cortesias_antigas: negociosAntigos.filter((b) => b.is_complimentary === true).length,
+        concessoes_criadas: gravadas,
+        ja_importadas: jaImportadas.size,
+        sem_pessoa_correspondente: semPessoa,
+        vencidas_ignoradas: vencidas,
+      };
+    }
+
     return json({ ok: true, resumo });
 
   } catch (e) {

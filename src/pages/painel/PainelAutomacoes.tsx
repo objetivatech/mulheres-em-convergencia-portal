@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useAutomacoes, useReprocessarWebhooks } from '@/hooks/useAdminNovo';
 
 const quando = (iso?: string | null) =>
@@ -23,6 +25,28 @@ export default function PainelAutomacoes() {
     }
   };
 
+  const [importando, setImportando] = useState(false);
+
+  const importarAcessos = async () => {
+    setImportando(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke('migrar-legado', {
+        body: { acao: 'migrar', alvos: ['acessos'] },
+      });
+      if (error) throw error;
+      if ((r as any)?.error) throw new Error((r as any).error);
+      const a = (r as any)?.resumo?.acessos ?? {};
+      toast({
+        title: 'Acessos trazidos do site antigo',
+        description: `${a.concessoes_criadas ?? 0} liberações criadas · ${a.sem_pessoa_correspondente ?? 0} sem pessoa correspondente.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível trazer os acessos', description: e?.message, variant: 'destructive' });
+    } finally {
+      setImportando(false);
+    }
+  };
+
   const comErro = (data?.webhooks ?? []).filter((w) => w.erro || !w.processado_em);
 
   return (
@@ -30,9 +54,14 @@ export default function PainelAutomacoes() {
       titulo="Automações"
       descricao="Avisos de pagamento, liberações de acesso e comunicados."
       acoes={
-        <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
-          {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={importarAcessos} disabled={importando}>
+            {importando ? 'Trazendo…' : 'Trazer acessos do site antigo'}
+          </Button>
+          <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
+            {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
+          </Button>
+        </div>
       }
     >
       {isLoading ? (
