@@ -2131,6 +2131,7 @@ export type Database = {
           periodicidade: string
           slug: string
           tipo: Database["public"]["Enums"]["acesso_tipo"]
+          tipos: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos: number
         }
         Insert: {
@@ -2147,6 +2148,7 @@ export type Database = {
           periodicidade?: string
           slug: string
           tipo?: Database["public"]["Enums"]["acesso_tipo"]
+          tipos?: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos?: number
         }
         Update: {
@@ -2163,6 +2165,7 @@ export type Database = {
           periodicidade?: string
           slug?: string
           tipo?: Database["public"]["Enums"]["acesso_tipo"]
+          tipos?: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos?: number
         }
         Relationships: []
