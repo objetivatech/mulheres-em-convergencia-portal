@@ -38,6 +38,7 @@ import MeusDados from './pages/area/MeusDados';
 import MinhaAcademy from './pages/area/MinhaAcademy';
 import MeuConecta from './pages/area/MeuConecta';
 import MinhaEmbaixadora from './pages/area/MinhaEmbaixadora';
+import MeuNegocio from './pages/area/MeuNegocio';
 import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
 import PainelCRM from './pages/painel/PainelCRM';
@@ -157,6 +158,7 @@ function AppContent() {
         <Route path="/minha-area/academy" element={<MinhaAcademy />} />
         <Route path="/minha-area/conecta" element={<MeuConecta />} />
         <Route path="/minha-area/embaixadora" element={<MinhaEmbaixadora />} />
+        <Route path="/minha-area/negocio" element={<MeuNegocio />} />
         <Route path="/minha-area/dados" element={<MeusDados />} />
 
 

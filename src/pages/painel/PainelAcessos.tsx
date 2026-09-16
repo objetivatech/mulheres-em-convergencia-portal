@@ -11,9 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import {
   AREAS, PAPEIS, usePlanosAcessos, useResumoAcessos, useSalvarPlanoAcesso, type PlanoAcesso,
@@ -36,11 +34,23 @@ export default function PainelAcessos() {
   const alterar = (id: string, campo: keyof PlanoAcesso, valor: any) =>
     setRascunho((r) => ({ ...r, [id]: { ...r[id], [campo]: valor } }));
 
+  const alternarArea = (id: string, area: string) =>
+    setRascunho((r) => {
+      const atuais = r[id]?.tipos ?? [];
+      const tipos = atuais.includes(area) ? atuais.filter((t) => t !== area) : [...atuais, area];
+      return { ...r, [id]: { ...r[id], tipos } };
+    });
+
   const gravar = async (id: string) => {
     const p = rascunho[id];
+    if (!p.tipos.length) {
+      toast({ title: 'Escolha ao menos uma área', description: 'O plano precisa liberar alguma coisa.', variant: 'destructive' });
+      return;
+    }
     try {
-      await salvar.mutateAsync({ id, tipo: p.tipo, dias_acesso: Number(p.dias_acesso) || 31, ativo: p.ativo });
-      toast({ title: 'Plano atualizado', description: `${p.nome} agora libera ${p.tipo} por ${p.dias_acesso} dias.` });
+      await salvar.mutateAsync({ id, tipos: p.tipos, dias_acesso: Number(p.dias_acesso) || 31, ativo: p.ativo });
+      const nomes = p.tipos.map((t) => AREAS.find((a) => a.valor === t)?.rotulo ?? t).join(', ');
+      toast({ title: 'Plano atualizado', description: `${p.nome} agora libera ${nomes} por ${p.dias_acesso} dias.` });
     } catch (e: any) {
       toast({ title: 'Não foi possível salvar', description: e?.message, variant: 'destructive' });
     }
@@ -80,7 +90,7 @@ export default function PainelAcessos() {
                   <tr>
                     <th className="p-3 font-medium">Plano</th>
                     <th className="p-3 font-medium">Valor</th>
-                    <th className="p-3 font-medium">Libera</th>
+                    <th className="p-3 font-medium">Libera (pode marcar várias)</th>
                     <th className="p-3 font-medium">Dias</th>
                     <th className="p-3 font-medium">À venda</th>
                     <th className="p-3" />
@@ -90,23 +100,28 @@ export default function PainelAcessos() {
                   {(planos ?? []).map((p) => {
                     const r = rascunho[p.id] ?? p;
                     const mudou =
-                      r.tipo !== p.tipo || Number(r.dias_acesso) !== p.dias_acesso || r.ativo !== p.ativo;
+                      r.tipos.join(',') !== p.tipos.join(',') ||
+                      Number(r.dias_acesso) !== p.dias_acesso ||
+                      r.ativo !== p.ativo;
                     return (
-                      <tr key={p.id} className="border-t border-border">
+                      <tr key={p.id} className="border-t border-border align-top">
                         <td className="p-3">
                           <p className="font-medium">{p.nome}</p>
                           <p className="text-xs text-muted-foreground">{p.periodicidade}</p>
                         </td>
                         <td className="p-3 whitespace-nowrap">{dinheiro(p.valor_centavos)}</td>
                         <td className="p-3">
-                          <Select value={r.tipo} onValueChange={(v) => alterar(p.id, 'tipo', v)}>
-                            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-                            <SelectContent className="bg-popover">
-                              {AREAS.map((a) => (
-                                <SelectItem key={a.valor} value={a.valor}>{a.rotulo}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex flex-wrap gap-x-4 gap-y-2 min-w-64">
+                            {AREAS.map((a) => (
+                              <label key={a.valor} className="flex items-center gap-2 text-sm cursor-pointer">
+                                <Checkbox
+                                  checked={r.tipos.includes(a.valor)}
+                                  onCheckedChange={() => alternarArea(p.id, a.valor)}
+                                />
+                                {a.rotulo}
+                              </label>
+                            ))}
+                          </div>
                         </td>
                         <td className="p-3">
                           <Input
