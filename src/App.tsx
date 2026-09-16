@@ -198,6 +198,7 @@ function AppContent() {
         <Route path="/blog/:slug" element={<BlogPostRedirect />} />
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
         <Route path="/planos" element={<PlanosPage />} />
+        <Route path="/oferta/:codigo" element={<PlanoOfertaPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
         <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/confirmacao" element={<EventoConfirmacaoPage />} />
