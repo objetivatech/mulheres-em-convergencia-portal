@@ -47,7 +47,7 @@ export default function CobrancaDialog({
     setEnviando(true);
     try {
       const { data, error } = await supabase.functions.invoke('criar-cobranca', {
-        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined },
+        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined, codigo: codigo || undefined },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
