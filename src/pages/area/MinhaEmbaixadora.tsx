@@ -1,10 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import AreaLayout from '@/components/area/AreaLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMinhaEmbaixadora } from '@/hooks/useMinhaArea';
+import { useSalvarMinhaFicha } from '@/hooks/useEmbaixadorasAdmin';
 import { dinheiro } from '@/hooks/usePlanosEventos';
 import { useToast } from '@/hooks/use-toast';
 
