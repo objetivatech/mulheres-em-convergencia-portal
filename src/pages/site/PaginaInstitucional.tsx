@@ -4,6 +4,8 @@ import SiteLayout from '@/components/site/SiteLayout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePagina } from '@/hooks/useSite';
+import LinhaDoTempo from '@/components/site/LinhaDoTempo';
+import VitrineParceiros from '@/components/site/VitrineParceiros';
 
 export default function PaginaInstitucional({ slug: slugFixo }: { slug?: string }) {
   const params = useParams<{ slug: string }>();
@@ -45,6 +47,13 @@ export default function PaginaInstitucional({ slug: slugFixo }: { slug?: string 
           <div className="prose prose-neutral max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: pagina.conteudo }} />
         )}
       </article>
+
+      {slug === 'sobre' && (
+        <>
+          <LinhaDoTempo />
+          <VitrineParceiros />
+        </>
+      )}
     </SiteLayout>
   );
 }

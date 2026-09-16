@@ -1364,6 +1364,45 @@ export type Database = {
         }
         Relationships: []
       }
+      marcos_linha_tempo: {
+        Row: {
+          ano: number
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          id: string
+          imagem_url: string | null
+          ordem: number
+          rotulo: string | null
+          titulo: string
+        }
+        Insert: {
+          ano: number
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          ordem?: number
+          rotulo?: string | null
+          titulo: string
+        }
+        Update: {
+          ano?: number
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          ordem?: number
+          rotulo?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       matriculas: {
         Row: {
           concluido_em: string | null
@@ -1647,7 +1686,9 @@ export type Database = {
           email: string | null
           id: string
           instagram: string | null
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           nome: string
           pessoa_id: string | null
           publicado: boolean
@@ -1669,7 +1710,9 @@ export type Database = {
           email?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           nome: string
           pessoa_id?: string | null
           publicado?: boolean
@@ -1691,7 +1734,9 @@ export type Database = {
           email?: string | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           nome?: string
           pessoa_id?: string | null
           publicado?: boolean
@@ -1916,6 +1961,42 @@ export type Database = {
             referencedColumns: ["pessoa_id"]
           },
         ]
+      }
+      parceiros: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          id: string
+          logo_url: string | null
+          nome: string
+          ordem: number
+          site: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          logo_url?: string | null
+          nome: string
+          ordem?: number
+          site?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          logo_url?: string | null
+          nome?: string
+          ordem?: number
+          site?: string | null
+        }
+        Relationships: []
       }
       password_reset_tokens: {
         Row: {

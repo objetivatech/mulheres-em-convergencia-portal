@@ -26,6 +26,7 @@ import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
 import BlogPostPage from "./pages/site/BlogPostPage";
 import PaginaInstitucional from "./pages/site/PaginaInstitucional";
+import PainelInstitucional from "./pages/painel/PainelInstitucional";
 import Auth from "./pages/Auth";
 import PlanosPage from './pages/site/PlanosPage';
 import PlanoOfertaPage from './pages/site/PlanoOfertaPage';
@@ -164,6 +165,7 @@ function AppContent() {
         <Route path="/painel-conteudo/acessos" element={<Navigate to="/painel-conteudo/planos-eventos" replace />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />
         <Route path="/painel-conteudo/imagens" element={<PainelImagens />} />
+        <Route path="/painel-conteudo/institucional" element={<PainelInstitucional />} />
         <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
         <Route path="/painel-conteudo/embaixadoras" element={<PainelEmbaixadoras />} />
 
@@ -214,7 +216,7 @@ function AppContent() {
         <Route path="/termos-de-uso" element={<PaginaInstitucional slug="termos-de-uso" />} />
         <Route path="/politica-de-privacidade" element={<PaginaInstitucional slug="politica-de-privacidade" />} />
         <Route path="/politica-de-cookies" element={<PaginaInstitucional slug="politica-de-cookies" />} />
-        <Route path="/quem-e-elisangela-aranda" element={<QuemEElisangelaAranda />} />
+        <Route path="/quem-e-elisangela-aranda" element={<PaginaInstitucional slug="quem-e-elisangela-aranda" />} />
         <Route path="/academy" element={<AcademyPage />} />
         <Route path="/academy/catalogo" element={<Navigate to="/academy" replace />} />
         <Route path="/academy/curso/:slug" element={<AcademyCursoPage />} />

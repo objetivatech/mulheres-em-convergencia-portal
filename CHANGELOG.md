@@ -184,3 +184,9 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Painel da equipe: "Planos e encontros" e "Acessos e planos" viraram um item só — "Planos, encontros e acessos", com abas. O endereço antigo redireciona.
 - Nova tela **Imagens**: biblioteca do Cloudflare R2 com tudo o que já foi enviado, inclusive antes do reboot; busca, cópia de endereço e envio de novas.
 - Editor de textos ganhou o botão "Escolher imagem já enviada", reaproveitando a biblioteca.
+
+## 2026-09-16 — Conteúdos institucionais
+- Páginas "Sobre" e "Quem é Elisângela Aranda" publicadas no banco novo e editáveis pelo painel.
+- Novas tabelas `marcos_linha_tempo` e `parceiros` com painel "Parceiros e linha do tempo".
+- Linha do tempo e vitrine de parceiros na página Sobre; parceiros também na capa.
+- Mapa dos negócios no diretório, com latitude/longitude editáveis no cadastro do negócio.

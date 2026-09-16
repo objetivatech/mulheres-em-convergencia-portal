@@ -19,6 +19,7 @@ const VAZIO = {
   nome: '', slug: '', descricao: '', categoria: '', cidade: '', uf: '', bairro: '',
   telefone: '', whatsapp: '', email: '', site: '', instagram: '',
   logo_url: '', capa_url: '', publicado: false, destaque: false,
+  latitude: '' as string | number, longitude: '' as string | number,
 };
 
 export default function PainelNegocioEditor() {
@@ -53,6 +54,8 @@ export default function PainelNegocioEditor() {
       ...form,
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),
       email: form.email || null,
+      latitude: form.latitude === '' || form.latitude === null ? null : Number(form.latitude),
+      longitude: form.longitude === '' || form.longitude === null ? null : Number(form.longitude),
     };
     delete (valores as any).id;
     delete (valores as any).criado_em;
@@ -116,6 +119,12 @@ export default function PainelNegocioEditor() {
                 <Input value={form.cidade} onChange={(e) => campo('cidade', e.target.value)} /></div>
               <div><Label>Estado</Label>
                 <Input maxLength={2} value={form.uf} onChange={(e) => campo('uf', e.target.value.toUpperCase())} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Latitude (mapa)</Label>
+                  <Input value={form.latitude ?? ''} onChange={(e) => campo('latitude', e.target.value)} placeholder="-30.0346" /></div>
+                <div><Label>Longitude (mapa)</Label>
+                  <Input value={form.longitude ?? ''} onChange={(e) => campo('longitude', e.target.value)} placeholder="-51.2177" /></div>
+              </div>
             </CardContent>
           </Card>
 

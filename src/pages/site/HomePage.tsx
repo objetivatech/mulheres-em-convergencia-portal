@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, GraduationCap, Store, BookOpen } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import VitrineParceiros from '@/components/site/VitrineParceiros';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBlocosSite, useNegociosDestaque, usePosts } from '@/hooks/useSite';
@@ -158,6 +159,8 @@ export default function HomePage() {
           <p className="text-muted-foreground">Os textos do blog aparecem aqui assim que forem migrados.</p>
         )}
       </section>
+
+      <VitrineParceiros />
 
       {/* Chamada final */}
       <section className="py-16" style={{ background: 'var(--grad-marca)' }}>

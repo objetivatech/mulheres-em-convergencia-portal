@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useNegocios } from '@/hooks/useSite';
+import { DirectoryLeafletMap } from '@/components/maps/DirectoryLeafletMap';
 
 export default function DiretorioPage() {
   const [busca, setBusca] = useState('');
@@ -62,6 +63,26 @@ export default function DiretorioPage() {
           )}
         </div>
       </section>
+
+      {(negocios ?? []).some((n) => n.latitude && n.longitude) && (
+        <section className="container mx-auto px-4 pt-10">
+          <h2 className="text-xl font-semibold tracking-tight mb-4">No mapa</h2>
+          <DirectoryLeafletMap
+            height="420px"
+            businesses={(negocios ?? [])
+              .filter((n) => n.latitude && n.longitude)
+              .map((n) => ({
+                id: n.slug,
+                name: n.nome,
+                latitude: n.latitude ?? undefined,
+                longitude: n.longitude ?? undefined,
+                category: n.categoria ?? '',
+                city: n.cidade ?? '',
+                state: n.uf ?? '',
+              }))}
+          />
+        </section>
+      )}
 
       <section className="container mx-auto px-4 py-12">
         {isLoading ? (

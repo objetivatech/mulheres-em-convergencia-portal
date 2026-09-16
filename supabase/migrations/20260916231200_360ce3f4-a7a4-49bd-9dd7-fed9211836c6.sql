@@ -1,0 +1,20 @@
+UPDATE public.paginas SET
+  titulo = 'Nossa história',
+  situacao = 'publicado',
+  publicado_em = COALESCE(publicado_em, now()),
+  seo_titulo = 'Sobre o Mulheres em Convergência',
+  seo_descricao = 'Conheça nossa missão de fortalecer mulheres empreendedoras por meio de educação, comunidade e oportunidades.',
+  conteudo = '<p>O <strong>Mulheres em Convergência</strong> nasceu da percepção de que mulheres empreendedoras precisam de mais do que conhecimento técnico para prosperar. Elas precisam de uma rede de apoio, de conexões significativas e de um espaço seguro para crescer.</p><h2>Conectar</h2><p>Criamos pontes entre mulheres empreendedoras, facilitando networking e parcerias estratégicas.</p><h2>Educar</h2><p>Oferecemos conteúdo de qualidade, oficinas e mentorias para desenvolver habilidades empreendedoras.</p><h2>Impulsionar</h2><p>Apoiamos o crescimento dos negócios com ferramentas, recursos e oportunidades.</p><p>Nosso projeto tem como base a crença de que quando uma mulher prospera, toda a comunidade se beneficia. Por isso, focamos não apenas no sucesso individual, mas no <strong>impacto coletivo</strong>.</p><h2>Nossos valores</h2><p><strong>Sororidade</strong> — a força da união feminina e do apoio mútuo.</p><p><strong>Empoderamento</strong> — ferramentas e conhecimento para cada mulher conduzir sua vida profissional.</p><p><strong>Inovação</strong> — novas formas de conectar, educar e impulsionar.</p><p><strong>Impacto social</strong> — transformar comunidades inteiras, não apenas trajetórias individuais.</p>'
+WHERE slug = 'sobre';
+
+INSERT INTO public.paginas (slug, titulo, situacao, publicado_em, seo_titulo, seo_descricao, conteudo)
+VALUES (
+  'quem-e-elisangela-aranda',
+  'Quem é Elisângela Aranda',
+  'publicado',
+  now(),
+  'Quem é Elisângela Aranda',
+  'Conheça Elisângela Martins Aranda: empreendedora social, educadora e fundadora do Mulheres em Convergência.',
+  '<p>Sou Elisângela Martins Aranda. Mãe de duas, empreendedora social, educadora e uma mulher movida por um otimismo teimoso e por uma resiliência construída na prática da vida.</p><p>Minha história profissional começa cedo. Aos 14 anos, iniciei minha trajetória na construção civil, um ambiente majoritariamente masculino, onde aprendi disciplina, responsabilidade, organização e, sobretudo, a importância do trabalho bem feito.</p><p>Em 2017 senti que precisava fazer uma transição — não apenas de carreira, mas de propósito. Passei a atuar como multiplicadora e facilitadora de conteúdos para mulheres, especialmente aquelas que empreendem por necessidade.</p><p>Desde então, uno experiência prática e estudos em gestão de negócios, planejamento estratégico, marketing e liderança, oferecendo mentorias, formações, oficinas e consultorias. Atuo em iniciativas de impacto social como a Rede Mulher Empreendedora e a Aliança Empreendedora, além de projetos com o IF Alvorada.</p><p>Entre 2014 e 2019 apresentei e produzi programas na Rádio Comunitária Acácia FM 87.9, ampliando vozes e fortalecendo narrativas locais.</p><p>Sou Tecnóloga em Processos Gerenciais, com formação técnica em Edificações, e atuo há mais de cinco anos com empreendedorismo popular, lideranças femininas e desenvolvimento de pequenos negócios.</p><p>Idealizei projetos como Motiva Artesão e Construindo Trajetórias, em Alvorada (RS), e em 2023 atuei como diretora social da Associação Arecuja. Sou fundadora de <strong>A Confraria Networking</strong> e do <strong>Mulheres em Convergência</strong>, além de organizar o <strong>Happy Hour Conecta</strong>.</p><blockquote><p>Um ambiente de networking onde o feminino pode se manifestar de forma livre é radicalmente transformador.</p></blockquote><p>Meu propósito é despertar a essência das empreendedoras e oferecer ferramentas práticas para que criem, sustentem e expandam seus negócios com autonomia, consciência e dignidade.</p><p><em>Sou artesã de coração, educadora por vocação e empreendedora por convicção.</em></p>'
+)
+ON CONFLICT (slug) DO NOTHING;

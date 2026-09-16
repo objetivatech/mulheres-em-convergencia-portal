@@ -22,6 +22,8 @@ export type Negocio = {
   logo_url: string | null;
   capa_url: string | null;
   destaque: boolean;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type Post = {
@@ -55,7 +57,7 @@ export type BlocoSite = {
 };
 
 const CAMPOS_NEGOCIO =
-  'id, slug, nome, descricao, categoria, cidade, uf, bairro, telefone, whatsapp, email, site, instagram, logo_url, capa_url, destaque';
+  'id, slug, nome, descricao, categoria, cidade, uf, bairro, telefone, whatsapp, email, site, instagram, logo_url, capa_url, destaque, latitude, longitude';
 
 const CAMPOS_POST =
   'id, slug, titulo, resumo, conteudo, capa_url, publicado_em, destaque, seo_titulo, seo_descricao, autor:autores(nome, foto_url, bio)';
