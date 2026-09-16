@@ -123,6 +123,11 @@ function ScrollToTop() {
   return null;
 }
 
+function BlogPostRedirect() {
+  const { pathname } = useLocation();
+  return <Navigate to={pathname.replace(/^\/blog/, '/convergindo')} replace />;
+}
+
 function AppContent() {
   const { needsCompletion, loading: profileLoading, markAsComplete } = useProfileCompletion();
   const { user } = useAuth();
