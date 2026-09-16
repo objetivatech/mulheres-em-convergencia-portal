@@ -29,3 +29,7 @@ verify_jwt = false
 [functions.criar-cobranca]
 verify_jwt = false
 
+# Diagnóstico do Asaas: exige administradora, validada dentro da função.
+[functions.diagnostico-asaas]
+verify_jwt = false
+

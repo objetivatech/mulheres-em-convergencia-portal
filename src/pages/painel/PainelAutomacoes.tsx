@@ -26,6 +26,30 @@ export default function PainelAutomacoes() {
   };
 
   const [importando, setImportando] = useState(false);
+  const [verificando, setVerificando] = useState(false);
+  const [asaas, setAsaas] = useState<{ apontandoParaCa: boolean; destinoEsperado: string; webhooks: any[] } | null>(null);
+
+  const verificarAsaas = async () => {
+    setVerificando(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', { body: {} });
+      if (error) throw error;
+      if ((r as any)?.error) throw new Error((r as any).error);
+      setAsaas(r as any);
+      toast({
+        title: (r as any).apontandoParaCa ? 'Asaas conectado ao portal novo' : 'Asaas ainda não aponta para o portal novo',
+        description: (r as any).apontandoParaCa
+          ? 'Os avisos de pagamento chegam aqui.'
+          : 'Atualize o endereço de aviso no painel do Asaas.',
+        variant: (r as any).apontandoParaCa ? undefined : 'destructive',
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível verificar o Asaas', description: e?.message, variant: 'destructive' });
+    } finally {
+      setVerificando(false);
+    }
+  };
+
 
   const importarAcessos = async () => {
     setImportando(true);
@@ -58,9 +82,13 @@ export default function PainelAutomacoes() {
           <Button size="sm" variant="outline" onClick={importarAcessos} disabled={importando}>
             {importando ? 'Trazendo…' : 'Trazer acessos do site antigo'}
           </Button>
+          <Button size="sm" variant="outline" onClick={verificarAsaas} disabled={verificando}>
+            {verificando ? 'Verificando…' : 'Verificar conexão com o Asaas'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
+
         </div>
       }
     >
@@ -68,6 +96,22 @@ export default function PainelAutomacoes() {
         <Skeleton className="h-72 rounded-xl" />
       ) : (
         <div className="space-y-6">
+          {asaas && (
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="font-semibold">
+                {asaas.apontandoParaCa ? 'Asaas conectado ao portal novo' : 'Asaas ainda não aponta para o portal novo'}
+              </p>
+              <p className="text-xs text-muted-foreground break-all mt-1">Endereço esperado: {asaas.destinoEsperado}</p>
+              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                {asaas.webhooks.map((w, i) => (
+                  <li key={i} className="break-all">
+                    {w.nome ?? 'Aviso'} · {w.url} · {w.ativo === false ? 'desligado' : 'ativo'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-border bg-card p-5">
               <p className="text-sm text-muted-foreground">Avisos com problema</p>
