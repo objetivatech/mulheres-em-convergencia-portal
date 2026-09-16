@@ -61,9 +61,9 @@ export function useItensDaUsuaria(): ItemMenu[] {
     itens.push({ para: '/minha-area/embaixadora', rotulo: 'Embaixadoras', icone: Sparkles, liberado: true });
   }
 
-  if (negocio) {
+  if (negocio || perfil?.acesso_diretorio) {
     itens.push({
-      para: `/painel-conteudo/negocios/${(negocio as any).id}`,
+      para: '/minha-area/negocio',
       rotulo: 'Meu negócio',
       icone: Store,
       liberado: true,
