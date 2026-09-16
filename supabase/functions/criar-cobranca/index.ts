@@ -67,15 +67,40 @@ Deno.serve(async (req) => {
     let referencia = '';
     let evento: { id: string; titulo: string; gratuito: boolean } | null = null;
     let loteId: string | null = null;
+    let planoId: string | null = null;
 
     if (tipo === 'plano') {
       const { data: plano } = await admin
         .from('planos')
-        .select('id, nome, slug, valor_centavos, periodicidade, tipo')
+        .select('id, nome, slug, valor_centavos, periodicidade, tipo, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos')
         .eq('slug', slug)
         .eq('ativo', true)
         .maybeSingle();
       if (!plano) return json({ error: 'Plano não encontrado.' }, 404);
+
+      // Ofertas privadas exigem código válido, dentro da validade e do limite de usos.
+      if (plano.visibilidade === 'privado') {
+        const informado = (codigo ?? '').trim().toLowerCase();
+        const esperado = (plano.codigo_oferta ?? '').trim().toLowerCase();
+        if (!esperado || informado !== esperado) {
+          return json({ error: 'Esta oferta é por convite. Confira o código recebido.' }, 403);
+        }
+        if (plano.oferta_validade && new Date(plano.oferta_validade) < new Date()) {
+          return json({ error: 'Esta oferta expirou.' }, 410);
+        }
+        if (plano.oferta_limite_usos !== null && plano.oferta_limite_usos !== undefined) {
+          const { count } = await admin
+            .from('pagamentos')
+            .select('id', { count: 'exact', head: true })
+            .eq('plano_id', plano.id)
+            .eq('situacao', 'confirmado');
+          if ((count ?? 0) >= plano.oferta_limite_usos) {
+            return json({ error: 'Esta oferta já atingiu o limite de participantes.' }, 409);
+          }
+        }
+      }
+
+      planoId = plano.id;
       valorCentavos = plano.valor_centavos;
       descricao = `Plano ${plano.nome} (${plano.periodicidade}) — ${plano.tipo}`;
       referencia = `plano:${plano.slug}`;
