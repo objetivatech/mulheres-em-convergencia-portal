@@ -2720,6 +2720,22 @@ export type Database = {
         }
         Returns: string
       }
+      conecta_membros: {
+        Args: never
+        Returns: {
+          aceita_contato: boolean
+          apresentacao: string
+          cargo: string
+          empresa: string
+          foto_url: string
+          instagram: string
+          interesses: string[]
+          linkedin: string
+          nome: string
+          pessoa_id: string
+          site: string
+        }[]
+      }
       e_admin: { Args: never; Returns: boolean }
       garantir_pessoa: {
         Args: { _cpf?: string; _email?: string; _nome?: string }

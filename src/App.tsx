@@ -45,6 +45,8 @@ import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
 import PainelAcessos from './pages/painel/PainelAcessos';
 import PainelAcademy from './pages/painel/PainelAcademy';
+import PainelConecta from './pages/painel/PainelConecta';
+import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
 
 
 
@@ -151,6 +153,8 @@ function AppContent() {
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
         <Route path="/painel-conteudo/acessos" element={<PainelAcessos />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />
+        <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
+        <Route path="/painel-conteudo/embaixadoras" element={<PainelEmbaixadoras />} />
 
         {/* Área da associada — banco novo */}
         <Route path="/minha-area" element={<MinhaAreaHome />} />

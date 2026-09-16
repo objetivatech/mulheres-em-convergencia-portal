@@ -67,7 +67,7 @@ Atualizado: 08/09/2026
 - [x] 5B — Área da associada `/minha-area`: visão geral, planos, encontros com ingresso, Academy, Conecta+, Embaixadoras e Meus dados (`docs/_reboot/22-area-associada-e-admin.md`)
 - [x] Dashboard do Negócio no banco novo (`/minha-area/meu-negocio`: ficha, galeria, áreas de atendimento e comodidades)
 - [x] Academy administrativa no banco novo (`/painel-conteudo/academy`: cursos, aulas e categorias)
-- [ ] Conecta+ completo e Embaixadoras completo no banco novo
+- [x] Conecta+ completo e Embaixadoras completo no banco novo (rede, grupos, indicações, níveis, materiais e repasses)
 
 ### Fase 6 — Admin, CRM e automações
 - [x] Pessoas, Financeiro, Relacionamento (CRM) e Automações no painel da equipe (`docs/_reboot/22-area-associada-e-admin.md`)

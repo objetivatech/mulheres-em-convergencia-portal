@@ -1,10 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import AreaLayout from '@/components/area/AreaLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMinhaEmbaixadora } from '@/hooks/useMinhaArea';
+import { useSalvarMinhaFicha } from '@/hooks/useEmbaixadorasAdmin';
 import { dinheiro } from '@/hooks/usePlanosEventos';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,11 +19,40 @@ const data = (iso?: string | null) =>
 
 export default function MinhaEmbaixadora() {
   const { data: painel, isLoading } = useMinhaEmbaixadora();
+  const salvarFicha = useSalvarMinhaFicha();
   const { toast } = useToast();
+  const [ficha, setFicha] = useState({ apresentacao: '', cidade: '', uf: '', publicada: false });
+
+  useEffect(() => {
+    if (painel?.ficha) {
+      setFicha({
+        apresentacao: painel.ficha.apresentacao ?? '',
+        cidade: painel.ficha.cidade ?? '',
+        uf: painel.ficha.uf ?? '',
+        publicada: !!painel.ficha.publicada,
+      });
+    }
+  }, [painel?.ficha]);
 
   const link = painel?.ficha?.codigo
     ? `${window.location.origin}/planos?indicacao=${painel.ficha.codigo}`
     : '';
+
+  const salvar = () =>
+    salvarFicha.mutate(
+      {
+        id: painel?.ficha?.id,
+        apresentacao: ficha.apresentacao.trim() || null,
+        cidade: ficha.cidade.trim() || null,
+        uf: ficha.uf.trim().toUpperCase() || null,
+        publicada: ficha.publicada,
+      },
+      {
+        onSuccess: () => toast({ title: 'Dados salvos', description: 'Sua página de embaixadora foi atualizada.' }),
+        onError: (e: any) =>
+          toast({ title: 'Não foi possível salvar', description: e.message, variant: 'destructive' }),
+      }
+    );
 
   return (
     <AreaLayout titulo="Embaixadoras" descricao="Suas indicações, comissões e materiais.">
@@ -59,6 +94,39 @@ export default function MinhaEmbaixadora() {
                 Nível {painel.ficha.nivel.nome} · {painel.ficha.nivel.comissao_percentual}% de comissão
               </Badge>
             )}
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-6 max-w-2xl space-y-4">
+            <h2 className="font-semibold">Minha apresentação</h2>
+            <div className="space-y-1.5">
+              <Label htmlFor="apresentacao">Como você se apresenta</Label>
+              <Textarea
+                id="apresentacao"
+                rows={4}
+                value={ficha.apresentacao}
+                onChange={(e) => setFicha({ ...ficha, apresentacao: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="cidade">Cidade</Label>
+                <Input id="cidade" value={ficha.cidade} onChange={(e) => setFicha({ ...ficha, cidade: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="uf">Estado</Label>
+                <Input id="uf" maxLength={2} value={ficha.uf} onChange={(e) => setFicha({ ...ficha, uf: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border p-3">
+              <div>
+                <p className="text-sm font-medium">Aparecer na página de embaixadoras</p>
+                <p className="text-xs text-muted-foreground">Seu nome e apresentação ficam visíveis no site.</p>
+              </div>
+              <Switch checked={ficha.publicada} onCheckedChange={(v) => setFicha({ ...ficha, publicada: v })} />
+            </div>
+            <Button onClick={salvar} disabled={salvarFicha.isPending}>
+              {salvarFicha.isPending ? 'Salvando…' : 'Salvar'}
+            </Button>
           </section>
 
           <div className="grid gap-4 sm:grid-cols-3">

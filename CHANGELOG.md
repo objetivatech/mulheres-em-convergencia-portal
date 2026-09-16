@@ -153,3 +153,9 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Cada plano pode liberar mais de uma área (`planos.tipos`); o webhook do Asaas concede todas.
 - Nova tela **Minha área → Meu negócio**: a dona edita a ficha do diretório (dados, contatos, fotos, locais de atendimento e comodidades) sem entrar no painel da equipe.
 - Menu da usuária e menu lateral passam a apontar para `/minha-area/negocio`.
+
+## 2026-09-16 — Conecta+ e Embaixadoras completos (banco novo)
+- Conecta+ da associada: rede de participantes com busca, entrada e saída de grupos, registro e acompanhamento de indicações, interesses e preferência de contato.
+- Nova função `conecta_membros()` (SECURITY DEFINER, restrita a quem tem acesso ao Conecta+ ou à administração) para listar a rede sem abrir a tabela de pessoas.
+- Painel da equipe: `/painel-conteudo/conecta` (grupos, participantes, indicações) e `/painel-conteudo/embaixadoras` (participantes, níveis, materiais, repasses).
+- Embaixadora edita a própria apresentação, cidade/estado e a exibição pública.
