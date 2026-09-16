@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { EditorRico } from '@/components/editor/EditorRico';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -119,8 +120,13 @@ export default function PainelPostEditor() {
               </div>
               <div>
                 <Label>Texto</Label>
-                <Textarea rows={18} className="font-mono text-sm" value={form.conteudo}
-                  onChange={(e) => campo('conteudo', e.target.value)} />
+                <EditorRico
+                  value={form.conteudo}
+                  onChange={(html) => campo('conteudo', html)}
+                  pasta="blog"
+                  minHeight={420}
+                  placeholder="Escreva o texto aqui..."
+                />
                 <p className="text-xs text-muted-foreground mt-1">
                   Aceita formatação simples em HTML, como &lt;p&gt; para parágrafos.
                 </p>

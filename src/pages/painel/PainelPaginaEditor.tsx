@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { EditorRico } from '@/components/editor/EditorRico';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -83,8 +84,13 @@ export default function PainelPaginaEditor() {
             </div>
             <div>
               <Label>Conteúdo</Label>
-              <Textarea rows={20} className="font-mono text-sm" value={form.conteudo}
-                onChange={(e) => campo('conteudo', e.target.value)} />
+              <EditorRico
+                value={form.conteudo}
+                onChange={(html) => campo('conteudo', html)}
+                pasta="paginas"
+                minHeight={440}
+                placeholder="Escreva o conteúdo da página..."
+              />
             </div>
           </CardContent>
         </Card>

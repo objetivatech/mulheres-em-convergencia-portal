@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { EditorRico } from '@/components/editor/EditorRico';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -110,7 +111,14 @@ export default function MeusDados() {
 
           <div className="space-y-1.5">
             <Label htmlFor="bio">Sobre você</Label>
-            <Textarea id="bio" rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+            <EditorRico
+              value={form.bio}
+              onChange={(html) => setForm({ ...form, bio: html })}
+              pasta="perfis"
+              simples
+              minHeight={160}
+              placeholder="Conte um pouco sobre você..."
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">

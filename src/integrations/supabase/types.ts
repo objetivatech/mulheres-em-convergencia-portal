@@ -1737,6 +1737,7 @@ export type Database = {
           descricao: string | null
           id: string
           pessoa_id: string | null
+          plano_id: string | null
           provedor: string
           referencia_externa: string | null
           situacao: Database["public"]["Enums"]["pagamento_situacao"]
@@ -1754,6 +1755,7 @@ export type Database = {
           descricao?: string | null
           id?: string
           pessoa_id?: string | null
+          plano_id?: string | null
           provedor?: string
           referencia_externa?: string | null
           situacao?: Database["public"]["Enums"]["pagamento_situacao"]
@@ -1771,6 +1773,7 @@ export type Database = {
           descricao?: string | null
           id?: string
           pessoa_id?: string | null
+          plano_id?: string | null
           provedor?: string
           referencia_externa?: string | null
           situacao?: Database["public"]["Enums"]["pagamento_situacao"]
@@ -1798,6 +1801,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_meu_perfil"
             referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "pagamentos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2121,52 +2131,67 @@ export type Database = {
           ativo: boolean
           atualizado_em: string
           beneficios: Json
+          codigo_oferta: string | null
           criado_em: string
           descricao: string | null
           destaque: boolean
           dias_acesso: number
           id: string
           nome: string
+          observacao_interna: string | null
+          oferta_limite_usos: number | null
+          oferta_validade: string | null
           ordem: number
           periodicidade: string
           slug: string
           tipo: Database["public"]["Enums"]["acesso_tipo"]
           tipos: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos: number
+          visibilidade: string
         }
         Insert: {
           ativo?: boolean
           atualizado_em?: string
           beneficios?: Json
+          codigo_oferta?: string | null
           criado_em?: string
           descricao?: string | null
           destaque?: boolean
           dias_acesso?: number
           id?: string
           nome: string
+          observacao_interna?: string | null
+          oferta_limite_usos?: number | null
+          oferta_validade?: string | null
           ordem?: number
           periodicidade?: string
           slug: string
           tipo?: Database["public"]["Enums"]["acesso_tipo"]
           tipos?: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos?: number
+          visibilidade?: string
         }
         Update: {
           ativo?: boolean
           atualizado_em?: string
           beneficios?: Json
+          codigo_oferta?: string | null
           criado_em?: string
           descricao?: string | null
           destaque?: boolean
           dias_acesso?: number
           id?: string
           nome?: string
+          observacao_interna?: string | null
+          oferta_limite_usos?: number | null
+          oferta_validade?: string | null
           ordem?: number
           periodicidade?: string
           slug?: string
           tipo?: Database["public"]["Enums"]["acesso_tipo"]
           tipos?: Database["public"]["Enums"]["acesso_tipo"][]
           valor_centavos?: number
+          visibilidade?: string
         }
         Relationships: []
       }
@@ -2442,6 +2467,39 @@ export type Database = {
             referencedColumns: ["pessoa_id"]
           },
         ]
+      }
+      textos_site: {
+        Row: {
+          atualizado_em: string
+          chave: string
+          criado_em: string
+          grupo: string
+          id: string
+          rotulo: string | null
+          tipo: string
+          valor: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          chave: string
+          criado_em?: string
+          grupo?: string
+          id?: string
+          rotulo?: string | null
+          tipo?: string
+          valor?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          chave?: string
+          criado_em?: string
+          grupo?: string
+          id?: string
+          rotulo?: string | null
+          tipo?: string
+          valor?: string | null
+        }
+        Relationships: []
       }
       tour_progresso: {
         Row: {
