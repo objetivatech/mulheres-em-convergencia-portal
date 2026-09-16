@@ -4,6 +4,15 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-16 — Conferência de pagamentos e proteção dos resumos
+- Conferência do banco novo: 42 pessoas, 2 administradoras, 9 planos, 28 eventos, 6 liberações de acesso e **nenhum aviso de pagamento do Asaas recebido até agora**.
+- Nova verificação em **Automações → Verificar conexão com o Asaas**: mostra o endereço que o portal espera e os endereços cadastrados na conta do Asaas.
+- Corrigida a checagem de administradora nas funções de servidor, que ainda usava o formato do banco antigo e barrava ações da equipe.
+- Resumos de linha do tempo, financeiro e embaixadoras agora só mostram o que cada pessoa pode ver; o financeiro geral ficou restrito às administradoras.
+- Documentação nova: `docs/_reboot/25-conferencia-pagamentos.md`.
+
+
+
 ### 2026-09-16 — Academy administrativa e planos com várias áreas
 - Novo painel **Academy** (`/painel-conteudo/academy`): a equipe cria e edita cursos (capa, resumo, descrição, categoria, nível, carga horária, publicação e destaque), organiza as aulas de cada curso (vídeo, material de apoio, duração, ordem e aula de amostra) e mantém as categorias.
 - Cada curso mostra quantas pessoas estão matriculadas — número calculado na hora, sem contador gravado.
