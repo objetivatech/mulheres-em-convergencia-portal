@@ -54,7 +54,12 @@ export default function PlanosPage() {
                 )}
                 <div className="space-y-1">
                   <h2 className="text-xl font-semibold">{p.nome}</h2>
-                  {p.descricao && <p className="text-sm text-muted-foreground">{p.descricao}</p>}
+                  {p.descricao && (
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{ __html: p.descricao }}
+                    />
+                  )}
                 </div>
                 <p className="text-3xl font-semibold">
                   {dinheiro(p.valor_centavos)}
