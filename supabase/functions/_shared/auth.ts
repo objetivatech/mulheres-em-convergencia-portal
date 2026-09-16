@@ -41,8 +41,25 @@ export async function requireAdmin(req: Request): Promise<{ userId: string } | {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     { auth: { persistSession: false } }
   );
-  const { data, error } = await admin.rpc('has_role', { _user_id: userId, _role: 'admin' });
-  if (error || data !== true) {
+  // Schema novo (MeC-v6): papéis ficam em public.papeis, ligados a public.pessoas.
+  const { data: pessoa } = await admin
+    .from('pessoas')
+    .select('id')
+    .eq('auth_user_id', userId)
+    .maybeSingle();
+
+  let ehAdmin = false;
+  if (pessoa?.id) {
+    const { data: papel } = await admin
+      .from('papeis')
+      .select('id')
+      .eq('pessoa_id', pessoa.id)
+      .eq('papel', 'admin')
+      .maybeSingle();
+    ehAdmin = !!papel;
+  }
+
+  if (!ehAdmin) {
     return {
       error: new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
