@@ -4,6 +4,13 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-16 — Academy administrativa e planos com várias áreas
+- Novo painel **Academy** (`/painel-conteudo/academy`): a equipe cria e edita cursos (capa, resumo, descrição, categoria, nível, carga horária, publicação e destaque), organiza as aulas de cada curso (vídeo, material de apoio, duração, ordem e aula de amostra) e mantém as categorias.
+- Cada curso mostra quantas pessoas estão matriculadas — número calculado na hora, sem contador gravado.
+- Um plano pode liberar várias áreas ao mesmo tempo; a liberação após o pagamento respeita todas elas.
+- Nova tela **Meu negócio** dentro de “Minha área”, onde a própria dona edita a ficha do diretório.
+
+
 ### 2026-09-16 — Painel antigo desativado, menu da usuária logada e matriz de acessos
 - O painel `/admin` saiu do ar: qualquer endereço `/admin/...` leva para `/painel-conteudo` (painel novo, banco MeC-v6). Os arquivos antigos seguem no repositório apenas como referência.
 - Cabeçalho do site: quem está logada vê seu nome e um menu com os atalhos a que tem direito (Minha área, planos, encontros, Academy, Conecta+, Embaixadoras, Meu negócio, Meus dados, Painel da equipe e Sair), no computador e no celular. Visitantes continuam vendo “Entrar” e “Fazer parte”.
