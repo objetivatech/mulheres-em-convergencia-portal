@@ -28,6 +28,7 @@ import BlogPostPage from "./pages/site/BlogPostPage";
 import PaginaInstitucional from "./pages/site/PaginaInstitucional";
 import Auth from "./pages/Auth";
 import PlanosPage from './pages/site/PlanosPage';
+import PlanoOfertaPage from './pages/site/PlanoOfertaPage';
 import EventosPage from './pages/site/EventosPage';
 import EventoPage from './pages/site/EventoPage';
 import AcademyPage from './pages/site/AcademyPage';
