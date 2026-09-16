@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, NavLink, Navigate } from 'react-router-dom';
 import {
   Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone, Ticket,
-  Users, Wallet, Workflow, Zap, KeyRound, GraduationCap,
+  Users, Wallet, Workflow, Zap, KeyRound, GraduationCap, Network, Heart,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
@@ -18,6 +18,8 @@ const ITENS = [
   { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos e encontros', icone: Ticket },
   { para: '/painel-conteudo/acessos', rotulo: 'Acessos e planos', icone: KeyRound },
   { para: '/painel-conteudo/academy', rotulo: 'Academy', icone: GraduationCap },
+  { para: '/painel-conteudo/conecta', rotulo: 'Conecta+', icone: Network },
+  { para: '/painel-conteudo/embaixadoras', rotulo: 'Embaixadoras', icone: Heart },
   { para: '/painel-conteudo/pessoas', rotulo: 'Pessoas', icone: Users },
   { para: '/painel-conteudo/financeiro', rotulo: 'Financeiro', icone: Wallet },
   { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
