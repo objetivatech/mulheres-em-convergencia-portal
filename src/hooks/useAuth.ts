@@ -68,6 +68,15 @@ export const useAuthProvider = () => {
           (async () => {
             try {
               const cliente = supabase as any;
+              // Garante o registro da pessoa no banco novo já no primeiro acesso
+              // (CPF é o identificador central; contatos são aditivos).
+              const meta = (session.user.user_metadata ?? {}) as Record<string, any>;
+              await cliente.rpc('garantir_pessoa', {
+                _nome: meta.full_name ?? meta.nome ?? null,
+                _cpf: meta.cpf ?? null,
+                _email: session.user.email ?? null,
+              });
+
               const [{ data: pessoaId }, { data: admin }] = await Promise.all([
                 cliente.rpc('pessoa_atual'),
                 cliente.rpc('e_admin'),
