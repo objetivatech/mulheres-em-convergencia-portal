@@ -1,6 +1,6 @@
 /**
  * Acessos e planos — banco novo (MeC-v6).
- * Cada plano diz qual área libera (`planos.tipo`) e por quantos dias
+ * Cada plano diz quais áreas libera (`planos.tipos`) e por quantos dias
  * (`planos.dias_acesso`). O webhook do Asaas lê exatamente esses dois campos
  * quando um pagamento é confirmado. Nada é gravado como "ativo".
  */
@@ -32,6 +32,7 @@ export type PlanoAcesso = {
   slug: string;
   nome: string;
   tipo: string;
+  tipos: string[];
   valor_centavos: number;
   periodicidade: string;
   dias_acesso: number;
@@ -45,10 +46,13 @@ export function usePlanosAcessos() {
     queryFn: async () => {
       const { data, error } = await db
         .from('planos')
-        .select('id, slug, nome, tipo, valor_centavos, periodicidade, dias_acesso, ativo, ordem')
+        .select('id, slug, nome, tipo, tipos, valor_centavos, periodicidade, dias_acesso, ativo, ordem')
         .order('ordem');
       if (error) throw error;
-      return (data ?? []) as PlanoAcesso[];
+      return (data ?? []).map((p: any) => ({
+        ...p,
+        tipos: Array.isArray(p.tipos) && p.tipos.length ? p.tipos : [p.tipo],
+      })) as PlanoAcesso[];
     },
   });
 }
