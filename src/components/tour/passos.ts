@@ -12,6 +12,10 @@ export const TOUR_VERSAO: Record<string, number> = {
   academy: 1,
   embaixadoras: 1,
   'meu-negocio': 1,
+  planos: 1,
+  encontros: 1,
+  'meus-dados': 1,
+  'painel-equipe': 1,
 };
 
 export const TOUR_PASSOS: Record<string, TourPasso[]> = {
@@ -82,6 +86,50 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       alvo: '[data-tour="negocio-logo"]',
       titulo: 'Sua marca',
       texto: 'Envie a logo quadrada. Ela aparece na busca e no seu perfil.',
+    },
+  ],
+  planos: [
+    {
+      titulo: 'Seus planos',
+      texto: 'Aqui você vê o que está ativo, até quando vale e o que cada plano libera.',
+    },
+    {
+      titulo: 'Renovar é simples',
+      texto: 'Quando o prazo estiver perto do fim, o botão de renovação aparece nesta mesma tela.',
+    },
+  ],
+  encontros: [
+    {
+      titulo: 'Seus encontros',
+      texto: 'A lista mostra onde você se inscreveu e o ingresso de cada encontro.',
+    },
+    {
+      titulo: 'Na hora do evento',
+      texto: 'Abra o ingresso pelo celular: é ele que confirma sua presença na entrada.',
+    },
+  ],
+  'meus-dados': [
+    {
+      titulo: 'Seus dados',
+      texto: 'Nome, contato, endereço e sua apresentação. Tudo o que a gente usa para falar com você.',
+    },
+    {
+      titulo: 'Sua apresentação',
+      texto: 'Escreva com calma: ela aparece no Conecta+ e no diretório.',
+    },
+  ],
+  'painel-equipe': [
+    {
+      titulo: 'Painel da equipe',
+      texto: 'Tudo o que o site mostra é editado por aqui: conteúdo, planos, encontros e acessos.',
+    },
+    {
+      titulo: 'Menu da esquerda',
+      texto: 'Cada item é uma área do site. Comece pelo que você precisa mudar agora.',
+    },
+    {
+      titulo: 'Sempre reversível',
+      texto: 'Quase tudo pode ser despublicado em vez de apagado. Na dúvida, desligue e veja o site.',
     },
   ],
 };

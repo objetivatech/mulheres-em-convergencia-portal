@@ -19,6 +19,7 @@ import {
   usePlanosAdmin, useEventosAdmin, useSalvarPlano, useExcluirPlano,
   useExcluirEvento, useUsosPorPlano, type PlanoAdmin,
 } from '@/hooks/usePainelPlanosEventos';
+import ConteudoAcessos from './PainelAcessos';
 
 const ROTULO_VISIBILIDADE: Record<string, string> = {
   publico: 'Público',
@@ -98,8 +99,8 @@ export default function PainelPlanosEventos() {
 
   return (
     <PainelLayout
-      titulo="Planos e encontros"
-      descricao="Crie, edite e escolha quem enxerga cada plano ou encontro."
+      titulo="Planos, encontros e acessos"
+      descricao="Crie e edite as ofertas, escolha quem enxerga cada uma e veja o que cada plano libera."
       acoes={
         <Button variant="outline" onClick={importar} disabled={importando}>
           {importando ? 'Trazendo…' : 'Trazer do site antigo'}
@@ -110,6 +111,7 @@ export default function PainelPlanosEventos() {
         <TabsList>
           <TabsTrigger value="planos">Planos</TabsTrigger>
           <TabsTrigger value="eventos">Encontros</TabsTrigger>
+          <TabsTrigger value="acessos">Quem tem acesso</TabsTrigger>
         </TabsList>
 
         <TabsContent value="planos" className="space-y-3">
@@ -199,6 +201,10 @@ export default function PainelPlanosEventos() {
               </div>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="acessos">
+          <ConteudoAcessos />
         </TabsContent>
       </Tabs>
 

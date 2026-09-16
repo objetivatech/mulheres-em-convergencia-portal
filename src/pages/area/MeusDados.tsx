@@ -66,7 +66,9 @@ export default function MeusDados() {
   };
 
   return (
-    <AreaLayout titulo="Meus dados" descricao="Suas informações de cadastro e contato.">
+    <AreaLayout
+      tour="meus-dados"
+ titulo="Meus dados" descricao="Suas informações de cadastro e contato.">
       <Helmet>
         <title>Meus dados | Mulheres em Convergência</title>
         <meta name="robots" content="noindex,nofollow" />

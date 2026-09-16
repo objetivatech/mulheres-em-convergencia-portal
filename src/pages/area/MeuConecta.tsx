@@ -115,7 +115,9 @@ export default function MeuConecta() {
   };
 
   return (
-    <AreaLayout titulo="Conecta+" descricao="Sua presença na rede de negócios entre associadas.">
+    <AreaLayout
+      tour="conecta"
+ titulo="Conecta+" descricao="Sua presença na rede de negócios entre associadas.">
       <Helmet>
         <title>Conecta+ | Minha área</title>
         <meta name="robots" content="noindex,nofollow" />

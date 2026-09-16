@@ -14,8 +14,9 @@ import { useR2Storage } from '@/hooks/useR2Storage';
 import {
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Minus, Link as LinkIcon, Image as ImageIcon,
-  Table as TableIcon, Video, Undo, Redo, Trash2, Loader2,
+  Table as TableIcon, Video, Undo, Redo, Trash2, Loader2, Images,
 } from 'lucide-react';
+import BibliotecaR2 from '@/components/imagens/BibliotecaR2';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -164,6 +165,11 @@ export function EditorRico({
           {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
         </Button>
         <input ref={inputImagem} type="file" accept="image/*" className="hidden" onChange={enviarImagem} />
+        <BibliotecaR2 onEscolher={(url) => editor.chain().focus().setImage({ src: url }).run()}>
+          <Button type="button" variant="ghost" size="sm" className={botao(false)} title="Escolher imagem já enviada">
+            <Images className="h-3.5 w-3.5" />
+          </Button>
+        </BibliotecaR2>
 
         {!simples && (
           <>

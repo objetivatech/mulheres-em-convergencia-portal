@@ -2,7 +2,7 @@
 // Nada é enviado automaticamente: só dispara quando a administradora pede.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { modeloRelancamento } from '../_shared/email-templates/marca.ts';
-import { enviarEmail } from '../_shared/enviar-email.ts';
+import { enviarEmail, canalDeEmail } from '../_shared/enviar-email.ts';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -69,6 +69,9 @@ Deno.serve(async (req) => {
       return json({ ok: true, destinatarias: linhas.length });
     }
 
+    // --------- diagnóstico do canal ----------
+    if (acao === 'canal') return json({ ok: true, ...canalDeEmail() });
+
     // --------- envio de teste ----------
     if (acao === 'teste') {
       const email = String(body.email ?? '').trim().toLowerCase();
@@ -76,7 +79,12 @@ Deno.serve(async (req) => {
       const { data: link, error } = await dst.auth.admin.generateLink({
         type: 'recovery', email, options: { redirectTo: redirect },
       });
-      if (error) throw new Error(error.message);
+      if (error) {
+        throw new Error(
+          `Não foi possível gerar o link de acesso para ${email}: ${error.message}. ` +
+          'Verifique se este e-mail tem conta no portal.',
+        );
+      }
       await enviarEmail(
         { email },
         `[TESTE] ${campanha.assunto}`,
@@ -142,6 +150,8 @@ Deno.serve(async (req) => {
       pendentes: (total ?? 0) - (enviados ?? 0) - (erros ?? 0),
     });
   } catch (e) {
-    return json({ error: String((e as Error)?.message ?? e) }, 500);
+    const msg = String((e as Error)?.message ?? e);
+    console.error('notificar-usuarias falhou:', msg);
+    return json({ error: msg, canal: canalDeEmail() }, 500);
   }
 });

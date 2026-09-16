@@ -11,7 +11,9 @@ export default function MinhaAcademy() {
   const { data: perfil } = useMeuPerfil();
 
   return (
-    <AreaLayout titulo="Academy" descricao="Seus cursos e o que já foi concluído.">
+    <AreaLayout
+      tour="academy"
+ titulo="Academy" descricao="Seus cursos e o que já foi concluído.">
       <Helmet>
         <title>Academy | Minha área</title>
         <meta name="robots" content="noindex,nofollow" />

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { mensagemErroEdge } from '@/lib/erroEdge';
 
 const CHAVE = 'reboot-boas-vindas';
 
@@ -76,7 +77,7 @@ export default function ComunicadosPage() {
       const { data, error } = await supabase.functions.invoke('notificar-usuarias', {
         body: { chave: CHAVE, site: window.location.origin, ...body },
       });
-      if (error) throw error;
+      if (error) throw new Error(await mensagemErroEdge(error));
       return data as Record<string, unknown>;
     },
     onSuccess: (data) => {
@@ -174,6 +175,14 @@ export default function ComunicadosPage() {
                 onClick={() => acao.mutate({ acao: 'teste', email: emailTeste })}
               >
                 Enviar teste
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={acao.isPending}
+                onClick={() => acao.mutate({ acao: 'canal' })}
+              >
+                Testar canal de e-mail
               </Button>
             </CardContent>
           </Card>

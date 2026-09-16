@@ -33,7 +33,9 @@ export default function MeusPlanos() {
   const { data: pagamentos } = useMeusPagamentos();
 
   return (
-    <AreaLayout titulo="Meus planos" descricao="Acessos vigentes e histórico de pagamentos.">
+    <AreaLayout
+      tour="planos"
+ titulo="Meus planos" descricao="Acessos vigentes e histórico de pagamentos.">
       <Helmet>
         <title>Meus planos | Mulheres em Convergência</title>
         <meta name="robots" content="noindex,nofollow" />

@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import PainelLayout from '@/components/painel/PainelLayout';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
 const dinheiro = (c: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((c ?? 0) / 100);
 
-export default function PainelAcessos() {
+export default function ConteudoAcessos() {
   const { data: planos, isLoading } = usePlanosAcessos();
   const { data: resumo } = useResumoAcessos();
   const salvar = useSalvarPlanoAcesso();
@@ -57,11 +57,7 @@ export default function PainelAcessos() {
   };
 
   return (
-    <PainelLayout
-      titulo="Acessos e planos"
-      descricao="Qual plano libera qual área e por quantos dias. É isto que o sistema usa quando um pagamento é confirmado."
-    >
-      <div className="space-y-8">
+    <div className="space-y-8">
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {AREAS.map((a) => (
             <div key={a.valor} className="rounded-lg border border-border bg-card p-4">
@@ -183,8 +179,7 @@ export default function PainelAcessos() {
               <Button asChild size="sm" variant="outline"><Link to="/painel-conteudo/pessoas">Abrir Pessoas</Link></Button>
             </div>
           </div>
-        </section>
-      </div>
-    </PainelLayout>
+      </section>
+    </div>
   );
 }
