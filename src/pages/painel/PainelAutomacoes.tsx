@@ -26,6 +26,30 @@ export default function PainelAutomacoes() {
   };
 
   const [importando, setImportando] = useState(false);
+  const [verificando, setVerificando] = useState(false);
+  const [asaas, setAsaas] = useState<{ apontandoParaCa: boolean; destinoEsperado: string; webhooks: any[] } | null>(null);
+
+  const verificarAsaas = async () => {
+    setVerificando(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', { body: {} });
+      if (error) throw error;
+      if ((r as any)?.error) throw new Error((r as any).error);
+      setAsaas(r as any);
+      toast({
+        title: (r as any).apontandoParaCa ? 'Asaas conectado ao portal novo' : 'Asaas ainda não aponta para o portal novo',
+        description: (r as any).apontandoParaCa
+          ? 'Os avisos de pagamento chegam aqui.'
+          : 'Atualize o endereço de aviso no painel do Asaas.',
+        variant: (r as any).apontandoParaCa ? undefined : 'destructive',
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível verificar o Asaas', description: e?.message, variant: 'destructive' });
+    } finally {
+      setVerificando(false);
+    }
+  };
+
 
   const importarAcessos = async () => {
     setImportando(true);
