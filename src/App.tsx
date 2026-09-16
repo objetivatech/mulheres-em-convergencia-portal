@@ -45,6 +45,8 @@ import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
 import PainelAcessos from './pages/painel/PainelAcessos';
 import PainelAcademy from './pages/painel/PainelAcademy';
+import PainelConecta from './pages/painel/PainelConecta';
+import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
 
 
 
