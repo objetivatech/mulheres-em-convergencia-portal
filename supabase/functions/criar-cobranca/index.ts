@@ -14,6 +14,7 @@ const Corpo = z.object({
   cpf: z.string().transform((v) => v.replace(/\D/g, '')).refine((v) => v.length === 11, 'CPF inválido'),
   telefone: z.string().optional(),
   cupom: z.string().trim().max(40).optional(),
+  codigo: z.string().trim().max(60).optional(),
   metodo: z.enum(['PIX', 'BOLETO', 'CREDIT_CARD', 'UNDEFINED']).default('UNDEFINED'),
 });
 
