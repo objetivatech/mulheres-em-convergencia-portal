@@ -4,6 +4,14 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-16 (tarde) — Asaas confirmado e travas de segurança
+- Asaas já apontando para o portal novo (verificado em Automações).
+- Funções internas do banco deixaram de ficar abertas a visitantes; a liberação de acesso por pagamento só pode ser chamada pelo próprio aviso do Asaas.
+- Avisos de pagamento passaram a ter regra explícita de leitura: apenas administradoras.
+- Achados de segurança caíram de 44 para 25; os restantes são esperados, menos a proteção contra senhas vazadas, que precisa ser ligada no painel do Supabase.
+- Endereços antigos `/blog` e `/blog/<post>` agora levam para `/convergindo`.
+
+
 ### 2026-09-16 — Conferência de pagamentos e proteção dos resumos
 - Conferência do banco novo: 42 pessoas, 2 administradoras, 9 planos, 28 eventos, 6 liberações de acesso e **nenhum aviso de pagamento do Asaas recebido até agora**.
 - Nova verificação em **Automações → Verificar conexão com o Asaas**: mostra o endereço que o portal espera e os endereços cadastrados na conta do Asaas.

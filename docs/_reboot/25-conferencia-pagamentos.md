@@ -54,3 +54,28 @@ Se o aviso não chegar, o problema é o endereço/token no Asaas, não o portal.
 - `reboot/sql/0007_ajustes_seguranca.sql` só redefine views; reaplicar o trecho
   equivalente de `0006_area_associada_admin.sql` volta ao comportamento anterior.
 - A função de diagnóstico é apenas de leitura e pode ser removida sem efeito.
+
+## 6. Rodada de 16/09/2026 (tarde) — segurança e rotas
+
+Com o Asaas já apontando para o portal novo, foram aplicadas as travas de segurança
+pendentes (`reboot/sql/0008_seguranca_funcoes.sql`):
+
+- resumos (linha do tempo, financeiro, embaixadoras) agora respeitam a permissão de quem consulta;
+- funções internas do banco deixaram de ficar abertas a visitantes não logados;
+- a liberação de acesso por pagamento só pode ser chamada pelo próprio webhook;
+- os avisos do Asaas passaram a ter regra explícita: apenas administradoras leem.
+
+Achados do linter caíram de 44 para 25. Os 25 restantes são esperados: funções que
+precisam ser executáveis porque são usadas dentro das próprias regras de acesso,
+a extensão `citext` e **a proteção contra senhas vazadas**, que depende de você:
+
+> Supabase → Authentication → Policies/Passwords → ligar "Leaked password protection".
+
+Também foram criados atalhos de `/blog` e `/blog/<post>` para `/convergindo`,
+preservando links antigos que circulam por aí.
+
+### Ainda pendente
+
+- Teste real de compra (PIX de valor baixo) para ver o aviso chegar e o acesso liberar.
+- Definir quais planos liberam Academy, Conecta+ e Embaixadoras (hoje todos liberam só o diretório),
+  em Painel de conteúdo → Acessos.
