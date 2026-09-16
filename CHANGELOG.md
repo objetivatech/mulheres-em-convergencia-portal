@@ -141,3 +141,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Padrões gravados na memória do projeto (documentação tripla, plano+changelog, simplicidade para o ICP, tour guiado persistente).
 
 > Nenhuma alteração de banco, de código de produção ou de conexão foi feita nesta fase.
+
+## Planos com várias áreas e Painel do Negócio
+- Cada plano pode liberar mais de uma área (`planos.tipos`); o webhook do Asaas concede todas.
+- Nova tela **Minha área → Meu negócio**: a dona edita a ficha do diretório (dados, contatos, fotos, locais de atendimento e comodidades) sem entrar no painel da equipe.
+- Menu da usuária e menu lateral passam a apontar para `/minha-area/negocio`.
