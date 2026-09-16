@@ -92,7 +92,7 @@ export default function PainelAcessos() {
                   <tr>
                     <th className="p-3 font-medium">Plano</th>
                     <th className="p-3 font-medium">Valor</th>
-                    <th className="p-3 font-medium">Libera</th>
+                    <th className="p-3 font-medium">Libera (pode marcar várias)</th>
                     <th className="p-3 font-medium">Dias</th>
                     <th className="p-3 font-medium">À venda</th>
                     <th className="p-3" />
@@ -102,23 +102,28 @@ export default function PainelAcessos() {
                   {(planos ?? []).map((p) => {
                     const r = rascunho[p.id] ?? p;
                     const mudou =
-                      r.tipo !== p.tipo || Number(r.dias_acesso) !== p.dias_acesso || r.ativo !== p.ativo;
+                      r.tipos.join(',') !== p.tipos.join(',') ||
+                      Number(r.dias_acesso) !== p.dias_acesso ||
+                      r.ativo !== p.ativo;
                     return (
-                      <tr key={p.id} className="border-t border-border">
+                      <tr key={p.id} className="border-t border-border align-top">
                         <td className="p-3">
                           <p className="font-medium">{p.nome}</p>
                           <p className="text-xs text-muted-foreground">{p.periodicidade}</p>
                         </td>
                         <td className="p-3 whitespace-nowrap">{dinheiro(p.valor_centavos)}</td>
                         <td className="p-3">
-                          <Select value={r.tipo} onValueChange={(v) => alterar(p.id, 'tipo', v)}>
-                            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-                            <SelectContent className="bg-popover">
-                              {AREAS.map((a) => (
-                                <SelectItem key={a.valor} value={a.valor}>{a.rotulo}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex flex-wrap gap-x-4 gap-y-2 min-w-64">
+                            {AREAS.map((a) => (
+                              <label key={a.valor} className="flex items-center gap-2 text-sm cursor-pointer">
+                                <Checkbox
+                                  checked={r.tipos.includes(a.valor)}
+                                  onCheckedChange={() => alternarArea(p.id, a.valor)}
+                                />
+                                {a.rotulo}
+                              </label>
+                            ))}
+                          </div>
                         </td>
                         <td className="p-3">
                           <Input
