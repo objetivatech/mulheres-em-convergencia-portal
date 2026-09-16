@@ -6,7 +6,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { slugify } from '@/lib/slugify';
+import slugify from '@/lib/slugify';
 
 const db = supabase as any;
 
