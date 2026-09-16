@@ -26,6 +26,9 @@ const INSTITUCIONAIS = [
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
+  const { user, loading } = useAuth();
+  const itensUsuaria = useItensDaUsuaria();
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -54,8 +57,14 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden lg:flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
-            <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+            {loading ? null : user ? (
+              <MenuUsuaria />
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
+                <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+              </>
+            )}
           </div>
 
           <button
