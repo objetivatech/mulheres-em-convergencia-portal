@@ -176,3 +176,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Nova função `conecta_membros()` (SECURITY DEFINER, restrita a quem tem acesso ao Conecta+ ou à administração) para listar a rede sem abrir a tabela de pessoas.
 - Painel da equipe: `/painel-conteudo/conecta` (grupos, participantes, indicações) e `/painel-conteudo/embaixadoras` (participantes, níveis, materiais, repasses).
 - Embaixadora edita a própria apresentação, cidade/estado e a exibição pública.
+
+## 2026-09-16 — Correções do pacote de edição e gestão
+- Link de oferta: o endereço `/planos/oferta/:codigo` passa a existir e a busca aceita código de convite (planos privados) ou endereço curto (planos ocultos) — fim do 404.
+- Comunicados: o erro real do envio passa a aparecer na tela e existe o botão "Testar canal de e-mail" para conferir a configuração de envio.
+- Passo a passo guiado ligado em todas as telas de quem está logada (Meu painel, Planos, Encontros, Academy, Conecta+, Embaixadoras, Meu negócio, Meus dados) e no painel da equipe, com botão fixo para reabrir.
+- Painel da equipe: "Planos e encontros" e "Acessos e planos" viraram um item só — "Planos, encontros e acessos", com abas. O endereço antigo redireciona.
+- Nova tela **Imagens**: biblioteca do Cloudflare R2 com tudo o que já foi enviado, inclusive antes do reboot; busca, cópia de endereço e envio de novas.
+- Editor de textos ganhou o botão "Escolher imagem já enviada", reaproveitando a biblioteca.
