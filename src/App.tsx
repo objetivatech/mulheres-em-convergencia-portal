@@ -153,6 +153,8 @@ function AppContent() {
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
         <Route path="/painel-conteudo/acessos" element={<PainelAcessos />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />
+        <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
+        <Route path="/painel-conteudo/embaixadoras" element={<PainelEmbaixadoras />} />
 
         {/* Área da associada — banco novo */}
         <Route path="/minha-area" element={<MinhaAreaHome />} />
