@@ -36,11 +36,23 @@ export default function PainelAcessos() {
   const alterar = (id: string, campo: keyof PlanoAcesso, valor: any) =>
     setRascunho((r) => ({ ...r, [id]: { ...r[id], [campo]: valor } }));
 
+  const alternarArea = (id: string, area: string) =>
+    setRascunho((r) => {
+      const atuais = r[id]?.tipos ?? [];
+      const tipos = atuais.includes(area) ? atuais.filter((t) => t !== area) : [...atuais, area];
+      return { ...r, [id]: { ...r[id], tipos } };
+    });
+
   const gravar = async (id: string) => {
     const p = rascunho[id];
+    if (!p.tipos.length) {
+      toast({ title: 'Escolha ao menos uma área', description: 'O plano precisa liberar alguma coisa.', variant: 'destructive' });
+      return;
+    }
     try {
-      await salvar.mutateAsync({ id, tipo: p.tipo, dias_acesso: Number(p.dias_acesso) || 31, ativo: p.ativo });
-      toast({ title: 'Plano atualizado', description: `${p.nome} agora libera ${p.tipo} por ${p.dias_acesso} dias.` });
+      await salvar.mutateAsync({ id, tipos: p.tipos, dias_acesso: Number(p.dias_acesso) || 31, ativo: p.ativo });
+      const nomes = p.tipos.map((t) => AREAS.find((a) => a.valor === t)?.rotulo ?? t).join(', ');
+      toast({ title: 'Plano atualizado', description: `${p.nome} agora libera ${nomes} por ${p.dias_acesso} dias.` });
     } catch (e: any) {
       toast({ title: 'Não foi possível salvar', description: e?.message, variant: 'destructive' });
     }
