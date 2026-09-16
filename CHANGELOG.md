@@ -4,6 +4,15 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-16 — Painel antigo desativado, menu da usuária logada e matriz de acessos
+- O painel `/admin` saiu do ar: qualquer endereço `/admin/...` leva para `/painel-conteudo` (painel novo, banco MeC-v6). Os arquivos antigos seguem no repositório apenas como referência.
+- Cabeçalho do site: quem está logada vê seu nome e um menu com os atalhos a que tem direito (Minha área, planos, encontros, Academy, Conecta+, Embaixadoras, Meu negócio, Meus dados, Painel da equipe e Sair), no computador e no celular. Visitantes continuam vendo “Entrar” e “Fazer parte”.
+- Cadastro e primeiro acesso passam a registrar a pessoa pelo caminho do banco novo (`garantir_pessoa`), sem depender de tabelas antigas.
+- Nova tela **Acessos e planos** (`/painel-conteudo/acessos`): define qual área cada plano libera e por quantos dias, mostra quantas pessoas têm acesso a cada área agora e explica papéis e áreas em linguagem simples.
+- O aviso de pagamento do Asaas passou a ler o plano da cobrança (`plano:<slug>`) para saber o que liberar e por quanto tempo, em vez de adivinhar pelo texto da descrição.
+- Documentação nova: `docs/_reboot/24-acessos-e-hierarquia.md`.
+
+
 ### 2026-09-16 — Chave do Asaas e importação de acessos ativos
 - `ASAAS_API_KEY` de produção gravada no cofre do banco novo: os botões de pagamento de planos e encontros voltam a funcionar.
 - `migrar-legado` ganhou o alvo `acessos`: assinaturas ativas e cortesias do site antigo viram liberações de acesso no banco novo, sem duplicar em execuções repetidas (cada liberação guarda a origem legada).
