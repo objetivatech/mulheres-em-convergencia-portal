@@ -16,6 +16,7 @@ const ITENS = [
   { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
   { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
   { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos e encontros', icone: Ticket },
+  { para: '/painel-conteudo/acessos', rotulo: 'Acessos e planos', icone: KeyRound },
   { para: '/painel-conteudo/pessoas', rotulo: 'Pessoas', icone: Users },
   { para: '/painel-conteudo/financeiro', rotulo: 'Financeiro', icone: Wallet },
   { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
