@@ -101,6 +101,14 @@ export function useSalvarRepasse() {
   });
 }
 
+/** A própria embaixadora edita sua apresentação e visibilidade. */
+export function useSalvarMinhaFicha() {
+  return usarMutacao(async ({ id, ...valores }: Record<string, any>) => {
+    const { error } = await db.from('embaixadoras').update(valores).eq('id', id);
+    if (error) throw error;
+  });
+}
+
 export function useBuscarPessoas(termo: string) {
   return useQuery({
     queryKey: ['painel', 'buscar-pessoas', termo],
