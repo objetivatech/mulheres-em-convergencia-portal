@@ -38,6 +38,7 @@ import MeusDados from './pages/area/MeusDados';
 import MinhaAcademy from './pages/area/MinhaAcademy';
 import MeuConecta from './pages/area/MeuConecta';
 import MinhaEmbaixadora from './pages/area/MinhaEmbaixadora';
+import MeuNegocio from './pages/area/MeuNegocio';
 import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
 import PainelCRM from './pages/painel/PainelCRM';
