@@ -184,6 +184,8 @@ function AppContent() {
         <Route path="/comunidades" element={<Comunidades />} />
         <Route path="/comunidade/:id" element={<Comunidade />} />
         <Route path="/convergindo" element={<BlogPage />} />
+        <Route path="/blog" element={<Navigate to="/convergindo" replace />} />
+        <Route path="/blog/:slug" element={<BlogPostRedirect />} />
         <Route path="/convergindo/:slug" element={<BlogPostPage />} />
         <Route path="/planos" element={<PlanosPage />} />
         <Route path="/embaixadoras" element={<Embaixadoras />} />
