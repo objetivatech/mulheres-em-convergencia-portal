@@ -89,10 +89,32 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                   {item.rotulo}
                 </Link>
               ))}
-              <div className="flex gap-2 pt-3">
-                <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar">Entrar</Link></Button>
-                <Button asChild size="sm" className="flex-1"><Link to="/planos">Fazer parte</Link></Button>
-              </div>
+              {user ? (
+                <div className="pt-3 border-t border-border mt-2 flex flex-col">
+                  {itensUsuaria.map((item) => (
+                    <Link
+                      key={item.para}
+                      to={item.liberado ? item.para : item.alternativa?.para ?? '/planos'}
+                      onClick={() => setAberto(false)}
+                      className="py-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {item.liberado ? item.rotulo : item.alternativa?.rotulo ?? item.rotulo}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={async () => { setAberto(false); await signOut(); }}
+                    className="py-2 text-left text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 pt-3">
+                  <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar">Entrar</Link></Button>
+                  <Button asChild size="sm" className="flex-1"><Link to="/planos">Fazer parte</Link></Button>
+                </div>
+              )}
             </nav>
           </div>
         )}
