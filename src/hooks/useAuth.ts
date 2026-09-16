@@ -232,13 +232,12 @@ export const useAuthProvider = () => {
         }
       }
 
-      // Update newsletter preference on profile (trigger will sync subscriber role)
+      // Banco novo (MeC-v6): o registro da pessoa e do contato acontece no
+      // primeiro acesso autenticado, via `garantir_pessoa`. A preferência de
+      // newsletter fica registrada no metadado da conta até existir tela própria.
       if (newsletterOptIn) {
         try {
-          await supabase
-            .from('profiles')
-            .update({ newsletter_subscribed: true })
-            .eq('id', authData.user.id);
+          await supabase.auth.updateUser({ data: { newsletter_optin: true } });
         } catch (nlError) {
           console.error('[Auth] Error updating newsletter preference:', nlError);
         }
