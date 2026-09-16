@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { BibliotecaR2 } from '@/components/imagens/BibliotecaR2';
+import BibliotecaR2 from '@/components/imagens/BibliotecaR2';
 import {
   useMarcos,
   useParceiros,
@@ -116,7 +116,9 @@ export default function PainelInstitucional() {
               <Label htmlFor="p-logo">Logo</Label>
               <div className="flex gap-2">
                 <Input id="p-logo" value={parceiro.logo_url} onChange={(e) => setParceiro({ ...parceiro, logo_url: e.target.value })} placeholder="Endereço da imagem" />
-                <BibliotecaR2 onSelecionar={(url) => setParceiro({ ...parceiro, logo_url: url })} />
+                <BibliotecaR2 onEscolher={(url) => setParceiro({ ...parceiro, logo_url: url })}>
+                  <Button type="button" variant="outline">Escolher</Button>
+                </BibliotecaR2>
               </div>
               {parceiro.logo_url && <img src={parceiro.logo_url} alt="" className="h-12 w-auto object-contain" />}
             </div>
@@ -220,7 +222,9 @@ export default function PainelInstitucional() {
               <Label htmlFor="m-img">Imagem (opcional)</Label>
               <div className="flex gap-2">
                 <Input id="m-img" value={marco.imagem_url} onChange={(e) => setMarco({ ...marco, imagem_url: e.target.value })} placeholder="Endereço da imagem" />
-                <BibliotecaR2 onSelecionar={(url) => setMarco({ ...marco, imagem_url: url })} />
+                <BibliotecaR2 onEscolher={(url) => setMarco({ ...marco, imagem_url: url })}>
+                  <Button type="button" variant="outline">Escolher</Button>
+                </BibliotecaR2>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-6">
