@@ -19,11 +19,40 @@ const data = (iso?: string | null) =>
 
 export default function MinhaEmbaixadora() {
   const { data: painel, isLoading } = useMinhaEmbaixadora();
+  const salvarFicha = useSalvarMinhaFicha();
   const { toast } = useToast();
+  const [ficha, setFicha] = useState({ apresentacao: '', cidade: '', uf: '', publicada: false });
+
+  useEffect(() => {
+    if (painel?.ficha) {
+      setFicha({
+        apresentacao: painel.ficha.apresentacao ?? '',
+        cidade: painel.ficha.cidade ?? '',
+        uf: painel.ficha.uf ?? '',
+        publicada: !!painel.ficha.publicada,
+      });
+    }
+  }, [painel?.ficha]);
 
   const link = painel?.ficha?.codigo
     ? `${window.location.origin}/planos?indicacao=${painel.ficha.codigo}`
     : '';
+
+  const salvar = () =>
+    salvarFicha.mutate(
+      {
+        id: painel?.ficha?.id,
+        apresentacao: ficha.apresentacao.trim() || null,
+        cidade: ficha.cidade.trim() || null,
+        uf: ficha.uf.trim().toUpperCase() || null,
+        publicada: ficha.publicada,
+      },
+      {
+        onSuccess: () => toast({ title: 'Dados salvos', description: 'Sua página de embaixadora foi atualizada.' }),
+        onError: (e: any) =>
+          toast({ title: 'Não foi possível salvar', description: e.message, variant: 'destructive' }),
+      }
+    );
 
   return (
     <AreaLayout titulo="Embaixadoras" descricao="Suas indicações, comissões e materiais.">
