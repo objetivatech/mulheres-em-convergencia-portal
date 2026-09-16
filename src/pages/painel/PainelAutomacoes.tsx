@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useAutomacoes, useReprocessarWebhooks } from '@/hooks/useAdminNovo';
 
 const quando = (iso?: string | null) =>
