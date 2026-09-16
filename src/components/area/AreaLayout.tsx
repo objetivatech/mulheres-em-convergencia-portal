@@ -73,14 +73,21 @@ export default function AreaLayout({
               </NavLink>
             ))}
 
-            {negocio && (
-              <Link
-                to={`/painel-conteudo/negocios/${negocio.id}`}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+            {(negocio || perfil?.acesso_diretorio) && (
+              <NavLink
+                to="/minha-area/negocio"
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )
+                }
               >
                 <Store className="w-4 h-4" />
                 Meu negócio
-              </Link>
+              </NavLink>
             )}
 
             {isAdmin && (
