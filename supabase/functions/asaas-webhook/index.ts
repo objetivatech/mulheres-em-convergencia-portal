@@ -140,9 +140,28 @@ async function registrarPagamento(
 // ---------------------------------------------------------------------------
 type TipoAcesso = "diretorio" | "conecta" | "academy" | "evento" | "area_embaixadora";
 
-// A descrição/referência da cobrança define o que foi comprado.
-function tipoPorCobranca(pagamento: Record<string, unknown>): { tipo: TipoAcesso; dias: number } {
-  const texto = `${pagamento.description ?? ""} ${pagamento.externalReference ?? ""}`.toLowerCase();
+// O que a cobrança libera vem do cadastro do plano (`planos.tipo` e
+// `planos.dias_acesso`), identificado pela referência `plano:<slug>`.
+// O texto da cobrança só é usado como último recurso, para cobranças
+// antigas que não carregam a referência.
+async function tipoPorCobranca(
+  pagamento: Record<string, unknown>,
+): Promise<{ tipo: TipoAcesso; dias: number }> {
+  const ref = String(pagamento.externalReference ?? "");
+
+  const plano = ref.match(/^plano:(.+)$/i);
+  if (plano) {
+    const { data } = await supabase
+      .from("planos")
+      .select("tipo, dias_acesso")
+      .eq("slug", plano[1])
+      .maybeSingle();
+    if (data) return { tipo: data.tipo as TipoAcesso, dias: Number(data.dias_acesso) || 31 };
+  }
+
+  if (/^evento:/i.test(ref)) return { tipo: "evento", dias: 366 };
+
+  const texto = `${pagamento.description ?? ""} ${ref}`.toLowerCase();
   if (texto.includes("conecta")) return { tipo: "conecta", dias: 31 };
   if (texto.includes("academy") || texto.includes("curso")) return { tipo: "academy", dias: 366 };
   if (texto.includes("evento") || texto.includes("ingresso")) return { tipo: "evento", dias: 366 };
@@ -154,7 +173,7 @@ async function concederAcesso(
   pagamentoId: string,
   pagamento: Record<string, unknown>,
 ): Promise<string | null> {
-  const { tipo, dias } = tipoPorCobranca(pagamento);
+  const { tipo, dias } = await tipoPorCobranca(pagamento);
 
   const { data, error } = await supabase.rpc("conceder_por_pagamento", {
     _pagamento_id: pagamentoId,

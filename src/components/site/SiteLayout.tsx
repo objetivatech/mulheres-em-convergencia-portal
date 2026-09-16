@@ -4,6 +4,8 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import LogoComponent from '@/components/layout/LogoComponent';
+import { useAuth } from '@/hooks/useAuth';
+import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
 
 const NAV = [
   { to: '/', rotulo: 'Início' },
@@ -24,6 +26,9 @@ const INSTITUCIONAIS = [
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
+  const { user, loading, signOut } = useAuth();
+  const itensUsuaria = useItensDaUsuaria();
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -52,8 +57,14 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden lg:flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
-            <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+            {loading ? null : user ? (
+              <MenuUsuaria />
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
+                <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+              </>
+            )}
           </div>
 
           <button
@@ -78,10 +89,32 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                   {item.rotulo}
                 </Link>
               ))}
-              <div className="flex gap-2 pt-3">
-                <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar">Entrar</Link></Button>
-                <Button asChild size="sm" className="flex-1"><Link to="/planos">Fazer parte</Link></Button>
-              </div>
+              {user ? (
+                <div className="pt-3 border-t border-border mt-2 flex flex-col">
+                  {itensUsuaria.map((item) => (
+                    <Link
+                      key={item.para}
+                      to={item.liberado ? item.para : item.alternativa?.para ?? '/planos'}
+                      onClick={() => setAberto(false)}
+                      className="py-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {item.liberado ? item.rotulo : item.alternativa?.rotulo ?? item.rotulo}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={async () => { setAberto(false); await signOut(); }}
+                    className="py-2 text-left text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 pt-3">
+                  <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar">Entrar</Link></Button>
+                  <Button asChild size="sm" className="flex-1"><Link to="/planos">Fazer parte</Link></Button>
+                </div>
+              )}
             </nav>
           </div>
         )}

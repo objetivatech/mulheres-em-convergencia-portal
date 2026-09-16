@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { useEffect, lazy, Suspense } from "react";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import Index from "./pages/Index";
 import HomePage from "./pages/site/HomePage";
 import PainelHome from "./pages/painel/PainelHome";
 import PainelNegocios from "./pages/painel/PainelNegocios";
@@ -25,12 +24,7 @@ import NegocioPage from "./pages/site/NegocioPage";
 import BlogPage from "./pages/site/BlogPage";
 import BlogPostPage from "./pages/site/BlogPostPage";
 import PaginaInstitucional from "./pages/site/PaginaInstitucional";
-import Sobre from "./pages/Sobre";
 import Auth from "./pages/Auth";
-import Convergindo from "./pages/Convergindo";
-import Post from "./pages/Post";
-import Diretorio from "./pages/Diretorio";
-import DiretorioEmpresa from "./pages/DiretorioEmpresa";
 import PlanosPage from './pages/site/PlanosPage';
 import EventosPage from './pages/site/EventosPage';
 import EventoPage from './pages/site/EventoPage';
@@ -48,6 +42,7 @@ import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
 import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
+import PainelAcessos from './pages/painel/PainelAcessos';
 
 
 
@@ -58,27 +53,13 @@ import Comunidade from './pages/Comunidade';
 import Comunidades from './pages/Comunidades';
 import PremiumDashboard from './pages/PremiumDashboard';
 import NotFound from "./pages/NotFound";
-import TermosDeUso from './pages/TermosDeUso';
-import PoliticaDePrivacidade from './pages/PoliticaDePrivacidade';
-import PoliticaDeCookies from './pages/PoliticaDeCookies';
 import Favicon from "@/components/layout/Favicon";
 import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import ConfirmarTrocaEmailPage from "./pages/ConfirmarTrocaEmailPage";
 import ResetPasswordWithToken from "./pages/ResetPasswordWithToken";
 import Contato from "./pages/Contato";
 import Admin from "./pages/Admin";
-import AdminAnalytics from "./pages/AdminAnalytics";
-import AdminPartners from "./pages/AdminPartners";
-import AdminContactMessages from "./pages/AdminContactMessages";
-import UserManagement from './pages/UserManagement';
-import UserJourney from './pages/UserJourney';
-import BlogDashboard from './pages/BlogDashboard';
-import BlogEditor from './pages/BlogEditor';
-import BlogCategories from './pages/BlogCategories';
-import SiteSettings from './pages/admin/SiteSettings';
-import NavigationSettings from './pages/admin/NavigationSettings';
 import { DashboardEmpresa } from './pages/DashboardEmpresa';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -88,16 +69,7 @@ import ConvitePage from './pages/ConvitePage';
 import EmbaixadoraDashboard from './pages/EmbaixadoraDashboard';
 import Embaixadoras from './pages/Embaixadoras';
 import QuemEElisangelaAranda from './pages/QuemEElisangelaAranda';
-import AdminTimeline from './pages/admin/AdminTimeline';
-import Academy from './pages/Academy';
-import AcademyCatalogo from './pages/AcademyCatalogo';
-import AcademyCurso from './pages/AcademyCurso';
-import AdminAcademy from './pages/admin/AdminAcademy';
-import AdminLandingPages from './pages/admin/AdminLandingPages';
-import AdminLandingPageEditor from './pages/admin/AdminLandingPageEditor';
 import DynamicLandingPage from './pages/DynamicLandingPage';
-const AdminPages = lazy(() => import('@/pages/admin/AdminPages'));
-const AdminPageEditor = lazy(() => import('@/pages/admin/AdminPageEditor'));
 const PublicPageView = lazy(() => import('@/pages/PublicPageView'));
 
 import { UserDashboard } from '@/pages/UserDashboard';
@@ -106,20 +78,6 @@ import DadosPessoaisPage from '@/pages/DadosPessoaisPage';
 import { ProfileCompletionModal } from '@/components/auth/ProfileCompletionModal';
 import { useProfileCompletion } from '@/hooks/useProfileCompletion';
 import { useAuth } from '@/hooks/useAuth';
-import AdminRegistrations from '@/pages/AdminRegistrations';
-import AdminCommunities from '@/pages/AdminCommunities';
-import AdminNewsletter from '@/pages/AdminNewsletter';
-import AdminCRMContacts from '@/pages/admin/AdminCRMContacts';
-import AdminCRMDashboard from '@/pages/admin/AdminCRMDashboard';
-import AdminCRMPipeline from '@/pages/admin/AdminCRMPipeline';
-import AdminCRMEvents from '@/pages/admin/AdminCRMEvents';
-import AdminCRMCoupons from '@/pages/admin/AdminCRMCoupons';
-import AdminCRMFinancial from '@/pages/admin/AdminCRMFinancial';
-import AdminCRMImpact from '@/pages/admin/AdminCRMImpact';
-import AdminCRMJourney from '@/pages/admin/AdminCRMJourney';
-import AdminCostCenters from '@/pages/admin/AdminCostCenters';
-import AdminBusinessManagement from '@/pages/admin/AdminBusinessManagement';
-import AdminAmbassadors from '@/pages/admin/AdminAmbassadors';
 import { CookieConsent } from '@/components/CookieConsent';
 import { InstallPWABanner } from '@/components/InstallPWABanner';
 import ConectaDashboard from '@/pages/conecta/ConectaDashboard';
@@ -135,9 +93,7 @@ import ConectaEstatisticas from '@/pages/conecta/ConectaEstatisticas';
 import ConectaConvites from '@/pages/conecta/ConectaConvites';
 import ConectaConviteLanding from '@/pages/conecta/ConectaConviteLanding';
 import ConectaConteudos from '@/pages/conecta/ConectaConteudos';
-import ConectaPlaceholder from '@/pages/conecta/ConectaPlaceholder';
 import ConectaGrupos from '@/pages/conecta/ConectaGrupos';
-import AdminConecta from '@/pages/admin/AdminConecta';
 import ConectaHelpdesk from '@/pages/conecta/ConectaHelpdesk';
 import ConectaParcerias from '@/pages/conecta/ConectaParcerias';
 import ConectaAniversariantes from '@/pages/conecta/ConectaAniversariantes';
@@ -191,6 +147,7 @@ function AppContent() {
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
         <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
+        <Route path="/painel-conteudo/acessos" element={<PainelAcessos />} />
 
         {/* Área da associada — banco novo */}
         <Route path="/minha-area" element={<MinhaAreaHome />} />
@@ -250,200 +207,10 @@ function AppContent() {
         <Route path="/page/:slug" element={<Navigate to="/" replace />} />
         <Route path="/pagina/:slug" element={<Suspense fallback={null}><PublicPageView /></Suspense>} />
         
-        {/* Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute requireAdmin={true}>
-            <Admin />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/usuarios" element={
-          <ProtectedRoute requireAdmin={true}>
-            <UserManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/jornada-usuario" element={
-          <ProtectedRoute requireAdmin={true}>
-            <UserJourney />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/analiticas" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminAnalytics />
-          </ProtectedRoute>
-        } />
-        
-        {/* Redirects Admin (Compatibilidade) */}
-        <Route path="/admin/users" element={<Navigate to="/admin/usuarios" replace />} />
-        <Route path="/admin/user-journey" element={<Navigate to="/admin/jornada-usuario" replace />} />
-        <Route path="/admin/analytics" element={<Navigate to="/admin/analiticas" replace />} />
-        <Route path="/admin/parceiros" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminPartners />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/comunidades" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCommunities />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/newsletter" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminNewsletter />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/mensagens-contato" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminContactMessages />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/contact-messages" element={<Navigate to="/admin/mensagens-contato" replace />} />
-        <Route path="/admin/cadastros" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminRegistrations />
-          </ProtectedRoute>
-        } />
-        
-        {/* CRM Routes */}
-        <Route path="/admin/crm" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/contatos" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMContacts />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/pipeline" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMPipeline />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/eventos" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMEvents />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/cupons" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMCoupons />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/financeiro" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMFinancial />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/impacto" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMImpact />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/jornada" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMJourney />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/crm/jornada/:cpf" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCRMJourney />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/centros-custo" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminCostCenters />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/negocios" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminBusinessManagement />
-          </ProtectedRoute>
-        } />
-        
-        {/* Gestão de Embaixadoras */}
-        <Route path="/admin/embaixadoras" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminAmbassadors />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/timeline" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminTimeline />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/academy" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminAcademy />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/landing-pages" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminLandingPages />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/landing-pages/:id" element={
-          <ProtectedRoute requireAdmin={true}>
-            <AdminLandingPageEditor />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/paginas" element={
-          <ProtectedRoute requireAdmin={true}>
-            <Suspense fallback={null}>
-              <AdminPages />
-            </Suspense>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/paginas/:id" element={
-          <ProtectedRoute requireAdmin={true}>
-            <Suspense fallback={null}>
-              <AdminPageEditor />
-            </Suspense>
-          </ProtectedRoute>
-        } />
-        {/* Redirect alternativo */}
-        <Route path="/dashboard/embaixadoras" element={
-          <Navigate to="/admin/embaixadoras" replace />
-        } />
-        
-        {/* Blog Routes */}
-        <Route path="/admin/blog" element={
-          <ProtectedRoute requireBlogEditor={true}>
-            <BlogDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/blog/novo" element={
-          <ProtectedRoute requireBlogEditor={true}>
-            <BlogEditor />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/blog/editar/:id" element={
-          <ProtectedRoute requireBlogEditor={true}>
-            <BlogEditor />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/blog/categorias" element={
-          <ProtectedRoute requireBlogEditor={true}>
-            <BlogCategories />
-          </ProtectedRoute>
-        } />
-        
-        {/* Page Builder removido — ver alternativas no DOCs */}
-        
-        {/* Rotas de Gerenciamento do Site */}
-        <Route path="/admin/configuracoes-site" element={
-          <ProtectedRoute requireAdmin={true}>
-            <SiteSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/navegacao" element={
-          <ProtectedRoute requireAdmin={true}>
-            <NavigationSettings />
-          </ProtectedRoute>
-        } />
-        
-        {/* Redirects Site Management */}
-        <Route path="/admin/site-settings" element={<Navigate to="/admin/configuracoes-site" replace />} />
-        <Route path="/admin/navigation" element={<Navigate to="/admin/navegacao" replace />} />
+        {/* Painel antigo desativado no reboot: tudo vive em /painel-conteudo (banco novo). */}
+        <Route path="/admin" element={<Navigate to="/painel-conteudo" replace />} />
+        <Route path="/admin/*" element={<Navigate to="/painel-conteudo" replace />} />
+        <Route path="/dashboard/embaixadoras" element={<Navigate to="/painel-conteudo/pessoas" replace />} />
         
         {/* Rotas de Painel do Usuário */}
         <Route path="/painel" element={
@@ -529,7 +296,7 @@ function AppContent() {
           <Route path="/conecta/aniversariantes" element={<ProtectedRoute><ConectaAniversariantes /></ProtectedRoute>} />
           
           {/* Admin CONECTA+ */}
-          <Route path="/admin/conecta" element={<ProtectedRoute requireAdmin><AdminConecta /></ProtectedRoute>} />
+          
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

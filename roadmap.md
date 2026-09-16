@@ -69,8 +69,10 @@ Atualizado: 08/09/2026
 
 ### Fase 6 — Admin, CRM e automações
 - [x] Pessoas, Financeiro, Relacionamento (CRM) e Automações no painel da equipe (`docs/_reboot/22-area-associada-e-admin.md`)
+- [x] Matriz de acessos e planos gerenciável em `/painel-conteudo/acessos` (`docs/_reboot/24-acessos-e-hierarquia.md`)
+- [x] Menu da usuária logada no cabeçalho, conforme papéis e liberações
+- [x] Telas legadas de `/admin` desativadas (todo `/admin/...` redireciona para `/painel-conteudo`)
 - [ ] Mailrelay, e-mails automáticos e rotinas agendadas no banco novo
-- [ ] Aposentar as telas legadas equivalentes em `/admin` no momento do corte
 
 
 ### Fase 7 — Migração e corte
