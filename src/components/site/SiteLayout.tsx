@@ -4,6 +4,8 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import LogoComponent from '@/components/layout/LogoComponent';
+import { useAuth } from '@/hooks/useAuth';
+import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
 
 const NAV = [
   { to: '/', rotulo: 'Início' },
