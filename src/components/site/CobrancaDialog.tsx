@@ -18,11 +18,13 @@ type Props = {
   titulo: string;
   valorTexto: string;
   permiteCupom?: boolean;
+  /** Código de convite, quando a oferta é privada. */
+  codigo?: string;
   aoConcluir?: () => void;
 };
 
 export default function CobrancaDialog({
-  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, aoConcluir,
+  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, aoConcluir,
 }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
