@@ -60,10 +60,12 @@ export function usePlanosAcessos() {
 export function useSalvarPlanoAcesso() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (plano: Pick<PlanoAcesso, 'id' | 'tipo' | 'dias_acesso' | 'ativo'>) => {
+    mutationFn: async (plano: Pick<PlanoAcesso, 'id' | 'tipos' | 'dias_acesso' | 'ativo'>) => {
+      const tipos = plano.tipos.length ? plano.tipos : ['diretorio'];
       const { error } = await db
         .from('planos')
-        .update({ tipo: plano.tipo, dias_acesso: plano.dias_acesso, ativo: plano.ativo })
+        // `tipo` continua sendo a área principal, por compatibilidade.
+        .update({ tipos, tipo: tipos[0], dias_acesso: plano.dias_acesso, ativo: plano.ativo })
         .eq('id', plano.id);
       if (error) throw error;
     },
