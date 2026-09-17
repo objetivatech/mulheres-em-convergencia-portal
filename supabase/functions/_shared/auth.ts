@@ -11,9 +11,12 @@ export async function getAuthenticatedUserId(req: Request): Promise<string | nul
   const token = authHeader.replace('Bearer ', '').trim();
   if (!token) return null;
 
+  // Validate with the server credential. This avoids rejecting valid user
+  // sessions when the project's public key is rotated or differs by format.
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
   );
   try {
     const { data, error } = await supabase.auth.getUser(token);
