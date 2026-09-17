@@ -166,9 +166,9 @@ export default function HomePage() {
       {/* Chamada final */}
       <section className="py-16" style={{ background: 'var(--grad-marca)' }}>
         <div className="container mx-auto px-4 text-center text-primary-foreground space-y-4">
-          <h2 className="text-3xl font-semibold tracking-tight">Pronta para fazer parte?</h2>
-          <p className="opacity-90">Associe-se e ganhe presença no diretório, formação e encontros.</p>
-          <Button asChild size="lg" variant="secondary"><Link to="/planos">Conhecer os planos</Link></Button>
+          <TextoSite as="h2" chave="home.cta.titulo" padrao="Pronta para fazer parte?" className="text-3xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="home.cta.subtitulo" padrao="Associe-se e ganhe presença no diretório, formação e encontros." className="opacity-90" />
+          <Button asChild size="lg" variant="secondary"><Link to="/planos"><TextoSite chave="home.cta.botao" padrao="Conhecer os planos" /></Link></Button>
         </div>
       </section>
     </SiteLayout>
