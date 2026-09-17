@@ -48,6 +48,16 @@ export default function MeuConecta() {
   const criarIndicacao = useCriarIndicacao();
   const atualizarIndicacao = useAtualizarIndicacao();
 
+  const { data: conexoes } = useMinhasConexoes();
+  const { data: mensagens = [] } = useMinhasMensagens();
+  const convidar = useConvidarConexao();
+  const responder = useResponderConexao();
+  const desfazer = useDesfazerConexao();
+  const enviarMensagem = useEnviarMensagem();
+  const marcarLida = useMarcarConversaLida();
+  const [conversaCom, setConversaCom] = useState<string | null>(null);
+  const [texto, setTexto] = useState('');
+
   const [form, setForm] = useState({
     apresentacao: '',
     empresa: '',
