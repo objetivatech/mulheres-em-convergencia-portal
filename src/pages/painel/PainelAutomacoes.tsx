@@ -36,15 +36,35 @@ export default function PainelAutomacoes() {
     webhooks: any[];
   } | null>(null);
 
+  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar') => {
+    const { data: usuario } = await supabase.auth.getUser();
+    let { data: sessao, error: erroSessao } = await supabase.auth.getSession();
+
+    if (!usuario.user || erroSessao || !sessao.session?.access_token) {
+      const renovada = await supabase.auth.refreshSession();
+      sessao = renovada.data;
+      erroSessao = renovada.error;
+    }
+
+    const token = sessao.session?.access_token;
+    if (erroSessao || !token) {
+      throw new Error('Sua sessão expirou. Entre novamente antes de ajustar o Asaas.');
+    }
+
+    const { data, error } = await supabase.functions.invoke('diagnostico-asaas', {
+      body: { acao },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (error) throw new Error(await mensagemErroEdge(error));
+    if ((data as any)?.error) throw new Error((data as any).error);
+    return data as any;
+  };
+
   const sincronizarAsaas = async () => {
     setSincronizando(true);
     try {
-      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', {
-        body: { acao: 'sincronizar' },
-      });
-      if (error) throw new Error(await mensagemErroEdge(error));
-      if ((r as any)?.error) throw new Error((r as any).error);
-      setAsaas(r as any);
+      const r = await chamarDiagnosticoAsaas('sincronizar');
+      setAsaas(r);
       toast({
         title: 'Conexão com o Asaas ajustada',
         description: 'A senha de aviso foi igualada e o envio foi reativado. Reenvie o aviso do pagamento no Asaas.',
@@ -59,10 +79,8 @@ export default function PainelAutomacoes() {
   const verificarAsaas = async () => {
     setVerificando(true);
     try {
-      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', { body: { acao: 'verificar' } });
-      if (error) throw new Error(await mensagemErroEdge(error));
-      if ((r as any)?.error) throw new Error((r as any).error);
-      setAsaas(r as any);
+      const r = await chamarDiagnosticoAsaas('verificar');
+      setAsaas(r);
       toast({
         title: (r as any).apontandoParaCa ? 'Asaas conectado ao portal novo' : 'Asaas ainda não aponta para o portal novo',
         description: (r as any).apontandoParaCa

@@ -9,6 +9,7 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Novo botão em Automações: "Ajustar conexão com o Asaas" — iguala a senha, reativa o envio e tira a penalização.
 - O botão "Verificar conexão" passou a mostrar o motivo real do erro (antes o navegador bloqueava a resposta e só aparecia "Failed to send a request").
 - A verificação agora informa também quais avisos estão com penalização.
+- Corrigida a autenticação do próprio botão de ajuste: ele renova a sessão da administradora e envia explicitamente sua identificação à função protegida.
 
 ### 2026-09-16 (tarde) — Asaas confirmado e travas de segurança
 - Asaas já apontando para o portal novo (verificado em Automações).
