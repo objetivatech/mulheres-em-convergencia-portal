@@ -190,3 +190,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Novas tabelas `marcos_linha_tempo` e `parceiros` com painel "Parceiros e linha do tempo".
 - Linha do tempo e vitrine de parceiros na página Sobre; parceiros também na capa.
 - Mapa dos negócios no diretório, com latitude/longitude editáveis no cadastro do negócio.
+
+## Textos do site editáveis
+- Novo painel "Textos do site" (/painel-conteudo/textos) com todos os textos fixos das páginas públicas, busca e restauração do texto original.
+- Edição direta na própria página pelo lápis, visível apenas para a equipe administradora.
+- Textos aplicados na capa, diretório, blog, encontros, planos, topo e rodapé.
