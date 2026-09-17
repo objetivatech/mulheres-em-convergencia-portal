@@ -1,6 +1,6 @@
 
 import { useState, useRef } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,11 @@ import { scorePassword, MIN_PASSWORD_SCORE } from '@/lib/passwordStrength';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
+  const [params] = useSearchParams();
+  const voltarBruto = params.get('voltar') || '';
+  const voltar = voltarBruto.startsWith('/') ? voltarBruto : '/';
+  const abaInicial = params.get('modo') === 'cadastro' ? 'signup' : 'signin';
+  
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +58,7 @@ const Auth = () => {
 
   // Redirect if already authenticated
   if (user && !loading) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={voltar} replace />;
   }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -178,7 +183,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={abaInicial} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Entrar</TabsTrigger>
               <TabsTrigger value="signup">Cadastrar</TabsTrigger>
