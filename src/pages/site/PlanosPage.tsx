@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Check } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import CobrancaDialog from '@/components/site/CobrancaDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
