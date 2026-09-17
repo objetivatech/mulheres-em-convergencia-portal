@@ -88,8 +88,8 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight">Negócios da rede</h2>
-              <p className="text-muted-foreground">Empreendedoras com acesso em dia no diretório.</p>
+              <TextoSite as="h2" chave="home.negocios.titulo" padrao="Negócios da rede" className="text-2xl lg:text-3xl font-semibold tracking-tight" />
+              <TextoSite as="p" chave="home.negocios.subtitulo" padrao="Empreendedoras com acesso em dia no diretório." className="text-muted-foreground" />
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <Link to="/diretorio">Ver todos <ArrowRight className="ml-2 w-4 h-4" /></Link>
