@@ -28,15 +28,15 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
 
   // Blog
   { chave: 'blog.titulo', grupo: 'Blog Convergindo', rotulo: 'Título da página', padrao: 'Convergindo' },
-  { chave: 'blog.subtitulo', grupo: 'Blog Convergindo', rotulo: 'Texto de apoio', padrao: 'Histórias, aprendizados e conteúdos da nossa rede.' },
+  { chave: 'blog.subtitulo', grupo: 'Blog Convergindo', rotulo: 'Texto de apoio', padrao: 'Conteúdo feito por e para mulheres empreendedoras.' },
 
   // Encontros
-  { chave: 'eventos.titulo', grupo: 'Encontros', rotulo: 'Título da página', padrao: 'Encontros' },
-  { chave: 'eventos.subtitulo', grupo: 'Encontros', rotulo: 'Texto de apoio', padrao: 'Participe dos nossos encontros presenciais e online.' },
+  { chave: 'eventos.titulo', grupo: 'Encontros', rotulo: 'Título da página', padrao: 'Encontros e eventos' },
+  { chave: 'eventos.subtitulo', grupo: 'Encontros', rotulo: 'Texto de apoio', padrao: 'Rodas de negócio, formações e celebrações da nossa rede.' },
 
   // Planos
   { chave: 'planos.titulo', grupo: 'Planos', rotulo: 'Título da página', padrao: 'Planos' },
-  { chave: 'planos.subtitulo', grupo: 'Planos', rotulo: 'Texto de apoio', padrao: 'Escolha a forma de fazer parte da rede.' },
+  { chave: 'planos.subtitulo', grupo: 'Planos', rotulo: 'Texto de apoio', padrao: 'Faça parte da rede: seu negócio no diretório, presença nos encontros e acesso à comunidade.' },
 
   // Rodapé e topo
   { chave: 'rodape.sobre', grupo: 'Rodapé', rotulo: 'Texto do rodapé', padrao: 'Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio.' },
