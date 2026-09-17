@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -28,8 +29,8 @@ export default function DiretorioPage() {
 
       <section className="border-b border-border bg-surface-quente">
         <div className="container mx-auto px-4 py-14 space-y-5 max-w-2xl">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Diretório de negócios</h1>
-          <p className="text-muted-foreground">Descubra empreendedoras da rede e fale direto com elas.</p>
+          <TextoSite as="h1" chave="diretorio.titulo" padrao="Diretório de negócios" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="diretorio.subtitulo" padrao="Descubra empreendedoras da rede e fale direto com elas." className="text-muted-foreground" />
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

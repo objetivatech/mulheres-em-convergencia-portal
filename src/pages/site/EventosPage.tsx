@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Video } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventos, dataLonga } from '@/hooks/usePlanosEventos';
@@ -19,8 +20,8 @@ export default function EventosPage() {
 
       <section className="border-b border-border bg-surface-quente">
         <div className="container mx-auto px-4 py-14 max-w-2xl space-y-4">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Encontros e eventos</h1>
-          <p className="text-muted-foreground">Rodas de negócio, formações e celebrações da nossa rede.</p>
+          <TextoSite as="h1" chave="eventos.titulo" padrao="Encontros e eventos" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="eventos.subtitulo" padrao="Rodas de negócio, formações e celebrações da nossa rede." className="text-muted-foreground" />
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Users, GraduationCap, Store, BookOpen } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
+import TextoSite from '@/components/site/TextoSite';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBlocosSite, useNegociosDestaque, usePosts } from '@/hooks/useSite';
@@ -51,7 +52,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/diretorio">Ver o diretório</Link>
+              <Link to="/diretorio"><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>
             </Button>
           </div>
         </div>
@@ -87,8 +88,8 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-end justify-between gap-4 mb-8">
             <div>
-              <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight">Negócios da rede</h2>
-              <p className="text-muted-foreground">Empreendedoras com acesso em dia no diretório.</p>
+              <TextoSite as="h2" chave="home.negocios.titulo" padrao="Negócios da rede" className="text-2xl lg:text-3xl font-semibold tracking-tight" />
+              <TextoSite as="p" chave="home.negocios.subtitulo" padrao="Empreendedoras com acesso em dia no diretório." className="text-muted-foreground" />
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <Link to="/diretorio">Ver todos <ArrowRight className="ml-2 w-4 h-4" /></Link>
@@ -126,8 +127,8 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-16">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight">Convergindo</h2>
-            <p className="text-muted-foreground">Histórias e aprendizados da nossa rede.</p>
+            <TextoSite as="h2" chave="home.blog.titulo" padrao="Convergindo" className="text-2xl lg:text-3xl font-semibold tracking-tight" />
+            <TextoSite as="p" chave="home.blog.subtitulo" padrao="Histórias e aprendizados da nossa rede." className="text-muted-foreground" />
           </div>
           <Button asChild variant="ghost" className="shrink-0">
             <Link to="/convergindo">Ler o blog <ArrowRight className="ml-2 w-4 h-4" /></Link>
@@ -165,9 +166,9 @@ export default function HomePage() {
       {/* Chamada final */}
       <section className="py-16" style={{ background: 'var(--grad-marca)' }}>
         <div className="container mx-auto px-4 text-center text-primary-foreground space-y-4">
-          <h2 className="text-3xl font-semibold tracking-tight">Pronta para fazer parte?</h2>
-          <p className="opacity-90">Associe-se e ganhe presença no diretório, formação e encontros.</p>
-          <Button asChild size="lg" variant="secondary"><Link to="/planos">Conhecer os planos</Link></Button>
+          <TextoSite as="h2" chave="home.cta.titulo" padrao="Pronta para fazer parte?" className="text-3xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="home.cta.subtitulo" padrao="Associe-se e ganhe presença no diretório, formação e encontros." className="opacity-90" />
+          <Button asChild size="lg" variant="secondary"><Link to="/planos"><TextoSite chave="home.cta.botao" padrao="Conhecer os planos" /></Link></Button>
         </div>
       </section>
     </SiteLayout>

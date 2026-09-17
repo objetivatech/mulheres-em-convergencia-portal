@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,8 +24,8 @@ export default function BlogPage() {
 
       <section className="border-b border-border bg-surface-quente">
         <div className="container mx-auto px-4 py-14 max-w-2xl space-y-5">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Convergindo</h1>
-          <p className="text-muted-foreground">Conteúdo feito por e para mulheres empreendedoras.</p>
+          <TextoSite as="h1" chave="blog.titulo" padrao="Convergindo" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="blog.subtitulo" padrao="Conteúdo feito por e para mulheres empreendedoras." className="text-muted-foreground" />
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

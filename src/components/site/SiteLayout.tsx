@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import LogoComponent from '@/components/layout/LogoComponent';
 import { useAuth } from '@/hooks/useAuth';
 import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
+import TextoSite from '@/components/site/TextoSite';
 
 const NAV = [
   { to: '/', rotulo: 'Início' },
@@ -61,8 +62,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               <MenuUsuaria />
             ) : (
               <>
-                <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
-                <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+                <Button asChild variant="ghost" size="sm"><Link to="/entrar"><TextoSite chave="topo.botao_entrar" padrao="Entrar" /></Link></Button>
+                <Button asChild size="sm"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
               </>
             )}
           </div>
@@ -111,8 +112,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                 </div>
               ) : (
                 <div className="flex gap-2 pt-3">
-                  <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar">Entrar</Link></Button>
-                  <Button asChild size="sm" className="flex-1"><Link to="/planos">Fazer parte</Link></Button>
+                  <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar"><TextoSite chave="topo.botao_entrar" padrao="Entrar" /></Link></Button>
+                  <Button asChild size="sm" className="flex-1"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
                 </div>
               )}
             </nav>
@@ -126,9 +127,13 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 py-12 grid gap-8 md:grid-cols-3">
           <div className="space-y-2">
             <p className="font-semibold">Mulheres em Convergência</p>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio.
-            </p>
+            <TextoSite
+              as="p"
+              multilinha
+              chave="rodape.sobre"
+              padrao="Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio."
+              className="text-sm text-muted-foreground max-w-xs"
+            />
           </div>
           <div>
             <p className="text-sm font-medium mb-3">Navegar</p>

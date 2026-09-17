@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Check } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import CobrancaDialog from '@/components/site/CobrancaDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,10 +27,8 @@ export default function PlanosPage() {
 
       <section className="border-b border-border bg-surface-quente">
         <div className="container mx-auto px-4 py-14 max-w-2xl space-y-4 text-center">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Planos</h1>
-          <p className="text-muted-foreground">
-            Faça parte da rede: seu negócio no diretório, presença nos encontros e acesso à comunidade.
-          </p>
+          <TextoSite as="h1" chave="planos.titulo" padrao="Planos" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="planos.subtitulo" padrao="Faça parte da rede: seu negócio no diretório, presença nos encontros e acesso à comunidade." className="text-muted-foreground" />
         </div>
       </section>
 
