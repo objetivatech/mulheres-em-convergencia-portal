@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, NavLink, Navigate } from 'react-router-dom';
 import {
   Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone, Ticket,
-  Users, Wallet, Workflow, Zap, GraduationCap, Network, Heart, Image as ImageIcon,
+  Users, Wallet, Workflow, Zap, GraduationCap, Network, Heart, Image as ImageIcon, Type,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
