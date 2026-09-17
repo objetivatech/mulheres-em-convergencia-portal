@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import LogoComponent from '@/components/layout/LogoComponent';
 import { useAuth } from '@/hooks/useAuth';
 import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
+import TextoSite from '@/components/site/TextoSite';
 
 const NAV = [
   { to: '/', rotulo: 'Início' },
