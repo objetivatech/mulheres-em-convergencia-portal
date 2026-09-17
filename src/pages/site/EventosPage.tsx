@@ -20,8 +20,8 @@ export default function EventosPage() {
 
       <section className="border-b border-border bg-surface-quente">
         <div className="container mx-auto px-4 py-14 max-w-2xl space-y-4">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Encontros e eventos</h1>
-          <p className="text-muted-foreground">Rodas de negócio, formações e celebrações da nossa rede.</p>
+          <TextoSite as="h1" chave="eventos.titulo" padrao="Encontros e eventos" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
+          <TextoSite as="p" chave="eventos.subtitulo" padrao="Rodas de negócio, formações e celebrações da nossa rede." className="text-muted-foreground" />
         </div>
       </section>
 
