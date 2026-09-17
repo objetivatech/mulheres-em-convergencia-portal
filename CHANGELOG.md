@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-17 — Conexão do Asaas corrigida
+- O aviso de pagamento do Asaas estava sendo recusado (401) porque a senha de autenticação gravada no Asaas não era a mesma guardada no portal; isso causou a penalização do webhook.
+- Novo botão em Automações: "Ajustar conexão com o Asaas" — iguala a senha, reativa o envio e tira a penalização.
+- O botão "Verificar conexão" passou a mostrar o motivo real do erro (antes o navegador bloqueava a resposta e só aparecia "Failed to send a request").
+- A verificação agora informa também quais avisos estão com penalização.
+
 ### 2026-09-16 (tarde) — Asaas confirmado e travas de segurança
 - Asaas já apontando para o portal novo (verificado em Automações).
 - Funções internas do banco deixaram de ficar abertas a visitantes; a liberação de acesso por pagamento só pode ser chamada pelo próprio aviso do Asaas.

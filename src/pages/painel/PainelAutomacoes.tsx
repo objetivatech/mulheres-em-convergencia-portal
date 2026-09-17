@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAutomacoes, useReprocessarWebhooks } from '@/hooks/useAdminNovo';
+import { mensagemErroEdge } from '@/lib/erroEdge';
 
 const quando = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -27,13 +28,39 @@ export default function PainelAutomacoes() {
 
   const [importando, setImportando] = useState(false);
   const [verificando, setVerificando] = useState(false);
-  const [asaas, setAsaas] = useState<{ apontandoParaCa: boolean; destinoEsperado: string; webhooks: any[] } | null>(null);
+  const [sincronizando, setSincronizando] = useState(false);
+  const [asaas, setAsaas] = useState<{
+    apontandoParaCa: boolean;
+    destinoEsperado: string;
+    penalizados?: number;
+    webhooks: any[];
+  } | null>(null);
+
+  const sincronizarAsaas = async () => {
+    setSincronizando(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', {
+        body: { acao: 'sincronizar' },
+      });
+      if (error) throw new Error(await mensagemErroEdge(error));
+      if ((r as any)?.error) throw new Error((r as any).error);
+      setAsaas(r as any);
+      toast({
+        title: 'Conexão com o Asaas ajustada',
+        description: 'A senha de aviso foi igualada e o envio foi reativado. Reenvie o aviso do pagamento no Asaas.',
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível ajustar o Asaas', description: e?.message, variant: 'destructive' });
+    } finally {
+      setSincronizando(false);
+    }
+  };
 
   const verificarAsaas = async () => {
     setVerificando(true);
     try {
-      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', { body: {} });
-      if (error) throw error;
+      const { data: r, error } = await supabase.functions.invoke('diagnostico-asaas', { body: { acao: 'verificar' } });
+      if (error) throw new Error(await mensagemErroEdge(error));
       if ((r as any)?.error) throw new Error((r as any).error);
       setAsaas(r as any);
       toast({
@@ -85,6 +112,9 @@ export default function PainelAutomacoes() {
           <Button size="sm" variant="outline" onClick={verificarAsaas} disabled={verificando}>
             {verificando ? 'Verificando…' : 'Verificar conexão com o Asaas'}
           </Button>
+          <Button size="sm" onClick={sincronizarAsaas} disabled={sincronizando}>
+            {sincronizando ? 'Ajustando…' : 'Ajustar conexão com o Asaas'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
@@ -106,6 +136,7 @@ export default function PainelAutomacoes() {
                 {asaas.webhooks.map((w, i) => (
                   <li key={i} className="break-all">
                     {w.nome ?? 'Aviso'} · {w.url} · {w.ativo === false ? 'desligado' : 'ativo'}
+                    {w.penalizado ? ' · com penalização' : ''}
                   </li>
                 ))}
               </ul>

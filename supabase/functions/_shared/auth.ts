@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import { corsHeaders } from './cors.ts';
 
 /**
  * Validate the request bearer token and return the authenticated user id.
@@ -32,7 +33,7 @@ export async function requireAdmin(req: Request): Promise<{ userId: string } | {
     return {
       error: new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }),
     };
   }
@@ -63,7 +64,7 @@ export async function requireAdmin(req: Request): Promise<{ userId: string } | {
     return {
       error: new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }),
     };
   }
