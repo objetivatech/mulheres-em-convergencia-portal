@@ -21,6 +21,15 @@ import {
   useCriarIndicacao,
   useAtualizarIndicacao,
 } from '@/hooks/useConectaNovo';
+import {
+  useMinhasConexoes,
+  useConvidarConexao,
+  useResponderConexao,
+  useDesfazerConexao,
+  useMinhasMensagens,
+  useEnviarMensagem,
+  useMarcarConversaLida,
+} from '@/hooks/useConectaRede';
 
 const SITUACOES = ['aberta', 'em andamento', 'fechada', 'sem retorno'];
 
