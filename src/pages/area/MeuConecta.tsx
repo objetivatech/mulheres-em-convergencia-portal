@@ -234,6 +234,18 @@ export default function MeuConecta() {
           <TabsList>
             <TabsTrigger value="perfil">Meu perfil</TabsTrigger>
             <TabsTrigger value="rede">Rede</TabsTrigger>
+            <TabsTrigger value="conexoes" className="gap-2">
+              Conexões
+              {convitesPendentes > 0 && (
+                <Badge variant="default" className="h-5 min-w-5 justify-center px-1 text-[11px]">{convitesPendentes}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="mensagens" className="gap-2">
+              Mensagens
+              {totalNaoLidas > 0 && (
+                <Badge variant="default" className="h-5 min-w-5 justify-center px-1 text-[11px]">{totalNaoLidas}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="grupos">Grupos</TabsTrigger>
             <TabsTrigger value="indicacoes">Indicações</TabsTrigger>
           </TabsList>
