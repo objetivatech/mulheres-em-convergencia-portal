@@ -36,7 +36,9 @@ export default function PainelAutomacoes() {
     webhooks: any[];
   } | null>(null);
 
-  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar') => {
+  const [conciliando, setConciliando] = useState(false);
+
+  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar' | 'conciliar') => {
     const { data: usuario } = await supabase.auth.getUser();
     let { data: sessao, error: erroSessao } = await supabase.auth.getSession();
 
@@ -76,7 +78,23 @@ export default function PainelAutomacoes() {
     }
   };
 
+  const conciliarAsaas = async () => {
+    setConciliando(true);
+    try {
+      const r = await chamarDiagnosticoAsaas('conciliar');
+      toast({
+        title: 'Pagamentos trazidos do Asaas',
+        description: `${r.processados ?? 0} de ${r.encontrados ?? 0} pagamentos dos últimos 30 dias foram registrados aqui.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível trazer os pagamentos', description: e?.message, variant: 'destructive' });
+    } finally {
+      setConciliando(false);
+    }
+  };
+
   const verificarAsaas = async () => {
+
     setVerificando(true);
     try {
       const r = await chamarDiagnosticoAsaas('verificar');
@@ -132,6 +150,9 @@ export default function PainelAutomacoes() {
           </Button>
           <Button size="sm" onClick={sincronizarAsaas} disabled={sincronizando}>
             {sincronizando ? 'Ajustando…' : 'Ajustar conexão com o Asaas'}
+          </Button>
+          <Button size="sm" onClick={conciliarAsaas} disabled={conciliando}>
+            {conciliando ? 'Buscando…' : 'Buscar pagamentos no Asaas'}
           </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
