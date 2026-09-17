@@ -292,6 +292,79 @@ export type Database = {
           },
         ]
       }
+      conecta_conexoes: {
+        Row: {
+          criado_em: string
+          de_pessoa_id: string
+          id: string
+          mensagem: string | null
+          para_pessoa_id: string
+          respondido_em: string | null
+          situacao: string
+        }
+        Insert: {
+          criado_em?: string
+          de_pessoa_id: string
+          id?: string
+          mensagem?: string | null
+          para_pessoa_id: string
+          respondido_em?: string | null
+          situacao?: string
+        }
+        Update: {
+          criado_em?: string
+          de_pessoa_id?: string
+          id?: string
+          mensagem?: string | null
+          para_pessoa_id?: string
+          respondido_em?: string | null
+          situacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_conexoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_conexoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_conexoes_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_conexoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_conexoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_conexoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       conecta_grupo_membros: {
         Row: {
           entrou_em: string
@@ -432,6 +505,76 @@ export type Database = {
           },
           {
             foreignKeyName: "conecta_indicacoes_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      conecta_mensagens: {
+        Row: {
+          conteudo: string
+          criado_em: string
+          de_pessoa_id: string
+          id: string
+          lida_em: string | null
+          para_pessoa_id: string
+        }
+        Insert: {
+          conteudo: string
+          criado_em?: string
+          de_pessoa_id: string
+          id?: string
+          lida_em?: string | null
+          para_pessoa_id: string
+        }
+        Update: {
+          conteudo?: string
+          criado_em?: string
+          de_pessoa_id?: string
+          id?: string
+          lida_em?: string | null
+          para_pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conecta_mensagens_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_mensagens_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_mensagens_de_pessoa_id_fkey"
+            columns: ["de_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_mensagens_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conecta_mensagens_para_pessoa_id_fkey"
+            columns: ["para_pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "conecta_mensagens_para_pessoa_id_fkey"
             columns: ["para_pessoa_id"]
             isOneToOne: false
             referencedRelation: "v_meu_perfil"
@@ -2859,6 +3002,7 @@ export type Database = {
         }
         Returns: string
       }
+      conecta_conectadas: { Args: { _a: string; _b: string }; Returns: boolean }
       conecta_membros: {
         Args: never
         Returns: {
