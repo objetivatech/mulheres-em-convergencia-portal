@@ -36,7 +36,9 @@ export default function PainelAutomacoes() {
     webhooks: any[];
   } | null>(null);
 
-  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar') => {
+  const [conciliando, setConciliando] = useState(false);
+
+  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar' | 'conciliar') => {
     const { data: usuario } = await supabase.auth.getUser();
     let { data: sessao, error: erroSessao } = await supabase.auth.getSession();
 
