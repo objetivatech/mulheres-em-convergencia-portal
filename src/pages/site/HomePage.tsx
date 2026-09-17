@@ -51,7 +51,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/diretorio">Ver o diretório</Link>
+              <Link to="/diretorio"><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>
             </Button>
           </div>
         </div>
