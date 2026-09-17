@@ -19,6 +19,7 @@ const ITENS = [
   { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos, encontros e acessos', icone: Ticket },
   { para: '/painel-conteudo/academy', rotulo: 'Academy', icone: GraduationCap },
   { para: '/painel-conteudo/imagens', rotulo: 'Imagens', icone: ImageIcon },
+  { para: '/painel-conteudo/textos', rotulo: 'Textos do site', icone: Type },
   { para: '/painel-conteudo/institucional', rotulo: 'Parceiros e linha do tempo', icone: ImageIcon },
   { para: '/painel-conteudo/conecta', rotulo: 'Conecta+', icone: Network },
   { para: '/painel-conteudo/embaixadoras', rotulo: 'Embaixadoras', icone: Heart },
