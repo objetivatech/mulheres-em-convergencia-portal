@@ -127,9 +127,13 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         <div className="container mx-auto px-4 py-12 grid gap-8 md:grid-cols-3">
           <div className="space-y-2">
             <p className="font-semibold">Mulheres em Convergência</p>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio.
-            </p>
+            <TextoSite
+              as="p"
+              multilinha
+              chave="rodape.sobre"
+              padrao="Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio."
+              className="text-sm text-muted-foreground max-w-xs"
+            />
           </div>
           <div>
             <p className="text-sm font-medium mb-3">Navegar</p>
