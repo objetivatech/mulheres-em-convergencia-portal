@@ -30,6 +30,11 @@ Se o resultado disser que o Asaas **ainda não aponta para o portal novo**, corr
 painel do Asaas (Integrações → Webhooks): endereço acima, token igual ao
 `ASAAS_WEBHOOK_TOKEN`, eventos de cobrança (criada, confirmada, recebida, vencida, estornada).
 
+O botão **Ajustar conexão com o Asaas** usa o token já guardado no portal para atualizar o
+webhook pela API do Asaas. Não gere um token novo apenas no painel do Asaas: se os dois lados
+ficarem com valores diferentes, o aviso continuará recebendo 401. Se a tela disser que a sessão
+expirou, saia do portal, entre novamente com uma conta administradora e repita o ajuste.
+
 ## 3. Teste de ponta a ponta recomendado
 
 1. Entrar no portal com uma conta de teste.

@@ -1,6 +1,6 @@
 # Roadmap — Reboot do Portal Mulheres em Convergência
 
-Atualizado: 08/09/2026
+Atualizado: 17/09/2026
 
 ## Padrões permanentes deste projeto
 
@@ -78,9 +78,9 @@ Atualizado: 08/09/2026
 
 
 ### Fase 7 — Migração e corte
-- [ ] Scripts de migração idempotentes (antigo → novo)
+- [x] Scripts de migração idempotentes (antigo → novo)
 - [ ] Conferência assinante por assinante
-- [ ] Reconfiguração de webhooks e domínio
+- [ ] Reconfiguração de webhooks e domínio — domínio já no portal novo; webhook em correção após 401 por token divergente
 - [ ] Corte
 
 ## Passos que dependem do cliente

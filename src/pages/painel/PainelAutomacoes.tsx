@@ -37,7 +37,15 @@ export default function PainelAutomacoes() {
   } | null>(null);
 
   const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar') => {
-    const { data: sessao, error: erroSessao } = await supabase.auth.getSession();
+    const { data: usuario } = await supabase.auth.getUser();
+    let { data: sessao, error: erroSessao } = await supabase.auth.getSession();
+
+    if (!usuario.user || erroSessao || !sessao.session?.access_token) {
+      const renovada = await supabase.auth.refreshSession();
+      sessao = renovada.data;
+      erroSessao = renovada.error;
+    }
+
     const token = sessao.session?.access_token;
     if (erroSessao || !token) {
       throw new Error('Sua sessão expirou. Entre novamente antes de ajustar o Asaas.');
