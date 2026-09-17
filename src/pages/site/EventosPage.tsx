@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Video } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import TextoSite from '@/components/site/TextoSite';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventos, dataLonga } from '@/hooks/usePlanosEventos';
