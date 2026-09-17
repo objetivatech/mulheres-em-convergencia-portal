@@ -151,6 +151,9 @@ export default function PainelAutomacoes() {
           <Button size="sm" onClick={sincronizarAsaas} disabled={sincronizando}>
             {sincronizando ? 'Ajustando…' : 'Ajustar conexão com o Asaas'}
           </Button>
+          <Button size="sm" onClick={conciliarAsaas} disabled={conciliando}>
+            {conciliando ? 'Buscando…' : 'Buscar pagamentos no Asaas'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
