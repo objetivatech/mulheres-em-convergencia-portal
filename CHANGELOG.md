@@ -195,3 +195,6 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Novo painel "Textos do site" (/painel-conteudo/textos) com todos os textos fixos das páginas públicas, busca e restauração do texto original.
 - Edição direta na própria página pelo lápis, visível apenas para a equipe administradora.
 - Textos aplicados na capa, diretório, blog, encontros, planos, topo e rodapé.
+
+## Conecta+ networking
+- Novas conexoes entre associadas e mensagens diretas com notificacoes em tempo real (0009_conecta_networking.sql, useConectaRede.ts, CartaoMembro.tsx, MeuConecta.tsx). Doc: docs/_reboot/26-conecta-networking.md
