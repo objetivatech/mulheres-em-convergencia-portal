@@ -127,8 +127,8 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-16">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight">Convergindo</h2>
-            <p className="text-muted-foreground">Histórias e aprendizados da nossa rede.</p>
+            <TextoSite as="h2" chave="home.blog.titulo" padrao="Convergindo" className="text-2xl lg:text-3xl font-semibold tracking-tight" />
+            <TextoSite as="p" chave="home.blog.subtitulo" padrao="Histórias e aprendizados da nossa rede." className="text-muted-foreground" />
           </div>
           <Button asChild variant="ghost" className="shrink-0">
             <Link to="/convergindo">Ler o blog <ArrowRight className="ml-2 w-4 h-4" /></Link>
