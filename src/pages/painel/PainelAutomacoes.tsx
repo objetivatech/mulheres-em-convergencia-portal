@@ -112,6 +112,9 @@ export default function PainelAutomacoes() {
           <Button size="sm" variant="outline" onClick={verificarAsaas} disabled={verificando}>
             {verificando ? 'Verificando…' : 'Verificar conexão com o Asaas'}
           </Button>
+          <Button size="sm" onClick={sincronizarAsaas} disabled={sincronizando}>
+            {sincronizando ? 'Ajustando…' : 'Ajustar conexão com o Asaas'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
@@ -133,6 +136,7 @@ export default function PainelAutomacoes() {
                 {asaas.webhooks.map((w, i) => (
                   <li key={i} className="break-all">
                     {w.nome ?? 'Aviso'} · {w.url} · {w.ativo === false ? 'desligado' : 'ativo'}
+                    {w.penalizado ? ' · com penalização' : ''}
                   </li>
                 ))}
               </ul>
