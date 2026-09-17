@@ -306,45 +306,190 @@ export default function MeuConecta() {
               </p>
             ) : (
               <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {listaFiltrada.map((m) => (
-                  <li key={m.pessoa_id} className="rounded-xl border border-border bg-card p-4 space-y-2">
-                    <div className="flex items-center gap-3">
-                      {m.foto_url ? (
-                        <img src={m.foto_url} alt={m.nome} className="h-10 w-10 rounded-full object-cover" loading="lazy" />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-muted" />
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{m.nome}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {[m.cargo, m.empresa].filter(Boolean).join(' · ') || 'Associada'}
-                        </p>
-                      </div>
-                    </div>
-                    {m.apresentacao && <p className="text-xs text-muted-foreground line-clamp-3">{m.apresentacao}</p>}
-                    {!!(m.interesses ?? []).length && (
-                      <div className="flex flex-wrap gap-1">
-                        {(m.interesses ?? []).slice(0, 4).map((i) => (
-                          <Badge key={i} variant="outline" className="text-[11px]">{i}</Badge>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap gap-3 pt-1 text-xs">
-                      {m.instagram && (
-                        <a href={m.instagram} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Instagram</a>
-                      )}
-                      {m.linkedin && (
-                        <a href={m.linkedin} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">LinkedIn</a>
-                      )}
-                      {m.site && (
-                        <a href={m.site} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Site</a>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                {listaFiltrada.map((m) => {
+                  const s = situacaoCom(m.pessoa_id);
+                  return (
+                    <CartaoMembro
+                      key={m.pessoa_id}
+                      membro={m}
+                      situacao={s.situacao}
+                      desabilitado={!liberado}
+                      ocupado={convidar.isPending || responder.isPending}
+                      onConectar={() => conectar(m.pessoa_id)}
+                      onAceitar={() => s.id && responder.mutate({ id: s.id, situacao: 'aceita' })}
+                      onRecusar={() => s.id && responder.mutate({ id: s.id, situacao: 'recusada' })}
+                      onMensagem={() => abrirConversa(m.pessoa_id)}
+                    />
+                  );
+                })}
               </ul>
             )}
           </TabsContent>
+
+          <TabsContent value="conexoes" className="space-y-6">
+            <section className="rounded-xl border border-border bg-card p-6 space-y-3">
+              <h2 className="font-semibold">Convites recebidos</h2>
+              {!convitesPendentes ? (
+                <p className="text-sm text-muted-foreground">Nenhum convite esperando resposta.</p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {(conexoes?.recebidasPendentes ?? []).map((c) => (
+                    <li key={c.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{nomePor(c.de_pessoa_id)}</p>
+                        {c.mensagem && <p className="text-xs text-muted-foreground">{c.mensagem}</p>}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => responder.mutate({ id: c.id, situacao: 'aceita' })}>Aceitar</Button>
+                        <Button size="sm" variant="ghost" onClick={() => responder.mutate({ id: c.id, situacao: 'recusada' })}>Recusar</Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-border bg-card p-6 space-y-3">
+              <h2 className="font-semibold">Minhas conexões ({idsConectadas.length})</h2>
+              {!idsConectadas.length ? (
+                <p className="text-sm text-muted-foreground">Você ainda não tem conexões. Convide alguém na aba Rede.</p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {(conexoes?.aceitas ?? []).map((c) => {
+                    const outro = c.de_pessoa_id === pessoaId ? c.para_pessoa_id : c.de_pessoa_id;
+                    const m = membroPor(outro);
+                    return (
+                      <li key={c.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">{m?.nome ?? 'Associada'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {[m?.cargo, m?.empresa].filter(Boolean).join(' · ') || 'Associada'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => abrirConversa(outro)}>
+                            Mensagem
+                            {!!naoLidasPor.get(outro) && (
+                              <Badge variant="default" className="ml-2 h-5 min-w-5 justify-center px-1 text-[11px]">
+                                {naoLidasPor.get(outro)}
+                              </Badge>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              if (!confirm('Desfazer esta conexão?')) return;
+                              desfazer.mutate(c.id);
+                            }}
+                          >
+                            Desfazer
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+
+            {!!conexoes?.enviadasPendentes.length && (
+              <section className="rounded-xl border border-border bg-card p-6 space-y-3">
+                <h2 className="font-semibold">Convites enviados</h2>
+                <ul className="divide-y divide-border">
+                  {conexoes.enviadasPendentes.map((c) => (
+                    <li key={c.id} className="py-3 flex items-center justify-between gap-3">
+                      <p className="text-sm">{nomePor(c.para_pessoa_id)}</p>
+                      <Button size="sm" variant="ghost" onClick={() => desfazer.mutate(c.id)}>Cancelar</Button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </TabsContent>
+
+          <TabsContent value="mensagens">
+            <div className="grid gap-4 md:grid-cols-[260px_1fr]">
+              <aside className="rounded-xl border border-border bg-card p-3">
+                {!idsConectadas.length ? (
+                  <p className="p-2 text-sm text-muted-foreground">Conecte-se com alguém para conversar.</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {idsConectadas.map((id) => (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onClick={() => abrirConversa(id)}
+                          className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                            conversaCom === id ? 'bg-muted font-medium' : 'hover:bg-muted/60'
+                          }`}
+                        >
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate">{nomePor(id)}</span>
+                            {!!naoLidasPor.get(id) && (
+                              <Badge variant="default" className="h-5 min-w-5 justify-center px-1 text-[11px]">
+                                {naoLidasPor.get(id)}
+                              </Badge>
+                            )}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </aside>
+
+              <section className="rounded-xl border border-border bg-card p-4 flex flex-col min-h-[320px]">
+                {!conversaCom ? (
+                  <p className="m-auto text-sm text-muted-foreground">Escolha uma conexão para ver a conversa.</p>
+                ) : (
+                  <>
+                    <h2 className="font-semibold mb-3">{nomePor(conversaCom)}</h2>
+                    <div className="flex-1 space-y-2 overflow-auto pr-1">
+                      {!conversa.length ? (
+                        <p className="text-sm text-muted-foreground">Nenhuma mensagem ainda. Diga oi!</p>
+                      ) : (
+                        conversa.map((msg) => {
+                          const minha = msg.de_pessoa_id === pessoaId;
+                          return (
+                            <div
+                              key={msg.id}
+                              className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                                minha ? 'ml-auto bg-primary text-primary-foreground' : 'bg-muted'
+                              }`}
+                            >
+                              <p className="whitespace-pre-wrap break-words">{msg.conteudo}</p>
+                              <p className={`mt-1 text-[11px] ${minha ? 'opacity-80' : 'text-muted-foreground'}`}>
+                                {new Date(msg.criado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                              </p>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <Textarea
+                        rows={2}
+                        value={texto}
+                        placeholder="Escreva sua mensagem"
+                        onChange={(e) => setTexto(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            enviarTexto();
+                          }
+                        }}
+                      />
+                      <Button onClick={enviarTexto} disabled={!texto.trim() || enviarMensagem.isPending}>
+                        Enviar
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </section>
+            </div>
+          </TabsContent>
+
 
           <TabsContent value="grupos">
             {!grupos.length ? (
