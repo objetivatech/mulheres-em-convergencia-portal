@@ -116,6 +116,81 @@ export default function MeuConecta() {
   const nomePor = (id: string | null) =>
     !id ? 'Rede' : membros.find((m) => m.pessoa_id === id)?.nome ?? 'Associada';
 
+  const membroPor = (id: string) => membros.find((m) => m.pessoa_id === id);
+
+  const situacaoCom = (outroId: string) => {
+    const c = (conexoes?.todas ?? []).find(
+      (x) =>
+        (x.de_pessoa_id === pessoaId && x.para_pessoa_id === outroId) ||
+        (x.para_pessoa_id === pessoaId && x.de_pessoa_id === outroId),
+    );
+    if (!c) return { situacao: 'nenhuma' as const, id: null as string | null };
+    if (c.situacao === 'aceita') return { situacao: 'conectada' as const, id: c.id };
+    if (c.situacao === 'recusada') return { situacao: 'recusada' as const, id: c.id };
+    return {
+      situacao: (c.de_pessoa_id === pessoaId ? 'pendente_enviada' : 'pendente_recebida') as
+        | 'pendente_enviada'
+        | 'pendente_recebida',
+      id: c.id,
+    };
+  };
+
+  const idsConectadas = useMemo(
+    () =>
+      (conexoes?.aceitas ?? []).map((c) =>
+        c.de_pessoa_id === pessoaId ? c.para_pessoa_id : c.de_pessoa_id,
+      ),
+    [conexoes?.aceitas, pessoaId],
+  );
+
+  const naoLidasPor = useMemo(() => {
+    const mapa = new Map<string, number>();
+    mensagens
+      .filter((m) => m.para_pessoa_id === pessoaId && !m.lida_em)
+      .forEach((m) => mapa.set(m.de_pessoa_id, (mapa.get(m.de_pessoa_id) ?? 0) + 1));
+    return mapa;
+  }, [mensagens, pessoaId]);
+
+  const totalNaoLidas = Array.from(naoLidasPor.values()).reduce((a, b) => a + b, 0);
+  const convitesPendentes = conexoes?.recebidasPendentes.length ?? 0;
+
+  const conversa = useMemo(
+    () =>
+      !conversaCom
+        ? []
+        : mensagens.filter(
+            (m) => m.de_pessoa_id === conversaCom || m.para_pessoa_id === conversaCom,
+          ),
+    [mensagens, conversaCom],
+  );
+
+  const abrirConversa = (outroId: string) => {
+    setConversaCom(outroId);
+    if (naoLidasPor.get(outroId)) marcarLida.mutate(outroId);
+  };
+
+  const conectar = (outroId: string) =>
+    convidar.mutate(
+      { paraPessoaId: outroId },
+      {
+        onSuccess: () => toast({ title: 'Convite enviado' }),
+        onError: (e: any) =>
+          toast({ title: 'Não foi possível convidar', description: e.message, variant: 'destructive' }),
+      },
+    );
+
+  const enviarTexto = () => {
+    if (!conversaCom || !texto.trim()) return;
+    enviarMensagem.mutate(
+      { paraPessoaId: conversaCom, conteudo: texto },
+      {
+        onSuccess: () => setTexto(''),
+        onError: (e: any) =>
+          toast({ title: 'Não foi possível enviar', description: e.message, variant: 'destructive' }),
+      },
+    );
+  };
+
   const registrarIndicacao = async () => {
     if (!nova.descricao.trim()) {
       toast({ title: 'Escreva a indicação', variant: 'destructive' });
