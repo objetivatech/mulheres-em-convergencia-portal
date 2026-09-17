@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Users, GraduationCap, Store, BookOpen } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
+import TextoSite from '@/components/site/TextoSite';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBlocosSite, useNegociosDestaque, usePosts } from '@/hooks/useSite';
