@@ -78,7 +78,23 @@ export default function PainelAutomacoes() {
     }
   };
 
+  const conciliarAsaas = async () => {
+    setConciliando(true);
+    try {
+      const r = await chamarDiagnosticoAsaas('conciliar');
+      toast({
+        title: 'Pagamentos trazidos do Asaas',
+        description: `${r.processados ?? 0} de ${r.encontrados ?? 0} pagamentos dos últimos 30 dias foram registrados aqui.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível trazer os pagamentos', description: e?.message, variant: 'destructive' });
+    } finally {
+      setConciliando(false);
+    }
+  };
+
   const verificarAsaas = async () => {
+
     setVerificando(true);
     try {
       const r = await chamarDiagnosticoAsaas('verificar');
