@@ -184,6 +184,12 @@ Deno.serve(async (req) => {
     }
 
     if (valorCentavos <= 0) return json({ error: 'Valor inválido para cobrança.' }, 400);
+    if (valorCentavos < 500) {
+      return json(
+        { error: 'O valor mínimo aceito pelo meio de pagamento é R$ 5,00. Ajuste o valor desta oferta no painel.' },
+        400,
+      );
+    }
 
     // Cliente no Asaas (reaproveita por CPF)
     const cabecalhos = { 'Content-Type': 'application/json', access_token: apiKey };

@@ -90,6 +90,14 @@ export default function PainelPlanoEditor() {
       toast({ title: 'Ofertas privadas precisam de um código', variant: 'destructive' });
       return;
     }
+    if (paraCentavos(form.valor_reais) < 500) {
+      toast({
+        title: 'Valor mínimo de R$ 5,00',
+        description: 'O meio de pagamento não aceita cobranças abaixo desse valor.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const valores = {
       nome: form.nome.trim(),
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),

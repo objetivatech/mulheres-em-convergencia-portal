@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMeuPerfil } from '@/hooks/useMinhaArea';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ export default function CobrancaDialog({
   aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, aoConcluir,
 }: Props) {
   const { user } = useAuth();
+  const { data: perfil } = useMeuPerfil();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [nome, setNome] = useState('');
@@ -35,9 +37,26 @@ export default function CobrancaDialog({
   const [cupom, setCupom] = useState('');
   const [enviando, setEnviando] = useState(false);
 
+  // Sem conta: leva direto para o cadastro e volta para esta mesma oferta.
+  useEffect(() => {
+    if (aberto && !user) {
+      const volta = `${window.location.pathname}${window.location.search}`;
+      navigate(`/entrar?modo=cadastro&voltar=${encodeURIComponent(volta)}`);
+    }
+  }, [aberto, user, navigate]);
+
+  // Já logada: reconhece os dados que já temos.
+  useEffect(() => {
+    if (!perfil) return;
+    setNome((v) => v || perfil.nome_social || perfil.nome || '');
+    setCpf((v) => v || perfil.cpf || '');
+    setTelefone((v) => v || perfil.telefone_principal || '');
+  }, [perfil]);
+
   const confirmar = async () => {
     if (!user) {
-      navigate('/entrar');
+      const volta = `${window.location.pathname}${window.location.search}`;
+      navigate(`/entrar?modo=cadastro&voltar=${encodeURIComponent(volta)}`);
       return;
     }
     if (nome.trim().length < 2 || cpf.replace(/\D/g, '').length !== 11) {
