@@ -62,8 +62,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               <MenuUsuaria />
             ) : (
               <>
-                <Button asChild variant="ghost" size="sm"><Link to="/entrar">Entrar</Link></Button>
-                <Button asChild size="sm"><Link to="/planos">Fazer parte</Link></Button>
+                <Button asChild variant="ghost" size="sm"><Link to="/entrar"><TextoSite chave="topo.botao_entrar" padrao="Entrar" /></Link></Button>
+                <Button asChild size="sm"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
               </>
             )}
           </div>
