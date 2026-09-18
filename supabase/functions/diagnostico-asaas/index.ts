@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
     const nossos = brutos.filter((w) => w.url === destinoEsperado);
 
     if (acao === 'sincronizar') {
-      if (!tokenLocal) return json({ error: 'ASAAS_WEBHOOK_TOKEN não configurada' }, 500);
+      if (!tokenLocal || !tokenValido) {
+        return json({ error: 'A senha de autenticação do aviso de pagamento está vazia ou inválida. Gere uma nova nos segredos do projeto.' }, 500);
+      }
       if (!nossos.length) {
         return json({ error: 'Nenhum aviso do Asaas aponta para o portal novo' }, 400);
       }
@@ -100,7 +102,9 @@ Deno.serve(async (req) => {
     // Puxa os pagamentos direto do Asaas e processa aqui, sem depender do
     // botão "Reenviar" do painel do Asaas (que fica bloqueado após penalização).
     if (acao === 'conciliar') {
-      if (!tokenLocal) return json({ error: 'ASAAS_WEBHOOK_TOKEN não configurada' }, 500);
+      if (!tokenLocal || !tokenValido) {
+        return json({ error: 'A senha de autenticação do aviso de pagamento está vazia ou inválida. Gere uma nova nos segredos do projeto.' }, 500);
+      }
 
       const dias = 30;
       const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
