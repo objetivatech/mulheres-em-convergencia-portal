@@ -33,7 +33,10 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get('ASAAS_API_KEY');
   if (!apiKey) return json({ error: 'ASAAS_API_KEY não configurada' }, 500);
 
-  const tokenLocal = Deno.env.get('ASAAS_WEBHOOK_TOKEN');
+  // Remove espaços/quebras de linha acidentais: um valor com esses caracteres
+  // quebra o envio (cabeçalho inválido) e faz o Asaas receber 401.
+  const tokenLocal = (Deno.env.get('ASAAS_WEBHOOK_TOKEN') ?? '').trim().replace(/[\r\n]/g, '');
+  const tokenValido = /^[\x21-\x7e]+$/.test(tokenLocal);
   const destinoEsperado = `${Deno.env.get('SUPABASE_URL')}/functions/v1/asaas-webhook`;
   const cabecalhos = { access_token: apiKey, 'Content-Type': 'application/json' };
 
