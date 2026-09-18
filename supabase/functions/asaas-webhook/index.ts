@@ -271,7 +271,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
   const token = req.headers.get("asaas-access-token");
-  if (!token || token !== Deno.env.get("ASAAS_WEBHOOK_TOKEN")) {
+  const tokenEsperado = (Deno.env.get("ASAAS_WEBHOOK_TOKEN") ?? "").trim();
+  if (!token || token.trim() !== tokenEsperado) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
       headers: { ...cors, "Content-Type": "application/json" },
