@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0'
 import { corsHeaders } from '../_shared/cors.ts'
+import { enviarEmail } from '../_shared/enviar-email.ts'
 
 interface BusinessMessageRequest {
   business_id: string;
@@ -110,14 +111,10 @@ Deno.serve(async (req) => {
       increment_by: 1
     });
 
-    // Send email notification to business owner via MailRelay
+    // Aviso para a dona do negócio pelo canal oficial de e-mail
     let emailSent = false;
     try {
-      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM');
-
-      if (mailrelayApiKey && mailrelayHost && adminEmailFrom && business.profiles?.email) {
+      if (business.profiles?.email) {
         const ownerEmail = business.profiles.email;
         const ownerName = business.profiles.full_name || 'Proprietário(a)';
 
