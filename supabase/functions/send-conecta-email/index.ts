@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,9 +11,6 @@ const log = (step: string, details?: unknown) => {
   console.log(`[SEND-CONECTA-EMAIL] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-const emailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
 const BRAND_COLOR = '#7c3aed';
 const LOGO_URL = 'https://storage.mulheresemconvergencia.com.br/branding/logo-mec-horizontal.png';
