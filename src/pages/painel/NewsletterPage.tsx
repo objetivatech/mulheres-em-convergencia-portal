@@ -106,7 +106,7 @@ export default function NewsletterPage() {
               <div className="space-y-2"><Label>Texto de prévia (aparece ao lado do assunto)</Label>
                 <Input value={camp.previa} onChange={(e) => setCamp({ ...camp, previa: e.target.value })} /></div>
               <div className="space-y-2"><Label>Conteúdo</Label>
-                <EditorRico valor={camp.html} aoMudar={(html: string) => setCamp({ ...camp, html })} /></div>
+                <EditorRico value={camp.html} onChange={(html) => setCamp((c) => ({ ...c, html }))} pasta="newsletter" /></div>
               <div className="space-y-2">
                 <Label>Enviar para as listas</Label>
                 {grupos.length === 0 && <p className="text-sm text-muted-foreground">Crie uma lista na aba "Listas e contatos".</p>}
