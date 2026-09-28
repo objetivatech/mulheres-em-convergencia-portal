@@ -22,13 +22,6 @@ Deno.serve(async (req) => {
     // Get environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
-
-    if (!mailrelayApiKey || !mailrelayHost || !adminEmailFrom) {
-      throw new Error('MailRelay configuration missing');
-    }
 
     // Create Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
