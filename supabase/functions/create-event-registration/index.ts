@@ -469,19 +469,11 @@ serve(async (req) => {
           </div>
         `;
 
-        await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify({
-            from: { email: adminEmailFrom, name: "Mulheres em Convergência" },
-            to: [{ email, name: full_name }],
-            subject: `Inscrição Confirmada: ${event.title}`,
-            html_part: emailHtml,
-          }),
-        });
+        await enviarEmail(
+          { email, nome: full_name },
+          `Inscrição Confirmada: ${event.title}`,
+          emailHtml,
+        );
         logStep("Confirmation email sent", { email, isNewUser });
       }
     } catch (emailError) {
