@@ -78,15 +78,20 @@ Deno.serve(async (req) => {
       });
       const { data, error } = await db
         .from('pessoa_contatos')
-        .select('valor, pessoas!pessoa_contatos_pessoa_id_fkey(nome)')
+        .select('valor, pessoa_id')
         .eq('tipo', 'email').eq('principal', true).limit(5000);
       if (error) throw new Error(error.message);
+      const ids = [...new Set((data ?? []).map((c) => c.pessoa_id))];
+      const nomes = new Map<string, string>();
+      for (let i = 0; i < ids.length; i += 200) {
+        const { data: ps } = await db.from('pessoas').select('id,nome').in('id', ids.slice(i, i + 200));
+        for (const p of ps ?? []) nomes.set(p.id, p.nome);
+      }
       let enviados = 0; const falhas: string[] = [];
       for (const c of data ?? []) {
         const email = String(c.valor).toLowerCase();
         try {
-          // deno-lint-ignore no-explicit-any
-          const nome = (c as any).pessoas?.nome ?? undefined;
+          const nome = nomes.get(c.pessoa_id) ?? undefined;
           await sender('/subscribers', { method: 'POST', body: JSON.stringify({ email, firstname: nome, groups: [grupo] }) });
           enviados++;
         } catch (e) {
