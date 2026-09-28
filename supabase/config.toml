@@ -37,4 +37,8 @@ verify_jwt = false
 [functions.r2-storage]
 verify_jwt = false
 
+# Newsletter pelo Sender.net: exige administradora, validada dentro da função.
+[functions.sender-newsletter]
+verify_jwt = false
+
 

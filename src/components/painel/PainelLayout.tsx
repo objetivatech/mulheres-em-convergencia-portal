@@ -28,6 +28,7 @@ const ITENS = [
   { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
   { para: '/painel-conteudo/automacoes', rotulo: 'Automações', icone: Zap },
   { para: '/painel-conteudo/comunicados', rotulo: 'Comunicados', icone: Megaphone },
+  { para: '/painel-conteudo/newsletter', rotulo: 'Newsletter', icone: Megaphone },
 
 ];
 

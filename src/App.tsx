@@ -17,6 +17,7 @@ import PainelPaginas from "./pages/painel/PainelPaginas";
 import PainelPaginaEditor from "./pages/painel/PainelPaginaEditor";
 import PainelBlocos from "./pages/painel/PainelBlocos";
 import PainelComunicados from "./pages/painel/ComunicadosPage";
+import PainelNewsletter from "./pages/painel/NewsletterPage";
 import PainelPlanosEventos from "./pages/painel/PainelPlanosEventos";
 import PainelPlanoEditor from "./pages/painel/PainelPlanoEditor";
 import PainelEventoEditor from "./pages/painel/PainelEventoEditor";
@@ -159,6 +160,7 @@ function AppContent() {
         <Route path="/painel-conteudo/planos/:id" element={<PainelPlanoEditor />} />
         <Route path="/painel-conteudo/eventos/:id" element={<PainelEventoEditor />} />
         <Route path="/painel-conteudo/comunicados" element={<PainelComunicados />} />
+        <Route path="/painel-conteudo/newsletter" element={<PainelNewsletter />} />
         <Route path="/painel-conteudo/pessoas" element={<PainelPessoas />} />
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
         <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
