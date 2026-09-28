@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -202,19 +203,11 @@ serve(async (req) => {
             </div>
           `;
 
-          await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-AUTH-TOKEN': mailrelayApiKey,
-            },
-            body: JSON.stringify({
-              from: { email: adminEmailFrom, name: "Mulheres em Convergência" },
-              to: [{ email: reg.email, name: reg.full_name }],
-              subject,
-              html_part: emailHtml,
-            }),
-          });
+          await enviarEmail(
+            { email: reg.email, nome: reg.full_name },
+            subject,
+            emailHtml,
+          );
 
           // Update sent timestamp
           await supabaseClient
