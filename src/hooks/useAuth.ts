@@ -196,7 +196,7 @@ export const useAuthProvider = () => {
         return { error };
       }
 
-      // Send confirmation email via MailRelay
+      // Envio do e-mail de confirmação
       try {
         const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
           body: {
@@ -256,7 +256,7 @@ export const useAuthProvider = () => {
 
   const requestPasswordReset = async (email: string) => {
     try {
-      // Use MailRelay edge function instead of Supabase Auth
+      // Usa a função própria de e-mail do portal
       const { error } = await supabase.functions.invoke('send-password-reset', {
         body: { email, origem: window.location.origin }
       });

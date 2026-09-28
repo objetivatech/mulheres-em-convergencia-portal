@@ -267,7 +267,7 @@ serve(async (req) => {
     logStep("Starting email scheduler", { action });
 
     if (action === 'reminder_3d') {
-      const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '3d', 3);
+      const totalEmailsSent = await sendDirectReminder(supabaseClient, '3d', 3);
       logStep("3d reminder scheduler completed", { totalEmailsSent });
       return new Response(
         JSON.stringify({ success: true, action: 'reminder_3d', emails_sent: totalEmailsSent }),
@@ -276,7 +276,7 @@ serve(async (req) => {
     }
 
     if (action === 'reminder_2h') {
-      const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '2h', 0);
+      const totalEmailsSent = await sendDirectReminder(supabaseClient, '2h', 0);
       logStep("2h reminder scheduler completed", { totalEmailsSent });
       return new Response(
         JSON.stringify({ success: true, action: 'reminder_2h', emails_sent: totalEmailsSent }),
@@ -285,7 +285,7 @@ serve(async (req) => {
     }
 
     // Default: Tomorrow reminder (1d)
-    const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '1d', 1);
+    const totalEmailsSent = await sendDirectReminder(supabaseClient, '1d', 1);
     logStep("1d reminder scheduler completed", { totalEmailsSent });
 
     return new Response(

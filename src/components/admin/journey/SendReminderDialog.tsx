@@ -166,7 +166,7 @@ export const SendReminderDialog = ({ open, onOpenChange, user }: SendReminderDia
           <Alert variant="default" className="bg-blue-50 border-blue-200">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              O email será enviado via MailRelay para <strong>{user.email}</strong>
+              O email será enviado para <strong>{user.email}</strong>
             </AlertDescription>
           </Alert>
         </div>

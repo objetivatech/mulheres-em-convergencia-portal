@@ -195,7 +195,7 @@ const AdminContactMessages = () => {
     setShowReplyDialog(true);
   };
 
-  // Send reply via MailRelay
+  // Envia a resposta por e-mail
   const sendReply = async () => {
     if (!selectedMessage) return;
 
