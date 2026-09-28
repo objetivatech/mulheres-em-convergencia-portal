@@ -166,49 +166,13 @@ Deno.serve(async (req) => {
 </table></td></tr></table>
 </body></html>`;
 
-    // Send email via MailRelay API
-    const mailrelayPayload = {
-      "from": {
-        "email": adminEmailFrom,
-        "name": "Mulheres em Convergência"
-      },
-      "to": [
-        {
-          "email": email,
-          "name": fullName || email
-        }
-      ],
-      "subject": "Redefinição de senha - Mulheres em Convergência",
-      "html_part": emailHtml
-    };
-
     console.log(`[SEND-PASSWORD-RESET] Sending email to: ${email}`);
 
-    const mailrelayResponse = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': mailrelayApiKey,
-      },
-      body: JSON.stringify(mailrelayPayload),
-    });
-
-    // Check if response is JSON before parsing
-    const contentType = mailrelayResponse.headers.get('content-type');
-    let mailrelayResult: unknown;
-    
-    if (contentType && contentType.includes('application/json')) {
-      mailrelayResult = await mailrelayResponse.json();
-    } else {
-      const textResponse = await mailrelayResponse.text();
-      console.error('[SEND-PASSWORD-RESET] MailRelay returned non-JSON response:', textResponse.substring(0, 200));
-      throw new Error(`MailRelay API error: Invalid response format. Check MAILRELAY_HOST and MAILRELAY_API_KEY configuration.`);
-    }
-
-    if (!mailrelayResponse.ok) {
-      console.error('[SEND-PASSWORD-RESET] MailRelay error:', mailrelayResult);
-      throw new Error(`MailRelay API error: ${JSON.stringify(mailrelayResult)}`);
-    }
+    await enviarEmail(
+      { email, nome: fullName || email },
+      'Redefinição de senha - Mulheres em Convergência',
+      emailHtml,
+    );
 
     console.log(`[SEND-PASSWORD-RESET] Email sent successfully to ${email}`);
 
