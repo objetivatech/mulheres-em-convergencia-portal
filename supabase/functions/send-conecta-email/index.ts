@@ -35,21 +35,8 @@ function emailWrapper(title: string, body: string): string {
 
 async function sendEmail(to: string, toName: string, subject: string, htmlContent: string) {
   log('Sending email', { to, subject });
-  const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-    body: JSON.stringify({
-      from: { email: emailFrom, name: 'Mulheres em Convergência' },
-      to: [{ email: to, name: toName }],
-      subject,
-      html_part: htmlContent,
-    }),
-  });
-  if (!response.ok) {
-    const result = await response.json();
-    throw new Error(`Mailrelay error: ${JSON.stringify(result)}`);
-  }
-  return await response.json();
+  await enviarEmail({ email: to, nome: toName }, subject, htmlContent);
+  return { ok: true };
 }
 
 serve(async (req) => {

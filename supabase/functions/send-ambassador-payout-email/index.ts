@@ -52,9 +52,6 @@ serve(async (req) => {
   }
 
   try {
-    if (!mailrelayApiKey || !mailrelayHost) {
-      throw new Error('Mailrelay configuration missing');
-    }
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

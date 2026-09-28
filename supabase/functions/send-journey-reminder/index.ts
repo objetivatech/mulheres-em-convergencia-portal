@@ -63,36 +63,11 @@ serve(async (req) => {
       </div>
     `;
 
-    const mailrelayPayload = {
-      "from": {
-        "email": adminEmailFrom,
-        "name": "Mulheres em Convergência"
-      },
-      "to": [
-        {
-          "email": payload.user_email,
-          "name": payload.user_email
-        }
-      ],
-      "subject": payload.subject,
-      "html_part": emailHtml
-    };
-
-    const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': mailrelayApiKey,
-      },
-      body: JSON.stringify(mailrelayPayload),
-    });
-
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error('Failed to send email via MailRelay:', result);
-      throw new Error(`MailRelay API error: ${JSON.stringify(result)}`);
-    }
+    await enviarEmail(
+      { email: payload.user_email, nome: payload.user_email },
+      payload.subject,
+      emailHtml,
+    );
 
     console.log('Email sent successfully to', payload.user_email);
 
