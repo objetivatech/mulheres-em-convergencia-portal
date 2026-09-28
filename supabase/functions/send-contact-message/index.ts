@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -151,103 +152,61 @@ serve(async (req) => {
       Message: ${message}
     `);
 
-    // Send email notification to admins via MailRelay
+    // Aviso para as administradoras pelo canal oficial de e-mail
     let emailSent = false;
     try {
-      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM');
+      // Get list of admins
+      const { data: admins, error: adminsError } = await supabase
+        .from('user_roles')
+        .select('profiles!inner(email, full_name)')
+        .eq('role', 'admin');
 
-      if (mailrelayApiKey && mailrelayHost && adminEmailFrom) {
-        console.log('[SEND-CONTACT-MESSAGE] MailRelay configured, fetching admins...');
-        
-        // Get list of admins
-        const { data: admins, error: adminsError } = await supabase
-          .from('user_roles')
-          .select('profiles!inner(email, full_name)')
-          .eq('role', 'admin');
+      if (adminsError) {
+        console.error('[SEND-CONTACT-MESSAGE] Error fetching admins:', adminsError);
+      }
 
-        if (adminsError) {
-          console.error('[SEND-CONTACT-MESSAGE] Error fetching admins:', adminsError);
-        }
+      console.log(`[SEND-CONTACT-MESSAGE] Found ${admins?.length || 0} admins`);
 
-        console.log(`[SEND-CONTACT-MESSAGE] Found ${admins?.length || 0} admins`);
-
-        if (admins && admins.length > 0) {
-          // Prepare email content
-          const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #C75A92;">Nova Mensagem de Contato</h2>
-              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>De:</strong> ${name}</p>
-                <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-                <p style="margin: 5px 0;"><strong>Assunto:</strong> ${subject}</p>
-                <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-              </div>
-              <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                <h3 style="color: #333; margin-top: 0;">Mensagem:</h3>
-                <p style="white-space: pre-wrap; color: #555;">${message}</p>
-              </div>
-              <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-radius: 8px;">
-                <p style="margin: 0; color: #92400e;">💡 <strong>Ação necessária:</strong> Responda para ${email}</p>
-              </div>
+      if (admins && admins.length > 0) {
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #C75A92;">Nova Mensagem de Contato</h2>
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>De:</strong> ${name}</p>
+              <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+              <p style="margin: 5px 0;"><strong>Assunto:</strong> ${subject}</p>
+              <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
             </div>
-          `;
+            <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+              <h3 style="color: #333; margin-top: 0;">Mensagem:</h3>
+              <p style="white-space: pre-wrap; color: #555;">${message}</p>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-radius: 8px;">
+              <p style="margin: 0; color: #92400e;">💡 <strong>Ação necessária:</strong> Responda para ${email}</p>
+            </div>
+          </div>
+        `;
 
-          // Send to all admins
-          const emailPromises = admins.map(async (admin: any) => {
-            const mailrelayPayload = {
-              "from": {
-                "email": adminEmailFrom,
-                "name": "Mulheres em Convergência - Contato"
-              },
-              "to": [
-                {
-                  "email": admin.profiles.email,
-                  "name": admin.profiles.full_name || admin.profiles.email
-                }
-              ],
-              "subject": `Nova Mensagem de Contato: ${subject}`,
-              "html_part": emailHtml,
-              "reply_to": {
-                "email": email,
-                "name": name
-              }
-            };
-
-            console.log(`[SEND-CONTACT-MESSAGE] Sending email to admin: ${admin.profiles.email}`);
-
-            const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'X-AUTH-TOKEN': mailrelayApiKey
-              },
-              body: JSON.stringify(mailrelayPayload)
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error(`[SEND-CONTACT-MESSAGE] MailRelay error for ${admin.profiles.email}:`, errorText);
-            } else {
-              console.log(`[SEND-CONTACT-MESSAGE] Email sent successfully to ${admin.profiles.email}`);
-            }
-
-            return response.ok;
-          });
-
-          const results = await Promise.all(emailPromises);
-          emailSent = results.some(r => r);
-          console.log(`[SEND-CONTACT-MESSAGE] Emails sent to admins: ${results.filter(r => r).length}/${results.length}`);
-        } else {
-          console.warn('[SEND-CONTACT-MESSAGE] No admins found to send email notification');
-        }
-      } else {
-        console.warn('[SEND-CONTACT-MESSAGE] MailRelay not configured:', {
-          hasApiKey: !!mailrelayApiKey,
-          hasHost: !!mailrelayHost,
-          hasFrom: !!adminEmailFrom
+        const emailPromises = admins.map(async (admin: any) => {
+          try {
+            await enviarEmail(
+              { email: admin.profiles.email, nome: admin.profiles.full_name || admin.profiles.email },
+              `Nova Mensagem de Contato: ${subject}`,
+              emailHtml,
+            );
+            console.log(`[SEND-CONTACT-MESSAGE] Email sent successfully to ${admin.profiles.email}`);
+            return true;
+          } catch (e) {
+            console.error(`[SEND-CONTACT-MESSAGE] Falha para ${admin.profiles.email}:`, e);
+            return false;
+          }
         });
+
+        const results = await Promise.all(emailPromises);
+        emailSent = results.some(r => r);
+        console.log(`[SEND-CONTACT-MESSAGE] Emails sent to admins: ${results.filter(r => r).length}/${results.length}`);
+      } else {
+        console.warn('[SEND-CONTACT-MESSAGE] No admins found to send email notification');
       }
     } catch (emailError) {
       console.error('Error sending notification email:', emailError);
