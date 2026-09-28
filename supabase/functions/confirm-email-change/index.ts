@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { enviarEmail } from '../_shared/enviar-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,9 +20,6 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
 
     const { token }: RequestBody = await req.json();
     if (!token || token.length < 32) {
@@ -99,25 +97,6 @@ Deno.serve(async (req) => {
       console.error('[CONFIRM-EMAIL-CHANGE] CRM update warn:', e);
     }
 
-    // 5) Update Mailrelay subscriber if exists - best effort
-    try {
-      const findRes = await fetch(`https://${mailrelayHost}/api/v1/subscribers?email=${encodeURIComponent(oldEmail)}`, {
-        headers: { 'X-AUTH-TOKEN': mailrelayApiKey },
-      });
-      if (findRes.ok) {
-        const data = await findRes.json();
-        const sub = Array.isArray(data) ? data[0] : data?.data?.[0];
-        if (sub?.id) {
-          await fetch(`https://${mailrelayHost}/api/v1/subscribers/${sub.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-            body: JSON.stringify({ email: newEmail }),
-          });
-        }
-      }
-    } catch (e) {
-      console.error('[CONFIRM-EMAIL-CHANGE] Mailrelay sync warn:', e);
-    }
 
     // 6) Mark request as confirmed
     await supabase.from('email_change_requests')
@@ -143,16 +122,11 @@ Deno.serve(async (req) => {
 </td></tr></table></td></tr></table></body></html>`;
 
     for (const addr of [oldEmail, newEmail]) {
-      fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-        body: JSON.stringify({
-          from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-          to: [{ email: addr, name: fullName || addr }],
-          subject: 'Email da sua conta foi atualizado',
-          html_part: successHtml(addr),
-        }),
-      }).catch(e => console.error('[CONFIRM-EMAIL-CHANGE] Notify error:', e));
+      enviarEmail(
+        { email: addr, nome: fullName || addr },
+        'Email da sua conta foi atualizado',
+        successHtml(addr),
+      ).catch(e => console.error('[CONFIRM-EMAIL-CHANGE] Notify error:', e));
     }
 
     return new Response(JSON.stringify({

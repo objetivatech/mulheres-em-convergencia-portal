@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { enviarEmail } from '../_shared/enviar-email.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
 
 interface ReminderRequest {
   user_id: string;
@@ -52,7 +49,7 @@ serve(async (req) => {
     const payload: ReminderRequest = await req.json();
     console.log('Processing reminder for user:', payload.user_id);
 
-    // Enviar email via MailRelay
+    // Enviar email pelo canal oficial
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         ${payload.message.split('\n').map(line => `<p>${line}</p>`).join('')}
@@ -66,36 +63,11 @@ serve(async (req) => {
       </div>
     `;
 
-    const mailrelayPayload = {
-      "from": {
-        "email": adminEmailFrom,
-        "name": "Mulheres em Convergência"
-      },
-      "to": [
-        {
-          "email": payload.user_email,
-          "name": payload.user_email
-        }
-      ],
-      "subject": payload.subject,
-      "html_part": emailHtml
-    };
-
-    const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': mailrelayApiKey,
-      },
-      body: JSON.stringify(mailrelayPayload),
-    });
-
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error('Failed to send email via MailRelay:', result);
-      throw new Error(`MailRelay API error: ${JSON.stringify(result)}`);
-    }
+    await enviarEmail(
+      { email: payload.user_email, nome: payload.user_email },
+      payload.subject,
+      emailHtml,
+    );
 
     console.log('Email sent successfully to', payload.user_email);
 

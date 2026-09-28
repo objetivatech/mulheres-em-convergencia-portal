@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,9 +12,6 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[SEND-EVENT-EMAIL] ${step}${detailsStr}`);
 };
 
-const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
 // Helper for Brazil timezone formatting
 const formatDateBrazil = (dateStr: string) => {
@@ -209,29 +207,6 @@ serve(async (req) => {
 });
 
 async function sendEmail(to: string, subject: string, htmlContent: string) {
-  const mailrelayPayload = {
-    from: {
-      email: adminEmailFrom,
-      name: "Mulheres em Convergência"
-    },
-    to: [{ email: to, name: to }],
-    subject: subject,
-    html_part: htmlContent
-  };
-
-  const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-AUTH-TOKEN': mailrelayApiKey,
-    },
-    body: JSON.stringify(mailrelayPayload),
-  });
-
-  if (!response.ok) {
-    const result = await response.json();
-    throw new Error(`Mailrelay error: ${JSON.stringify(result)}`);
-  }
-
-  return await response.json();
+  await enviarEmail({ email: to, nome: to }, subject, htmlContent);
+  return { ok: true };
 }

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,9 +12,6 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[SEND-AMBASSADOR-PAYOUT-EMAIL] ${step}${detailsStr}`);
 };
 
-const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
 // Helper for Brazil formatting
 const formatCurrency = (value: number) => {
@@ -54,9 +52,6 @@ serve(async (req) => {
   }
 
   try {
-    if (!mailrelayApiKey || !mailrelayHost) {
-      throw new Error('Mailrelay configuration missing');
-    }
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -448,43 +443,8 @@ function generateRefundNotificationEmail(data: RefundEmailData): string {
 }
 
 async function sendEmail(to: string, subject: string, htmlContent: string) {
-  const mailrelayPayload = {
-    from: {
-      email: adminEmailFrom,
-      name: "Mulheres em Convergência"
-    },
-    to: [{ email: to, name: to }],
-    subject: subject,
-    html_part: htmlContent
-  };
-
-  logStep("Sending email via Mailrelay", { to, subject });
-
-  const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-AUTH-TOKEN': mailrelayApiKey,
-    },
-    body: JSON.stringify(mailrelayPayload),
-  });
-
-  const contentType = response.headers.get('content-type');
-  let result: any;
-  
-  if (contentType && contentType.includes('application/json')) {
-    result = await response.json();
-  } else {
-    const textResponse = await response.text();
-    logStep("Mailrelay non-JSON response", { text: textResponse.substring(0, 200) });
-    throw new Error(`Mailrelay API error: Invalid response format`);
-  }
-
-  if (!response.ok) {
-    logStep("Mailrelay error", { result });
-    throw new Error(`Mailrelay error: ${JSON.stringify(result)}`);
-  }
-
-  logStep("Email sent successfully", { result });
-  return result;
+  logStep("Enviando e-mail", { to, subject });
+  await enviarEmail({ email: to, nome: to }, subject, htmlContent);
+  logStep("Email sent successfully", { to });
+  return { ok: true };
 }

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0'
 import { corsHeaders } from '../_shared/cors.ts'
+import { enviarEmail } from '../_shared/enviar-email.ts'
 
 interface BusinessMessageRequest {
   business_id: string;
@@ -110,14 +111,10 @@ Deno.serve(async (req) => {
       increment_by: 1
     });
 
-    // Send email notification to business owner via MailRelay
+    // Aviso para a dona do negócio pelo canal oficial de e-mail
     let emailSent = false;
     try {
-      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM');
-
-      if (mailrelayApiKey && mailrelayHost && adminEmailFrom && business.profiles?.email) {
+      if (business.profiles?.email) {
         const ownerEmail = business.profiles.email;
         const ownerName = business.profiles.full_name || 'Proprietário(a)';
 
@@ -163,41 +160,13 @@ Deno.serve(async (req) => {
           </div>
         `;
 
-        const mailrelayPayload = {
-          "from": {
-            "email": adminEmailFrom,
-            "name": "Mulheres em Convergência"
-          },
-          "to": [
-            {
-              "email": ownerEmail,
-              "name": ownerName
-            }
-          ],
-          "subject": `Nova mensagem para ${business.name}: ${body.subject}`,
-          "html_part": emailHtml,
-          "reply_to": {
-            "email": body.sender_email,
-            "name": body.sender_name
-          }
-        };
-
-        const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey
-          },
-          body: JSON.stringify(mailrelayPayload)
-        });
-
-        if (response.ok) {
-          emailSent = true;
-          console.log(`[SEND-BUSINESS-MESSAGE] Email sent to business owner: ${ownerEmail}`);
-        } else {
-          const error = await response.json();
-          console.error('[SEND-BUSINESS-MESSAGE] MailRelay error:', error);
-        }
+        await enviarEmail(
+          { email: ownerEmail, nome: ownerName },
+          `Nova mensagem para ${business.name}: ${body.subject}`,
+          emailHtml,
+        );
+        emailSent = true;
+        console.log(`[SEND-BUSINESS-MESSAGE] Email sent to business owner: ${ownerEmail}`);
       }
     } catch (emailError) {
       console.error('[SEND-BUSINESS-MESSAGE] Error sending notification email:', emailError);

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,9 +122,6 @@ function buildReminderHtml(
 
 async function sendDirectReminder(
   supabaseClient: any,
-  mailrelayApiKey: string,
-  mailrelayHost: string,
-  adminEmailFrom: string,
   reminderType: '3d' | '1d' | '2h',
   daysAhead: number,
 ) {
@@ -200,19 +198,11 @@ async function sendDirectReminder(
           '2h': `🚀 Em 2 horas: ${event.title}`,
         };
 
-        await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify({
-            from: { email: adminEmailFrom, name: "Mulheres em Convergência" },
-            to: [{ email: reg.email, name: reg.full_name }],
-            subject: subjectMap[reminderType],
-            html_part: emailHtml,
-          }),
-        });
+        await enviarEmail(
+          { email: reg.email, nome: reg.full_name },
+          subjectMap[reminderType],
+          emailHtml,
+        );
 
         // Mark as sent
         await supabaseClient
@@ -265,9 +255,6 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
     let action = 'reminder_tomorrow';
     try {
@@ -280,7 +267,7 @@ serve(async (req) => {
     logStep("Starting email scheduler", { action });
 
     if (action === 'reminder_3d') {
-      const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '3d', 3);
+      const totalEmailsSent = await sendDirectReminder(supabaseClient, '3d', 3);
       logStep("3d reminder scheduler completed", { totalEmailsSent });
       return new Response(
         JSON.stringify({ success: true, action: 'reminder_3d', emails_sent: totalEmailsSent }),
@@ -289,7 +276,7 @@ serve(async (req) => {
     }
 
     if (action === 'reminder_2h') {
-      const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '2h', 0);
+      const totalEmailsSent = await sendDirectReminder(supabaseClient, '2h', 0);
       logStep("2h reminder scheduler completed", { totalEmailsSent });
       return new Response(
         JSON.stringify({ success: true, action: 'reminder_2h', emails_sent: totalEmailsSent }),
@@ -298,7 +285,7 @@ serve(async (req) => {
     }
 
     // Default: Tomorrow reminder (1d)
-    const totalEmailsSent = await sendDirectReminder(supabaseClient, mailrelayApiKey, mailrelayHost, adminEmailFrom, '1d', 1);
+    const totalEmailsSent = await sendDirectReminder(supabaseClient, '1d', 1);
     logStep("1d reminder scheduler completed", { totalEmailsSent });
 
     return new Response(

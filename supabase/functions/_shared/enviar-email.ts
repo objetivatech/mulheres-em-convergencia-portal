@@ -1,5 +1,5 @@
 // Envio de e-mail único para todas as funções.
-// Ordem dos canais: Sender.net (principal) → MailRelay (legado) → Resend (reserva).
+// Ordem dos canais: Sender.net (principal) → Resend (reserva).
 
 export type Destinatario = { email: string; nome?: string | null };
 
@@ -13,13 +13,11 @@ function remetente() {
 /** Diagnóstico do canal de e-mail, sem revelar nenhuma chave. */
 export function canalDeEmail() {
   const sender = !!Deno.env.get('SENDER_API_TOKEN');
-  const mailrelay = !!(Deno.env.get('MAILRELAY_API_KEY') && Deno.env.get('MAILRELAY_HOST'));
   const resend = !!Deno.env.get('RESEND_API_KEY');
   return {
     remetente: remetente(),
-    canal: sender ? 'Sender.net' : mailrelay ? 'MailRelay' : resend ? 'Resend' : 'nenhum',
+    canal: sender ? 'Sender.net' : resend ? 'Resend' : 'nenhum',
     sender_configurado: sender,
-    mailrelay_configurado: mailrelay,
     resend_configurado: resend,
   };
 }
@@ -47,25 +45,8 @@ export async function enviarEmail(dest: Destinatario, assunto: string, html: str
     return;
   }
 
-  const mrKey = Deno.env.get('MAILRELAY_API_KEY');
-  const mrHost = Deno.env.get('MAILRELAY_HOST');
-  if (mrKey && mrHost) {
-    const res = await fetch(`https://${mrHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mrKey },
-      body: JSON.stringify({
-        from: { email: de, name: NOME_REMETENTE },
-        to: [{ email: dest.email, name: dest.nome || dest.email }],
-        subject: assunto,
-        html_part: html,
-      }),
-    });
-    if (!res.ok) throw new Error(`MailRelay ${res.status}: ${await res.text()}`);
-    return;
-  }
-
   const resend = Deno.env.get('RESEND_API_KEY');
-  if (!resend) throw new Error('Nenhum canal de e-mail configurado (SENDER_API_TOKEN, MAILRELAY_* ou RESEND_API_KEY)');
+  if (!resend) throw new Error('Nenhum canal de e-mail configurado (SENDER_API_TOKEN ou RESEND_API_KEY)');
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resend}` },

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { enviarEmail } from '../_shared/enviar-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,13 +22,6 @@ Deno.serve(async (req) => {
     // Get environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
-
-    if (!mailrelayApiKey || !mailrelayHost || !adminEmailFrom) {
-      throw new Error('MailRelay configuration missing');
-    }
 
     // Create Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -96,49 +90,13 @@ Deno.serve(async (req) => {
 </table></td></tr></table>
 </body></html>`;
 
-    // Send email via MailRelay API
-    const mailrelayPayload = {
-      "from": {
-        "email": adminEmailFrom,
-        "name": "Mulheres em Convergência"
-      },
-      "to": [
-        {
-          "email": email,
-          "name": full_name || email
-        }
-      ],
-      "subject": "Confirme seu cadastro - Mulheres em Convergência",
-      "html_part": emailHtml
-    };
-
     console.log(`[SEND-CONFIRMATION-EMAIL] Sending email to: ${email}`);
 
-    const mailrelayResponse = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': mailrelayApiKey,
-      },
-      body: JSON.stringify(mailrelayPayload),
-    });
-
-    // Check if response is JSON before parsing
-    const contentType = mailrelayResponse.headers.get('content-type');
-    let mailrelayResult: any;
-    
-    if (contentType && contentType.includes('application/json')) {
-      mailrelayResult = await mailrelayResponse.json();
-    } else {
-      const textResponse = await mailrelayResponse.text();
-      console.error('[SEND-CONFIRMATION-EMAIL] MailRelay returned non-JSON response:', textResponse.substring(0, 200));
-      throw new Error(`MailRelay API error: Invalid response format. Check MAILRELAY_HOST and MAILRELAY_API_KEY configuration.`);
-    }
-
-    if (!mailrelayResponse.ok) {
-      console.error('[SEND-CONFIRMATION-EMAIL] MailRelay error:', mailrelayResult);
-      throw new Error(`MailRelay API error: ${JSON.stringify(mailrelayResult)}`);
-    }
+    await enviarEmail(
+      { email, nome: full_name || email },
+      'Confirme seu cadastro - Mulheres em Convergência',
+      emailHtml,
+    );
 
     console.log(`[SEND-CONFIRMATION-EMAIL] Email sent successfully to ${email}`);
 

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { enviarEmail } from '../_shared/enviar-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,9 +22,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -137,21 +135,14 @@ Deno.serve(async (req) => {
 <tr><td style="background:#f0f0f0;padding:20px;text-align:center;color:#909090;font-size:13px;">© ${new Date().getFullYear()} Mulheres em Convergência</td></tr>
 </table></td></tr></table></body></html>`;
 
-    const mailrelayPayload = {
-      from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-      to: [{ email: newEmailNormalized, name: fullName || newEmailNormalized }],
-      subject: 'Confirme seu novo email - Mulheres em Convergência',
-      html_part: confirmHtml,
-    };
-
-    const mrRes = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-      body: JSON.stringify(mailrelayPayload),
-    });
-    if (!mrRes.ok) {
-      const errText = await mrRes.text();
-      console.error('[REQUEST-EMAIL-CHANGE] Mailrelay error:', errText);
+    try {
+      await enviarEmail(
+        { email: newEmailNormalized, nome: fullName || newEmailNormalized },
+        'Confirme seu novo email - Mulheres em Convergência',
+        confirmHtml,
+      );
+    } catch (e) {
+      console.error('[REQUEST-EMAIL-CHANGE] Falha no envio:', e);
       return new Response(JSON.stringify({ error: 'Erro ao enviar email de confirmação' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -172,16 +163,11 @@ Deno.serve(async (req) => {
 <p style="color:#d32f2f;font-weight:bold;">Se você não fez essa solicitação, recomendamos alterar sua senha imediatamente.</p>
 </td></tr></table></td></tr></table></body></html>`;
 
-    await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-      body: JSON.stringify({
-        from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-        to: [{ email: user.email!, name: fullName || user.email! }],
-        subject: 'Aviso de segurança: solicitação de troca de email',
-        html_part: alertHtml,
-      }),
-    }).catch(e => console.error('[REQUEST-EMAIL-CHANGE] Alert email failed:', e));
+    await enviarEmail(
+      { email: user.email!, nome: fullName || user.email! },
+      'Aviso de segurança: solicitação de troca de email',
+      alertHtml,
+    ).catch(e => console.error('[REQUEST-EMAIL-CHANGE] Alert email failed:', e));
 
     return new Response(JSON.stringify({
       success: true,

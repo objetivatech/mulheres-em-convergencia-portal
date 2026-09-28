@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -417,12 +418,9 @@ serve(async (req) => {
 
     // Send confirmation email (non-blocking)
     try {
-      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
       const portalUrl = Deno.env.get('PORTAL_URL') || 'https://mulheresemconvergencia.com.br';
 
-      if (mailrelayApiKey && mailrelayHost) {
+      {
         const eventDateFormatted = formatDateBrazil(event.date_start);
         const eventTimeFormatted = formatTimeBrazil(event.date_start);
 
@@ -471,19 +469,11 @@ serve(async (req) => {
           </div>
         `;
 
-        await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify({
-            from: { email: adminEmailFrom, name: "Mulheres em Convergência" },
-            to: [{ email, name: full_name }],
-            subject: `Inscrição Confirmada: ${event.title}`,
-            html_part: emailHtml,
-          }),
-        });
+        await enviarEmail(
+          { email, nome: full_name },
+          `Inscrição Confirmada: ${event.title}`,
+          emailHtml,
+        );
         logStep("Confirmation email sent", { email, isNewUser });
       }
     } catch (emailError) {

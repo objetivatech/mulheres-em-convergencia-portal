@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { enviarEmail } from '../_shared/enviar-email.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
 
 interface NewUserPayload {
   user_id: string;
@@ -88,39 +85,14 @@ serve(async (req) => {
       </div>
     `;
 
-    // 3. Enviar emails via MailRelay API
+    // 3. Enviar emails pelo canal oficial (Sender.net)
     const emailPromises = admins.map(async (admin) => {
       try {
-        const mailrelayPayload = {
-          "from": {
-            "email": adminEmailFrom,
-            "name": "Mulheres em Convergência"
-          },
-          "to": [
-            {
-              "email": admin.email,
-              "name": admin.full_name || admin.email
-            }
-          ],
-          "subject": emailSubject,
-          "html_part": emailBody
-        };
-
-        const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify(mailrelayPayload),
-        });
-
-        const result = await response.json();
-        
-        if (!response.ok) {
-          console.error(`Failed to send email to ${admin.email}:`, result);
-          throw new Error(`MailRelay API error: ${JSON.stringify(result)}`);
-        }
+        await enviarEmail(
+          { email: admin.email, nome: admin.full_name || admin.email },
+          emailSubject,
+          emailBody,
+        );
 
         console.log(`Email sent successfully to ${admin.email}`);
 

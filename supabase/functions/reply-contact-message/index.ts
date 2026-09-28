@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { requireAdmin } from "../_shared/auth.ts";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,13 +33,6 @@ Deno.serve(async (req) => {
     // Get environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM')!;
-
-    if (!mailrelayApiKey || !mailrelayHost || !adminEmailFrom) {
-      throw new Error('MailRelay configuration missing');
-    }
 
     // Create Supabase client with service role
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -121,49 +115,13 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    // Send email via MailRelay API
-    const mailrelayPayload = {
-      "from": {
-        "email": admin_email || adminEmailFrom,
-        "name": admin_name || "Mulheres em Convergência"
-      },
-      "to": [
-        {
-          "email": originalMessage.email,
-          "name": originalMessage.name
-        }
-      ],
-      "subject": `Re: ${originalMessage.subject}`,
-      "html_part": emailHtml
-    };
-
     console.log(`[REPLY-CONTACT-MESSAGE] Sending reply email to: ${originalMessage.email}`);
 
-    const mailrelayResponse = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-TOKEN': mailrelayApiKey,
-      },
-      body: JSON.stringify(mailrelayPayload),
-    });
-
-    // Check if response is JSON before parsing
-    const contentType = mailrelayResponse.headers.get('content-type');
-    let mailrelayResult: any;
-    
-    if (contentType && contentType.includes('application/json')) {
-      mailrelayResult = await mailrelayResponse.json();
-    } else {
-      const textResponse = await mailrelayResponse.text();
-      console.error('[REPLY-CONTACT-MESSAGE] MailRelay returned non-JSON response:', textResponse.substring(0, 200));
-      throw new Error(`MailRelay API error: Invalid response format. Check MAILRELAY_HOST and MAILRELAY_API_KEY configuration.`);
-    }
-
-    if (!mailrelayResponse.ok) {
-      console.error('[REPLY-CONTACT-MESSAGE] MailRelay error:', mailrelayResult);
-      throw new Error(`MailRelay API error: ${JSON.stringify(mailrelayResult)}`);
-    }
+    await enviarEmail(
+      { email: originalMessage.email, nome: originalMessage.name },
+      `Re: ${originalMessage.subject}`,
+      emailHtml,
+    );
 
     console.log(`[REPLY-CONTACT-MESSAGE] Reply sent successfully to ${originalMessage.email}`);
 
@@ -184,7 +142,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Reply sent successfully via MailRelay',
+        message: 'Resposta enviada com sucesso',
         sent_to: originalMessage.email
       }),
       { 

@@ -211,3 +211,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## Conecta+ networking
 - Novas conexoes entre associadas e mensagens diretas com notificacoes em tempo real (0009_conecta_networking.sql, useConectaRede.ts, CartaoMembro.tsx, MeuConecta.tsx). Doc: docs/_reboot/26-conecta-networking.md
+
+## 2026-09-28 — Saída definitiva do MailRelay
+
+- Todas as funções de e-mail (senha, cadastro, contato, negócios, eventos, lembretes, Conecta+, embaixadoras) passaram a usar o módulo único `_shared/enviar-email.ts`.
+- O módulo agora tem apenas Sender.net como canal principal e Resend como reserva; o MailRelay foi removido do código.

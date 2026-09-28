@@ -1,10 +1,9 @@
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { enviarEmail } from '../_shared/enviar-email.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const MAILRELAY_API_KEY = Deno.env.get('MAILRELAY_API_KEY')!;
-const MAILRELAY_URL = Deno.env.get('MAILRELAY_URL') || 'https://mulheresemconvergencia.ip-zone.com/api/v1';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -115,27 +114,19 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    // Send via Mailrelay to all members
+    // Envio para todas as associadas pelo canal oficial de e-mail
     const emails = (allMembers || []).filter(m => m.email).map(m => m.email);
 
-    if (emails.length > 0 && MAILRELAY_API_KEY) {
-      // Create campaign via Mailrelay
-      const campaignRes = await fetch(`${MAILRELAY_URL}/send_emails`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': MAILRELAY_API_KEY,
-        },
-        body: JSON.stringify({
-          subject: `🎂 Aniversariantes de ${monthName} - CONECTA+`,
-          html: emailHtml,
-          from: { email: 'juntas@mulheresemconvergencia.com.br', name: 'MeC CONECTA+' },
-          to: emails.map(e => ({ email: e })),
-        }),
-      });
-
-      const campaignData = await campaignRes.json();
-      console.log('Mailrelay response:', JSON.stringify(campaignData));
+    for (const destino of emails) {
+      try {
+        await enviarEmail(
+          { email: destino, nome: destino },
+          `🎂 Aniversariantes de ${monthName} - CONECTA+`,
+          emailHtml,
+        );
+      } catch (e) {
+        console.error('Falha ao enviar aniversário para', destino, e);
+      }
     }
 
     return new Response(JSON.stringify({
