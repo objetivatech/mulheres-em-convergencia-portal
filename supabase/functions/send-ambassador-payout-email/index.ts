@@ -443,43 +443,8 @@ function generateRefundNotificationEmail(data: RefundEmailData): string {
 }
 
 async function sendEmail(to: string, subject: string, htmlContent: string) {
-  const mailrelayPayload = {
-    from: {
-      email: adminEmailFrom,
-      name: "Mulheres em Convergência"
-    },
-    to: [{ email: to, name: to }],
-    subject: subject,
-    html_part: htmlContent
-  };
-
-  logStep("Sending email via Mailrelay", { to, subject });
-
-  const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-AUTH-TOKEN': mailrelayApiKey,
-    },
-    body: JSON.stringify(mailrelayPayload),
-  });
-
-  const contentType = response.headers.get('content-type');
-  let result: any;
-  
-  if (contentType && contentType.includes('application/json')) {
-    result = await response.json();
-  } else {
-    const textResponse = await response.text();
-    logStep("Mailrelay non-JSON response", { text: textResponse.substring(0, 200) });
-    throw new Error(`Mailrelay API error: Invalid response format`);
-  }
-
-  if (!response.ok) {
-    logStep("Mailrelay error", { result });
-    throw new Error(`Mailrelay error: ${JSON.stringify(result)}`);
-  }
-
-  logStep("Email sent successfully", { result });
-  return result;
+  logStep("Enviando e-mail", { to, subject });
+  await enviarEmail({ email: to, nome: to }, subject, htmlContent);
+  logStep("Email sent successfully", { to });
+  return { ok: true };
 }
