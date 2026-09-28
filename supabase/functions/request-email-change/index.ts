@@ -163,16 +163,11 @@ Deno.serve(async (req) => {
 <p style="color:#d32f2f;font-weight:bold;">Se você não fez essa solicitação, recomendamos alterar sua senha imediatamente.</p>
 </td></tr></table></td></tr></table></body></html>`;
 
-    await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-      body: JSON.stringify({
-        from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-        to: [{ email: user.email!, name: fullName || user.email! }],
-        subject: 'Aviso de segurança: solicitação de troca de email',
-        html_part: alertHtml,
-      }),
-    }).catch(e => console.error('[REQUEST-EMAIL-CHANGE] Alert email failed:', e));
+    await enviarEmail(
+      { email: user.email!, nome: fullName || user.email! },
+      'Aviso de segurança: solicitação de troca de email',
+      alertHtml,
+    ).catch(e => console.error('[REQUEST-EMAIL-CHANGE] Alert email failed:', e));
 
     return new Response(JSON.stringify({
       success: true,

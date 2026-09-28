@@ -85,39 +85,14 @@ serve(async (req) => {
       </div>
     `;
 
-    // 3. Enviar emails via MailRelay API
+    // 3. Enviar emails pelo canal oficial (Sender.net)
     const emailPromises = admins.map(async (admin) => {
       try {
-        const mailrelayPayload = {
-          "from": {
-            "email": adminEmailFrom,
-            "name": "Mulheres em Convergência"
-          },
-          "to": [
-            {
-              "email": admin.email,
-              "name": admin.full_name || admin.email
-            }
-          ],
-          "subject": emailSubject,
-          "html_part": emailBody
-        };
-
-        const response = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify(mailrelayPayload),
-        });
-
-        const result = await response.json();
-        
-        if (!response.ok) {
-          console.error(`Failed to send email to ${admin.email}:`, result);
-          throw new Error(`MailRelay API error: ${JSON.stringify(result)}`);
-        }
+        await enviarEmail(
+          { email: admin.email, nome: admin.full_name || admin.email },
+          emailSubject,
+          emailBody,
+        );
 
         console.log(`Email sent successfully to ${admin.email}`);
 
