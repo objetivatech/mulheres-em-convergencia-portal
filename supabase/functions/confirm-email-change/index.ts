@@ -97,25 +97,6 @@ Deno.serve(async (req) => {
       console.error('[CONFIRM-EMAIL-CHANGE] CRM update warn:', e);
     }
 
-    // 5) Update Mailrelay subscriber if exists - best effort
-    try {
-      const findRes = await fetch(`https://${mailrelayHost}/api/v1/subscribers?email=${encodeURIComponent(oldEmail)}`, {
-        headers: { 'X-AUTH-TOKEN': mailrelayApiKey },
-      });
-      if (findRes.ok) {
-        const data = await findRes.json();
-        const sub = Array.isArray(data) ? data[0] : data?.data?.[0];
-        if (sub?.id) {
-          await fetch(`https://${mailrelayHost}/api/v1/subscribers/${sub.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-            body: JSON.stringify({ email: newEmail }),
-          });
-        }
-      }
-    } catch (e) {
-      console.error('[CONFIRM-EMAIL-CHANGE] Mailrelay sync warn:', e);
-    }
 
     // 6) Mark request as confirmed
     await supabase.from('email_change_requests')
