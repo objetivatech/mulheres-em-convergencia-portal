@@ -49,7 +49,7 @@ serve(async (req) => {
     const payload: ReminderRequest = await req.json();
     console.log('Processing reminder for user:', payload.user_id);
 
-    // Enviar email via MailRelay
+    // Enviar email pelo canal oficial
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         ${payload.message.split('\n').map(line => `<p>${line}</p>`).join('')}

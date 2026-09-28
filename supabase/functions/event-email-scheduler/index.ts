@@ -254,9 +254,6 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY')!;
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST')!;
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
 
     let action = 'reminder_tomorrow';
     try {

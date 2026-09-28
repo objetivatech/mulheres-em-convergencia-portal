@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Reply sent successfully via MailRelay',
+        message: 'Resposta enviada com sucesso',
         sent_to: originalMessage.email
       }),
       { 
