@@ -50,14 +50,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-    const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-    const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
     const productionDomain = Deno.env.get('PRODUCTION_DOMAIN') || 'https://mulheresemconvergencia.com.br';
-
-    if (!mailrelayApiKey || !mailrelayHost) {
-      throw new Error("Mailrelay credentials not configured");
-    }
 
     const now = new Date();
     const results = {
