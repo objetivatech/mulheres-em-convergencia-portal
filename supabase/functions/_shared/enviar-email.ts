@@ -1,5 +1,5 @@
 // Envio de e-mail único para todas as funções.
-// Ordem dos canais: Sender.net (principal) → MailRelay (legado) → Resend (reserva).
+// Ordem dos canais: Sender.net (principal) → Resend (reserva).
 
 export type Destinatario = { email: string; nome?: string | null };
 
@@ -13,13 +13,11 @@ function remetente() {
 /** Diagnóstico do canal de e-mail, sem revelar nenhuma chave. */
 export function canalDeEmail() {
   const sender = !!Deno.env.get('SENDER_API_TOKEN');
-  const mailrelay = !!(Deno.env.get('MAILRELAY_API_KEY') && Deno.env.get('MAILRELAY_HOST'));
   const resend = !!Deno.env.get('RESEND_API_KEY');
   return {
     remetente: remetente(),
-    canal: sender ? 'Sender.net' : mailrelay ? 'MailRelay' : resend ? 'Resend' : 'nenhum',
+    canal: sender ? 'Sender.net' : resend ? 'Resend' : 'nenhum',
     sender_configurado: sender,
-    mailrelay_configurado: mailrelay,
     resend_configurado: resend,
   };
 }
