@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { requireAdmin } from "../_shared/auth.ts";
+import { enviarEmail } from "../_shared/enviar-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
