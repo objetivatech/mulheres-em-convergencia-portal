@@ -121,9 +121,6 @@ function buildReminderHtml(
 
 async function sendDirectReminder(
   supabaseClient: any,
-  mailrelayApiKey: string,
-  mailrelayHost: string,
-  adminEmailFrom: string,
   reminderType: '3d' | '1d' | '2h',
   daysAhead: number,
 ) {
