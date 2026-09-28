@@ -418,12 +418,9 @@ serve(async (req) => {
 
     // Send confirmation email (non-blocking)
     try {
-      const mailrelayApiKey = Deno.env.get('MAILRELAY_API_KEY');
-      const mailrelayHost = Deno.env.get('MAILRELAY_HOST');
-      const adminEmailFrom = Deno.env.get('ADMIN_EMAIL_FROM') || 'contato@mulheresemconvergencia.com.br';
       const portalUrl = Deno.env.get('PORTAL_URL') || 'https://mulheresemconvergencia.com.br';
 
-      if (mailrelayApiKey && mailrelayHost) {
+      {
         const eventDateFormatted = formatDateBrazil(event.date_start);
         const eventTimeFormatted = formatTimeBrazil(event.date_start);
 
