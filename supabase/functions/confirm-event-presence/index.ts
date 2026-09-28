@@ -197,19 +197,11 @@ serve(async (req) => {
       `;
 
       try {
-        await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-TOKEN': mailrelayApiKey,
-          },
-          body: JSON.stringify({
-            from: { email: adminEmailFrom, name: "Mulheres em Convergência" },
-            to: [{ email: registration.email, name: registration.full_name }],
-            subject: `🎉 Presença Confirmada: ${event.title}`,
-            html_part: welcomeEmailHtml,
-          }),
-        });
+        await enviarEmail(
+          { email: registration.email, nome: registration.full_name },
+          `🎉 Presença Confirmada: ${event.title}`,
+          welcomeEmailHtml,
+        );
 
         // Mark welcome email as sent
         await supabaseClient
