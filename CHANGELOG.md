@@ -4,6 +4,12 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-09-28 — E-mails pelo Sender.net
+- Todos os e-mails do portal passam a sair pelo Sender.net assim que a chave for cadastrada (MailRelay e Resend ficam só de reserva).
+- Nova tela **Painel → Newsletter**: listas, contatos, trazer pessoas do portal, criar campanha com editor rico, teste e envio.
+- Documentação: `docs/_reboot/27-emails-sender.md`.
+
+
 ### 2026-09-17 — Conexão do Asaas corrigida
 - O aviso de pagamento do Asaas estava sendo recusado (401) porque a senha de autenticação gravada no Asaas não era a mesma guardada no portal; isso causou a penalização do webhook.
 - Novo botão em Automações: "Ajustar conexão com o Asaas" — iguala a senha, reativa o envio e tira a penalização.
