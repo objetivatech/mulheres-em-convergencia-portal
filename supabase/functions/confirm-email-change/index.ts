@@ -122,16 +122,11 @@ Deno.serve(async (req) => {
 </td></tr></table></td></tr></table></body></html>`;
 
     for (const addr of [oldEmail, newEmail]) {
-      fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-        body: JSON.stringify({
-          from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-          to: [{ email: addr, name: fullName || addr }],
-          subject: 'Email da sua conta foi atualizado',
-          html_part: successHtml(addr),
-        }),
-      }).catch(e => console.error('[CONFIRM-EMAIL-CHANGE] Notify error:', e));
+      enviarEmail(
+        { email: addr, nome: fullName || addr },
+        'Email da sua conta foi atualizado',
+        successHtml(addr),
+      ).catch(e => console.error('[CONFIRM-EMAIL-CHANGE] Notify error:', e));
     }
 
     return new Response(JSON.stringify({
