@@ -135,21 +135,14 @@ Deno.serve(async (req) => {
 <tr><td style="background:#f0f0f0;padding:20px;text-align:center;color:#909090;font-size:13px;">© ${new Date().getFullYear()} Mulheres em Convergência</td></tr>
 </table></td></tr></table></body></html>`;
 
-    const mailrelayPayload = {
-      from: { email: adminEmailFrom, name: 'Mulheres em Convergência' },
-      to: [{ email: newEmailNormalized, name: fullName || newEmailNormalized }],
-      subject: 'Confirme seu novo email - Mulheres em Convergência',
-      html_part: confirmHtml,
-    };
-
-    const mrRes = await fetch(`https://${mailrelayHost}/api/v1/send_emails`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-AUTH-TOKEN': mailrelayApiKey },
-      body: JSON.stringify(mailrelayPayload),
-    });
-    if (!mrRes.ok) {
-      const errText = await mrRes.text();
-      console.error('[REQUEST-EMAIL-CHANGE] Mailrelay error:', errText);
+    try {
+      await enviarEmail(
+        { email: newEmailNormalized, nome: fullName || newEmailNormalized },
+        'Confirme seu novo email - Mulheres em Convergência',
+        confirmHtml,
+      );
+    } catch (e) {
+      console.error('[REQUEST-EMAIL-CHANGE] Falha no envio:', e);
       return new Response(JSON.stringify({ error: 'Erro ao enviar email de confirmação' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
