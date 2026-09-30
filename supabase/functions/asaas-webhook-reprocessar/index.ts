@@ -179,6 +179,25 @@ async function aplicarEfeitos(ctx: {
     .forEach((r) => console.error("efeito falhou", (r as PromiseRejectedResult).reason));
 }
 
+// ---------------------------------------------------------------------------
+// FILTRO: só movimentos do Portal MeC
+// A conta Asaas é compartilhada com a Escola MeC. Cobranças que não nasceram
+// no portal são registradas como "ignoradas" e nunca viram pagamento/acesso.
+// ---------------------------------------------------------------------------
+async function ehDoPortal(pagamento: Record<string, unknown>): Promise<boolean> {
+  const ref = String(pagamento.externalReference ?? "");
+  if (/^(plano|evento|pessoa):/i.test(ref)) return true;
+  const desc = String(pagamento.description ?? "");
+  if (/assinatura plano|mulheres em converg|diret[oó]rio|conecta\+?/i.test(desc)) return true;
+  const cobrancaId = pagamento.id ? String(pagamento.id) : null;
+  if (cobrancaId) {
+    const { data } = await supabase.from("pagamentos").select("id")
+      .eq("cobranca_externa_id", cobrancaId).maybeSingle();
+    if (data) return true;
+  }
+  return false;
+}
+
 async function processar(
   registroId: string,
   tipoEvento: string,
@@ -186,6 +205,14 @@ async function processar(
 ) {
   try {
     const pagamentoAsaas = (carga.payment ?? {}) as Record<string, unknown>;
+
+    if (!(await ehDoPortal(pagamentoAsaas))) {
+      await supabase
+        .from("webhooks_recebidos")
+        .update({ processado_em: new Date().toISOString(), erro: "ignorado: fora do portal" })
+        .eq("id", registroId);
+      return { ignorado: true };
+    }
 
     const pessoaId = await identificarPessoa(pagamentoAsaas);
     const pagamentoId = await registrarPagamento(tipoEvento, pagamentoAsaas, pessoaId);
