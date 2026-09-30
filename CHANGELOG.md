@@ -216,3 +216,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 - Todas as funções de e-mail (senha, cadastro, contato, negócios, eventos, lembretes, Conecta+, embaixadoras) passaram a usar o módulo único `_shared/enviar-email.ts`.
 - O módulo agora tem apenas Sender.net como canal principal e Resend como reserva; o MailRelay foi removido do código.
+
+## 2026-09-30 — Financeiro só com movimentos do portal
+- Webhook e reprocessamento ignoram cobranças da Escola MeC (sem referência plano:/evento:/pessoa:, sem descrição do portal e não criadas pelo portal); o evento fica registrado como "ignorado: fora do portal".
+- Limpeza: 17 Pix/NFs da Escola removidos do portal; 3 acessos liberados por engano foram encerrados.
+- Manual: no Financeiro aparecem só assinaturas e compras do portal. Cobranças da Escola continuam no Asaas, mas não entram nas contas do portal.
