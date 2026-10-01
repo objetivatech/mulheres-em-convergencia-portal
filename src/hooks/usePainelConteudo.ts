@@ -210,7 +210,7 @@ export function usePainelAutores() {
   return useQuery({
     queryKey: ['painel', 'autores'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('autores').select('id, nome, slug').order('nome');
+      const { data, error } = await supabase.from('autores').select('id, nome, slug, bio, foto_url, pessoa_id').order('nome');
       if (error) throw error;
       return (data ?? []) as any[];
     },
