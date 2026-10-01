@@ -55,7 +55,6 @@ export const AREAS: { valor: string; rotulo: string }[] = [
   { valor: 'conecta', rotulo: 'Conecta+' },
   { valor: 'academy', rotulo: 'Academy' },
   { valor: 'evento', rotulo: 'Encontros' },
-  { valor: 'area_embaixadora', rotulo: 'Área da embaixadora' },
 ];
 
 // --------------------------------------------------------------------------

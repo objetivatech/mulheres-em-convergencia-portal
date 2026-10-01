@@ -47,3 +47,8 @@ válida agora. Por isso basta corrigir datas para corrigir o acesso.
   sozinhas — ajuste `fim_em` ou revogue na ficha da pessoa.
 - Para voltar o webhook ao comportamento antigo, basta remover a leitura de `planos` em
   `tipoPorCobranca` (o fallback por texto continua no código).
+
+## Regra de direito adquirido (2026-10-01)
+**Técnica:** o webhook do Asaas lê `planos.tipos` no momento do pagamento e cria uma linha em `concessoes_acesso` por área, com `fim_em = confirmado_em + dias_acesso`. `area_embaixadora` é filtrada e nunca vem de plano. Concessões já gravadas não mudam quando o plano é editado.
+**Operação:** para tirar uma área de quem já pagou antes do vencimento, revogue a concessão em Acessos. Embaixadora: conceder manualmente.
+**Manual simples:** quem paga recebe tudo o que o plano oferecia naquele dia, até o fim do período pago. Se você mudar o plano, a mudança vale a partir da próxima cobrança.
