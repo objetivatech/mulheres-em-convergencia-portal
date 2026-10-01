@@ -207,3 +207,18 @@ export function usePagina(slug?: string) {
     },
   });
 }
+
+/** Nome e foto (do perfil pessoal) da empreendedora de cada negócio publicado. */
+export function useDonasNegocios() {
+  return useQuery({
+    queryKey: ['site', 'donas-negocios'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc('donas_negocios');
+      if (error) throw error;
+      const mapa = new Map<string, { nome: string; foto_url: string | null }>();
+      (data ?? []).forEach((d: any) => mapa.set(d.negocio_id, { nome: d.nome, foto_url: d.foto_url }));
+      return mapa;
+    },
+  });
+}
