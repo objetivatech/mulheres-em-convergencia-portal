@@ -4,8 +4,9 @@
  * mostra onde cada imagem está sendo usada no portal e permite filtrar/ordenar.
  */
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Search, Copy, ImageOff } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useR2Storage } from '@/hooks/useR2Storage';
+import { Search, Copy, ImageOff, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { mensagemErroEdge } from '@/lib/erroEdge';
 import { extractR2KeyFromUrl } from '@/lib/storage';

@@ -43,6 +43,7 @@ export default function PainelImagens() {
     >
       <GradeImagensR2
         altura="max-h-none"
+        permitirExcluir
         onEscolher={(url) => {
           navigator.clipboard.writeText(url);
           toast({ title: 'Endereço copiado' });
