@@ -185,6 +185,9 @@ export default function PainelAutomacoes() {
           <Button size="sm" onClick={conciliarAsaas} disabled={conciliando}>
             {conciliando ? 'Buscando…' : 'Buscar pagamentos no Asaas'}
           </Button>
+          <Button size="sm" variant="outline" onClick={importarHistorico} disabled={importandoHistorico}>
+            {importandoHistorico ? 'Importando…' : 'Importar histórico financeiro'}
+          </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}
           </Button>
