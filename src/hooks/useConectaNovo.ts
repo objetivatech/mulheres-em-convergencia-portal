@@ -176,3 +176,27 @@ export function useExcluirGrupo() {
     },
   });
 }
+
+/** Equipe inclui ou remove uma associada de um grupo. */
+export function useMembroGrupoAdmin() {
+  const qc = useQueryClient();
+  const ok = () => {
+    qc.invalidateQueries({ queryKey: ['painel', 'conecta'] });
+    qc.invalidateQueries({ queryKey: ['conecta', 'grupos'] });
+  };
+  const adicionar = useMutation({
+    mutationFn: async ({ grupo_id, pessoa_id }: { grupo_id: string; pessoa_id: string }) => {
+      const { error } = await db.from('conecta_grupo_membros').insert({ grupo_id, pessoa_id });
+      if (error && error.code !== '23505') throw error;
+    },
+    onSuccess: ok,
+  });
+  const remover = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await db.from('conecta_grupo_membros').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: ok,
+  });
+  return { adicionar, remover };
+}
