@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
@@ -218,8 +219,7 @@ export default function PainelPostEditor() {
           <Card>
             <CardHeader><CardTitle className="text-base">Imagem de capa</CardTitle></CardHeader>
             <CardContent>
-              <Input value={form.capa_url} placeholder="Endereço da imagem"
-                onChange={(e) => campo('capa_url', e.target.value)} />
+              <CampoImagem pasta="blog-images" value={form.capa_url} onChange={(url) => campo('capa_url', url)} />
             </CardContent>
           </Card>
         </div>

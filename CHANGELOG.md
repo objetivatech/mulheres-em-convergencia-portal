@@ -228,3 +228,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Webhook e reprocessamento ignoram cobranças da Escola MeC (sem referência plano:/evento:/pessoa:, sem descrição do portal e não criadas pelo portal); o evento fica registrado como "ignorado: fora do portal".
 - Limpeza: 17 Pix/NFs da Escola removidos do portal; 3 acessos liberados por engano foram encerrados.
 - Manual: no Financeiro aparecem só assinaturas e compras do portal. Cobranças da Escola continuam no Asaas, mas não entram nas contas do portal.
+
+## 2026-10-01 — Imagens com filtros e envio em todos os campos
+- Biblioteca de imagens: ordenação (recentes/antigas/A–Z), filtro por lugar (Blog, Diretório, Encontros, Academy, Institucional, Perfis, Páginas) e por situação (em uso/sem uso); cada imagem mostra onde está sendo usada.
+- Novo campo universal de imagem (enviar do computador, escolher das já enviadas, colar endereço) em: capa do post, foto de autora, logo/capa/galeria de negócio (painel e Minha Área), capa de curso, parceiros, linha do tempo e foto de perfil.
+- Financeiro: "Receita por mês" agora consolida um mês por linha com valor recebido e a receber.

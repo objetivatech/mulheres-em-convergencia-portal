@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import { Helmet } from 'react-helmet-async';
 import AreaLayout from '@/components/area/AreaLayout';
 import { Button } from '@/components/ui/button';
@@ -139,8 +140,7 @@ export default function MeusDados() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="foto">Link da sua foto</Label>
-            <Input id="foto" value={form.foto_url} onChange={(e) => setForm({ ...form, foto_url: e.target.value })} />
+            <CampoImagem label="Sua foto" pasta="perfis" value={form.foto_url} onChange={(url) => setForm({ ...form, foto_url: url })} />
           </div>
 
           <Button onClick={enviar} disabled={salvar.isPending}>

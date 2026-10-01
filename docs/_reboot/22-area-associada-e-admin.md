@@ -52,3 +52,8 @@ use "Reprocessar avisos". Liberação de acesso nunca é feita à mão pelo paga
 
 As telas novas são adicionais: as rotas antigas de `/admin` continuam no ar até o corte.
 Para voltar atrás basta remover as rotas novas em `src/App.tsx` — nenhuma tabela antiga foi alterada.
+
+## Imagens (atualização 2026-10-01)
+**Técnico:** `CampoImagem` (src/components/imagens) envia ao R2 via `useR2Storage` e reutiliza `BibliotecaR2`; a listagem do `r2-storage` devolve `modificado` e `tamanho` e pagina além de 1.000 itens; os vínculos são calculados no navegador cruzando as colunas de imagem das tabelas e textos ricos.
+**Operação:** Painel → Imagens: use os filtros "lugar", "situação" e "ordem". "Sem uso" indica imagens que podem ser apagadas no futuro.
+**Manual simples:** em qualquer campo de imagem, clique em "Enviar do computador" ou "Escolher das já enviadas". Para trocar, clique em "Trocar"; para tirar, no X da miniatura.

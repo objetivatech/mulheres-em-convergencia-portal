@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -181,11 +182,7 @@ export default function PainelAcademy() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Imagem de capa (endereço)</Label>
-                <Input
-                  value={editando.capa_url ?? ''}
-                  onChange={(e) => setEditando({ ...editando, capa_url: e.target.value })}
-                />
+                <CampoImagem label="Imagem de capa" pasta="academy" value={editando.capa_url ?? ''} onChange={(url) => setEditando({ ...editando, capa_url: url })} />
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">

@@ -251,30 +251,38 @@ serve(async (req) => {
     // ─── LIST (GET with query params) ───
     if (action === 'list') {
       const prefix = url.searchParams.get('prefix') || ''
-      const r2Url = `${config.endpoint}/${config.bucketName}?list-type=2&prefix=${encodeURIComponent(prefix)}`
-      const response = await aws.fetch(r2Url, { method: 'GET' })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('R2 list error:', errorText)
-        return new Response(
-          JSON.stringify({ error: 'Failed to list R2 objects', details: errorText }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+      const files: { key: string; url: string; modificado: string | null; tamanho: number }[] = []
+      let token: string | null = null
+      for (let pagina = 0; pagina < 20; pagina++) {
+        const r2Url = `${config.endpoint}/${config.bucketName}?list-type=2&max-keys=1000&prefix=${encodeURIComponent(prefix)}` +
+          (token ? `&continuation-token=${encodeURIComponent(token)}` : '')
+        const response = await aws.fetch(r2Url, { method: 'GET' })
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('R2 list error:', errorText)
+          return new Response(
+            JSON.stringify({ error: 'Failed to list R2 objects', details: errorText }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        const xmlText = await response.text()
+        const blocoRegex = /<Contents>([\s\S]*?)<\/Contents>/g
+        let b
+        while ((b = blocoRegex.exec(xmlText)) !== null) {
+          const bloco = b[1]
+          const key = (bloco.match(/<Key>(.*?)<\/Key>/) || [])[1]
+          if (!key) continue
+          files.push({
+            key,
+            url: `${config.publicUrl}/${key}`,
+            modificado: (bloco.match(/<LastModified>(.*?)<\/LastModified>/) || [])[1] ?? null,
+            tamanho: Number((bloco.match(/<Size>(.*?)<\/Size>/) || [])[1] ?? 0),
+          })
+        }
+        const truncado = /<IsTruncated>true<\/IsTruncated>/.test(xmlText)
+        token = (xmlText.match(/<NextContinuationToken>(.*?)<\/NextContinuationToken>/) || [])[1] ?? null
+        if (!truncado || !token) break
       }
-
-      const xmlText = await response.text()
-      const keys: string[] = []
-      const keyRegex = /<Key>(.*?)<\/Key>/g
-      let match
-      while ((match = keyRegex.exec(xmlText)) !== null) {
-        keys.push(match[1])
-      }
-
-      const files = keys.map(key => ({
-        key,
-        url: `${config.publicUrl}/${key}`,
-      }))
 
       return new Response(
         JSON.stringify({ success: true, files }),

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,14 +114,7 @@ export default function PainelInstitucional() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-logo">Logo</Label>
-              <div className="flex gap-2">
-                <Input id="p-logo" value={parceiro.logo_url} onChange={(e) => setParceiro({ ...parceiro, logo_url: e.target.value })} placeholder="Endereço da imagem" />
-                <BibliotecaR2 onEscolher={(url) => setParceiro({ ...parceiro, logo_url: url })}>
-                  <Button type="button" variant="outline">Escolher</Button>
-                </BibliotecaR2>
-              </div>
-              {parceiro.logo_url && <img src={parceiro.logo_url} alt="" className="h-12 w-auto object-contain" />}
+              <CampoImagem label="Logo" pasta="partner-logos" conter alturaPrevia="h-20" value={parceiro.logo_url} onChange={(url) => setParceiro({ ...parceiro, logo_url: url })} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="p-desc">Descrição</Label>
@@ -219,13 +213,7 @@ export default function PainelInstitucional() {
               <Textarea id="m-desc" rows={3} value={marco.descricao} onChange={(e) => setMarco({ ...marco, descricao: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="m-img">Imagem (opcional)</Label>
-              <div className="flex gap-2">
-                <Input id="m-img" value={marco.imagem_url} onChange={(e) => setMarco({ ...marco, imagem_url: e.target.value })} placeholder="Endereço da imagem" />
-                <BibliotecaR2 onEscolher={(url) => setMarco({ ...marco, imagem_url: url })}>
-                  <Button type="button" variant="outline">Escolher</Button>
-                </BibliotecaR2>
-              </div>
+              <CampoImagem label="Imagem (opcional)" pasta="linha-do-tempo" value={marco.imagem_url} onChange={(url) => setMarco({ ...marco, imagem_url: url })} />
             </div>
             <div className="flex flex-wrap items-center gap-6">
               <div className="space-y-1.5">

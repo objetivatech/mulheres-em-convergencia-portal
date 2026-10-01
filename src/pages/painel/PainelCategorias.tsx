@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import { Plus, Trash2 } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Button } from '@/components/ui/button';
@@ -90,8 +91,7 @@ export default function PainelCategorias() {
                 <Textarea rows={2} value={autor.bio} onChange={(e) => setAutor({ ...autor, bio: e.target.value })} />
               </div>
               <div>
-                <Label>Endereço da foto</Label>
-                <Input value={autor.foto_url} onChange={(e) => setAutor({ ...autor, foto_url: e.target.value })} />
+                <CampoImagem label="Foto" pasta="blog-autores" value={autor.foto_url} onChange={(url) => setAutor({ ...autor, foto_url: url })} />
               </div>
               <Button
                 variant="outline"

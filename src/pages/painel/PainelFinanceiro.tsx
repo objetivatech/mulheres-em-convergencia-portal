@@ -91,12 +91,18 @@ export default function PainelFinanceiro() {
               <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
             ) : (
               <ul className="divide-y divide-border text-sm">
-                {data.mensal.map((m: any) => (
-                  <li key={m.mes} className="py-2 flex items-center justify-between">
-                    <span>{new Date(m.mes).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                {Object.values((data.mensal as any[]).reduce((acc: Record<string, any>, m: any) => {
+                  const k = String(m.mes).slice(0, 7);
+                  acc[k] ??= { mes: m.mes, pagos: 0, recebido: 0, pendente: 0 };
+                  if (m.situacao === 'confirmado') { acc[k].pagos += Number(m.quantidade ?? 0); acc[k].recebido += Number(m.total_centavos ?? 0); }
+                  if (m.situacao === 'pendente') acc[k].pendente += Number(m.total_centavos ?? 0);
+                  return acc;
+                }, {})).sort((a: any, b: any) => String(b.mes).localeCompare(String(a.mes))).map((m: any) => (
+                  <li key={String(m.mes)} className="py-2 flex items-center justify-between">
+                    <span>{new Date(String(m.mes).slice(0, 7) + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
                     <span className="flex items-center gap-3">
-                      <span className="text-muted-foreground">{m.pagamentos} pagamentos</span>
-                      <strong>{dinheiro(Number(m.recebido_centavos ?? 0))}</strong>
+                      <span className="text-muted-foreground">{m.pagos} {m.pagos === 1 ? 'pagamento' : 'pagamentos'}{m.pendente ? ` · ${dinheiro(m.pendente)} a receber` : ''}</span>
+                      <strong>{dinheiro(m.recebido)}</strong>
                     </span>
                   </li>
                 ))}
