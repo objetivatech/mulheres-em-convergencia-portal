@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CampoImagem from '@/components/imagens/CampoImagem';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash2, Save } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
@@ -148,10 +149,8 @@ export default function PainelNegocioEditor() {
             <CardHeader><CardTitle className="text-base">Imagens</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div><Label>Endereço da logo</Label>
-                  <Input value={form.logo_url} onChange={(e) => campo('logo_url', e.target.value)} /></div>
-                <div><Label>Endereço da capa</Label>
-                  <Input value={form.capa_url} onChange={(e) => campo('capa_url', e.target.value)} /></div>
+                <CampoImagem label="Logo" pasta="negocios" conter alturaPrevia="h-24" value={form.logo_url} onChange={(url) => campo('logo_url', url)} />
+                <CampoImagem label="Capa" pasta="negocios" value={form.capa_url} onChange={(url) => campo('capa_url', url)} />
               </div>
 
               {!novo && (
@@ -167,8 +166,7 @@ export default function PainelNegocioEditor() {
                     </div>
                   ))}
                   <div className="flex flex-wrap gap-2">
-                    <Input className="flex-1 min-w-[180px]" placeholder="Endereço da foto"
-                      value={novaMidia.url} onChange={(e) => setNovaMidia({ ...novaMidia, url: e.target.value })} />
+                    <CampoImagem className="w-full" pasta="negocios-galeria" alturaPrevia="h-24" value={novaMidia.url} onChange={(url) => setNovaMidia({ ...novaMidia, url })} />
                     <Input className="flex-1 min-w-[140px]" placeholder="Legenda"
                       value={novaMidia.legenda} onChange={(e) => setNovaMidia({ ...novaMidia, legenda: e.target.value })} />
                     <Button variant="outline" disabled={!novaMidia.url}

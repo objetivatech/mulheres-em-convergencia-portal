@@ -2,6 +2,7 @@
  * Minha área → Meu negócio.
  * A dona edita a própria ficha do diretório, sem passar pelo painel da equipe.
  */
+import CampoImagem from '@/components/imagens/CampoImagem';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Save, Trash2, ExternalLink } from 'lucide-react';
@@ -156,10 +157,8 @@ export default function MeuNegocio() {
               <CardHeader><CardTitle className="text-base">Imagens</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div><Label>Endereço da logo</Label>
-                    <Input value={form.logo_url} onChange={(e) => campo('logo_url', e.target.value)} /></div>
-                  <div><Label>Endereço da foto de capa</Label>
-                    <Input value={form.capa_url} onChange={(e) => campo('capa_url', e.target.value)} /></div>
+                  <CampoImagem label="Logo" pasta="negocios" conter alturaPrevia="h-24" value={form.logo_url} onChange={(url) => campo('logo_url', url)} />
+                  <CampoImagem label="Foto de capa" pasta="negocios" value={form.capa_url} onChange={(url) => campo('capa_url', url)} />
                 </div>
 
                 {id && (
@@ -175,8 +174,7 @@ export default function MeuNegocio() {
                       </div>
                     ))}
                     <div className="flex flex-wrap gap-2">
-                      <Input className="flex-1 min-w-[180px]" placeholder="Endereço da foto"
-                        value={novaFoto.url} onChange={(e) => setNovaFoto({ ...novaFoto, url: e.target.value })} />
+                      <CampoImagem className="w-full" pasta="negocios-galeria" alturaPrevia="h-24" value={novaFoto.url} onChange={(url) => setNovaFoto({ ...novaFoto, url })} />
                       <Input className="flex-1 min-w-[140px]" placeholder="Legenda"
                         value={novaFoto.legenda} onChange={(e) => setNovaFoto({ ...novaFoto, legenda: e.target.value })} />
                       <Button variant="outline" disabled={!novaFoto.url}
