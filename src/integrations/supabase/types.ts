@@ -3019,6 +3019,14 @@ export type Database = {
           site: string
         }[]
       }
+      donas_negocios: {
+        Args: never
+        Returns: {
+          foto_url: string
+          negocio_id: string
+          nome: string
+        }[]
+      }
       e_admin: { Args: never; Returns: boolean }
       garantir_pessoa: {
         Args: { _cpf?: string; _email?: string; _nome?: string }

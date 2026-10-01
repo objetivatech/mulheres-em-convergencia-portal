@@ -233,3 +233,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Biblioteca de imagens: ordenação (recentes/antigas/A–Z), filtro por lugar (Blog, Diretório, Encontros, Academy, Institucional, Perfis, Páginas) e por situação (em uso/sem uso); cada imagem mostra onde está sendo usada.
 - Novo campo universal de imagem (enviar do computador, escolher das já enviadas, colar endereço) em: capa do post, foto de autora, logo/capa/galeria de negócio (painel e Minha Área), capa de curso, parceiros, linha do tempo e foto de perfil.
 - Financeiro: "Receita por mês" agora consolida um mês por linha com valor recebido e a receber.
+
+## 2026-10-01 — Acessos por plano (direito adquirido) e correções do painel
+- Planos liberam automaticamente todas as áreas marcadas; a concessão guarda o que o plano dava no dia do pagamento e vale até o fim do período pago (editar o plano só afeta as próximas cobranças). Área de embaixadora saiu das opções de plano: só a administradora concede.
+- Negócios: salvar/publicar corrigido (campos vazios gravavam texto vazio em campos de vínculo); campo "Empreendedora responsável"; editoras podem editar negócios.
+- Autoras: edição das existentes, vínculo opcional com pessoa do portal (puxa nome, foto e bio), slug sem conflito.
+- Conecta+: toda associada com acesso aparece na rede, mesmo sem perfil de networking; equipe adiciona/remove participantes dos grupos.
+- Imagens: botão apagar com aviso quando a imagem está em uso.
+- Site: cards de negócio com capa ampla, logo e foto da empreendedora (do perfil pessoal); topo do perfil do negócio no mesmo estilo; blog com carrossel dos 5 últimos textos e cards com autora, data e tempo de leitura.

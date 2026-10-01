@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
 import { Globe, Instagram, Mail, MapPin, Phone } from 'lucide-react';
@@ -5,11 +6,13 @@ import SiteLayout from '@/components/site/SiteLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useNegocio } from '@/hooks/useSite';
+import { useNegocio, useDonasNegocios } from '@/hooks/useSite';
 
 export default function NegocioPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: negocio, isLoading } = useNegocio(slug);
+  const { data: donas } = useDonasNegocios();
+  const dona = negocio ? donas?.get(negocio.id) : undefined;
 
   if (isLoading) {
     return (
@@ -49,13 +52,28 @@ export default function NegocioPage() {
         {negocio.descricao && <meta name="description" content={negocio.descricao.slice(0, 155)} />}
       </Helmet>
 
-      <div
-        className="h-52 lg:h-64 bg-muted"
-        style={negocio.capa_url ? { backgroundImage: `url(${negocio.capa_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
-      />
+      <div className="relative h-56 lg:h-80 bg-muted overflow-hidden">
+        {negocio.capa_url && <img src={negocio.capa_url} alt={`Capa de ${negocio.nome}`} className="h-full w-full object-cover" />}
+      </div>
 
-      <article className="container mx-auto px-4 py-10 max-w-3xl space-y-8">
-        <header className="space-y-3">
+      <article className="container mx-auto px-4 pb-10 max-w-3xl space-y-8">
+        <header className="space-y-3 -mt-14 relative">
+          <div className="flex items-end gap-4">
+            {negocio.logo_url && (
+              <img src={negocio.logo_url} alt={`Logo de ${negocio.nome}`} className="h-28 w-28 rounded-2xl border-4 border-background bg-card object-contain p-1" />
+            )}
+            {dona && (
+              <div className="flex items-center gap-3 pb-2">
+                {dona.foto_url ? (
+                  <img src={dona.foto_url} alt={dona.nome} className="h-16 w-16 rounded-full border-4 border-background object-cover" />
+                ) : null}
+                <div>
+                  <p className="text-sm font-medium">{dona.nome}</p>
+                  <p className="text-xs text-muted-foreground">Empreendedora</p>
+                </div>
+              </div>
+            )}
+          </div>
           {negocio.categoria && <Badge variant="outline">{negocio.categoria}</Badge>}
           <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">{negocio.nome}</h1>
           {(negocio.cidade || negocio.uf) && (
@@ -66,7 +84,7 @@ export default function NegocioPage() {
           )}
         </header>
 
-        {negocio.descricao && <p className="text-muted-foreground whitespace-pre-line">{negocio.descricao}</p>}
+        {negocio.descricao && <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(negocio.descricao) }} />}
 
         {contatos.length > 0 && (
           <section className="rounded-[var(--radius)] border border-border p-5 space-y-3">

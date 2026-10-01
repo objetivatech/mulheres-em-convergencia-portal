@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
@@ -92,26 +93,7 @@ export default function DiretorioPage() {
           </div>
         ) : negocios && negocios.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {negocios.map((n) => (
-              <Link
-                key={n.id}
-                to={`/diretorio/${n.slug}`}
-                className="rounded-[var(--radius)] border border-border bg-card overflow-hidden transition-transform hover:-translate-y-1"
-                style={{ boxShadow: 'var(--sombra-1)' }}
-              >
-                <div
-                  className="h-32 bg-muted"
-                  style={n.capa_url ? { backgroundImage: `url(${n.capa_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
-                />
-                <div className="p-5 space-y-1">
-                  <h2 className="font-medium">{n.nome}</h2>
-                  {(n.cidade || n.uf) && (
-                    <p className="text-xs text-muted-foreground">{[n.cidade, n.uf].filter(Boolean).join(' / ')}</p>
-                  )}
-                  <p className="text-sm text-muted-foreground line-clamp-2">{n.descricao}</p>
-                </div>
-              </Link>
-            ))}
+            {negocios.map((n) => <CardNegocio key={n.id} negocio={n} />)}
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-16">

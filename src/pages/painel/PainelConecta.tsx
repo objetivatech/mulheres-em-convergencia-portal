@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
-import { useConectaAdminDados, useSalvarGrupo, useExcluirGrupo } from '@/hooks/useConectaNovo';
+import { useConectaAdminDados, useSalvarGrupo, useExcluirGrupo, useMembroGrupoAdmin } from '@/hooks/useConectaNovo';
 
 const vazio = { id: '', slug: '', nome: '', descricao: '', ativo: true };
 
@@ -20,6 +20,8 @@ export default function PainelConecta() {
   const excluir = useExcluirGrupo();
   const { toast } = useToast();
   const [form, setForm] = useState(vazio);
+  const [aberto, setAberto] = useState<string | null>(null);
+  const { adicionar, remover } = useMembroGrupoAdmin();
 
   const nomePor = useMemo(() => {
     const mapa = new Map((data?.pessoas ?? []).map((p) => [p.pessoa_id, p.nome]));
@@ -109,6 +111,9 @@ export default function PainelConecta() {
                         </p>
                       </div>
                       <div className="flex gap-2">
+                        <Button size="sm" variant="secondary" onClick={() => setAberto(aberto === g.id ? null : g.id)}>
+                          Participantes
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -138,6 +143,29 @@ export default function PainelConecta() {
                           Excluir
                         </Button>
                       </div>
+                      {aberto === g.id && (
+                        <div className="w-full rounded-lg bg-muted/50 p-3 space-y-2">
+                          {(data.membros ?? []).filter((m: any) => m.grupo_id === g.id).map((m: any) => (
+                            <div key={m.id} className="flex items-center gap-2 text-sm">
+                              <span className="flex-1">{nomePor(m.pessoa_id)}</span>
+                              <Button size="sm" variant="ghost" onClick={() => remover.mutate(m.id)}>Remover</Button>
+                            </div>
+                          ))}
+                          <select
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value=""
+                            onChange={(e) => e.target.value && adicionar.mutate(
+                              { grupo_id: g.id, pessoa_id: e.target.value },
+                              { onError: (err: any) => toast({ title: 'Não foi possível adicionar', description: err.message, variant: 'destructive' }) },
+                            )}
+                          >
+                            <option value="">Adicionar associada ao grupo…</option>
+                            {(data.pessoas ?? [])
+                              .filter((p) => !(data.membros ?? []).some((m: any) => m.grupo_id === g.id && m.pessoa_id === p.pessoa_id))
+                              .map((p) => <option key={p.pessoa_id} value={p.pessoa_id}>{p.nome}</option>)}
+                          </select>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -149,7 +177,7 @@ export default function PainelConecta() {
             <section className="rounded-xl border border-border bg-card p-6">
               <h2 className="font-semibold mb-3">Associadas na rede ({data?.pessoas.length ?? 0})</h2>
               {!data?.pessoas.length ? (
-                <p className="text-sm text-muted-foreground">Nenhum perfil preenchido ainda.</p>
+                <p className="text-sm text-muted-foreground">Nenhuma associada com acesso ao Conecta+ ainda.</p>
               ) : (
                 <ul className="divide-y divide-border">
                   {data.pessoas.map((p) => (

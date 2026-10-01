@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
+import SeletorPessoa from '@/components/painel/SeletorPessoa';
 import {
   usePainelNegocio, useSalvarNegocio, useFilhosNegocio,
 } from '@/hooks/usePainelConteudo';
@@ -51,16 +52,21 @@ export default function PainelNegocioEditor() {
       toast({ title: 'Dê um nome ao negócio', variant: 'destructive' });
       return;
     }
+    // Campos vazios viram null (ex.: pessoa_id '' quebrava o salvamento).
+    const limpo: Record<string, any> = {};
+    for (const [k, v] of Object.entries(form)) {
+      if (['id', 'criado_em', 'atualizado_em', 'midias', 'areas', 'comodidades', 'dona'].includes(k)) continue;
+      limpo[k] = typeof v === 'string' && v.trim() === '' ? null : v;
+    }
     const valores = {
-      ...form,
+      ...limpo,
+      nome: form.nome.trim(),
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),
-      email: form.email || null,
-      latitude: form.latitude === '' || form.latitude === null ? null : Number(form.latitude),
-      longitude: form.longitude === '' || form.longitude === null ? null : Number(form.longitude),
+      latitude: limpo.latitude == null ? null : Number(String(limpo.latitude).replace(',', '.')),
+      longitude: limpo.longitude == null ? null : Number(String(limpo.longitude).replace(',', '.')),
+      publicado: !!form.publicado,
+      destaque: !!form.destaque,
     };
-    delete (valores as any).id;
-    delete (valores as any).criado_em;
-    delete (valores as any).atualizado_em;
     try {
       const novoId = await salvar.mutateAsync({ id: novo ? undefined : id, valores });
       toast({ title: 'Negócio salvo' });
@@ -184,6 +190,13 @@ export default function PainelNegocioEditor() {
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Empreendedora responsável</CardTitle></CardHeader>
+            <CardContent>
+              <SeletorPessoa value={form.pessoa_id || null} onChange={(pid) => campo('pessoa_id', pid ?? '')} />
+              <p className="text-xs text-muted-foreground mt-2">A foto do perfil dela aparece no card do negócio.</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle className="text-base">Publicação</CardTitle></CardHeader>
             <CardContent className="space-y-4">

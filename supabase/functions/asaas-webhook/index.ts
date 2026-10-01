@@ -158,8 +158,13 @@ async function tiposPorCobranca(
       .eq("slug", plano[1])
       .maybeSingle();
     if (data) {
-      const lista = (Array.isArray(data.tipos) && data.tipos.length ? data.tipos : [data.tipo]) as TipoAcesso[];
-      return { tipos: lista, dias: Number(data.dias_acesso) || 31 };
+      // Embaixadora nunca vem de plano: só a administradora concede.
+      const lista = ((Array.isArray(data.tipos) && data.tipos.length ? data.tipos : [data.tipo]) as TipoAcesso[])
+        .filter((t) => t !== "area_embaixadora");
+      // Direito adquirido: a concessão grava o que o plano dava NO MOMENTO
+      // do pagamento, com fim próprio. Editar o plano depois não altera
+      // concessões já gravadas — vale a partir da próxima cobrança.
+      return { tipos: lista.length ? lista : ["diretorio"], dias: Number(data.dias_acesso) || 31 };
     }
   }
 
