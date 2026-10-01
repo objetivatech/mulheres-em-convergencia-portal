@@ -108,10 +108,27 @@ type Ordem = 'recentes' | 'antigas' | 'az' | 'za';
 export function GradeImagensR2({
   onEscolher,
   altura = 'max-h-[60vh]',
+  permitirExcluir = false,
 }: {
   onEscolher?: (url: string) => void;
   altura?: string;
+  permitirExcluir?: boolean;
 }) {
+  const qcExcluir = useQueryClient();
+  const { deleteFile } = useR2Storage();
+  const excluirImagem = async (img: { url: string; key: string; usos: { modulo: string; descricao: string }[] }) => {
+    const aviso = img.usos.length
+      ? `Esta imagem está em uso (${img.usos.map((u) => u.modulo).join(', ')}). Apagar fará ela sumir desses lugares. Apagar mesmo assim?`
+      : 'Apagar esta imagem de vez?';
+    if (!confirm(aviso)) return;
+    const ok = await deleteFile(img.url);
+    if (ok) {
+      qcExcluir.invalidateQueries({ queryKey: ['r2-biblioteca'] });
+      toast({ title: 'Imagem apagada' });
+    } else {
+      toast({ title: 'Não foi possível apagar', variant: 'destructive' });
+    }
+  };
   const [busca, setBusca] = useState('');
   const [modulo, setModulo] = useState<'todos' | Modulo>('todos');
   const [situacao, setSituacao] = useState<'todas' | 'uso' | 'livre'>('todas');
@@ -226,6 +243,11 @@ export function GradeImagensR2({
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
+                  {permitirExcluir && (
+                    <Button type="button" size="sm" variant="ghost" title="Apagar" onClick={() => excluirImagem(img)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  )}
                 </div>
                 {img.modificado && (
                   <span className="text-[11px] text-muted-foreground">
