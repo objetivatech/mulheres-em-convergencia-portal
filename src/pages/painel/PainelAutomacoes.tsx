@@ -114,6 +114,37 @@ export default function PainelAutomacoes() {
   };
 
 
+  const [importandoHistorico, setImportandoHistorico] = useState(false);
+
+  const importarHistorico = async () => {
+    setImportandoHistorico(true);
+    try {
+      let { data: sessao } = await supabase.auth.getSession();
+      if (!sessao.session?.access_token) {
+        const renovada = await supabase.auth.refreshSession();
+        sessao = renovada.data;
+      }
+      const token = sessao.session?.access_token;
+      if (!token) throw new Error('Sua sessão expirou. Entre novamente antes de importar o histórico.');
+
+      const { data: r, error } = await supabase.functions.invoke('importar-historico-asaas', {
+        body: {},
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw new Error(await mensagemErroEdge(error));
+      if ((r as any)?.error) throw new Error((r as any).error);
+      const total = ((r as any)?.totalConfirmadoCentavos ?? 0) / 100;
+      toast({
+        title: 'Histórico financeiro importado',
+        description: `${(r as any)?.gravados ?? 0} cobranças do portal registradas · ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} em pagamentos confirmados.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível importar o histórico', description: e?.message, variant: 'destructive' });
+    } finally {
+      setImportandoHistorico(false);
+    }
+  };
+
   const importarAcessos = async () => {
     setImportando(true);
     try {
@@ -153,6 +184,9 @@ export default function PainelAutomacoes() {
           </Button>
           <Button size="sm" onClick={conciliarAsaas} disabled={conciliando}>
             {conciliando ? 'Buscando…' : 'Buscar pagamentos no Asaas'}
+          </Button>
+          <Button size="sm" variant="outline" onClick={importarHistorico} disabled={importandoHistorico}>
+            {importandoHistorico ? 'Importando…' : 'Importar histórico financeiro'}
           </Button>
           <Button size="sm" variant="outline" onClick={rodar} disabled={reprocessar.isPending}>
             {reprocessar.isPending ? 'Reprocessando…' : 'Reprocessar avisos'}

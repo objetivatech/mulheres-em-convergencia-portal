@@ -41,4 +41,8 @@ verify_jwt = false
 [functions.sender-newsletter]
 verify_jwt = false
 
+# Importação do histórico financeiro do Asaas: exige administradora, validada dentro da função.
+[functions.importar-historico-asaas]
+verify_jwt = false
+
 

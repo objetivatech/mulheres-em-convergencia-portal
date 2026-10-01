@@ -4,6 +4,13 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-10-01 — Histórico financeiro do Asaas
+- Novo botão em **Painel → Automações**: "Importar histórico financeiro" traz para o portal todas as cobranças passadas das assinaturas e ingressos do Portal MeC, com datas, valores e situação originais.
+- A conta do Asaas é compartilhada com a Escola MeC: a importação separa os dois e traz apenas o que é do Portal (16 das 17 assinaturas; 71 das 243 cobranças da conta).
+- A rotina não envia e-mail nenhum, não altera liberações de acesso e pode ser repetida sem duplicar.
+- Documentação: `docs/_reboot/28-historico-financeiro-asaas.md`.
+
+
 ### 2026-09-28 — E-mails pelo Sender.net
 - Todos os e-mails do portal passam a sair pelo Sender.net assim que a chave for cadastrada (MailRelay e Resend ficam só de reserva).
 - Nova tela **Painel → Newsletter**: listas, contatos, trazer pessoas do portal, criar campanha com editor rico, teste e envio.
