@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
 import { Globe, Instagram, Mail, MapPin, Phone } from 'lucide-react';
@@ -83,7 +84,7 @@ export default function NegocioPage() {
           )}
         </header>
 
-        {negocio.descricao && <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: negocio.descricao }} />}
+        {negocio.descricao && <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(negocio.descricao) }} />}
 
         {contatos.length > 0 && (
           <section className="rounded-[var(--radius)] border border-border p-5 space-y-3">
