@@ -100,7 +100,7 @@ export default function EventosPage() {
                 </Link>
                 <div className="flex flex-1 flex-col p-5 gap-3">
                   <div className="flex flex-wrap gap-2"><Modalidade e={e} /><Preco e={e} /></div>
-                  <h2 className="font-semibold leading-snug">
+                  <h2 className="text-lg font-semibold leading-snug">
                     <Link to={`/eventos/${e.slug}`} className="hover:text-primary">{e.titulo}</Link>
                   </h2>
                   <p className="text-sm text-muted-foreground flex items-center gap-1.5">
