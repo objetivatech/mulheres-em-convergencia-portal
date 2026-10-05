@@ -11,7 +11,7 @@ import { useMinhaPessoa } from '@/hooks/useMinhaArea';
 const db = supabase as any;
 
 const CAMPOS =
-  'id, slug, nome, descricao, categoria, cidade, uf, bairro, telefone, whatsapp, email, site, instagram, logo_url, capa_url, publicado, destaque';
+  'id, slug, nome, descricao, categoria, cidade, uf, bairro, telefone, whatsapp, email, site, instagram, logo_url, capa_url, publicado, destaque, latitude, longitude';
 
 export type NegocioFilhos = {
   midias: any[];
