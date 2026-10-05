@@ -1,20 +1,27 @@
+import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, GraduationCap, Store, BookOpen } from 'lucide-react';
+import { ArrowRight, Users, GraduationCap, Store, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
 import TextoSite from '@/components/site/TextoSite';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useBlocosSite, useNegociosDestaque, usePosts } from '@/hooks/useSite';
+import { useBlocosSite, useTodosNegocios, usePosts } from '@/hooks/useSite';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
+import { embaralhar } from '@/lib/embaralhar';
 
 const ICONES = [Users, GraduationCap, Store, BookOpen];
+const POR_PAGINA = 9; // 3 linhas x 3 colunas
 
 export default function HomePage() {
   const { data: blocos } = useBlocosSite();
-  const { data: negocios, isLoading: carregandoNegocios } = useNegociosDestaque(6);
+  const { data: negocios, isLoading: carregandoNegocios } = useTodosNegocios();
+  // Novo sorteio a cada visita/atualização, incluindo TODOS os publicados.
+  const sorteados = useMemo(() => embaralhar(negocios ?? []), [negocios]);
+  const [pagina, setPagina] = useState(0);
+  const totalPaginas = Math.ceil(sorteados.length / POR_PAGINA);
   const { data: posts, isLoading: carregandoPosts } = usePosts({ limite: 3 });
 
   const hero = blocos?.home_hero?.conteudo ?? {};
@@ -72,10 +79,12 @@ export default function HomePage() {
                   className="group rounded-[var(--radius)] border border-border bg-card p-6 transition-all hover:-translate-y-1"
                   style={{ boxShadow: 'var(--sombra-1)' }}
                 >
-                  <span className="inline-flex w-11 h-11 items-center justify-center rounded-full bg-accent text-accent-foreground mb-4">
-                    <Icone className="w-5 h-5" />
-                  </span>
-                  <h2 className="font-medium mb-1">{p.titulo}</h2>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex w-10 h-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                      <Icone className="w-5 h-5" />
+                    </span>
+                    <h2 className="text-base font-semibold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{p.titulo}</h2>
+                  </div>
                   <p className="text-sm text-muted-foreground">{p.texto}</p>
                 </Link>
               );
@@ -101,10 +110,27 @@ export default function HomePage() {
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 rounded-[var(--radius)]" />)}
             </div>
-          ) : negocios && negocios.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {negocios.map((n) => <CardNegocio key={n.id} negocio={n} />)}
-            </div>
+          ) : sorteados.length > 0 ? (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {sorteados.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA).map((n) => <CardNegocio key={n.id} negocio={n} />)}
+              </div>
+              {totalPaginas > 1 && (
+                <nav className="flex items-center justify-center gap-2 mt-8" aria-label="Páginas de negócios">
+                  <Button variant="outline" size="icon" aria-label="Página anterior" disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)}>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  {Array.from({ length: totalPaginas }).map((_, i) => (
+                    <Button key={i} size="sm" variant={i === pagina ? 'default' : 'ghost'} onClick={() => setPagina(i)} aria-label={`Página ${i + 1}`}>
+                      {i + 1}
+                    </Button>
+                  ))}
+                  <Button variant="outline" size="icon" aria-label="Próxima página" disabled={pagina >= totalPaginas - 1} onClick={() => setPagina((p) => p + 1)}>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </nav>
+              )}
+            </>
           ) : (
             <p className="text-muted-foreground">Os negócios da rede aparecem aqui assim que forem migrados.</p>
           )}
