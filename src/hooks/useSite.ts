@@ -100,6 +100,22 @@ export function useNegocios(filtros: { busca?: string; categoria?: string; cidad
   });
 }
 
+/** Todos os negócios publicados (sem limite). A ordem aleatória é aplicada na tela. */
+export function useTodosNegocios() {
+  return useQuery({
+    queryKey: ['site', 'negocios-todos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('negocios')
+        .select(CAMPOS_NEGOCIO)
+        .eq('publicado', true)
+        .limit(5000);
+      if (error) throw error;
+      return (data ?? []) as Negocio[];
+    },
+  });
+}
+
 export function useNegociosDestaque(limite = 6) {
   return useQuery({
     queryKey: ['site', 'negocios-destaque', limite],
