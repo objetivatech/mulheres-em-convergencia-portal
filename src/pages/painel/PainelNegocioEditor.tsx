@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
 import SeletorPessoa from '@/components/painel/SeletorPessoa';
+import CampoLocalizacao from '@/components/negocio/CampoLocalizacao';
 import {
   usePainelNegocio, useSalvarNegocio, useFilhosNegocio,
 } from '@/hooks/usePainelConteudo';
@@ -126,12 +127,12 @@ export default function PainelNegocioEditor() {
                 <Input value={form.cidade} onChange={(e) => campo('cidade', e.target.value)} /></div>
               <div><Label>Estado</Label>
                 <Input maxLength={2} value={form.uf} onChange={(e) => campo('uf', e.target.value.toUpperCase())} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Latitude (mapa)</Label>
-                  <Input value={form.latitude ?? ''} onChange={(e) => campo('latitude', e.target.value)} placeholder="-30.0346" /></div>
-                <div><Label>Longitude (mapa)</Label>
-                  <Input value={form.longitude ?? ''} onChange={(e) => campo('longitude', e.target.value)} placeholder="-51.2177" /></div>
-              </div>
+              <CampoLocalizacao
+                endereco={{ bairro: form.bairro, cidade: form.cidade, uf: form.uf }}
+                latitude={form.latitude}
+                longitude={form.longitude}
+                onChange={(lat, lng) => setForm((f: any) => ({ ...f, latitude: lat ?? '', longitude: lng ?? '' }))}
+              />
             </CardContent>
           </Card>
 
