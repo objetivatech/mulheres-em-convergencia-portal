@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
@@ -8,18 +7,36 @@ import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { useNegocios } from '@/hooks/useSite';
+import { useTodosNegocios } from '@/hooks/useSite';
 import { DirectoryLeafletMap } from '@/components/maps/DirectoryLeafletMap';
+import { embaralhar } from '@/lib/embaralhar';
+import { stripHtml } from '@/lib/stripHtml';
+
+const norm = (s?: string | null) =>
+  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 export default function DiretorioPage() {
   const [busca, setBusca] = useState('');
   const [categoria, setCategoria] = useState('');
-  const { data: negocios, isLoading } = useNegocios({ busca, categoria });
+  const { data: todos, isLoading } = useTodosNegocios();
 
+  // Sorteio novo a cada visita: todas têm a mesma chance de aparecer primeiro.
+  const sorteados = useMemo(() => embaralhar(todos ?? []), [todos]);
+
+  // Filtro dinâmico: só tipos que têm ao menos um negócio publicado.
   const categorias = useMemo(
-    () => Array.from(new Set((negocios ?? []).map((n) => n.categoria).filter(Boolean) as string[])).sort(),
-    [negocios]
+    () => Array.from(new Set(sorteados.map((n) => n.categoria?.trim()).filter(Boolean) as string[]))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [sorteados]
   );
+
+  const negocios = useMemo(() => {
+    const t = norm(busca.trim());
+    return sorteados.filter((n) =>
+      (!categoria || n.categoria?.trim() === categoria) &&
+      (!t || norm(n.nome).includes(t) || norm(stripHtml(n.descricao)).includes(t) || norm(n.cidade).includes(t))
+    );
+  }, [sorteados, busca, categoria]);
 
   return (
     <SiteLayout>
