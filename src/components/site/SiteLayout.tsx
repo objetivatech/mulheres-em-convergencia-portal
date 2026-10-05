@@ -146,7 +146,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             <ul className="space-y-2">
               {NAV.map((i) => (
                 <li key={i.to}>
-                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary">{i.rotulo}</Link>
+                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
                 </li>
               ))}
             </ul>
