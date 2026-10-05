@@ -12,6 +12,14 @@ export type TextoCatalogo = {
 };
 
 export const CATALOGO_TEXTOS: TextoCatalogo[] = [
+  // Menu do site (topo, celular e rodapé)
+  { chave: 'menu.inicio', grupo: 'Menu do site', rotulo: 'Item do menu — página inicial', padrao: 'Início' },
+  { chave: 'menu.diretorio', grupo: 'Menu do site', rotulo: 'Item do menu — diretório', padrao: 'Diretório' },
+  { chave: 'menu.convergindo', grupo: 'Menu do site', rotulo: 'Item do menu — blog', padrao: 'Convergindo' },
+  { chave: 'menu.academy', grupo: 'Menu do site', rotulo: 'Item do menu — cursos', padrao: 'Academy' },
+  { chave: 'menu.eventos', grupo: 'Menu do site', rotulo: 'Item do menu — eventos', padrao: 'Eventos' },
+  { chave: 'menu.sobre', grupo: 'Menu do site', rotulo: 'Item do menu — sobre', padrao: 'Sobre' },
+
   // Página inicial
   { chave: 'home.hero.botao_secundario', grupo: 'Página inicial', rotulo: 'Botão secundário do topo', padrao: 'Ver o diretório' },
   { chave: 'home.negocios.titulo', grupo: 'Página inicial', rotulo: 'Título — negócios da rede', padrao: 'Negócios da rede' },

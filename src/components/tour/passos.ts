@@ -11,7 +11,7 @@ export const TOUR_VERSAO: Record<string, number> = {
   conecta: 1,
   academy: 1,
   embaixadoras: 1,
-  'meu-negocio': 1,
+  'meu-negocio': 2,
   planos: 1,
   encontros: 1,
   'meus-dados': 1,
@@ -86,6 +86,16 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       alvo: '[data-tour="negocio-logo"]',
       titulo: 'Sua marca',
       texto: 'Envie a logo quadrada. Ela aparece na busca e no seu perfil.',
+    },
+    {
+      alvo: '[data-tour="negocio-mapa"]',
+      titulo: 'Seu negócio no mapa',
+      texto: 'Preencha bairro e cidade e clique em "Localizar pelo endereço". Não precisa digitar números: a gente acha o lugar e mostra no mapa do diretório para clientes da sua região.',
+    },
+    {
+      alvo: '[data-tour="negocio-mapa"]',
+      titulo: 'Ficou no lugar errado?',
+      texto: 'Clique em "Veja como acertar". Explicamos em 4 passos como copiar a localização do Google Maps e colar aqui. Depois, é só salvar.',
     },
   ],
   planos: [

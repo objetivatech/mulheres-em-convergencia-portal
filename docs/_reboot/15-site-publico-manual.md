@@ -23,3 +23,14 @@ As áreas de associada (Meu Painel, Conecta+, Academy, Embaixadoras, eventos e p
 - Um negócio não aparece: primeiro verifique se a associação está em dia.
 - Um texto não aparece: veja se ele está marcado como publicado e se a data de publicação já chegou.
 - Um comentário não aparece: comentários só aparecem depois de aprovados.
+
+## Como colocar meu negócio no mapa (passo a passo simples)
+1. Entre na sua área e abra **Meu negócio**.
+2. Preencha **Bairro**, **Cidade** e **Estado**.
+3. Clique no botão **Localizar pelo endereço**. Vai aparecer "Já aparece no mapa".
+4. Clique em **Salvar**. Pronto!
+
+Se o ponto ficou no lugar errado: clique em "conferir" para ver no Google Maps. Para acertar, clique em **"Veja como acertar"** e siga os 4 passos (copiar os dois números no Google Maps e colar no campo). Você não precisa entender esses números.
+
+## Como mudar o nome de um item do menu
+Painel da equipe → **Textos do site** → **Menu do site** → troque o nome e salve.

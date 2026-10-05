@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
+import CampoLocalizacao from '@/components/negocio/CampoLocalizacao';
 import { useMeuPerfil } from '@/hooks/useMinhaArea';
 import {
   useMeuNegocioCompleto, useSalvarMeuNegocio, useFilhosMeuNegocio,
@@ -25,7 +26,7 @@ import {
 const VAZIO = {
   nome: '', slug: '', descricao: '', categoria: '', cidade: '', uf: '', bairro: '',
   telefone: '', whatsapp: '', email: '', site: '', instagram: '',
-  logo_url: '', capa_url: '', publicado: false,
+  logo_url: '', capa_url: '', publicado: false, latitude: '', longitude: '',
 };
 
 export default function MeuNegocio() {
@@ -55,10 +56,13 @@ export default function MeuNegocio() {
       toast({ title: 'Escreva o nome do seu negócio', variant: 'destructive' });
       return;
     }
+    const coord = (v: any) => (v === '' || v == null ? null : Number(String(v).replace(',', '.')));
     const valores = {
       ...form,
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),
       email: form.email || null,
+      latitude: coord(form.latitude),
+      longitude: coord(form.longitude),
     };
     delete (valores as any).destaque;
     try {
@@ -134,6 +138,12 @@ export default function MeuNegocio() {
                   <Input value={form.cidade} onChange={(e) => campo('cidade', e.target.value)} /></div>
                 <div><Label>Estado</Label>
                   <Input maxLength={2} value={form.uf} onChange={(e) => campo('uf', e.target.value.toUpperCase())} /></div>
+                <CampoLocalizacao
+                  endereco={{ bairro: form.bairro, cidade: form.cidade, uf: form.uf }}
+                  latitude={form.latitude}
+                  longitude={form.longitude}
+                  onChange={(lat, lng) => setForm((f) => ({ ...f, latitude: lat ?? '', longitude: lng ?? '' }))}
+                />
               </CardContent>
             </Card>
 

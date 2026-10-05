@@ -36,6 +36,7 @@ export type Evento = {
   vagas: number | null;
   gratuito: boolean;
   destaque: boolean;
+  lotes?: { valor_centavos: number; ativo: boolean }[];
 };
 
 export type Lote = {
@@ -57,6 +58,12 @@ export const dataLonga = (iso: string) =>
 
 const CAMPOS_EVENTO =
   'id, slug, titulo, resumo, descricao, capa_url, online, link_online, local_nome, endereco, cidade, uf, inicio_em, fim_em, vagas, gratuito, destaque';
+
+/** Menor valor entre os lotes ativos (para mostrar "a partir de"). */
+export function menorValorEvento(lotes?: { valor_centavos: number; ativo: boolean }[] | null) {
+  const v = (lotes ?? []).filter((l) => l.ativo && l.valor_centavos > 0).map((l) => l.valor_centavos);
+  return v.length ? Math.min(...v) : null;
+}
 
 const CAMPOS_PLANO =
   'id, slug, nome, descricao, tipo, valor_centavos, periodicidade, beneficios, destaque, ordem, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos';

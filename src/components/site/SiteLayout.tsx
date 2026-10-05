@@ -7,15 +7,21 @@ import LogoComponent from '@/components/layout/LogoComponent';
 import { useAuth } from '@/hooks/useAuth';
 import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
 import TextoSite from '@/components/site/TextoSite';
+import { useTexto } from '@/hooks/useTextosSite';
 
+// Nomes editáveis no painel (Textos do site > Menu do site).
 const NAV = [
-  { to: '/', rotulo: 'Início' },
-  { to: '/diretorio', rotulo: 'Diretório' },
-  { to: '/convergindo', rotulo: 'Convergindo' },
-  { to: '/academy', rotulo: 'Academy' },
-  { to: '/eventos', rotulo: 'Eventos' },
-  { to: '/sobre', rotulo: 'Sobre' },
+  { to: '/', rotulo: 'Início', chave: 'menu.inicio' },
+  { to: '/diretorio', rotulo: 'Diretório', chave: 'menu.diretorio' },
+  { to: '/convergindo', rotulo: 'Convergindo', chave: 'menu.convergindo' },
+  { to: '/academy', rotulo: 'Academy', chave: 'menu.academy' },
+  { to: '/eventos', rotulo: 'Eventos', chave: 'menu.eventos' },
+  { to: '/sobre', rotulo: 'Sobre', chave: 'menu.sobre' },
 ];
+
+function RotuloMenu({ chave, padrao }: { chave: string; padrao: string }) {
+  return <>{useTexto(chave, padrao)}</>;
+}
 
 const INSTITUCIONAIS = [
   { to: '/sobre', rotulo: 'Sobre' },
@@ -52,7 +58,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                   )
                 }
               >
-                {item.rotulo}
+                <RotuloMenu chave={item.chave} padrao={item.rotulo} />
               </NavLink>
             ))}
           </nav>
@@ -87,7 +93,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
                   onClick={() => setAberto(false)}
                   className="py-2 text-sm text-muted-foreground hover:text-foreground"
                 >
-                  {item.rotulo}
+                  <RotuloMenu chave={item.chave} padrao={item.rotulo} />
                 </Link>
               ))}
               {user ? (
@@ -140,7 +146,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             <ul className="space-y-2">
               {NAV.map((i) => (
                 <li key={i.to}>
-                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary">{i.rotulo}</Link>
+                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
                 </li>
               ))}
             </ul>

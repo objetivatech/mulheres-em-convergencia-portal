@@ -4,6 +4,15 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## [Não lançado] — Reboot
 
+### 2026-10-05 — Diretório, capa, mapa, menu e eventos
+- Diretório e capa mostram TODOS os negócios publicados em ordem sorteada a cada visita; capa em grade 3x3 com páginas.
+- Filtro de tipos do Diretório se monta sozinho com os tipos que têm negócio publicado.
+- Botão "Localizar pelo endereço" e ajuda passo a passo para pôr o negócio no mapa (Meu negócio e painel da equipe); tour do Meu negócio atualizado.
+- Nomes do menu editáveis em Textos do site → Menu do site.
+- Blocos de destaque da capa: título menor, ao lado do ícone.
+- Página de eventos no padrão do blog: slider dos 3 próximos e cards com data, modalidade, valor/gratuito e botão de inscrição.
+- Docs: `13`, `14` e `15-site-publico*`.
+
 ### 2026-10-01 — Histórico financeiro do Asaas
 - Novo botão em **Painel → Automações**: "Importar histórico financeiro" traz para o portal todas as cobranças passadas das assinaturas e ingressos do Portal MeC, com datas, valores e situação originais.
 - A conta do Asaas é compartilhada com a Escola MeC: a importação separa os dois e traz apenas o que é do Portal (16 das 17 assinaturas; 71 das 243 cobranças da conta).
