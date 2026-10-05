@@ -49,3 +49,11 @@ Somente tokens semânticos (`bg-card`, `text-muted-foreground`, `var(--sombra-1)
 ## SEO
 
 Título abaixo de 60 caracteres em cada página, meta description própria, um único H1, `loading="lazy"` nas imagens e JSON-LD de `BlogPosting` no texto do blog.
+
+## Atualização 2026-10-05 — Diretório, capa, menu e eventos (técnico)
+- `src/lib/embaralhar.ts` (Fisher-Yates) + `useTodosNegocios()` em `useSite.ts`: todos os negócios publicados, sem limite; ordem sorteada a cada montagem da página (Home e Diretório).
+- Diretório filtra no navegador; o filtro de tipos é derivado dos negócios publicados (tipo sem negócio some, tipo novo aparece sozinho).
+- Home: grade 3x3 (`POR_PAGINA = 9`) com paginação.
+- Mapa: só aparece quando há negócio com latitude/longitude. `CampoLocalizacao` (`src/components/negocio/`) geocodifica bairro+cidade via Nominatim/OpenStreetMap (sem chave) e aceita colar "lat, lng" do Google Maps. Usado em Meu Negócio e no editor da equipe. Tour `meu-negocio` subiu para versão 2.
+- Menu: rótulos lidos de `textos_site` (chaves `menu.*`, grupo "Menu do site").
+- Eventos: slider Embla com os 3 próximos; cards com capa 16:9, data, Presencial/Online, Gratuito ou menor valor dos lotes ativos (`menorValorEvento`) e botão de inscrição.

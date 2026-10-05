@@ -36,6 +36,7 @@ export type Evento = {
   vagas: number | null;
   gratuito: boolean;
   destaque: boolean;
+  lotes?: { valor_centavos: number; ativo: boolean }[];
 };
 
 export type Lote = {

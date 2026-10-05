@@ -32,3 +32,10 @@ O painel administrativo dessas tabelas entra na Fase 5; hoje a edição é feita
 ## Reversão
 
 O conteúdo antigo continua intacto no banco anterior e as telas antigas seguem no repositório. Reverter é reapontar as rotas em `src/App.tsx` para os componentes antigos.
+
+## Atualização 2026-10-05 — operação
+- **Ordem dos negócios**: Capa e Diretório mostram os negócios em ordem sorteada a cada visita, para todas terem a mesma visibilidade. Não há como fixar uma ordem.
+- **Tipos no filtro do Diretório**: vêm do campo "Tipo de negócio". Escreva sempre igual (ex.: "Contabilidade", não "contabilidade "), senão vira outro tipo.
+- **Mapa**: um negócio só aparece no mapa depois que alguém clica em "Localizar pelo endereço" no cadastro dele e salva. Em 05/10 nenhum dos 8 negócios publicados tinha localização — por isso o mapa sumiu.
+- **Nomes do menu**: Painel → Textos do site → grupo "Menu do site". O endereço da página não muda, só o nome exibido.
+- **Eventos**: o slider mostra os 3 próximos publicados. O valor exibido é o menor lote ativo; marque "Gratuito" para aparecer "Gratuito". Use uma imagem de capa horizontal.
