@@ -254,3 +254,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 ## 2026-10-06
 - Eventos: horário não muda mais ao salvar no painel (correção de fuso no campo de data/hora).
 - Inscrições: uma inscrição por pessoa por evento (restrição no banco), corrigindo o erro ao se inscrever.
+
+## 2026-10-06 — Degustação de encontros e participantes
+- Quem não assina pode participar de **1 encontro gratuito** (verificado pelo CPF). Na segunda tentativa abre um aviso amigável com botão para os planos. Assinantes e administradoras sem limite.
+- Painel → Planos e Encontros → **Participantes**: lista de quem já participou, filtro "só quem não assina", busca e planilha.
+- Segurança: funções internas de pagamento fechadas para o site.
