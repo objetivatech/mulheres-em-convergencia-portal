@@ -3032,7 +3032,26 @@ export type Database = {
         Args: { _cpf?: string; _email?: string; _nome?: string }
         Returns: string
       }
+      ja_usou_evento_gratuito: {
+        Args: { _evento_id: string; _pessoa_id: string }
+        Returns: boolean
+      }
       lote_vigente: { Args: { _evento_id: string }; Returns: string }
+      participantes_eventos: {
+        Args: never
+        Returns: {
+          assinante: boolean
+          cpf: string
+          email: string
+          eventos_gratuitos: number
+          nome: string
+          pessoa_id: string
+          telefone: string
+          total_eventos: number
+          ultima_participacao: string
+          ultimo_evento: string
+        }[]
+      }
       pessoa_atual: { Args: never; Returns: string }
       registrar_contato: {
         Args: {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ParticipantesEventos from '@/components/painel/ParticipantesEventos';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Copy, Trash2, Pencil } from 'lucide-react';
@@ -111,6 +112,7 @@ export default function PainelPlanosEventos() {
         <TabsList>
           <TabsTrigger value="planos">Planos</TabsTrigger>
           <TabsTrigger value="eventos">Encontros</TabsTrigger>
+          <TabsTrigger value="participantes">Participantes</TabsTrigger>
           <TabsTrigger value="acessos">Quem tem acesso</TabsTrigger>
         </TabsList>
 
@@ -201,6 +203,10 @@ export default function PainelPlanosEventos() {
               </div>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="participantes">
+          <ParticipantesEventos />
         </TabsContent>
 
         <TabsContent value="acessos">

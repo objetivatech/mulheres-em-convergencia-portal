@@ -47,3 +47,8 @@ apagar nada. As cobranças já criadas seguem no Asaas e no histórico.
   Pode ser usado mais de uma vez sem bagunçar nada.
 - A chavinha **Visível no site** / **Publicado** liga e desliga a oferta.
 - Uma vaga só é contada quando o pagamento é aprovado. Encontro gratuito confirma na hora.
+
+## Degustação de encontros (2026-10-06)
+**Técnico:** `criar-cobranca` (ramo gratuito) consulta `ja_usou_evento_gratuito(pessoa, evento)` (inscrições confirmadas com valor 0 da mesma pessoa ou mesmo CPF, outro evento). Sem concessão vigente e sem papel admin → resposta `{codigo:'limite_gratuito'}`, tratada no `CobrancaDialog`. Lista do painel via RPC `participantes_eventos()` (só admin).
+**Operação:** aba "Participantes" em Planos e Encontros; botão "Baixar planilha" gera CSV para campanhas de conversão.
+**Manual simples:** se você já foi a um encontro gratuito, o site vai te convidar a escolher um plano para continuar participando.
