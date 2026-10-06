@@ -36,6 +36,7 @@ export default function CobrancaDialog({
   const [telefone, setTelefone] = useState('');
   const [cupom, setCupom] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [limite, setLimite] = useState(false);
 
   // Sem conta: leva direto para o cadastro e volta para esta mesma oferta.
   useEffect(() => {
@@ -95,8 +96,24 @@ export default function CobrancaDialog({
   };
 
   return (
-    <Dialog open={aberto} onOpenChange={(v) => !v && aoFechar()}>
+    <Dialog open={aberto} onOpenChange={(v) => { if (!v) { setLimite(false); aoFechar(); } }}>
       <DialogContent className="sm:max-w-md">
+        {limite ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Que bom ter você de volta! 💜</DialogTitle>
+              <DialogDescription className="pt-2 leading-relaxed">
+                Você já participou de um encontro gratuito da comunidade. Para continuar
+                participando dos nossos eventos, escolha um plano — assinantes têm acesso
+                a todos os encontros, sem limite.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => { setLimite(false); aoFechar(); }}>Agora não</Button>
+              <Button onClick={() => navigate('/planos')}>Conhecer os planos</Button>
+            </DialogFooter>
+          </>
+        ) : (<>
         <DialogHeader>
           <DialogTitle>{titulo}</DialogTitle>
           <DialogDescription>
@@ -131,6 +148,7 @@ export default function CobrancaDialog({
             {enviando ? 'Gerando…' : 'Continuar para o pagamento'}
           </Button>
         </DialogFooter>
+        </>)}
       </DialogContent>
     </Dialog>
   );
