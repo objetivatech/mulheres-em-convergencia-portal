@@ -31,7 +31,12 @@ const paraCentavos = (texto: string) => {
 };
 const paraReais = (centavos: number) =>
   ((centavos ?? 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-const paraLocal = (iso?: string | null) => (iso ? new Date(iso).toISOString().slice(0, 16) : '');
+// Converte para o horário local do navegador (datetime-local não tem fuso).
+const paraLocal = (iso?: string | null) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
 
 export default function PainelEventoEditor() {
   const { id } = useParams();

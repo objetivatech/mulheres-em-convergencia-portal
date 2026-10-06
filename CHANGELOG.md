@@ -250,3 +250,7 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Conecta+: toda associada com acesso aparece na rede, mesmo sem perfil de networking; equipe adiciona/remove participantes dos grupos.
 - Imagens: botão apagar com aviso quando a imagem está em uso.
 - Site: cards de negócio com capa ampla, logo e foto da empreendedora (do perfil pessoal); topo do perfil do negócio no mesmo estilo; blog com carrossel dos 5 últimos textos e cards com autora, data e tempo de leitura.
+
+## 2026-10-06
+- Eventos: horário não muda mais ao salvar no painel (correção de fuso no campo de data/hora).
+- Inscrições: uma inscrição por pessoa por evento (restrição no banco), corrigindo o erro ao se inscrever.
