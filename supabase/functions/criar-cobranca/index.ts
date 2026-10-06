@@ -165,6 +165,20 @@ Deno.serve(async (req) => {
 
     // Evento gratuito: inscrição imediata, sem cobrança
     if (tipo === 'evento' && evento && valorCentavos <= 0) {
+      // Degustação: quem não assina tem direito a 1 encontro gratuito (por CPF).
+      const [{ data: concessoes }, { data: adminPapel }, { data: jaUsou }] = await Promise.all([
+        admin.from('concessoes_acesso').select('id, fim_em').eq('pessoa_id', pessoaId)
+          .is('revogado_em', null).lte('inicio_em', new Date().toISOString()),
+        admin.from('papeis').select('id').eq('pessoa_id', pessoaId).eq('papel', 'admin').maybeSingle(),
+        admin.rpc('ja_usou_evento_gratuito', { _pessoa_id: pessoaId, _evento_id: evento.id }),
+      ]);
+      const assinante = (concessoes ?? []).some((c: any) => !c.fim_em || new Date(c.fim_em) > new Date());
+      if (!assinante && !adminPapel && jaUsou === true) {
+        return json({
+          codigo: 'limite_gratuito',
+          error: 'Você já participou de um encontro gratuito. Assine um plano para continuar participando.',
+        }, 200);
+      }
       const { error: erroInscricao } = await admin.from('evento_inscricoes').upsert(
         {
           evento_id: evento.id,

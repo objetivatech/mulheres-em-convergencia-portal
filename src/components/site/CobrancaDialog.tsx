@@ -69,6 +69,10 @@ export default function CobrancaDialog({
         body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined, codigo: codigo || undefined },
       });
       if (error) throw error;
+      if ((data as any)?.codigo === 'limite_gratuito') {
+        setLimite(true);
+        return;
+      }
       if ((data as any)?.error) throw new Error((data as any).error);
 
       if ((data as any)?.gratuito) {
