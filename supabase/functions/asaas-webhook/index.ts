@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { identificarPorClienteAsaas, liberarPorPagamento } from "../_shared/acessos-asaas.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -69,7 +70,8 @@ async function identificarPessoa(
     if (data?.pessoa_id) return data.pessoa_id;
   }
 
-  return null;
+  // O aviso do Asaas traz só o código do cliente: busca CPF/e-mail na API.
+  return await identificarPorClienteAsaas(supabase, clienteId);
 }
 
 // ---------------------------------------------------------------------------
@@ -178,23 +180,9 @@ async function tiposPorCobranca(
   return { tipos: ["diretorio"], dias: 31 };
 }
 
-async function concederAcesso(
-  pagamentoId: string,
-  pagamento: Record<string, unknown>,
-): Promise<string | null> {
-  const { tipos, dias } = await tiposPorCobranca(pagamento);
-
-  let primeira: string | null = null;
-  for (const tipo of tipos) {
-    const { data, error } = await supabase.rpc("conceder_por_pagamento", {
-      _pagamento_id: pagamentoId,
-      _tipo: tipo,
-      _dias: dias,
-    });
-    if (error) throw error;
-    primeira = primeira ?? ((data as string | null) ?? null);
-  }
-  return primeira;
+async function concederAcesso(pagamentoId: string): Promise<string | null> {
+  const r = await liberarPorPagamento(supabase, pagamentoId);
+  return r ? `${r.concessoes}:${r.tipos.join(",")}` : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,7 +259,7 @@ async function processar(
 
     let concessaoId: string | null = null;
     if (pagamentoId) {
-      concessaoId = await concederAcesso(pagamentoId, pagamentoAsaas);
+      concessaoId = await concederAcesso(pagamentoId);
     }
 
     // Efeitos nunca bloqueiam o acesso.
@@ -348,7 +336,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  if (registro.processado_em) {
+  if (registro.processado_em && carga.forcar !== true) {
     return new Response(JSON.stringify({ ok: true, jaProcessado: true }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
