@@ -25,7 +25,9 @@ function pastaPermitida(p: Perfil, pedida: string): string {
   const proprio = `${PASTA_USUARIAS}/${p.uid}`
   if (limpa.startsWith(proprio + '/') || limpa === proprio) return limpa
   if (p.editora && !limpa.startsWith(PASTA_USUARIAS)) return limpa
-  const cat = CATEGORIAS_USUARIA.includes(limpa) ? limpa : 'geral'
+  const apelidos: Record<string, string> = { perfis: 'perfil', negocios: 'negocio', 'negocios-galeria': 'galeria' }
+  const base = apelidos[limpa] ?? limpa
+  const cat = CATEGORIAS_USUARIA.includes(base) ? base : 'geral'
   return `${proprio}/${cat}`
 }
 
