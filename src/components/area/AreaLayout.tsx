@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, NavLink, Navigate } from 'react-router-dom';
-import { Home, CreditCard, CalendarDays, GraduationCap, Users, Sparkles, UserCog, Store } from 'lucide-react';
+import { Home, CreditCard, CalendarDays, GraduationCap, Users, Sparkles, UserCog, Store, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeuPerfil, useMeuNegocio } from '@/hooks/useMinhaArea';
 import Tour from '@/components/tour/Tour';
@@ -14,6 +14,7 @@ const ITENS = [
   { para: '/minha-area/conecta', rotulo: 'Conecta+', icone: Users },
   { para: '/minha-area/embaixadora', rotulo: 'Embaixadoras', icone: Sparkles },
   { para: '/minha-area/dados', rotulo: 'Meus dados', icone: UserCog },
+  { para: '/minha-area/tutoriais', rotulo: 'Tutoriais', icone: BookOpen },
 ];
 
 export default function AreaLayout({
