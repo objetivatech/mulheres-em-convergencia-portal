@@ -140,46 +140,6 @@ async function registrarPagamento(
 // Pagamento em atraso deixa de ser caso especial: não existe estado
 // "desativado" para desfazer (casos Luciana e Paola).
 // ---------------------------------------------------------------------------
-type TipoAcesso = "diretorio" | "conecta" | "academy" | "evento" | "area_embaixadora";
-
-// O que a cobrança libera vem do cadastro do plano (`planos.tipos` e
-// `planos.dias_acesso`), identificado pela referência `plano:<slug>`.
-// Um plano pode liberar várias áreas de uma vez.
-// O texto da cobrança só é usado como último recurso, para cobranças
-// antigas que não carregam a referência.
-async function tiposPorCobranca(
-  pagamento: Record<string, unknown>,
-): Promise<{ tipos: TipoAcesso[]; dias: number }> {
-  const ref = String(pagamento.externalReference ?? "");
-
-  const plano = ref.match(/^plano:(.+)$/i);
-  if (plano) {
-    const { data } = await supabase
-      .from("planos")
-      .select("tipo, tipos, dias_acesso")
-      .eq("slug", plano[1])
-      .maybeSingle();
-    if (data) {
-      // Embaixadora nunca vem de plano: só a administradora concede.
-      const lista = ((Array.isArray(data.tipos) && data.tipos.length ? data.tipos : [data.tipo]) as TipoAcesso[])
-        .filter((t) => t !== "area_embaixadora");
-      // Direito adquirido: a concessão grava o que o plano dava NO MOMENTO
-      // do pagamento, com fim próprio. Editar o plano depois não altera
-      // concessões já gravadas — vale a partir da próxima cobrança.
-      return { tipos: lista.length ? lista : ["diretorio"], dias: Number(data.dias_acesso) || 31 };
-    }
-  }
-
-  if (/^evento:/i.test(ref)) return { tipos: ["evento"], dias: 366 };
-
-  const texto = `${pagamento.description ?? ""} ${ref}`.toLowerCase();
-  if (texto.includes("conecta")) return { tipos: ["conecta"], dias: 31 };
-  if (texto.includes("academy") || texto.includes("curso")) return { tipos: ["academy"], dias: 366 };
-  if (texto.includes("evento") || texto.includes("ingresso")) return { tipos: ["evento"], dias: 366 };
-  if (texto.includes("anual")) return { tipos: ["diretorio"], dias: 366 };
-  return { tipos: ["diretorio"], dias: 31 };
-}
-
 async function concederAcesso(pagamentoId: string): Promise<string | null> {
   const r = await liberarPorPagamento(supabase, pagamentoId);
   return r ? `${r.concessoes}:${r.tipos.join(",")}` : null;

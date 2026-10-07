@@ -5,6 +5,8 @@
 
 import { corsHeaders } from '../_shared/cors.ts';
 import { requireAdminOrCron } from '../_shared/auth.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { identificarPorClienteAsaas, liberarPorPagamento } from '../_shared/acessos-asaas.ts';
 
 const ASAAS_BASE = 'https://api.asaas.com/v3';
 
@@ -46,6 +48,35 @@ Deno.serve(async (req) => {
     if (corpo?.acao) acao = String(corpo.acao);
   } catch {
     /* sem corpo: apenas verificar */
+  }
+
+  // Regulariza acessos de todos os pagamentos confirmados (últimos 400 dias):
+  // identifica a pessoa pelo cliente Asaas e concede módulos + papéis.
+  if (acao === 'regularizar') {
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+    const desde = new Date(Date.now() - 400 * 864e5).toISOString();
+    const { data: pgs, error } = await sb.from('pagamentos')
+      .select('id, pessoa_id, cliente_externo_id').eq('situacao', 'confirmado').gte('confirmado_em', desde);
+    if (error) return json({ error: error.message }, 500);
+    let identificadas = 0, liberados = 0, semPessoa = 0;
+    const falhas: string[] = [];
+    const cache = new Map<string, string | null>();
+    for (const p of pgs ?? []) {
+      try {
+        let pessoa = p.pessoa_id as string | null;
+        if (!pessoa && p.cliente_externo_id) {
+          if (!cache.has(p.cliente_externo_id)) cache.set(p.cliente_externo_id, await identificarPorClienteAsaas(sb, p.cliente_externo_id));
+          pessoa = cache.get(p.cliente_externo_id) ?? null;
+          if (pessoa) { await sb.from('pagamentos').update({ pessoa_id: pessoa }).eq('id', p.id); identificadas++; }
+        }
+        if (!pessoa) { semPessoa++; continue; }
+        const r = await liberarPorPagamento(sb, p.id);
+        if (r) liberados++;
+      } catch (e) { falhas.push(`${p.id}: ${String((e as any)?.message ?? e)}`); }
+    }
+    const { count: vigentes } = await sb.from('concessoes_acesso').select('id', { count: 'exact', head: true })
+      .is('revogado_em', null).gt('fim_em', new Date().toISOString());
+    return json({ analisados: pgs?.length ?? 0, identificadas, liberados, semPessoa, vigentes, falhas });
   }
 
   try {
@@ -150,6 +181,7 @@ Deno.serve(async (req) => {
             id: `conciliacao_${p.id}`,
             event: String(p.status) === 'RECEIVED' ? 'PAYMENT_RECEIVED' : 'PAYMENT_CONFIRMED',
             payment: pagamento,
+            forcar: true,
           }),
         });
         if (envio.ok) processados++;
