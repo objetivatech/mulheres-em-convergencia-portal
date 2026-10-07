@@ -60,6 +60,15 @@ export default function PainelConecta() {
       {isLoading ? (
         <Skeleton className="h-72 rounded-xl" />
       ) : (
+        <details className="mb-6 rounded-xl border border-border bg-card p-4 text-sm">
+          <summary className="cursor-pointer font-semibold">Quem aparece no Conecta+ e como liberar alguém</summary>
+          <ul className="mt-3 space-y-1 text-muted-foreground list-disc pl-5">
+            <li>Aparece quem tem um plano pago que inclui o Conecta+, ou cortesia, ou é administradora. Ela não precisa preencher nada.</li>
+            <li>Pagou e não aparece? Vá em <strong>Automações → "Conciliar acessos das assinantes"</strong>.</li>
+            <li>Para liberar alguém na mão: <strong>Pessoas → Abrir ficha → Conceder cortesia → Conecta+</strong>.</li>
+            <li>Para entender o que ela vê: <strong>Pessoas → Abrir ficha → "Ver como associada"</strong>.</li>
+          </ul>
+        </details>
         <Tabs defaultValue="grupos" className="space-y-6">
           <TabsList>
             <TabsTrigger value="grupos">Grupos</TabsTrigger>
