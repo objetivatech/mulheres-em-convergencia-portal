@@ -60,6 +60,7 @@ export default function PainelConecta() {
       {isLoading ? (
         <Skeleton className="h-72 rounded-xl" />
       ) : (
+        <>
         <details className="mb-6 rounded-xl border border-border bg-card p-4 text-sm">
           <summary className="cursor-pointer font-semibold">Quem aparece no Conecta+ e como liberar alguém</summary>
           <ul className="mt-3 space-y-1 text-muted-foreground list-disc pl-5">
@@ -225,6 +226,7 @@ export default function PainelConecta() {
             </section>
           </TabsContent>
         </Tabs>
+        </>
       )}
     </PainelLayout>
   );
