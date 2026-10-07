@@ -13,6 +13,7 @@ import {
   useBuscarPessoas, useFichaPessoa, usePapeis, useConcederCortesia, useRevogarAcesso,
 } from '@/hooks/useAdminNovo';
 import { dinheiro } from '@/hooks/usePlanosEventos';
+import VisaoAssociada from '@/components/painel/VisaoAssociada';
 
 const PAPEIS = ['admin', 'editora', 'embaixadora', 'dona_negocio', 'assinante', 'aluna', 'facilitadora'];
 const TIPOS = ['diretorio', 'conecta', 'academy', 'evento', 'area_embaixadora'];
@@ -80,6 +81,7 @@ export default function PainelPessoas() {
           </DialogHeader>
 
           <div className="space-y-6">
+            {selecionada && <VisaoAssociada pessoaId={selecionada} />}
             <section className="space-y-2">
               <h3 className="text-sm font-semibold">Papéis</h3>
               <div className="flex flex-wrap gap-2">
