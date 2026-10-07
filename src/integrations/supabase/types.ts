@@ -2987,6 +2987,15 @@ export type Database = {
           pessoa_id: string
         }[]
       }
+      conceder_cortesia: {
+        Args: {
+          _dias: number
+          _motivo: string
+          _pessoa_id: string
+          _tipo: Database["public"]["Enums"]["acesso_tipo"]
+        }
+        Returns: string
+      }
       conceder_papel: {
         Args: {
           _papel: Database["public"]["Enums"]["papel_tipo"]
@@ -3086,6 +3095,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      revogar_concessao: {
+        Args: { _id: string; _motivo: string }
+        Returns: boolean
       }
       revogar_papel: {
         Args: {
