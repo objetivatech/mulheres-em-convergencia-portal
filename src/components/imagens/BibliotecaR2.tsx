@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
+import { useSouEditora } from '@/hooks/usePainelConteudo';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
@@ -41,9 +42,10 @@ export function useImagensR2(prefixo = '') {
 }
 
 /** Cruza as imagens com tudo o que o portal guarda e devolve um mapa chave → usos. */
-function useUsosImagens() {
+function useUsosImagens(habilitado: boolean) {
   return useQuery({
     queryKey: ['r2-usos'],
+    enabled: habilitado,
     staleTime: 60_000,
     queryFn: async () => {
       const db = supabase as any;
@@ -105,6 +107,17 @@ function useUsosImagens() {
 }
 
 type Ordem = 'recentes' | 'antigas' | 'az' | 'za';
+type Origem = 'todas' | 'equipe' | 'associadas';
+
+/** Categoria legível a partir da pasta onde a imagem está guardada. */
+export function categoriaDaChave(key: string): string {
+  const partes = key.split('/');
+  if (partes[0] === 'usuarias') {
+    const nomes: Record<string, string> = { perfil: 'Foto de perfil', negocio: 'Negócio', galeria: 'Galeria', conecta: 'Conecta+', geral: 'Geral' };
+    return `Associada · ${nomes[partes[2]] ?? 'Geral'}`;
+  }
+  return 'Equipe';
+}
 
 export function GradeImagensR2({
   onEscolher,
@@ -134,8 +147,12 @@ export function GradeImagensR2({
   const [modulo, setModulo] = useState<'todos' | Modulo>('todos');
   const [situacao, setSituacao] = useState<'todas' | 'uso' | 'livre'>('todas');
   const [ordem, setOrdem] = useState<Ordem>('recentes');
+  const [origem, setOrigem] = useState<Origem>('todas');
+  const { data: permissao } = useSouEditora();
+  const equipe = !!(permissao?.admin || permissao?.editora);
+  const souAdmin = !!permissao?.admin;
   const { data, isLoading, error } = useImagensR2();
-  const { data: usos } = useUsosImagens();
+  const { data: usos } = useUsosImagens(equipe);
 
   const itens = useMemo(() => {
     return (data ?? []).map((img) => {
@@ -150,6 +167,9 @@ export function GradeImagensR2({
   const lista = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     const filtrada = itens.filter((i) => {
+      const deAssociada = i.key.startsWith('usuarias/');
+      if (origem === 'equipe' && deAssociada) return false;
+      if (origem === 'associadas' && !deAssociada) return false;
       if (situacao === 'uso' && !i.usos.length) return false;
       if (situacao === 'livre' && i.usos.length) return false;
       if (modulo !== 'todos' && !i.usos.some((u) => u.modulo === modulo)) return false;
@@ -164,11 +184,16 @@ export function GradeImagensR2({
       const nb = b.key.split('/').pop() ?? '';
       return ordem === 'az' ? na.localeCompare(nb) : nb.localeCompare(na);
     });
-  }, [itens, busca, modulo, situacao, ordem]);
+  }, [itens, busca, modulo, situacao, ordem, origem]);
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
+      {!equipe && (
+        <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+          Aqui aparecem só as imagens que você enviou. Ninguém além de você e da administração vê esta lista.
+        </p>
+      )}
+      <div className={equipe ? 'grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]' : 'grid gap-2 sm:grid-cols-[1fr_auto]'}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -178,6 +203,17 @@ export function GradeImagensR2({
             onChange={(e) => setBusca(e.target.value)}
           />
         </div>
+        {souAdmin && (
+          <Select value={origem} onValueChange={(v) => setOrigem(v as Origem)}>
+            <SelectTrigger className="sm:w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as origens</SelectItem>
+              <SelectItem value="equipe">Enviadas pela equipe</SelectItem>
+              <SelectItem value="associadas">Enviadas por associadas</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        {equipe && (<>
         <Select value={modulo} onValueChange={(v) => setModulo(v as any)}>
           <SelectTrigger className="sm:w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -193,6 +229,7 @@ export function GradeImagensR2({
             <SelectItem value="livre">Só sem uso</SelectItem>
           </SelectContent>
         </Select>
+        </>)}
         <Select value={ordem} onValueChange={(v) => setOrdem(v as Ordem)}>
           <SelectTrigger className="sm:w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -244,7 +281,7 @@ export function GradeImagensR2({
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
-                  {permitirExcluir && (
+                  {(permitirExcluir || (!equipe && img.key.startsWith('usuarias/'))) && (souAdmin || img.key.startsWith('usuarias/')) && (
                     <Button type="button" size="sm" variant="ghost" title="Apagar" onClick={() => excluirImagem(img)}>
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
@@ -256,7 +293,8 @@ export function GradeImagensR2({
                   </span>
                 )}
                 <div className="flex flex-wrap gap-1">
-                  {img.usos.length ? (
+                  <Badge variant="outline" className="text-[10px]">{categoriaDaChave(img.key)}</Badge>
+                  {!equipe ? null : img.usos.length ? (
                     img.usos.slice(0, 3).map((u, i) => (
                       <Badge key={i} variant="secondary" className="max-w-full truncate text-[10px]" title={`${u.modulo} · ${u.descricao}`}>
                         {u.modulo}: {u.descricao}

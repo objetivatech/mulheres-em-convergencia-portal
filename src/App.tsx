@@ -50,6 +50,8 @@ import PainelCRM from './pages/painel/PainelCRM';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
 import PainelAcademy from './pages/painel/PainelAcademy';
 import PainelImagens from './pages/painel/PainelImagens';
+import PainelTutoriais from './pages/painel/PainelTutoriais';
+import MeusTutoriais from './pages/area/MeusTutoriais';
 import PainelTextos from './pages/painel/PainelTextos';
 import PainelConecta from './pages/painel/PainelConecta';
 import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
@@ -168,6 +170,7 @@ function AppContent() {
         <Route path="/painel-conteudo/acessos" element={<Navigate to="/painel-conteudo/planos-eventos" replace />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />
         <Route path="/painel-conteudo/imagens" element={<PainelImagens />} />
+        <Route path="/painel-conteudo/tutoriais" element={<PainelTutoriais />} />
         <Route path="/painel-conteudo/textos" element={<PainelTextos />} />
         <Route path="/painel-conteudo/institucional" element={<PainelInstitucional />} />
         <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
@@ -183,6 +186,7 @@ function AppContent() {
         <Route path="/minha-area/embaixadora" element={<MinhaEmbaixadora />} />
         <Route path="/minha-area/negocio" element={<MeuNegocio />} />
         <Route path="/minha-area/dados" element={<MeusDados />} />
+        <Route path="/minha-area/tutoriais" element={<MeusTutoriais />} />
 
 
 

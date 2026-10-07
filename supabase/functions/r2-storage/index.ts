@@ -1,6 +1,41 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20"
-import { getAuthenticatedUserId, requireAdmin } from "../_shared/auth.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0"
+import { getAuthenticatedUserId } from "../_shared/auth.ts"
+
+type Perfil = { uid: string; admin: boolean; editora: boolean }
+
+/** Descobre quem está chamando e o nível de acesso (validado no servidor). */
+async function perfilDe(uid: string): Promise<Perfil> {
+  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
+  const { data: pessoa } = await db.from('pessoas').select('id').eq('auth_user_id', uid).maybeSingle()
+  if (!pessoa?.id) return { uid, admin: false, editora: false }
+  const { data: papeis } = await db.from('papeis').select('papel').eq('pessoa_id', pessoa.id)
+  const lista = (papeis ?? []).map((p: any) => p.papel)
+  return { uid, admin: lista.includes('admin'), editora: lista.includes('editora') }
+}
+
+const PASTA_USUARIAS = 'usuarias'
+const CATEGORIAS_USUARIA = ['perfil', 'negocio', 'galeria', 'conecta', 'geral']
+
+/** Associadas sempre gravam na própria pasta: usuarias/<id>/<categoria>/ */
+function pastaPermitida(p: Perfil, pedida: string): string {
+  const limpa = (pedida || 'uploads').replace(/\.\./g, '').replace(/^\/+|\/+$/g, '')
+  if (p.admin) return limpa
+  const proprio = `${PASTA_USUARIAS}/${p.uid}`
+  if (limpa.startsWith(proprio + '/') || limpa === proprio) return limpa
+  if (p.editora && !limpa.startsWith(PASTA_USUARIAS)) return limpa
+  const apelidos: Record<string, string> = { perfis: 'perfil', negocios: 'negocio', 'negocios-galeria': 'galeria' }
+  const base = apelidos[limpa] ?? limpa
+  const cat = CATEGORIAS_USUARIA.includes(base) ? base : 'geral'
+  return `${proprio}/${cat}`
+}
+
+function podeMexer(p: Perfil, key: string): boolean {
+  if (p.admin) return true
+  if (key.startsWith(`${PASTA_USUARIAS}/${p.uid}/`)) return true
+  return false
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,37 +82,16 @@ serve(async (req) => {
   }
 
   try {
-    // All r2-storage actions require an authenticated user. Destructive/enumeration
-    // actions (delete, list) additionally require admin role.
-    const url0 = new URL(req.url)
-    let previewAction = url0.searchParams.get('action') || ''
-    const ct = req.headers.get('content-type') || ''
-    if (!previewAction && !ct.includes('multipart')) {
-      try {
-        const cloned = req.clone()
-        const body = await cloned.json()
-        previewAction = body?.action || ''
-      } catch { /* ignore */ }
+    const uid = await getAuthenticatedUserId(req)
+    if (!uid) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
-    const isPrivileged = previewAction === 'delete' || previewAction === 'list'
-    if (isPrivileged) {
-      const adminCheck = await requireAdmin(req)
-      if ('error' in adminCheck) {
-        const body = await adminCheck.error.text()
-        return new Response(body, {
-          status: adminCheck.error.status,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    } else {
-      const uid = await getAuthenticatedUserId(req)
-      if (!uid) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    }
+    const perfil = await perfilDe(uid)
+    const negar = (msg: string) => new Response(JSON.stringify({ error: msg }), {
+      status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
 
     const config = getR2Config()
     const aws = new AwsClient({
@@ -99,7 +113,7 @@ serve(async (req) => {
 
       if (action === 'upload') {
         const file = formData.get('file') as File
-        const folder = (formData.get('folder') as string) || 'uploads'
+        const folder = pastaPermitida(perfil, (formData.get('folder') as string) || 'uploads')
 
         if (!file) {
           return new Response(
@@ -108,7 +122,7 @@ serve(async (req) => {
           )
         }
 
-        const rules = FOLDER_RULES[folder] || DEFAULT_RULES
+        const rules = FOLDER_RULES[folder.split('/').pop()!] || FOLDER_RULES[folder] || DEFAULT_RULES
         const fileSizeMB = file.size / (1024 * 1024)
         if (fileSizeMB > rules.maxSizeMB) {
           return new Response(
@@ -168,7 +182,7 @@ serve(async (req) => {
 
       // ─── PRESIGN (large file uploads — browser PUTs directly to R2) ───
       if (action === 'presign') {
-        const folder: string = body.folder || 'uploads'
+        const folder: string = pastaPermitida(perfil, body.folder || 'uploads')
         const fileName: string = body.fileName || ''
         const fileType: string = body.fileType || 'application/octet-stream'
         const fileSize: number = Number(body.fileSize) || 0
@@ -180,7 +194,7 @@ serve(async (req) => {
           )
         }
 
-        const rules = FOLDER_RULES[folder] || DEFAULT_RULES
+        const rules = FOLDER_RULES[folder.split('/').pop()!] || FOLDER_RULES[folder] || DEFAULT_RULES
         const fileSizeMB = fileSize / (1024 * 1024)
         if (fileSize > 0 && fileSizeMB > rules.maxSizeMB) {
           return new Response(
@@ -228,6 +242,7 @@ serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
+        if (!podeMexer(perfil, objectKey)) return negar('Você só pode apagar as suas próprias imagens.')
 
         const r2Url = `${config.endpoint}/${config.bucketName}/${objectKey}`
         const response = await aws.fetch(r2Url, { method: 'DELETE' })
@@ -250,7 +265,13 @@ serve(async (req) => {
 
     // ─── LIST (GET with query params) ───
     if (action === 'list') {
-      const prefix = url.searchParams.get('prefix') || ''
+      const pedido = url.searchParams.get('prefix') || ''
+      // Admin vê tudo; editora vê o acervo da equipe (sem as pastas das associadas);
+      // associada vê apenas a própria pasta.
+      const proprio = `${PASTA_USUARIAS}/${perfil.uid}/`
+      let prefix = pedido
+      if (!perfil.admin && !perfil.editora) prefix = proprio
+      else if (!perfil.admin && pedido.startsWith(PASTA_USUARIAS) && !pedido.startsWith(proprio)) prefix = proprio
       const files: { key: string; url: string; modificado: string | null; tamanho: number }[] = []
       let token: string | null = null
       for (let pagina = 0; pagina < 20; pagina++) {
@@ -272,6 +293,7 @@ serve(async (req) => {
           const bloco = b[1]
           const key = (bloco.match(/<Key>(.*?)<\/Key>/) || [])[1]
           if (!key) continue
+          if (!perfil.admin && perfil.editora && key.startsWith(PASTA_USUARIAS + '/') && !key.startsWith(proprio)) continue
           files.push({
             key,
             url: `${config.publicUrl}/${key}`,

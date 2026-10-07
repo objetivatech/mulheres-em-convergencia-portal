@@ -71,14 +71,9 @@ export function useConcederCortesia() {
     mutationFn: async ({
       pessoaId, tipo, dias, motivo,
     }: { pessoaId: string; tipo: string; dias: number; motivo: string }) => {
-      const fim = new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString();
-      const { error } = await db.from('concessoes_acesso').insert({
-        pessoa_id: pessoaId,
-        tipo,
-        origem: 'cortesia',
-        inicio_em: new Date().toISOString(),
-        fim_em: fim,
-        motivo,
+      // Feito no servidor: só administradoras conseguem (a tabela não aceita escrita direta).
+      const { error } = await db.rpc('conceder_cortesia', {
+        _pessoa_id: pessoaId, _tipo: tipo, _dias: dias, _motivo: motivo,
       });
       if (error) throw error;
     },
@@ -90,10 +85,7 @@ export function useRevogarAcesso() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, motivo }: { id: string; motivo: string }) => {
-      const { error } = await db
-        .from('concessoes_acesso')
-        .update({ revogado_em: new Date().toISOString(), revogado_motivo: motivo })
-        .eq('id', id);
+      const { error } = await db.rpc('revogar_concessao', { _id: id, _motivo: motivo });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin'] }),

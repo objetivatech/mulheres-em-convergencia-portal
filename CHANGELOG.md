@@ -267,3 +267,8 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Painel Automações: "Conciliar acessos das assinantes" (pagamentos confirmados dos últimos 400 dias).
 - Pessoas: "Ver como associada" (RPC `visao_associada`, só admin, somente leitura) com diagnóstico em linguagem simples.
 - Conecta+: card de ajuda explicando quem aparece e como liberar.
+
+## 2026-10-07 — Cortesias, isolamento de imagens e Centrais de Tutoriais
+- Cortesias: `conceder_cortesia` e `revogar_concessao` (RPC, admin validado no banco). Corrige erro de RLS ao "Dar cortesia".
+- Imagens R2 isoladas: associadas gravam em `usuarias/<id>/<categoria>/` e só listam/apagam a própria pasta; editoras veem o acervo da equipe; admin vê tudo com filtro de origem e selo de categoria.
+- Centrais de Tutoriais: `/minha-area/tutoriais` (uso da plataforma) e `/painel-conteudo/tutoriais` (administração), conteúdo em `src/lib/tutoriais.ts`.
