@@ -3124,6 +3124,7 @@ export type Database = {
         Returns: boolean
       }
       vincular_cpf: { Args: { _cpf: string }; Returns: string }
+      visao_associada: { Args: { _pessoa_id: string }; Returns: Json }
     }
     Enums: {
       acesso_origem: "pagamento" | "cortesia" | "administrativo" | "importacao"

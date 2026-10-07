@@ -259,3 +259,11 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Quem não assina pode participar de **1 encontro gratuito** (verificado pelo CPF). Na segunda tentativa abre um aviso amigável com botão para os planos. Assinantes e administradoras sem limite.
 - Painel → Planos e Encontros → **Participantes**: lista de quem já participou, filtro "só quem não assina", busca e planilha.
 - Segurança: funções internas de pagamento fechadas para o site.
+
+## 2026-10-07 — Liberação automática de acessos pelo Asaas
+- Webhook busca o cliente na API do Asaas (CPF/e-mail) quando o aviso não traz; cria a pessoa pelo CPF se for pagante sem cadastro.
+- Plano resolvido por `plano:slug` → plano gravado → descrição (nome+periodicidade) → valor (±15%); fallback libera os 4 módulos de associada (nunca só Diretório).
+- Pagamento confirmado concede todos os módulos do plano + papel `assinante` (+ `dona_negocio` com negócio publicado). Regra única em `_shared/acessos-asaas.ts`.
+- Painel Automações: "Conciliar acessos das assinantes" (pagamentos confirmados dos últimos 400 dias).
+- Pessoas: "Ver como associada" (RPC `visao_associada`, só admin, somente leitura) com diagnóstico em linguagem simples.
+- Conecta+: card de ajuda explicando quem aparece e como liberar.

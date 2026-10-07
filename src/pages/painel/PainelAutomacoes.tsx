@@ -38,7 +38,7 @@ export default function PainelAutomacoes() {
 
   const [conciliando, setConciliando] = useState(false);
 
-  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar' | 'conciliar') => {
+  const chamarDiagnosticoAsaas = async (acao: 'verificar' | 'sincronizar' | 'conciliar' | 'regularizar') => {
     const { data: usuario } = await supabase.auth.getUser();
     let { data: sessao, error: erroSessao } = await supabase.auth.getSession();
 
@@ -90,6 +90,22 @@ export default function PainelAutomacoes() {
       toast({ title: 'Não foi possível trazer os pagamentos', description: e?.message, variant: 'destructive' });
     } finally {
       setConciliando(false);
+    }
+  };
+
+  const [regularizando, setRegularizando] = useState(false);
+  const regularizarAcessos = async () => {
+    setRegularizando(true);
+    try {
+      const r = await chamarDiagnosticoAsaas('regularizar');
+      toast({
+        title: 'Acessos regularizados',
+        description: `${r.liberados ?? 0} pagamentos conferidos e liberados. ${r.semPessoa ?? 0} sem pessoa identificada. ${r.vigentes ?? 0} acessos vigentes agora.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Não foi possível regularizar', description: e?.message, variant: 'destructive' });
+    } finally {
+      setRegularizando(false);
     }
   };
 
@@ -184,6 +200,9 @@ export default function PainelAutomacoes() {
           </Button>
           <Button size="sm" onClick={conciliarAsaas} disabled={conciliando}>
             {conciliando ? 'Buscando…' : 'Buscar pagamentos no Asaas'}
+          </Button>
+          <Button size="sm" onClick={regularizarAcessos} disabled={regularizando}>
+            {regularizando ? 'Conferindo…' : 'Conciliar acessos das assinantes'}
           </Button>
           <Button size="sm" variant="outline" onClick={importarHistorico} disabled={importandoHistorico}>
             {importandoHistorico ? 'Importando…' : 'Importar histórico financeiro'}

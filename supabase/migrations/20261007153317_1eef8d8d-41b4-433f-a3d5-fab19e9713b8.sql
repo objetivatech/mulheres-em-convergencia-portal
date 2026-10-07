@@ -1,0 +1,2 @@
+grant all on public.papeis, public.pessoas, public.pessoa_contatos, public.concessoes_acesso, public.negocios, public.pagamentos, public.planos, public.webhooks_recebidos to service_role;
+grant execute on function public.conceder_por_pagamento(uuid, acesso_tipo, integer) to service_role;
