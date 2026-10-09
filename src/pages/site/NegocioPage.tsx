@@ -180,7 +180,7 @@ export default function NegocioPage() {
           </section>
         )}
 
-        <AvaliacoesPublicas negocioId={negocio.id} />
+        <AvaliacoesPublicas negocioId={negocio.id} donaPessoaId={(negocio as any).pessoa_id} />
       </article>
     </SiteLayout>
   );

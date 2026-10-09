@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CampanhasEmbaixadorasAdmin from '@/components/painel/CampanhasEmbaixadorasAdmin';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { dinheiro } from '@/hooks/usePlanosEventos';
@@ -80,6 +81,7 @@ export default function PainelEmbaixadoras() {
             <TabsTrigger value="niveis">Níveis</TabsTrigger>
             <TabsTrigger value="materiais">Materiais</TabsTrigger>
             <TabsTrigger value="repasses">Repasses</TabsTrigger>
+            <TabsTrigger value="campanhas">Campanhas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="embaixadoras" className="space-y-6">
@@ -366,6 +368,10 @@ export default function PainelEmbaixadoras() {
               )}
             </section>
           </TabsContent>
+          <TabsContent value="campanhas">
+            <CampanhasEmbaixadorasAdmin />
+          </TabsContent>
+
 
           <TabsContent value="repasses" className="space-y-6">
             <section className="rounded-xl border border-border bg-card p-6 max-w-2xl space-y-4">

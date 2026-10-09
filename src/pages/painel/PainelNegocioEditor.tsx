@@ -64,8 +64,9 @@ export default function PainelNegocioEditor() {
       ...limpo,
       nome: form.nome.trim(),
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),
-      latitude: limpo.latitude == null ? null : Number(String(limpo.latitude).replace(',', '.')),
-      longitude: limpo.longitude == null ? null : Number(String(limpo.longitude).replace(',', '.')),
+      // Sem bairro e sem cidade, o marcador antigo não pode ficar "órfão" no mapa.
+      latitude: limpo.latitude == null || (!limpo.cidade && !limpo.bairro) ? null : Number(String(limpo.latitude).replace(',', '.')),
+      longitude: limpo.longitude == null || (!limpo.cidade && !limpo.bairro) ? null : Number(String(limpo.longitude).replace(',', '.')),
       publicado: !!form.publicado,
       destaque: !!form.destaque,
     };
@@ -190,7 +191,7 @@ export default function PainelNegocioEditor() {
             </CardContent>
           </Card>
           {!novo && id && <GerenciarCatalogo negocioId={id} whatsapp={form.whatsapp} />}
-          {!novo && id && <ModerarAvaliacoes negocioId={id} />}
+          {!novo && id && <ModerarAvaliacoes negocioId={id} admin />}
         </div>
 
         <div className="space-y-6">

@@ -379,6 +379,7 @@ export default function PainelEventoEditor() {
 
         {/* Inscrições ----------------------------------------------------- */}
         <TabsContent value="inscricoes" className="space-y-3">
+          <Button asChild><a href={`/painel-conteudo/eventos/${id}/portaria`}>Abrir portaria (ler ingressos e marcar presença)</a></Button>
           {!inscricoes?.length ? (
             <p className="text-muted-foreground">Nenhuma inscrição ainda.</p>
           ) : (

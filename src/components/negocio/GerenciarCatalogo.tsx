@@ -187,29 +187,41 @@ export default function GerenciarCatalogo({ negocioId, whatsapp }: { negocioId: 
   );
 }
 
-/** Avaliações recebidas: a dona (ou a equipe) aprova antes de aparecerem no site. */
-export function ModerarAvaliacoes({ negocioId }: { negocioId: string }) {
+/** Avaliações recebidas: aparecem na hora; só a equipe pode ocultar (ex.: ofensas). */
+export function ModerarAvaliacoes({ negocioId, admin = false }: { negocioId: string; admin?: boolean }) {
   const { data = [] } = useAvaliacoes(negocioId, true);
   const moderar = useModerarAvaliacao();
+  const visiveis = data.filter((a) => a.status === 'aprovado');
+  const media = visiveis.length ? visiveis.reduce((t, a) => t + a.nota, 0) / visiveis.length : 0;
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Avaliações recebidas</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle className="text-base">Avaliações recebidas</CardTitle>
+        {visiveis.length > 0 && (
+          <p className="text-sm text-muted-foreground">Média {media.toFixed(1).replace('.', ',')} · {visiveis.length} no site</p>
+        )}
+      </CardHeader>
       <CardContent className="space-y-2">
         {data.length === 0 && <p className="text-sm text-muted-foreground">Ainda não chegou nenhuma avaliação.</p>}
+        {!admin && data.length > 0 && (
+          <p className="text-xs text-muted-foreground">Avaliações aparecem no site na hora. Se alguma for ofensiva, fale com a equipe.</p>
+        )}
         {data.map((a) => (
           <div key={a.id} className="rounded-lg border border-border p-3 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < a.nota ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />)}</span>
               <span className="text-sm font-medium">{a.avaliador_nome}</span>
               <Badge variant={a.status === 'aprovado' ? 'default' : 'secondary'}>
-                {a.status === 'aprovado' ? 'No site' : a.status === 'rejeitado' ? 'Recusada' : 'Aguardando você'}
+                {a.status === 'aprovado' ? 'No site' : a.status === 'rejeitado' ? 'Oculta pela equipe' : 'Antiga, aguardando'}
               </Badge>
             </div>
             {a.comentario && <p className="text-sm text-muted-foreground">{a.comentario}</p>}
-            <div className="flex gap-2">
-              {a.status !== 'aprovado' && <Button size="sm" variant="outline" onClick={() => moderar.mutate({ id: a.id, status: 'aprovado' })}><Check className="mr-1 h-4 w-4" />Publicar</Button>}
-              {a.status !== 'rejeitado' && <Button size="sm" variant="ghost" onClick={() => moderar.mutate({ id: a.id, status: 'rejeitado' })}><X className="mr-1 h-4 w-4" />Recusar</Button>}
-            </div>
+            {admin && (
+              <div className="flex gap-2">
+                {a.status !== 'aprovado' && <Button size="sm" variant="outline" onClick={() => moderar.mutate({ id: a.id, status: 'aprovado' })}><Check className="mr-1 h-4 w-4" />Mostrar no site</Button>}
+                {a.status !== 'rejeitado' && <Button size="sm" variant="ghost" onClick={() => moderar.mutate({ id: a.id, status: 'rejeitado' })}><X className="mr-1 h-4 w-4" />Ocultar</Button>}
+              </div>
+            )}
           </div>
         ))}
       </CardContent>

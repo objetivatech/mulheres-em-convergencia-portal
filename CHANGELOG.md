@@ -2,6 +2,13 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 2026-10-10
+- Portaria dos encontros: leitura do QR Code do ingresso pela câmera, busca por nome, marcar/desfazer presença e contador de comparecimento.
+- Mapa do negócio: chave "Mostrar meu negócio no mapa", botão "Remover do mapa" e limpeza automática do marcador quando bairro e cidade ficam vazios.
+- Avaliações: só associadas conectadas avaliam, uma por negócio (pode mudar), aparecem na hora com média e quantidade; dona não avalia o próprio negócio; só a equipe oculta.
+- Campanhas de divulgação para embaixadoras: equipe cria mensagem, link, até 6 imagens e período; embaixadora compartilha com o link dela já incluído.
+- Segurança: funções internas movidas para área não exposta do banco, com "portas" públicas de mesmo nome (29 avisos resolvidos sem mudar o site).
+
 ## 2026-10-09
 - Catálogo de produtos e serviços no negócio (até 3 fotos, preço, categoria em abas, botão de compra/WhatsApp, selos Destaque/Promoção/Oferta/Mais vendido).
 - Avaliações com estrelas e moderação pela dona; nota aparece nos cards da capa, do diretório e no cabeçalho do negócio.
