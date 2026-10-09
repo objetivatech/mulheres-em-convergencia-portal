@@ -3,6 +3,11 @@
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
 ## 2026-10-09
+- Catálogo de produtos e serviços no negócio (até 3 fotos, preço, categoria em abas, botão de compra/WhatsApp, selos Destaque/Promoção/Oferta/Mais vendido).
+- Avaliações com estrelas e moderação pela dona; nota aparece nos cards da capa, do diretório e no cabeçalho do negócio.
+- Capa com os 20 tipos de negócio mais comuns como filtro.
+- SEO: páginas para buscadores, sitemap e llms-full reescritos para o banco novo, com Schema.org (LocalBusiness, Product, Review, Event, BlogPosting, Course, Breadcrumb); robots.txt atualizado.
+- Assistente de divulgação com IA para embaixadoras (campanha, público, canal e tom).
 - Página de planos completa: seletor mensal/semestral/anual, tabela comparativa automática pelas áreas do plano, vantagens por plano e perguntas frequentes editáveis.
 - Desconto de assinante em encontros pagos configurável no plano, aplicado no pagamento e avisado na inscrição.
 
