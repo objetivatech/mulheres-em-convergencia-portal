@@ -276,3 +276,9 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Cortesias: `conceder_cortesia` e `revogar_concessao` (RPC, admin validado no banco). Corrige erro de RLS ao "Dar cortesia".
 - Imagens R2 isoladas: associadas gravam em `usuarias/<id>/<categoria>/` e só listam/apagam a própria pasta; editoras veem o acervo da equipe; admin vê tudo com filtro de origem e selo de categoria.
 - Centrais de Tutoriais: `/minha-area/tutoriais` (uso da plataforma) e `/painel-conteudo/tutoriais` (administração), conteúdo em `src/lib/tutoriais.ts`.
+
+## 09/10/2026
+- Menus do site editáveis (ordem, links, adicionar/remover, 2 níveis de submenu) em Site → Menus do site.
+- Menu da equipe reorganizado em grupos retráteis.
+- Embaixadoras: tutoriais (associada e equipe), tour ampliado e doc `docs/_reboot/31`.
+- Segurança: view de vagas com permissões de quem consulta, consulta de acesso exige login, tokens de senha bloqueados explicitamente.
