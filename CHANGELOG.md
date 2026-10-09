@@ -2,6 +2,10 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 2026-10-09
+- Página de planos completa: seletor mensal/semestral/anual, tabela comparativa automática pelas áreas do plano, vantagens por plano e perguntas frequentes editáveis.
+- Desconto de assinante em encontros pagos configurável no plano, aplicado no pagamento e avisado na inscrição.
+
 ## [Não lançado] — Reboot
 
 ### 2026-10-05 — Diretório, capa, mapa, menu e eventos
