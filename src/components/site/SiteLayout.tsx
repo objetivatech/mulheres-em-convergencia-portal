@@ -149,7 +149,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <p className="text-sm font-medium mb-3">Navegar</p>
             <ul className="space-y-2">
-              {NAV.map((i) => (
+              {menuPrincipal ? menuPrincipal.map((i) => (
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+              )) : NAV.map((i) => (
                 <li key={i.to}>
                   <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
                 </li>
@@ -159,7 +161,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <p className="text-sm font-medium mb-3">Institucional</p>
             <ul className="space-y-2">
-              {INSTITUCIONAIS.map((i) => (
+              {menuInst ? menuInst.map((i) => (
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+              )) : INSTITUCIONAIS.map((i) => (
                 <li key={i.to}>
                   <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary">{i.rotulo}</Link>
                 </li>
