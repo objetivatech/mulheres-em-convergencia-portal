@@ -1,101 +1,33 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
-import { corsHeaders } from '../_shared/cors.ts'
+// llms-full.txt: resumo em texto do portal para IAs (negócios, produtos, eventos, artigos).
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, semHtml, corta } from '../_shared/seo.ts';
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
-    const { data: posts, error } = await supabase
-      .from('blog_posts')
-      .select(`
-        title, slug, excerpt, content, published_at, updated_at,
-        blog_categories(name),
-        blog_authors!blog_posts_author_profile_id_fkey(display_name)
-      `)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching posts:', error);
-      throw error;
+    const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const [negs, prods, evs, posts] = await Promise.all([
+      db.from('negocios').select('id, nome, slug, descricao, categoria, cidade, uf').eq('publicado', true).order('nome').limit(2000),
+      db.from('negocio_produtos').select('negocio_id, nome, descricao, valor_centavos').eq('ativo', true).limit(5000),
+      db.from('eventos').select('titulo, slug, inicio_em, resumo').eq('publicado', true).gte('inicio_em', new Date().toISOString()).order('inicio_em').limit(50),
+      db.from('posts').select('titulo, slug, resumo, conteudo').eq('situacao', 'publicado').order('publicado_em', { ascending: false }).limit(200),
+    ]);
+    const porNegocio = new Map<string, any[]>();
+    (prods.data ?? []).forEach((p: any) => porNegocio.set(p.negocio_id, [...(porNegocio.get(p.negocio_id) ?? []), p]));
+    const l: string[] = [`# ${SITE_NAME}`, '', `> ${SITE_DESCRIPTION}`, '', `Site: ${SITE_URL}`, '', '## Diretório de negócios', ''];
+    for (const n of negs.data ?? []) {
+      l.push(`### ${n.nome}`, `- Endereço: ${SITE_URL}/diretorio/${n.slug}`, `- Categoria: ${n.categoria ?? '—'}`, `- Local: ${[n.cidade, n.uf].filter(Boolean).join('/') || '—'}`, corta(semHtml(n.descricao), 400));
+      for (const p of porNegocio.get(n.id) ?? []) l.push(`  - Produto/serviço: ${p.nome}${p.valor_centavos != null ? ` (R$ ${(p.valor_centavos / 100).toFixed(2).replace('.', ',')})` : ''} — ${corta(p.descricao, 200)}`);
+      l.push('');
     }
-
-    const baseUrl = 'https://mulheresemconvergencia.com.br';
-    const lines: string[] = [];
-
-    lines.push('# Mulheres em Convergência - Blog Convergindo');
-    lines.push('');
-    lines.push('> Todos os artigos publicados no blog Convergindo do portal Mulheres em Convergência.');
-    lines.push(`> Gerado em: ${new Date().toISOString()}`);
-    lines.push(`> Total de artigos: ${posts?.length || 0}`);
-    lines.push('');
-    lines.push('---');
-    lines.push('');
-
-    for (const post of posts || []) {
-      const author = (post as any).blog_authors?.display_name || 'Mulheres em Convergência';
-      const category = (post as any).blog_categories?.name || 'Sem categoria';
-      const url = `${baseUrl}/convergindo/${post.slug}`;
-
-      lines.push(`## ${post.title}`);
-      lines.push('');
-      lines.push(`- **URL:** ${url}`);
-      lines.push(`- **Autor:** ${author}`);
-      lines.push(`- **Categoria:** ${category}`);
-      lines.push(`- **Publicado em:** ${post.published_at}`);
-      if (post.updated_at && post.updated_at > post.published_at) {
-        lines.push(`- **Atualizado em:** ${post.updated_at}`);
-      }
-      lines.push('');
-
-      if (post.excerpt) {
-        lines.push(`**Resumo:** ${post.excerpt}`);
-        lines.push('');
-      }
-
-      // Strip HTML tags from content
-      const plainContent = (post.content || '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      if (plainContent) {
-        lines.push(plainContent);
-        lines.push('');
-      }
-
-      lines.push('---');
-      lines.push('');
-    }
-
-    return new Response(lines.join('\n'), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600'
-      },
-    });
-
-  } catch (error) {
-    console.error('LLMs full generation error:', error);
-    return new Response(
-      `Error generating content: ${error.message}`,
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
-      }
-    );
+    l.push('## Próximos eventos', '');
+    for (const e of evs.data ?? []) l.push(`- ${e.titulo} — ${new Date(e.inicio_em).toLocaleDateString('pt-BR')} — ${SITE_URL}/eventos/${e.slug}`);
+    l.push('', '## Artigos', '');
+    for (const p of posts.data ?? []) l.push(`### ${p.titulo}`, `${SITE_URL}/convergindo/${p.slug}`, corta(p.resumo || semHtml(p.conteudo), 500), '');
+    return new Response(l.join('\n'), { headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+  } catch (e) {
+    console.error('llms-full', e);
+    return new Response('erro', { status: 500, headers: corsHeaders });
   }
 });

@@ -20,6 +20,21 @@ Disallow: /painel/
 Disallow: /painel/*
 Disallow: /configuracoes/
 Disallow: /configuracoes/*
+Disallow: /painel-conteudo/
+Disallow: /minha-area/
+Disallow: /auth
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+# Rastreadores de IA são bem-vindos (conteúdo público)
+User-agent: GPTBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
 
 # Sitemaps
 Sitemap: https://mulheresemconvergencia.com.br/sitemap.xml
