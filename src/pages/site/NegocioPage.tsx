@@ -7,12 +7,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNegocio, useDonasNegocios } from '@/hooks/useSite';
+import { useProdutos, useAvaliacoes } from '@/hooks/useCatalogo';
+import Estrelas from '@/components/negocio/Estrelas';
+import { CatalogoPublico, AvaliacoesPublicas } from '@/components/negocio/CatalogoPublico';
+import { stripHtml } from '@/lib/stripHtml';
+
+const SITE = 'https://mulheresemconvergencia.com.br';
 
 export default function NegocioPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: negocio, isLoading } = useNegocio(slug);
   const { data: donas } = useDonasNegocios();
   const dona = negocio ? donas?.get(negocio.id) : undefined;
+  const { data: produtos = [] } = useProdutos(negocio?.id);
+  const { data: avs = [] } = useAvaliacoes(negocio?.id);
 
   if (isLoading) {
     return (
@@ -45,18 +53,46 @@ export default function NegocioPage() {
     negocio.instagram && { icone: Instagram, texto: '@' + negocio.instagram.replace('@', ''), href: `https://instagram.com/${negocio.instagram.replace('@', '')}` },
   ].filter(Boolean) as { icone: any; texto: string; href: string }[];
 
+  const total = avs.length;
+  const media = total ? avs.reduce((t, a) => t + a.nota, 0) / total : 0;
+  const url = `${SITE}/diretorio/${negocio.slug}`;
+  const desc = stripHtml(negocio.descricao, 155) || `${negocio.nome} — negócio da rede Mulheres em Convergência.`;
+  const ld: any = {
+    '@context': 'https://schema.org', '@type': 'LocalBusiness', '@id': url, name: negocio.nome, url, description: desc,
+    image: [negocio.capa_url, negocio.logo_url].filter(Boolean),
+    telephone: negocio.telefone || negocio.whatsapp || undefined,
+    address: { '@type': 'PostalAddress', addressLocality: negocio.cidade || undefined, addressRegion: negocio.uf || undefined, addressCountry: 'BR' },
+    ...(negocio.latitude != null && negocio.longitude != null ? { geo: { '@type': 'GeoCoordinates', latitude: negocio.latitude, longitude: negocio.longitude } } : {}),
+    ...(total ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: media.toFixed(1), reviewCount: total, bestRating: 5 } } : {}),
+    ...(produtos.length ? { hasOfferCatalog: { '@type': 'OfferCatalog', name: 'Produtos e serviços', itemListElement: produtos.map((p) => ({
+      '@type': 'Offer', url: p.link_compra || url, ...(p.valor_centavos != null ? { price: (p.valor_centavos / 100).toFixed(2), priceCurrency: 'BRL' } : {}),
+      itemOffered: { '@type': 'Product', name: p.nome, description: p.descricao, image: p.fotos.length ? p.fotos : undefined } })) } } : {}),
+  };
+  const trilha = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Início', item: SITE + '/' },
+    { '@type': 'ListItem', position: 2, name: 'Diretório', item: SITE + '/diretorio' },
+    { '@type': 'ListItem', position: 3, name: negocio.nome, item: url }] };
+
   return (
     <SiteLayout>
       <Helmet>
-        <title>{`${negocio.nome} | Diretório Mulheres em Convergência`}</title>
-        {negocio.descricao && <meta name="description" content={negocio.descricao.slice(0, 155)} />}
+        <title>{`${negocio.nome}${negocio.categoria ? ` — ${negocio.categoria}` : ''} | Diretório Mulheres em Convergência`}</title>
+        <meta name="description" content={desc} />
+        <link rel="canonical" href={url} />
+        <meta property="og:title" content={negocio.nome} />
+        <meta property="og:description" content={desc} />
+        <meta property="og:type" content="business.business" />
+        <meta property="og:url" content={url} />
+        {(negocio.capa_url || negocio.logo_url) && <meta property="og:image" content={negocio.capa_url || negocio.logo_url!} />}
+        <script type="application/ld+json">{JSON.stringify(ld)}</script>
+        <script type="application/ld+json">{JSON.stringify(trilha)}</script>
       </Helmet>
 
       <div className="relative h-56 lg:h-80 bg-muted overflow-hidden">
         {negocio.capa_url && <img src={negocio.capa_url} alt={`Capa de ${negocio.nome}`} className="h-full w-full object-cover" />}
       </div>
 
-      <article className="container mx-auto px-4 pb-10 max-w-3xl space-y-8">
+      <article className="container mx-auto px-4 pb-10 max-w-4xl space-y-8">
         <header className="space-y-3 -mt-14 relative">
           <div className="flex items-end gap-4">
             {negocio.logo_url && (
@@ -76,6 +112,7 @@ export default function NegocioPage() {
           </div>
           {negocio.categoria && <Badge variant="outline">{negocio.categoria}</Badge>}
           <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">{negocio.nome}</h1>
+          {total > 0 && <a href="#avaliacoes"><Estrelas media={media} total={total} /></a>}
           {(negocio.cidade || negocio.uf) && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4" />
@@ -85,6 +122,8 @@ export default function NegocioPage() {
         </header>
 
         {negocio.descricao && <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(negocio.descricao) }} />}
+
+        <CatalogoPublico negocioId={negocio.id} whatsapp={negocio.whatsapp} negocio={negocio.nome} />
 
         {contatos.length > 0 && (
           <section className="rounded-[var(--radius)] border border-border p-5 space-y-3">
@@ -140,6 +179,8 @@ export default function NegocioPage() {
             </div>
           </section>
         )}
+
+        <AvaliacoesPublicas negocioId={negocio.id} />
       </article>
     </SiteLayout>
   );
