@@ -21,7 +21,23 @@ export default function HomePage() {
   // Novo sorteio a cada visita/atualização, incluindo TODOS os publicados.
   const sorteados = useMemo(() => embaralhar(negocios ?? []), [negocios]);
   const [pagina, setPagina] = useState(0);
-  const totalPaginas = Math.ceil(sorteados.length / POR_PAGINA);
+  const [tipo, setTipo] = useState('');
+  // Os 20 tipos de negócio mais comuns entre os publicados (sem repetir por maiúsculas/acentos).
+  const tipos = useMemo(() => {
+    const cont = new Map<string, { rotulo: string; n: number }>();
+    (negocios ?? []).forEach((n) => {
+      const r = n.categoria?.trim();
+      if (!r) return;
+      const k = r.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const x = cont.get(k) ?? { rotulo: r, n: 0 };
+      x.n += 1; cont.set(k, x);
+    });
+    return [...cont.entries()].sort((a, b) => b[1].n - a[1].n || a[1].rotulo.localeCompare(b[1].rotulo, 'pt-BR')).slice(0, 20)
+      .map(([k, v]) => ({ chave: k, rotulo: v.rotulo }));
+  }, [negocios]);
+  const chaveDe = (c?: string | null) => (c ?? '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const filtrados = useMemo(() => (tipo ? sorteados.filter((n) => chaveDe(n.categoria) === tipo) : sorteados), [sorteados, tipo]);
+  const totalPaginas = Math.ceil(filtrados.length / POR_PAGINA);
   const { data: posts, isLoading: carregandoPosts } = usePosts({ limite: 3 });
 
   const hero = blocos?.home_hero?.conteudo ?? {};
@@ -106,6 +122,18 @@ export default function HomePage() {
             </Button>
           </div>
 
+          {tipos.length > 1 && (
+            <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo de negócio">
+              <Button size="sm" variant={tipo === '' ? 'default' : 'outline'} className="rounded-full" onClick={() => { setTipo(''); setPagina(0); }}>Todos</Button>
+              {tipos.map((t) => (
+                <Button key={t.chave} size="sm" variant={tipo === t.chave ? 'default' : 'outline'} className="rounded-full uppercase tracking-wide text-xs"
+                  onClick={() => { setTipo(tipo === t.chave ? '' : t.chave); setPagina(0); }}>
+                  {t.rotulo}
+                </Button>
+              ))}
+            </div>
+          )}
+
           {carregandoNegocios ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => <Skeleton key={i} className="h-56 rounded-[var(--radius)]" />)}
@@ -113,7 +141,7 @@ export default function HomePage() {
           ) : sorteados.length > 0 ? (
             <>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {sorteados.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA).map((n) => <CardNegocio key={n.id} negocio={n} />)}
+                {filtrados.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA).map((n) => <CardNegocio key={n.id} negocio={n} />)}
               </div>
               {totalPaginas > 1 && (
                 <nav className="flex items-center justify-center gap-2 mt-8" aria-label="Páginas de negócios">
