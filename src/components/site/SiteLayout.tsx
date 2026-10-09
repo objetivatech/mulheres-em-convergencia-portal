@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
 import TextoSite from '@/components/site/TextoSite';
 import { useTexto } from '@/hooks/useTextosSite';
+import { useMenuSite, montarArvore } from '@/hooks/useMenuSite';
+import { MenuDesktop, MenuMobile, LinkMenu } from '@/components/site/MenuDinamico';
 
 // Nomes editáveis no painel (Textos do site > Menu do site).
 const NAV = [
@@ -35,7 +37,10 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
   const { user, loading, signOut } = useAuth();
   const itensUsuaria = useItensDaUsuaria();
-
+  const { data: dadosPrincipal } = useMenuSite('principal');
+  const { data: dadosInst } = useMenuSite('institucional');
+  const menuPrincipal = dadosPrincipal?.length ? montarArvore(dadosPrincipal) : null;
+  const menuInst = dadosInst?.length ? montarArvore(dadosInst) : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -45,6 +50,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             <LogoComponent variant="horizontal" size="md" />
           </Link>
 
+          {menuPrincipal ? <MenuDesktop itens={menuPrincipal} /> : (
           <nav className="hidden lg:flex items-center gap-1">
             {NAV.map((item) => (
               <NavLink
@@ -62,6 +68,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               </NavLink>
             ))}
           </nav>
+          )}
 
           <div className="hidden lg:flex items-center gap-2">
             {loading ? null : user ? (
@@ -86,7 +93,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         {aberto && (
           <div className="lg:hidden border-t border-border bg-background">
             <nav className="container mx-auto px-4 py-3 flex flex-col">
-              {NAV.map((item) => (
+              {menuPrincipal ? <MenuMobile itens={menuPrincipal} onNavegar={() => setAberto(false)} /> : NAV.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
@@ -144,7 +151,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <p className="text-sm font-medium mb-3">Navegar</p>
             <ul className="space-y-2">
-              {NAV.map((i) => (
+              {menuPrincipal ? menuPrincipal.map((i) => (
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+              )) : NAV.map((i) => (
                 <li key={i.to}>
                   <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
                 </li>
@@ -154,7 +163,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <div>
             <p className="text-sm font-medium mb-3">Institucional</p>
             <ul className="space-y-2">
-              {INSTITUCIONAIS.map((i) => (
+              {menuInst ? menuInst.map((i) => (
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+              )) : INSTITUCIONAIS.map((i) => (
                 <li key={i.to}>
                   <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary">{i.rotulo}</Link>
                 </li>

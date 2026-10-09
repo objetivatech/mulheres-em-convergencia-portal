@@ -1629,6 +1629,53 @@ export type Database = {
           },
         ]
       }
+      menu_itens: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          id: string
+          menu: string
+          nova_aba: boolean
+          ordem: number
+          pai_id: string | null
+          rotulo: string
+          url: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          menu?: string
+          nova_aba?: boolean
+          ordem?: number
+          pai_id?: string | null
+          rotulo: string
+          url?: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          menu?: string
+          nova_aba?: boolean
+          ordem?: number
+          pai_id?: string | null
+          rotulo?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_itens_pai_id_fkey"
+            columns: ["pai_id"]
+            isOneToOne: false
+            referencedRelation: "menu_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       negociacoes: {
         Row: {
           atualizado_em: string

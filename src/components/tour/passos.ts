@@ -10,12 +10,12 @@ export const TOUR_VERSAO: Record<string, number> = {
   'meu-painel': 1,
   conecta: 1,
   academy: 1,
-  embaixadoras: 1,
+  embaixadoras: 2,
   'meu-negocio': 2,
   planos: 1,
   encontros: 1,
   'meus-dados': 1,
-  'painel-equipe': 1,
+  'painel-equipe': 2,
 };
 
 export const TOUR_PASSOS: Record<string, TourPasso[]> = {
@@ -76,6 +76,14 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       titulo: 'Seu link',
       texto: 'Compartilhe este link: toda associada que entrar por ele conta para você.',
     },
+    {
+      titulo: 'Indicações e repasses',
+      texto: 'Mais abaixo você vê quem assinou pelo seu link, seu nível e os valores a receber.',
+    },
+    {
+      titulo: 'Materiais prontos',
+      texto: 'Use as artes e textos de divulgação da equipe. Dúvidas? Veja "Tutoriais" no menu.',
+    },
   ],
   'meu-negocio': [
     {
@@ -134,8 +142,9 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       texto: 'Tudo o que o site mostra é editado por aqui: conteúdo, planos, encontros e acessos.',
     },
     {
-      titulo: 'Menu da esquerda',
-      texto: 'Cada item é uma área do site. Comece pelo que você precisa mudar agora.',
+      alvo: '[data-tour="painel-menu"]',
+      titulo: 'Menu em grupos',
+      texto: 'As áreas estão agrupadas (Site, Conteúdo, Comunidade, Vendas, Comunicação). Clique no grupo para abrir. Em "Tutoriais" há o passo a passo de cada rotina, inclusive embaixadoras e menus.',
     },
     {
       titulo: 'Sempre reversível',

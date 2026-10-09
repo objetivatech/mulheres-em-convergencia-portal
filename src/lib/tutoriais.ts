@@ -94,6 +94,19 @@ export const TUTORIAIS_ASSOCIADA: Tutorial[] = [
     dicas: ['Pagou e alguma área não abriu? Saia e entre de novo. Se continuar, fale com a equipe.'],
     link: { para: '/minha-area/planos', rotulo: 'Ver meus planos' },
   },
+  {
+    id: 'embaixadora', modulo: 'Embaixadoras', titulo: 'Sendo embaixadora: link, indicações e comissões',
+    resumo: 'Para quem foi convidada pela equipe a divulgar a comunidade.',
+    passos: [
+      'A participação é por convite: a equipe ativa você no programa. Não depende do seu plano.',
+      'Abra "Embaixadoras" na Minha área e clique em "Copiar link".',
+      'Compartilhe o link com quem quer fazer parte. Quem assinar por ele fica registrada como sua indicação.',
+      'Acompanhe suas indicações, seu nível e os repasses na mesma tela.',
+      'Use os materiais de divulgação prontos que aparecem logo abaixo.',
+    ],
+    dicas: ['O repasse é calculado sobre as assinaturas pagas que vieram pelo seu link, conforme o percentual do seu nível.'],
+    link: { para: '/minha-area/embaixadora', rotulo: 'Abrir Embaixadoras' },
+  },
 ];
 
 export const TUTORIAIS_EQUIPE: Tutorial[] = [
@@ -215,5 +228,35 @@ export const TUTORIAIS_EQUIPE: Tutorial[] = [
       'Em "Comunicados", envie avisos às associadas do portal.',
     ],
     link: { para: '/painel-conteudo/newsletter', rotulo: 'Abrir Newsletter' },
+  },
+  {
+    id: 'embaixadoras', modulo: 'Embaixadoras', titulo: 'Cadastrar uma embaixadora',
+    resumo: 'Do convite ao primeiro repasse.',
+    passos: [
+      'A pessoa precisa ter conta no portal (ela se cadastra em "Entrar").',
+      'Em Embaixadoras > Participantes, busque a pessoa pelo nome, CPF ou e-mail (mínimo 3 letras).',
+      'Defina um código curto (ex.: maria) — ele vira o link /planos?indicacao=maria — e escolha o nível.',
+      'Em Pessoas > Abrir ficha > Acessos, dê a ela o acesso "Área da embaixadora" (cortesia, com os dias desejados). Sem isso ela não vê o painel dela.',
+      'Opcional: marque "Publicada" para ela aparecer na vitrine pública de embaixadoras.',
+      'Todo mês, registre os repasses em Embaixadoras > Repasses e marque como pago quando transferir.',
+    ],
+    dicas: [
+      'Embaixadora nunca é liberada por plano: só a administração ativa.',
+      'Níveis definem o percentual de comissão e o mínimo de indicações; edite em Embaixadoras > Níveis.',
+      'Para encerrar: desligue "Ativa" na ficha e revogue o acesso em Pessoas.',
+    ],
+    link: { para: '/painel-conteudo/embaixadoras', rotulo: 'Abrir Embaixadoras' },
+  },
+  {
+    id: 'menus', modulo: 'Site', titulo: 'Editar os menus do site',
+    resumo: 'Ordem, nomes, links e submenus do topo e do rodapé.',
+    passos: [
+      'Abra Site > Menus do site.',
+      'Mude nome ou link e clique em "Salvar" na linha.',
+      'Use as setas para subir ou descer um item.',
+      'Clique em "Submenu" para criar um item dentro de outro (até 2 níveis).',
+      'Desligue "Visível" para esconder sem apagar; a lixeira remove de vez.',
+    ],
+    link: { para: '/painel-conteudo/menus', rotulo: 'Abrir Menus do site' },
   },
 ];
