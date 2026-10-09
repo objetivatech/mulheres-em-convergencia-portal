@@ -20,7 +20,7 @@ const VAZIO = {
   valor_reais: '0,00', tipos: ['diretorio'] as string[], beneficios: [] as string[],
   destaque: false, ativo: true, ordem: 0,
   visibilidade: 'publico', codigo_oferta: '', oferta_validade: '', oferta_limite_usos: '',
-  observacao_interna: '',
+  observacao_interna: '', grupo: '', desconto_evento_percentual: 0,
 };
 
 const paraCentavos = (texto: string) => {
@@ -64,6 +64,8 @@ export default function PainelPlanoEditor() {
       oferta_validade: plano.oferta_validade ? plano.oferta_validade.slice(0, 16) : '',
       oferta_limite_usos: plano.oferta_limite_usos ?? '',
       observacao_interna: plano.observacao_interna ?? '',
+      grupo: plano.grupo ?? '',
+      desconto_evento_percentual: plano.desconto_evento_percentual ?? 0,
     });
   }, [plano]);
 
@@ -116,6 +118,8 @@ export default function PainelPlanoEditor() {
       oferta_validade: form.oferta_validade ? new Date(form.oferta_validade).toISOString() : null,
       oferta_limite_usos: form.oferta_limite_usos === '' ? null : Number(form.oferta_limite_usos),
       observacao_interna: form.observacao_interna || null,
+      grupo: String(form.grupo ?? '').trim() || null,
+      desconto_evento_percentual: Math.min(100, Math.max(0, Number(form.desconto_evento_percentual) || 0)),
     };
     const novoId = await salvar.mutateAsync({ id: novo ? undefined : id, valores });
     if (novo) navigate(`/painel-conteudo/planos/${novoId}`, { replace: true });
@@ -179,6 +183,14 @@ export default function PainelPlanoEditor() {
                     onChange={(e) => campo('dias_acesso', e.target.value)} />
                 </div>
                 <div>
+                  <Label>Família do plano</Label>
+                  <Input value={form.grupo} placeholder="Ex.: Impulso (junta mensal, semestral e anual)"
+                    onChange={(e) => campo('grupo', e.target.value)} />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Use o mesmo nome nas versões mensal, semestral e anual para que apareçam juntas no seletor da página.
+                  </p>
+                </div>
+                <div>
                   <Label>Ordem na página</Label>
                   <Input type="number" value={form.ordem} onChange={(e) => campo('ordem', e.target.value)} />
                 </div>
@@ -209,6 +221,21 @@ export default function PainelPlanoEditor() {
                   {area.rotulo}
                 </label>
               ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Desconto em encontros pagos</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Input type="number" min={0} max={100} className="w-28" value={form.desconto_evento_percentual}
+                  onChange={(e) => campo('desconto_evento_percentual', e.target.value)} />
+                <span className="text-sm">% de desconto</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Quem tem este plano em dia paga menos nos encontros pagos. Na inscrição aparece a mensagem
+                "Você ganhou X% de desconto por ser assinante". Deixe 0 para não dar desconto.
+              </p>
             </CardContent>
           </Card>
 

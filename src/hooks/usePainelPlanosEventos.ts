@@ -27,6 +27,8 @@ export type PlanoAdmin = {
   oferta_validade: string | null;
   oferta_limite_usos: number | null;
   observacao_interna: string | null;
+  grupo: string | null;
+  desconto_evento_percentual: number;
 };
 
 export type EventoAdmin = {
