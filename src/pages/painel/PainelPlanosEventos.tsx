@@ -191,6 +191,7 @@ export default function PainelPlanosEventos() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
+                  <Link to={`/painel-conteudo/eventos/${e.id}/portaria`} className="text-primary underline underline-offset-4">Portaria</Link>
                   <Link to={`/eventos/${e.slug}`} className="text-primary underline underline-offset-4">
                     Ver no site
                   </Link>
