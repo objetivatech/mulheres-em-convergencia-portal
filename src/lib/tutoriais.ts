@@ -107,6 +107,31 @@ export const TUTORIAIS_ASSOCIADA: Tutorial[] = [
     dicas: ['O repasse é calculado sobre as assinaturas pagas que vieram pelo seu link, conforme o percentual do seu nível.'],
     link: { para: '/minha-area/embaixadora', rotulo: 'Abrir Embaixadoras' },
   },
+  {
+    id: 'catalogo', modulo: 'Diretório', titulo: 'Mostrar meus produtos e serviços',
+    resumo: 'Cada item aparece na sua página do diretório, com foto, preço e botão de compra.',
+    passos: [
+      'Abra "Meu negócio" e desça até "Produtos e serviços".',
+      'Clique em "Adicionar". Escreva o nome e uma breve descrição (obrigatórios).',
+      'Se quiser, coloque o valor, uma categoria (vira uma aba na sua página) e até 3 fotos.',
+      'No botão de compra, cole o link da sua loja ou clique em "Usar meu WhatsApp".',
+      'Escolha um selo: Destaque, Promoção, Oferta ou Mais vendido. Depois clique em "Salvar".',
+    ],
+    dicas: ['Sem valor, aparece "Sob consulta".', 'As avaliações dos clientes chegam em "Avaliações recebidas": clique em "Publicar" para elas aparecerem no site.'],
+    link: { para: '/minha-area/negocio', rotulo: 'Abrir Meu negócio' },
+  },
+  {
+    id: 'assistente-divulgacao', modulo: 'Embaixadoras', titulo: 'Criar mensagens de indicação com o assistente',
+    resumo: 'O assistente escreve a mensagem para você, já com o seu link.',
+    passos: [
+      'Abra "Embaixadoras" na Minha área.',
+      'No "Assistente de divulgação", escolha o que quer divulgar, para quem e onde vai postar.',
+      'Se quiser, escreva um detalhe extra (ex.: data do encontro).',
+      'Clique em "Criar mensagem". Leia, ajuste se quiser e clique em "Copiar" ou "Abrir no WhatsApp".',
+    ],
+    dicas: ['Não gostou? Clique em "Criar outra versão".'],
+    link: { para: '/minha-area/embaixadora', rotulo: 'Abrir Embaixadoras' },
+  },
 ];
 
 export const TUTORIAIS_EQUIPE: Tutorial[] = [
@@ -258,5 +283,16 @@ export const TUTORIAIS_EQUIPE: Tutorial[] = [
       'Desligue "Visível" para esconder sem apagar; a lixeira remove de vez.',
     ],
     link: { para: '/painel-conteudo/menus', rotulo: 'Abrir Menus do site' },
+  },
+  {
+    id: 'catalogo-avaliacoes', modulo: 'Diretório', titulo: 'Produtos, avaliações e buscadores',
+    resumo: 'Como revisar o catálogo de uma associada e o que vai para Google e IAs.',
+    passos: [
+      'Em Negócios, abra o negócio. Os blocos "Produtos e serviços" e "Avaliações recebidas" ficam abaixo das imagens.',
+      'Você pode cadastrar, ocultar, reordenar ou excluir itens pela associada.',
+      'Avaliações enviadas por visitantes chegam como "Aguardando". Só aparecem no site depois de publicadas.',
+      'Negócios, produtos, notas, eventos e artigos publicados entram sozinhos no mapa do site e nos dados lidos por Google e IAs.',
+    ],
+    dicas: ['Os selos de tipo na página inicial mostram os 20 tipos de negócio mais comuns entre os publicados — padronize o "Tipo de negócio" para não repetir (ex.: "Consultoria" e "consultoria").'],
   },
 ];

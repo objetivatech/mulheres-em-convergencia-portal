@@ -1,155 +1,40 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
-import { corsHeaders } from '../_shared/cors.ts'
+// sitemap.xml a partir do banco novo. Usa a chave pública: só entra o que é visível no site.
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { SITE_URL } from '../_shared/seo.ts';
 
-interface BlogPost {
-  slug: string;
-  published_at: string;
-  updated_at: string;
-}
-
-interface BlogCategory {
-  slug: string;
-}
-
-interface Business {
-  slug: string;
-  updated_at: string;
-}
-
-interface Event {
-  slug: string;
-  updated_at: string;
-}
+const FIXAS: [string, string, string][] = [
+  ['/', '1.0', 'daily'], ['/diretorio', '0.9', 'daily'], ['/convergindo', '0.9', 'daily'], ['/eventos', '0.8', 'daily'],
+  ['/academy', '0.7', 'weekly'], ['/planos', '0.8', 'weekly'], ['/embaixadoras', '0.6', 'weekly'], ['/sobre', '0.7', 'monthly'],
+  ['/contato', '0.5', 'monthly'], ['/termos-de-uso', '0.2', 'yearly'], ['/politica-de-privacidade', '0.2', 'yearly'],
+];
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
-    // Fetch published blog posts
-    const { data: posts, error: postsError } = await supabase
-      .from('blog_posts')
-      .select('slug, published_at, updated_at')
-      .eq('status', 'published');
-
-    if (postsError) {
-      console.error('Error fetching posts:', postsError);
-      throw postsError;
-    }
-
-    // Fetch blog categories
-    const { data: categories, error: categoriesError } = await supabase
-      .from('blog_categories')
-      .select('slug');
-
-    if (categoriesError) {
-      console.error('Error fetching categories:', categoriesError);
-      throw categoriesError;
-    }
-
-    // Fetch published businesses
-    const { data: businesses, error: bizError } = await supabase
-      .from('businesses')
-      .select('slug, updated_at');
-
-    if (bizError) {
-      console.error('Error fetching businesses:', bizError);
-    }
-
-    // Fetch published events
-    const { data: events, error: eventsError } = await supabase
-      .from('events')
-      .select('slug, updated_at')
-      .eq('status', 'published');
-
-    if (eventsError) {
-      console.error('Error fetching events:', eventsError);
-    }
-
-    const baseUrl = 'https://mulheresemconvergencia.com.br';
-    const currentDate = new Date().toISOString();
-
-    const staticPages = [
-      { url: '/', priority: '1.0', changefreq: 'daily' },
-      { url: '/sobre', priority: '0.8', changefreq: 'monthly' },
-      { url: '/convergindo', priority: '0.9', changefreq: 'daily' },
-      { url: '/contato', priority: '0.7', changefreq: 'monthly' },
-      { url: '/planos', priority: '0.6', changefreq: 'weekly' },
-      { url: '/diretorio', priority: '0.9', changefreq: 'daily' },
-      { url: '/embaixadoras', priority: '0.7', changefreq: 'weekly' },
-      { url: '/eventos', priority: '0.8', changefreq: 'daily' },
-      { url: '/comunidades', priority: '0.7', changefreq: 'weekly' },
-      { url: '/criar-converter', priority: '0.6', changefreq: 'monthly' },
-      { url: '/termos-de-uso', priority: '0.3', changefreq: 'yearly' },
-      { url: '/politica-de-privacidade', priority: '0.3', changefreq: 'yearly' },
-      { url: '/politica-de-cookies', priority: '0.3', changefreq: 'yearly' },
+    const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const [negs, posts, evs, cursos, pags] = await Promise.all([
+      db.from('negocios').select('slug, atualizado_em').eq('publicado', true).limit(5000),
+      db.from('posts').select('slug, atualizado_em').eq('situacao', 'publicado').limit(5000),
+      db.from('eventos').select('slug, atualizado_em').eq('publicado', true).limit(5000),
+      db.from('cursos').select('slug, atualizado_em').eq('publicado', true).limit(1000),
+      db.from('paginas').select('slug, atualizado_em').eq('situacao', 'publicado').limit(500),
+    ]);
+    const hoje = new Date().toISOString();
+    const u = (loc: string, mod: string, pr: string, cf: string) =>
+      `<url><loc>${SITE_URL}${loc}</loc><lastmod>${new Date(mod).toISOString()}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`;
+    const linhas = [
+      ...FIXAS.map(([l, p, c]) => u(l, hoje, p, c)),
+      ...(negs.data ?? []).map((n: any) => u(`/diretorio/${n.slug}`, n.atualizado_em, '0.8', 'weekly')),
+      ...(posts.data ?? []).map((p: any) => u(`/convergindo/${p.slug}`, p.atualizado_em, '0.8', 'weekly')),
+      ...(evs.data ?? []).map((e: any) => u(`/eventos/${e.slug}`, e.atualizado_em, '0.7', 'weekly')),
+      ...(cursos.data ?? []).map((c: any) => u(`/academy/curso/${c.slug}`, c.atualizado_em, '0.6', 'monthly')),
+      ...(pags.data ?? []).filter((p: any) => p.slug !== 'sobre').map((p: any) => u(`/pagina/${p.slug}`, p.atualizado_em, '0.5', 'monthly')),
     ];
-
-    // Generate sitemap XML
-    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${staticPages.map(page => `
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`).join('')}
-  ${posts?.map((post: BlogPost) => {
-    const lastmod = post.updated_at > post.published_at ? post.updated_at : post.published_at;
-    return `
-  <url>
-    <loc>${baseUrl}/convergindo/${post.slug}</loc>
-    <lastmod>${new Date(lastmod).toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-  }).join('') || ''}
-  ${categories?.map((category: BlogCategory) => `
-  <url>
-    <loc>${baseUrl}/convergindo/categoria/${category.slug}</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`).join('') || ''}
-  ${businesses?.map((biz: Business) => `
-  <url>
-    <loc>${baseUrl}/diretorio/${biz.slug}</loc>
-    <lastmod>${biz.updated_at ? new Date(biz.updated_at).toISOString() : currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`).join('') || ''}
-  ${events?.map((evt: Event) => `
-  <url>
-    <loc>${baseUrl}/eventos/${evt.slug}</loc>
-    <lastmod>${evt.updated_at ? new Date(evt.updated_at).toISOString() : currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`).join('') || ''}
-</urlset>`;
-
-    return new Response(sitemapXml, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600'
-      },
-    });
-
-  } catch (error) {
-    console.error('Sitemap generation error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to generate sitemap' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${linhas.join('\n')}\n</urlset>`;
+    return new Response(xml, { headers: { ...corsHeaders, 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+  } catch (e) {
+    console.error('sitemap', e);
+    return new Response('erro', { status: 500, headers: corsHeaders });
   }
 });

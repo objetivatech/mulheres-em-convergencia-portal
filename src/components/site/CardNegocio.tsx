@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { stripHtml } from '@/lib/stripHtml';
 import { useDonasNegocios } from '@/hooks/useSite';
+import { useResumoAvaliacoes } from '@/hooks/useCatalogo';
+import Estrelas from '@/components/negocio/Estrelas';
 
 type Negocio = {
   id: string; slug: string; nome: string; descricao?: string | null; categoria?: string | null;
@@ -16,6 +18,8 @@ function iniciais(nome?: string) {
 export default function CardNegocio({ negocio: n }: { negocio: Negocio }) {
   const { data: donas } = useDonasNegocios();
   const dona = donas?.get(n.id);
+  const { data: notas } = useResumoAvaliacoes();
+  const nota = notas?.get(n.id);
   return (
     <Link
       to={`/diretorio/${n.slug}`}
@@ -43,6 +47,7 @@ export default function CardNegocio({ negocio: n }: { negocio: Negocio }) {
       <div className="p-5 space-y-2 flex-1">
         {n.categoria && <p className="text-xs uppercase tracking-wide text-primary">{n.categoria}</p>}
         <h3 className="font-semibold leading-snug">{n.nome}</h3>
+        {nota && <Estrelas media={nota.media} total={nota.total} compacto className="text-xs" />}
         {(n.cidade || n.uf) && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="w-3 h-3" /> {[n.cidade, n.uf].filter(Boolean).join(' / ')}

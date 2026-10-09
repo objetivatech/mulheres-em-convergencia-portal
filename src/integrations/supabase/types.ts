@@ -1829,6 +1829,44 @@ export type Database = {
           },
         ]
       }
+      negocio_avaliacoes: {
+        Row: {
+          avaliador_nome: string
+          comentario: string | null
+          criado_em: string
+          id: string
+          negocio_id: string
+          nota: number
+          status: string
+        }
+        Insert: {
+          avaliador_nome: string
+          comentario?: string | null
+          criado_em?: string
+          id?: string
+          negocio_id: string
+          nota: number
+          status?: string
+        }
+        Update: {
+          avaliador_nome?: string
+          comentario?: string | null
+          criado_em?: string
+          id?: string
+          negocio_id?: string
+          nota?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_avaliacoes_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       negocio_comodidades: {
         Row: {
           id: string
@@ -1886,6 +1924,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "negocio_midias_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_produtos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          categoria: string | null
+          criado_em: string
+          descricao: string
+          destaque_tag: string | null
+          fotos: string[]
+          id: string
+          link_compra: string | null
+          negocio_id: string
+          nome: string
+          ordem: number
+          valor_centavos: number | null
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria?: string | null
+          criado_em?: string
+          descricao: string
+          destaque_tag?: string | null
+          fotos?: string[]
+          id?: string
+          link_compra?: string | null
+          negocio_id: string
+          nome: string
+          ordem?: number
+          valor_centavos?: number | null
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria?: string | null
+          criado_em?: string
+          descricao?: string
+          destaque_tag?: string | null
+          fotos?: string[]
+          id?: string
+          link_compra?: string | null
+          negocio_id?: string
+          nome?: string
+          ordem?: number
+          valor_centavos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_produtos_negocio_id_fkey"
             columns: ["negocio_id"]
             isOneToOne: false
             referencedRelation: "negocios"

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
@@ -16,8 +17,9 @@ const norm = (s?: string | null) =>
   (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 export default function DiretorioPage() {
-  const [busca, setBusca] = useState('');
-  const [categoria, setCategoria] = useState('');
+  const [params] = useSearchParams();
+  const [busca, setBusca] = useState(params.get('busca') ?? '');
+  const [categoria, setCategoria] = useState(params.get('categoria') ?? '');
   const { data: todos, isLoading } = useTodosNegocios();
 
   // Sorteio novo a cada visita: todas têm a mesma chance de aparecer primeiro.
@@ -43,6 +45,9 @@ export default function DiretorioPage() {
       <Helmet>
         <title>Diretório de Negócios | Mulheres em Convergência</title>
         <meta name="description" content="Encontre negócios liderados por mulheres: busque por nome, categoria e cidade no diretório da nossa rede." />
+        <link rel="canonical" href="https://mulheresemconvergencia.com.br/diretorio" />
+        <meta property="og:title" content="Diretório de Negócios | Mulheres em Convergência" />
+        <meta property="og:url" content="https://mulheresemconvergencia.com.br/diretorio" />
       </Helmet>
 
       <section className="border-b border-border bg-surface-quente">

@@ -13,6 +13,7 @@ import { useMinhaEmbaixadora } from '@/hooks/useMinhaArea';
 import { useSalvarMinhaFicha } from '@/hooks/useEmbaixadorasAdmin';
 import { dinheiro } from '@/hooks/usePlanosEventos';
 import { useToast } from '@/hooks/use-toast';
+import AssistenteDivulgacao from '@/components/area/AssistenteDivulgacao';
 
 const data = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
@@ -97,6 +98,8 @@ export default function MinhaEmbaixadora() {
               </Badge>
             )}
           </section>
+
+          <AssistenteDivulgacao />
 
           <section className="rounded-xl border border-border bg-card p-6 max-w-2xl space-y-4">
             <h2 className="font-semibold">Minha apresentação</h2>
