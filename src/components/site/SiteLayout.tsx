@@ -35,7 +35,10 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false);
   const { user, loading, signOut } = useAuth();
   const itensUsuaria = useItensDaUsuaria();
-
+  const { data: dadosPrincipal } = useMenuSite('principal');
+  const { data: dadosInst } = useMenuSite('institucional');
+  const menuPrincipal = dadosPrincipal?.length ? montarArvore(dadosPrincipal) : null;
+  const menuInst = dadosInst?.length ? montarArvore(dadosInst) : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -45,6 +48,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             <LogoComponent variant="horizontal" size="md" />
           </Link>
 
+          {menuPrincipal ? <MenuDesktop itens={menuPrincipal} /> : (
           <nav className="hidden lg:flex items-center gap-1">
             {NAV.map((item) => (
               <NavLink
@@ -62,6 +66,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               </NavLink>
             ))}
           </nav>
+          )}
 
           <div className="hidden lg:flex items-center gap-2">
             {loading ? null : user ? (

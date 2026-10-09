@@ -77,7 +77,7 @@ function EditorMenu({ menu, ajuda }: { menu: string; ajuda: string }) {
       {isLoading ? <p className="text-sm">Carregando…</p> : arvore.map((i) => (
         <LinhaItem key={i.id + i.rotulo + i.url} item={i} irmaos={arvore} nivel={0} menu={menu} />
       ))}
-      <Button variant="outline" onClick={() => salvar.mutate({ menu, rotulo: 'Novo item', url: '/', ordem: (arvore.at?.(-1)?.ordem ?? arvore.length) + 1 })}>
+      <Button variant="outline" onClick={() => salvar.mutate({ menu, rotulo: 'Novo item', url: '/', ordem: (arvore.length ? arvore[arvore.length - 1].ordem : 0) + 1 })}>
         <Plus className="w-4 h-4 mr-1" /> Adicionar item
       </Button>
     </div>
