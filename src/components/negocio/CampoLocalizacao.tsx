@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
 
 type Props = {
   endereco: { rua?: string; bairro?: string; cidade?: string; uf?: string };
@@ -84,19 +85,35 @@ export default function CampoLocalizacao({ endereco, latitude, longitude, onChan
         </div>
       </div>
 
+      <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+        <div>
+          <p className="text-sm font-medium">Mostrar meu negócio no mapa</p>
+          <p className="text-xs text-muted-foreground">
+            {temPonto ? 'Ligado: aparece um marcador no mapa do diretório.' : 'Desligado: nenhum marcador aparece no mapa.'}
+          </p>
+        </div>
+        <Switch
+          checked={temPonto}
+          aria-label="Mostrar meu negócio no mapa"
+          onCheckedChange={(v) => {
+            if (v) localizar();
+            else { onChange(null, null); toast({ title: 'Marcador retirado do mapa', description: 'Clique em Salvar para confirmar.' }); }
+          }}
+        />
+      </div>
+
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" onClick={localizar} disabled={buscando}>
           {buscando ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <MapPin className="w-4 h-4 mr-2" />}
-          Localizar pelo endereço
+          {temPonto ? 'Atualizar pelo endereço' : 'Localizar pelo endereço'}
         </Button>
-        {temPonto ? (
-          <span className="text-sm flex items-center gap-1.5 text-primary">
-            <CheckCircle2 className="w-4 h-4" /> Já aparece no mapa
-            <a className="underline ml-1" target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${latitude},${longitude}`}>conferir</a>
-            <button type="button" className="underline ml-2 text-muted-foreground" onClick={() => onChange(null, null)}>tirar do mapa</button>
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">Ainda não aparece no mapa.</span>
+        {temPonto && (
+          <>
+            <a className="text-sm underline text-primary flex items-center gap-1" target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${latitude},${longitude}`}>
+              <CheckCircle2 className="w-4 h-4" /> Conferir o ponto
+            </a>
+            <Button type="button" variant="outline" size="sm" onClick={() => onChange(null, null)}>Remover do mapa</Button>
+          </>
         )}
       </div>
 

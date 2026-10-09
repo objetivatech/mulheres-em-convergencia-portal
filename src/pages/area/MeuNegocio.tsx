@@ -57,7 +57,8 @@ export default function MeuNegocio() {
       toast({ title: 'Escreva o nome do seu negócio', variant: 'destructive' });
       return;
     }
-    const coord = (v: any) => (v === '' || v == null ? null : Number(String(v).replace(',', '.')));
+    const semEndereco = !String(form.cidade ?? '').trim() && !String(form.bairro ?? '').trim();
+    const coord = (v: any) => (semEndereco || v === '' || v == null ? null : Number(String(v).replace(',', '.')));
     const valores = {
       ...form,
       slug: (form.slug || slugify(form.nome, { lower: true, strict: true })).trim(),
