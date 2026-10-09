@@ -66,6 +66,8 @@ export default function PainelPlanosEventos() {
         periodicidade: p.periodicidade,
         dias_acesso: p.dias_acesso,
         beneficios: p.beneficios,
+        grupo: p.grupo,
+        desconto_evento_percentual: p.desconto_evento_percentual,
         destaque: false,
         ativo: false,
         ordem: (p.ordem ?? 0) + 1,
