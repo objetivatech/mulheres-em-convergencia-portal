@@ -52,3 +52,8 @@ apagar nada. As cobranças já criadas seguem no Asaas e no histórico.
 **Técnico:** `criar-cobranca` (ramo gratuito) consulta `ja_usou_evento_gratuito(pessoa, evento)` (inscrições confirmadas com valor 0 da mesma pessoa ou mesmo CPF, outro evento). Sem concessão vigente e sem papel admin → resposta `{codigo:'limite_gratuito'}`, tratada no `CobrancaDialog`. Lista do painel via RPC `participantes_eventos()` (só admin).
 **Operação:** aba "Participantes" em Planos e Encontros; botão "Baixar planilha" gera CSV para campanhas de conversão.
 **Manual simples:** se você já foi a um encontro gratuito, o site vai te convidar a escolher um plano para continuar participando.
+
+## Página de planos completa e desconto de assinante (2026-10-09)
+**Técnico:** `planos.grupo` (família que junta mensal/semestral/anual; vazio = nome) e `planos.desconto_evento_percentual` (0–100, validado por gatilho). Tabela comparativa da página `/planos` é montada a partir de `planos.tipos` (áreas liberadas) — a mesma configuração que libera os acessos, então editar o plano atualiza a tabela. FAQ em `faq_planos` (leitura pública das ativas, escrita só admin). `desconto_evento_assinante(pessoa)` devolve o maior desconto entre planos com concessão vigente; `criar-cobranca` aplica antes do cupom; `meu_desconto_evento()` alimenta a mensagem do `CobrancaDialog`.
+**Operação:** Painel → Planos e encontros → editar plano → "Desconto em encontros pagos" e "Família do plano". Aba "Perguntas frequentes" edita a FAQ.
+**Manual simples:** na página de planos dá para trocar entre mensal, semestral e anual e comparar o que cada plano libera. Se você é assinante, ao se inscrever num encontro pago aparece "Você ganhou X% de desconto" e o valor já vem com desconto.
