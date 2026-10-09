@@ -21,6 +21,7 @@ import {
   useExcluirEvento, useUsosPorPlano, type PlanoAdmin,
 } from '@/hooks/usePainelPlanosEventos';
 import ConteudoAcessos from './PainelAcessos';
+import FaqPlanosAdmin from '@/components/painel/FaqPlanosAdmin';
 
 const ROTULO_VISIBILIDADE: Record<string, string> = {
   publico: 'Público',
@@ -65,6 +66,8 @@ export default function PainelPlanosEventos() {
         periodicidade: p.periodicidade,
         dias_acesso: p.dias_acesso,
         beneficios: p.beneficios,
+        grupo: p.grupo,
+        desconto_evento_percentual: p.desconto_evento_percentual,
         destaque: false,
         ativo: false,
         ordem: (p.ordem ?? 0) + 1,
@@ -113,6 +116,7 @@ export default function PainelPlanosEventos() {
           <TabsTrigger value="planos">Planos</TabsTrigger>
           <TabsTrigger value="eventos">Encontros</TabsTrigger>
           <TabsTrigger value="participantes">Participantes</TabsTrigger>
+          <TabsTrigger value="faq">Perguntas frequentes</TabsTrigger>
           <TabsTrigger value="acessos">Quem tem acesso</TabsTrigger>
         </TabsList>
 
@@ -207,6 +211,10 @@ export default function PainelPlanosEventos() {
 
         <TabsContent value="participantes">
           <ParticipantesEventos />
+        </TabsContent>
+
+        <TabsContent value="faq">
+          <FaqPlanosAdmin />
         </TabsContent>
 
         <TabsContent value="acessos">

@@ -1442,6 +1442,36 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_planos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          id: string
+          ordem: number
+          pergunta: string
+          resposta: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          ordem?: number
+          pergunta: string
+          resposta: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          ordem?: number
+          pergunta?: string
+          resposta?: string
+        }
+        Relationships: []
+      }
       funil_estagios: {
         Row: {
           criado_em: string
@@ -2357,9 +2387,11 @@ export type Database = {
           beneficios: Json
           codigo_oferta: string | null
           criado_em: string
+          desconto_evento_percentual: number
           descricao: string | null
           destaque: boolean
           dias_acesso: number
+          grupo: string | null
           id: string
           nome: string
           observacao_interna: string | null
@@ -2379,9 +2411,11 @@ export type Database = {
           beneficios?: Json
           codigo_oferta?: string | null
           criado_em?: string
+          desconto_evento_percentual?: number
           descricao?: string | null
           destaque?: boolean
           dias_acesso?: number
+          grupo?: string | null
           id?: string
           nome: string
           observacao_interna?: string | null
@@ -2401,9 +2435,11 @@ export type Database = {
           beneficios?: Json
           codigo_oferta?: string | null
           criado_em?: string
+          desconto_evento_percentual?: number
           descricao?: string | null
           destaque?: boolean
           dias_acesso?: number
+          grupo?: string | null
           id?: string
           nome?: string
           observacao_interna?: string | null
@@ -3028,6 +3064,10 @@ export type Database = {
           site: string
         }[]
       }
+      desconto_evento_assinante: {
+        Args: { _pessoa_id: string }
+        Returns: number
+      }
       donas_negocios: {
         Args: never
         Returns: {
@@ -3046,6 +3086,7 @@ export type Database = {
         Returns: boolean
       }
       lote_vigente: { Args: { _evento_id: string }; Returns: string }
+      meu_desconto_evento: { Args: never; Returns: number }
       participantes_eventos: {
         Args: never
         Returns: {

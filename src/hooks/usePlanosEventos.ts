@@ -16,6 +16,9 @@ export type Plano = {
   beneficios: string[];
   destaque: boolean;
   ordem: number;
+  tipos?: string[];
+  grupo?: string | null;
+  desconto_evento_percentual?: number;
 };
 
 export type Evento = {
@@ -66,7 +69,7 @@ export function menorValorEvento(lotes?: { valor_centavos: number; ativo: boolea
 }
 
 const CAMPOS_PLANO =
-  'id, slug, nome, descricao, tipo, valor_centavos, periodicidade, beneficios, destaque, ordem, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos';
+  'id, slug, nome, descricao, tipo, valor_centavos, periodicidade, beneficios, destaque, ordem, visibilidade, codigo_oferta, oferta_validade, oferta_limite_usos, tipos, grupo, desconto_evento_percentual';
 
 /** Planos que aparecem na página pública: ativos e com visibilidade pública. */
 export function usePlanos() {

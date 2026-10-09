@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { BadgePercent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,6 +39,15 @@ export default function CobrancaDialog({
   const [cupom, setCupom] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [limite, setLimite] = useState(false);
+  const { data: descontoAssinante = 0 } = useQuery({
+    queryKey: ['meu-desconto-evento', user?.id],
+    enabled: !!user && tipo === 'evento' && aberto,
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc('meu_desconto_evento');
+      return Number(data ?? 0);
+    },
+  });
+  const mostrarDesconto = tipo === 'evento' && descontoAssinante > 0 && valorTexto !== 'Gratuito';
 
   // Sem conta: leva direto para o cadastro e volta para esta mesma oferta.
   useEffect(() => {
@@ -120,6 +131,16 @@ export default function CobrancaDialog({
             {valorTexto} — confirme seus dados para gerar o pagamento.
           </DialogDescription>
         </DialogHeader>
+
+        {mostrarDesconto && (
+          <div className="flex gap-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm">
+            <BadgePercent className="h-5 w-5 shrink-0 text-primary" />
+            <p>
+              <strong>Você ganhou {descontoAssinante}% de desconto por ser assinante!</strong>{' '}
+              O valor com desconto já aparece na hora do pagamento.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           <div className="space-y-1.5">

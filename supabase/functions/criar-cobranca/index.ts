@@ -136,6 +136,16 @@ Deno.serve(async (req) => {
       referencia = `evento:${ev.slug}`;
     }
 
+    // Desconto de assinante (definido no plano) — só em encontros pagos
+    if (tipo === 'evento' && evento && valorCentavos > 0) {
+      const { data: pct } = await admin.rpc('desconto_evento_assinante', { _pessoa_id: pessoaId });
+      const p = Number(pct ?? 0);
+      if (p > 0) {
+        valorCentavos = Math.max(0, Math.round(valorCentavos * (1 - p / 100)));
+        descricao += ` (desconto assinante ${p}%)`;
+      }
+    }
+
     // Cupom (somente eventos) — validado sempre no servidor
     let cupomId: string | null = null;
     if (cupom && tipo === 'evento' && evento) {
