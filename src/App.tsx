@@ -53,6 +53,7 @@ import PainelImagens from './pages/painel/PainelImagens';
 import PainelTutoriais from './pages/painel/PainelTutoriais';
 import MeusTutoriais from './pages/area/MeusTutoriais';
 import PainelTextos from './pages/painel/PainelTextos';
+import PainelMenus from './pages/painel/PainelMenus';
 import PainelConecta from './pages/painel/PainelConecta';
 import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
 
@@ -172,6 +173,7 @@ function AppContent() {
         <Route path="/painel-conteudo/imagens" element={<PainelImagens />} />
         <Route path="/painel-conteudo/tutoriais" element={<PainelTutoriais />} />
         <Route path="/painel-conteudo/textos" element={<PainelTextos />} />
+        <Route path="/painel-conteudo/menus" element={<PainelMenus />} />
         <Route path="/painel-conteudo/institucional" element={<PainelInstitucional />} />
         <Route path="/painel-conteudo/conecta" element={<PainelConecta />} />
         <Route path="/painel-conteudo/embaixadoras" element={<PainelEmbaixadoras />} />

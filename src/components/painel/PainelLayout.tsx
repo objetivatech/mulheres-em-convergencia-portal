@@ -128,25 +128,14 @@ export default function PainelLayout({
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
             ← Ver o site
           </Link>
-          <nav className="mt-4 space-y-1">
-            {ITENS.map((item) => (
-              <NavLink
-                key={item.para}
-                to={item.para}
-                end={item.fim}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )
-                }
-              >
-                <item.icone className="w-4 h-4" />
-                {item.rotulo}
-              </NavLink>
-            ))}
+          <nav className="mt-4 space-y-1" data-tour="painel-menu">
+            <NavLink to="/painel-conteudo" end className={classeLink}>
+              <Home className="w-4 h-4" /> Visão geral
+            </NavLink>
+            {GRUPOS.map((g) => <Grupo key={g.titulo} titulo={g.titulo} itens={g.itens} />)}
+            <NavLink to="/painel-conteudo/tutoriais" className={classeLink}>
+              <BookOpen className="w-4 h-4" /> Tutoriais
+            </NavLink>
           </nav>
         </aside>
 
