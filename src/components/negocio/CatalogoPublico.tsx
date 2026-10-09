@@ -146,7 +146,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
         {!user ? (
           <div className="space-y-2">
             <p className="text-sm">Avaliações são feitas por associadas da rede. Entre na sua conta para avaliar.</p>
-            <Button asChild size="sm"><Link to={`/entrar?redirect=${encodeURIComponent(window.location.pathname + '#avaliacoes')}`}>Entrar para avaliar</Link></Button>
+            <Button asChild size="sm"><Link to={`/entrar?voltar=${encodeURIComponent(window.location.pathname)}`}>Entrar para avaliar</Link></Button>
           </div>
         ) : souDona ? (
           <p className="text-sm text-muted-foreground">Este é o seu negócio — as avaliações vêm de outras associadas.</p>
