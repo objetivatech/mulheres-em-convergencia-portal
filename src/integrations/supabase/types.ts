@@ -822,6 +822,51 @@ export type Database = {
           },
         ]
       }
+      embaixadora_campanhas: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          fim_em: string | null
+          id: string
+          imagens: string[]
+          inicio_em: string | null
+          link_url: string | null
+          mensagem: string
+          ordem: number
+          titulo: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          fim_em?: string | null
+          id?: string
+          imagens?: string[]
+          inicio_em?: string | null
+          link_url?: string | null
+          mensagem?: string
+          ordem?: number
+          titulo: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          fim_em?: string | null
+          id?: string
+          imagens?: string[]
+          inicio_em?: string | null
+          link_url?: string | null
+          mensagem?: string
+          ordem?: number
+          titulo?: string
+        }
+        Relationships: []
+      }
       embaixadora_indicacoes: {
         Row: {
           criado_em: string
@@ -1831,30 +1876,36 @@ export type Database = {
       }
       negocio_avaliacoes: {
         Row: {
+          atualizado_em: string
           avaliador_nome: string
           comentario: string | null
           criado_em: string
           id: string
           negocio_id: string
           nota: number
+          pessoa_id: string | null
           status: string
         }
         Insert: {
+          atualizado_em?: string
           avaliador_nome: string
           comentario?: string | null
           criado_em?: string
           id?: string
           negocio_id: string
           nota: number
+          pessoa_id?: string | null
           status?: string
         }
         Update: {
+          atualizado_em?: string
           avaliador_nome?: string
           comentario?: string | null
           criado_em?: string
           id?: string
           negocio_id?: string
           nota?: number
+          pessoa_id?: string | null
           status?: string
         }
         Relationships: [
@@ -1864,6 +1915,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "negocios"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocio_avaliacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negocio_avaliacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "negocio_avaliacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
           },
         ]
       }
