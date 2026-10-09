@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import MenuUsuaria, { useItensDaUsuaria } from '@/components/site/MenuUsuaria';
 import TextoSite from '@/components/site/TextoSite';
 import { useTexto } from '@/hooks/useTextosSite';
+import { useMenuSite, montarArvore } from '@/hooks/useMenuSite';
+import { MenuDesktop, MenuMobile, LinkMenu } from '@/components/site/MenuDinamico';
 
 // Nomes editáveis no painel (Textos do site > Menu do site).
 const NAV = [
@@ -91,7 +93,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
         {aberto && (
           <div className="lg:hidden border-t border-border bg-background">
             <nav className="container mx-auto px-4 py-3 flex flex-col">
-              {NAV.map((item) => (
+              {menuPrincipal ? <MenuMobile itens={menuPrincipal} onNavegar={() => setAberto(false)} /> : NAV.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
