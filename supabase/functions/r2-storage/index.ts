@@ -16,7 +16,7 @@ async function perfilDe(uid: string): Promise<Perfil> {
 }
 
 const PASTA_USUARIAS = 'usuarias'
-const CATEGORIAS_USUARIA = ['perfil', 'negocio', 'galeria', 'conecta', 'geral']
+const CATEGORIAS_USUARIA = ['perfil', 'negocio', 'galeria', 'produtos', 'conecta', 'geral']
 
 /** Associadas sempre gravam na própria pasta: usuarias/<id>/<categoria>/ */
 function pastaPermitida(p: Perfil, pedida: string): string {
@@ -25,7 +25,7 @@ function pastaPermitida(p: Perfil, pedida: string): string {
   const proprio = `${PASTA_USUARIAS}/${p.uid}`
   if (limpa.startsWith(proprio + '/') || limpa === proprio) return limpa
   if (p.editora && !limpa.startsWith(PASTA_USUARIAS)) return limpa
-  const apelidos: Record<string, string> = { perfis: 'perfil', negocios: 'negocio', 'negocios-galeria': 'galeria' }
+  const apelidos: Record<string, string> = { perfis: 'perfil', negocios: 'negocio', 'negocios-galeria': 'galeria', 'negocios-produtos': 'produtos' }
   const base = apelidos[limpa] ?? limpa
   const cat = CATEGORIAS_USUARIA.includes(base) ? base : 'geral'
   return `${proprio}/${cat}`
