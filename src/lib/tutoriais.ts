@@ -16,6 +16,29 @@ export type Tutorial = {
 
 export const TUTORIAIS_ASSOCIADA: Tutorial[] = [
   {
+    id: 'avaliar-negocio', modulo: 'Diretório', titulo: 'Avaliar o negócio de outra associada',
+    resumo: 'Dê estrelas e conte como foi. A nota aparece na capa e no Diretório.',
+    passos: [
+      'Entre na sua conta e abra o negócio no Diretório.',
+      'Desça até "Avaliações" e escolha de 1 a 5 estrelas.',
+      'Escreva um comentário, se quiser, e clique em "Enviar avaliação".',
+      'Para mudar depois, volte ao negócio e clique em "Mudar minha avaliação".',
+    ],
+    dicas: ['Cada pessoa avalia uma vez cada negócio. Não dá para avaliar o próprio negócio.'],
+    link: { para: '/diretorio', rotulo: 'Abrir o Diretório' },
+  },
+  {
+    id: 'campanhas-embaixadora', modulo: 'Embaixadoras', titulo: 'Usar as campanhas prontas da equipe',
+    resumo: 'Mensagens e imagens prontas, com o seu link já dentro.',
+    passos: [
+      'Abra "Embaixadoras" na Minha área.',
+      'Em "Campanhas da equipe", escolha uma campanha.',
+      'Clique em "Enviar no WhatsApp" ou "Copiar mensagem".',
+      'Para postar nas redes, toque em "Baixar" nas imagens e cole a mensagem na legenda.',
+    ],
+    link: { para: '/minha-area/embaixadora', rotulo: 'Abrir Embaixadoras' },
+  },
+  {
     id: 'primeiros-passos', modulo: 'Começando', titulo: 'Primeiros passos no portal',
     resumo: 'Como encontrar tudo o que você tem disponível.',
     passos: [
@@ -135,6 +158,39 @@ export const TUTORIAIS_ASSOCIADA: Tutorial[] = [
 ];
 
 export const TUTORIAIS_EQUIPE: Tutorial[] = [
+  {
+    id: 'portaria', modulo: 'Encontros', titulo: 'Portaria: ler ingressos e marcar presença',
+    resumo: 'No dia do encontro, confirme quem chegou pelo QR Code do ingresso.',
+    passos: [
+      'Em Planos, encontros e acessos → Encontros, clique em "Portaria" no encontro.',
+      'Clique em "Ler QR Code do ingresso" e permita a câmera do celular ou tablet.',
+      'Aponte para o ingresso da participante: aparece "Bem-vinda" (ok), "já entrou" (repetido) ou um aviso.',
+      'Sem celular? Busque pelo nome na lista e clique em "Marcar presença". Errou? Use o botão de desfazer.',
+    ],
+    dicas: ['O contador mostra presentes de inscritas confirmadas em tempo real.'],
+    link: { para: '/painel-conteudo/planos-eventos', rotulo: 'Abrir encontros' },
+  },
+  {
+    id: 'campanhas-equipe', modulo: 'Embaixadoras', titulo: 'Criar campanhas de divulgação',
+    resumo: 'Mensagem, link e imagens que as embaixadoras compartilham com o link delas.',
+    passos: [
+      'Abra Embaixadoras → aba "Campanhas" e clique em "Nova campanha".',
+      'Escreva a mensagem. Use {link} onde o link deve aparecer e {nome} para o nome da embaixadora.',
+      'Informe o link (ex.: /planos) e adicione até 6 imagens.',
+      'Escolha as datas, deixe "Campanha ativa" ligado e salve.',
+    ],
+    dicas: ['Links do portal recebem o código da embaixadora sozinhos. Desligue "ativa" para pausar sem apagar.'],
+    link: { para: '/painel-conteudo/embaixadoras', rotulo: 'Abrir Embaixadoras' },
+  },
+  {
+    id: 'moderar-avaliacoes', modulo: 'Diretório', titulo: 'Ocultar uma avaliação inadequada',
+    resumo: 'Avaliações entram no ar na hora; só a equipe pode ocultar.',
+    passos: [
+      'Abra Negócios e edite o negócio.',
+      'Em "Avaliações recebidas", clique em "Ocultar" na avaliação.',
+      'Para voltar a mostrar, clique em "Mostrar no site".',
+    ],
+  },
   {
     id: 'cortesia', modulo: 'Pessoas', titulo: 'Dar uma cortesia (acesso gratuito)',
     resumo: 'Libere uma área para uma pessoa por um tempo, sem pagamento.',

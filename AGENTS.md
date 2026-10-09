@@ -7,3 +7,6 @@
 - Páginas para buscadores, sitemap e llms-full leem o banco novo com a chave pública e usam `supabase/functions/_shared/seo.ts` — o que o RLS esconde do site não vaza para buscadores/IAs.
 - Médias de avaliação de negócios são calculadas na consulta, nunca gravadas — segue a regra de não gravar estado derivado.
 - O link de indicação usado pela IA das embaixadoras é montado no servidor a partir de `embaixadoras.codigo` — nunca aceitar link vindo do navegador.
+- Funções SECURITY DEFINER vivem no schema `private`; em `public` ficam só wrappers SECURITY INVOKER de mesmo nome — mantém o linter limpo sem mudar chamadas do app nem políticas.
+- Avaliação de negócio é feita só por pessoa conectada (uma por negócio, `pessoa_id` checado no RLS) e entra no ar na hora; ocultar é exclusivo de admin — evita a dona censurar notas.
+- Presença em encontro é a existência de linha em `evento_presencas` (código do QR = `evento_inscricoes.id`) — nunca flag gravada na inscrição.
