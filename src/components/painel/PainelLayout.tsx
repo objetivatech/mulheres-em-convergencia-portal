@@ -1,37 +1,83 @@
-import { ReactNode } from 'react';
-import { Link, NavLink, Navigate } from 'react-router-dom';
+import { ReactNode, useState } from 'react';
+import { Link, NavLink, Navigate, useLocation } from 'react-router-dom';
 import {
   Store, Newspaper, FileText, LayoutTemplate, Home, Tags, Megaphone, Ticket,
   Users, Wallet, Workflow, Zap, GraduationCap, Network, Heart, Image as ImageIcon, Type, BookOpen,
+  ChevronDown, Menu as MenuIcon,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
 import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
 
-const ITENS = [
-  { para: '/painel-conteudo', rotulo: 'Visão geral', icone: Home, fim: true },
-  { para: '/painel-conteudo/negocios', rotulo: 'Negócios', icone: Store },
-  { para: '/painel-conteudo/blog', rotulo: 'Blog', icone: Newspaper },
-  { para: '/painel-conteudo/categorias', rotulo: 'Categorias e autoras', icone: Tags },
-  { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
-  { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
-  { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos, encontros e acessos', icone: Ticket },
-  { para: '/painel-conteudo/academy', rotulo: 'Academy', icone: GraduationCap },
-  { para: '/painel-conteudo/imagens', rotulo: 'Imagens', icone: ImageIcon },
-  { para: '/painel-conteudo/textos', rotulo: 'Textos do site', icone: Type },
-  { para: '/painel-conteudo/institucional', rotulo: 'Parceiros e linha do tempo', icone: ImageIcon },
-  { para: '/painel-conteudo/conecta', rotulo: 'Conecta+', icone: Network },
-  { para: '/painel-conteudo/embaixadoras', rotulo: 'Embaixadoras', icone: Heart },
-  { para: '/painel-conteudo/pessoas', rotulo: 'Pessoas', icone: Users },
-  { para: '/painel-conteudo/financeiro', rotulo: 'Financeiro', icone: Wallet },
-  { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
-  { para: '/painel-conteudo/automacoes', rotulo: 'Automações', icone: Zap },
-  { para: '/painel-conteudo/comunicados', rotulo: 'Comunicados', icone: Megaphone },
-  { para: '/painel-conteudo/newsletter', rotulo: 'Newsletter', icone: Megaphone },
-  { para: '/painel-conteudo/tutoriais', rotulo: 'Tutoriais', icone: BookOpen },
-
+type Item = { para: string; rotulo: string; icone: any; fim?: boolean };
+const GRUPOS: { titulo: string; itens: Item[] }[] = [
+  { titulo: 'Site', itens: [
+    { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
+    { para: '/painel-conteudo/menus', rotulo: 'Menus do site', icone: MenuIcon },
+    { para: '/painel-conteudo/textos', rotulo: 'Textos do site', icone: Type },
+    { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
+    { para: '/painel-conteudo/institucional', rotulo: 'Parceiros e linha do tempo', icone: ImageIcon },
+    { para: '/painel-conteudo/imagens', rotulo: 'Imagens', icone: ImageIcon },
+  ] },
+  { titulo: 'Conteúdo', itens: [
+    { para: '/painel-conteudo/blog', rotulo: 'Blog', icone: Newspaper },
+    { para: '/painel-conteudo/categorias', rotulo: 'Categorias e autoras', icone: Tags },
+    { para: '/painel-conteudo/academy', rotulo: 'Academy', icone: GraduationCap },
+  ] },
+  { titulo: 'Comunidade', itens: [
+    { para: '/painel-conteudo/pessoas', rotulo: 'Pessoas', icone: Users },
+    { para: '/painel-conteudo/negocios', rotulo: 'Negócios', icone: Store },
+    { para: '/painel-conteudo/conecta', rotulo: 'Conecta+', icone: Network },
+    { para: '/painel-conteudo/embaixadoras', rotulo: 'Embaixadoras', icone: Heart },
+  ] },
+  { titulo: 'Vendas', itens: [
+    { para: '/painel-conteudo/planos-eventos', rotulo: 'Planos, encontros e acessos', icone: Ticket },
+    { para: '/painel-conteudo/financeiro', rotulo: 'Financeiro', icone: Wallet },
+    { para: '/painel-conteudo/automacoes', rotulo: 'Automações', icone: Zap },
+  ] },
+  { titulo: 'Comunicação', itens: [
+    { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
+    { para: '/painel-conteudo/comunicados', rotulo: 'Comunicados', icone: Megaphone },
+    { para: '/painel-conteudo/newsletter', rotulo: 'Newsletter', icone: Megaphone },
+  ] },
 ];
+
+const classeLink = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+    isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+  );
+
+function Grupo({ titulo, itens }: { titulo: string; itens: Item[] }) {
+  const { pathname } = useLocation();
+  const contemAtual = itens.some((i) => pathname.startsWith(i.para));
+  const [aberto, setAberto] = useState(contemAtual);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+        aria-expanded={aberto}
+      >
+        {titulo}
+        <ChevronDown className={cn('w-4 h-4 transition-transform', aberto && 'rotate-180')} />
+      </button>
+      {aberto && (
+        <div className="space-y-1 pl-1">
+          {itens.map((item) => (
+            <NavLink key={item.para} to={item.para} className={classeLink}>
+              <item.icone className="w-4 h-4" />
+              {item.rotulo}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 
 export default function PainelLayout({
