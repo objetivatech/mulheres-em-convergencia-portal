@@ -191,7 +191,7 @@ export default function PainelNegocioEditor() {
             </CardContent>
           </Card>
           {!novo && id && <GerenciarCatalogo negocioId={id} whatsapp={form.whatsapp} />}
-          {!novo && id && <ModerarAvaliacoes negocioId={id} />}
+          {!novo && id && <ModerarAvaliacoes negocioId={id} admin />}
         </div>
 
         <div className="space-y-6">
