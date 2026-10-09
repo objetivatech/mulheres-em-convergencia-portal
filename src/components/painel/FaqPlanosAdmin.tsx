@@ -33,7 +33,7 @@ export default function FaqPlanosAdmin() {
 
   const novo = async () => {
     const { error } = await db.from('faq_planos').insert({
-      pergunta: 'Nova pergunta', resposta: 'Escreva a resposta aqui.', ordem: (itens.at(-1)?.ordem ?? 0) + 1,
+      pergunta: 'Nova pergunta', resposta: 'Escreva a resposta aqui.', ordem: (itens[itens.length - 1]?.ordem ?? 0) + 1,
     });
     error ? erro(error) : recarregar();
   };
