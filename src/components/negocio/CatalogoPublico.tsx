@@ -1,5 +1,6 @@
 /** Vitrine pública: produtos em abas por categoria + avaliações com formulário. */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, Star, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { TAGS_DESTAQUE, reais, useProdutos, useAvaliacoes, useEnviarAvaliacao, type Produto } from '@/hooks/useCatalogo';
+import { useAuth } from '@/hooks/useAuth';
+import { useMinhaPessoa, useMeuPerfil } from '@/hooks/useMinhaArea';
+import { TAGS_DESTAQUE, reais, useProdutos, useAvaliacoes, useEnviarAvaliacao, useMinhaAvaliacao, type Produto } from '@/hooks/useCatalogo';
 
 function CardProduto({ p, whatsapp, negocio }: { p: Produto; whatsapp?: string | null; negocio: string }) {
   const [aberto, setAberto] = useState(false);
@@ -82,29 +85,51 @@ export function CatalogoPublico({ negocioId, whatsapp, negocio }: { negocioId: s
   );
 }
 
-export function AvaliacoesPublicas({ negocioId }: { negocioId: string }) {
+export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: string; donaPessoaId?: string | null }) {
   const { data: avs = [] } = useAvaliacoes(negocioId);
+  const { user } = useAuth();
+  const { data: pessoaId } = useMinhaPessoa();
+  const { data: perfil } = useMeuPerfil();
+  const { data: minha } = useMinhaAvaliacao(negocioId, pessoaId ?? undefined);
   const enviar = useEnviarAvaliacao();
   const { toast } = useToast();
   const [nota, setNota] = useState(0);
-  const [nome, setNome] = useState('');
   const [comentario, setComentario] = useState('');
-  const [enviada, setEnviada] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const souDona = !!pessoaId && pessoaId === donaPessoaId;
+
+  useEffect(() => {
+    if (minha) { setNota(minha.nota); setComentario(minha.comentario ?? ''); }
+  }, [minha]);
+
+  const nome = (perfil as any)?.nome_social || (perfil as any)?.nome || user?.email?.split('@')[0] || 'Associada';
 
   const mandar = async () => {
-    if (nota < 1 || nome.trim().length < 2) { toast({ title: 'Escolha as estrelas e escreva seu nome', variant: 'destructive' }); return; }
+    if (nota < 1) { toast({ title: 'Escolha de 1 a 5 estrelas', variant: 'destructive' }); return; }
+    if (!pessoaId) return;
     try {
-      await enviar.mutateAsync({ negocio_id: negocioId, avaliador_nome: nome.trim(), nota, comentario: comentario.trim() || undefined });
-      setEnviada(true);
+      await enviar.mutateAsync({ id: minha?.id, negocio_id: negocioId, pessoa_id: pessoaId, avaliador_nome: nome, nota, comentario: comentario.trim() || undefined });
+      setEditando(false);
+      toast({ title: minha ? 'Avaliação atualizada' : 'Obrigada pela sua avaliação! 💜' });
     } catch (e: any) {
       toast({ title: 'Não foi possível enviar', description: e.message, variant: 'destructive' });
     }
   };
 
+  const media = avs.length ? avs.reduce((t, a) => t + a.nota, 0) / avs.length : 0;
+  const mostrarForm = !minha || editando;
+
   return (
     <section id="avaliacoes" className="space-y-4">
-      <h2 className="text-xl font-semibold">Avaliações</h2>
-      {avs.length === 0 && <p className="text-sm text-muted-foreground">Seja a primeira pessoa a avaliar.</p>}
+      <div className="flex flex-wrap items-baseline gap-3">
+        <h2 className="text-xl font-semibold">Avaliações</h2>
+        {avs.length > 0 && (
+          <span className="text-sm text-muted-foreground">
+            {media.toFixed(1).replace('.', ',')} de 5 · {avs.length} {avs.length === 1 ? 'avaliação' : 'avaliações'}
+          </span>
+        )}
+      </div>
+      {avs.length === 0 && <p className="text-sm text-muted-foreground">Ainda não há avaliações.</p>}
       <ul className="space-y-3">
         {avs.map((a) => (
           <li key={a.id} className="rounded-[var(--radius)] border border-border p-4 space-y-1">
@@ -118,9 +143,21 @@ export function AvaliacoesPublicas({ negocioId }: { negocioId: string }) {
         ))}
       </ul>
       <div className="rounded-[var(--radius)] border border-border bg-card p-4 space-y-3">
-        {enviada ? <p className="text-sm">Obrigada! Sua avaliação aparece aqui assim que a empreendedora aprovar. 💜</p> : (
+        {!user ? (
+          <div className="space-y-2">
+            <p className="text-sm">Avaliações são feitas por associadas da rede. Entre na sua conta para avaliar.</p>
+            <Button asChild size="sm"><Link to={`/entrar?redirect=${encodeURIComponent(window.location.pathname + '#avaliacoes')}`}>Entrar para avaliar</Link></Button>
+          </div>
+        ) : souDona ? (
+          <p className="text-sm text-muted-foreground">Este é o seu negócio — as avaliações vêm de outras associadas.</p>
+        ) : !mostrarForm ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm">Você deu {minha!.nota} {minha!.nota === 1 ? 'estrela' : 'estrelas'} a este negócio.</p>
+            <Button size="sm" variant="outline" onClick={() => setEditando(true)}>Mudar minha avaliação</Button>
+          </div>
+        ) : (
           <>
-            <p className="font-medium">Deixe sua avaliação</p>
+            <p className="font-medium">{minha ? 'Mudar minha avaliação' : 'Deixe sua avaliação'}</p>
             <div className="flex gap-1" role="radiogroup" aria-label="Nota">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button key={n} type="button" onClick={() => setNota(n)} aria-label={`${n} estrela${n > 1 ? 's' : ''}`}>
@@ -128,9 +165,9 @@ export function AvaliacoesPublicas({ negocioId }: { negocioId: string }) {
                 </button>
               ))}
             </div>
-            <Input maxLength={80} placeholder="Seu nome" value={nome} onChange={(e) => setNome(e.target.value)} />
             <Textarea maxLength={1000} rows={3} placeholder="Conte como foi sua experiência (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} />
-            <Button onClick={mandar} disabled={enviar.isPending}>Enviar avaliação</Button>
+            <p className="text-xs text-muted-foreground">Vai aparecer com o nome: {nome}</p>
+            <Button onClick={mandar} disabled={enviar.isPending || !pessoaId}>{minha ? 'Salvar' : 'Enviar avaliação'}</Button>
           </>
         )}
       </div>

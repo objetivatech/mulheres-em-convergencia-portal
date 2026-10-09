@@ -99,15 +99,37 @@ export function useAvaliacoes(negocioId?: string, todas = false) {
   });
 }
 
-export function useEnviarAvaliacao() {
-  return useMutation({
-    mutationFn: async (v: { negocio_id: string; avaliador_nome: string; nota: number; comentario?: string }) => {
-      const { error } = await db.from('negocio_avaliacoes').insert({ ...v, status: 'pendente' });
+/** A avaliação que a associada conectada já deixou neste negócio (se houver). */
+export function useMinhaAvaliacao(negocioId?: string, pessoaId?: string) {
+  return useQuery({
+    queryKey: ['catalogo', 'minha-avaliacao', negocioId, pessoaId],
+    enabled: !!negocioId && !!pessoaId,
+    queryFn: async () => {
+      const { data, error } = await db.from('negocio_avaliacoes')
+        .select('id, nota, comentario, avaliador_nome, status')
+        .eq('negocio_id', negocioId).eq('pessoa_id', pessoaId).maybeSingle();
       if (error) throw error;
+      return data as { id: string; nota: number; comentario: string | null; avaliador_nome: string; status: string } | null;
     },
   });
 }
 
+/** Associada conectada avalia (ou atualiza a própria avaliação). Uma por pessoa e negócio. */
+export function useEnviarAvaliacao() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { id?: string; negocio_id: string; pessoa_id: string; avaliador_nome: string; nota: number; comentario?: string }) => {
+      const valores = { nota: v.nota, comentario: v.comentario ?? null, avaliador_nome: v.avaliador_nome };
+      const r = v.id
+        ? await db.from('negocio_avaliacoes').update(valores).eq('id', v.id)
+        : await db.from('negocio_avaliacoes').insert({ ...valores, negocio_id: v.negocio_id, pessoa_id: v.pessoa_id, status: 'aprovado' });
+      if (r.error) throw r.error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['catalogo'] }),
+  });
+}
+
+/** Só a administração oculta ou volta a mostrar uma avaliação. */
 export function useModerarAvaliacao() {
   const qc = useQueryClient();
   return useMutation({
