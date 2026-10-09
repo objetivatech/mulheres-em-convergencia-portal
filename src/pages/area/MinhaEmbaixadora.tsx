@@ -14,6 +14,7 @@ import { useSalvarMinhaFicha } from '@/hooks/useEmbaixadorasAdmin';
 import { dinheiro } from '@/hooks/usePlanosEventos';
 import { useToast } from '@/hooks/use-toast';
 import AssistenteDivulgacao from '@/components/area/AssistenteDivulgacao';
+import CampanhasDivulgacao from '@/components/area/CampanhasDivulgacao';
 
 const data = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
@@ -98,6 +99,8 @@ export default function MinhaEmbaixadora() {
               </Badge>
             )}
           </section>
+
+          <CampanhasDivulgacao codigo={painel.ficha?.codigo} />
 
           <AssistenteDivulgacao />
 
