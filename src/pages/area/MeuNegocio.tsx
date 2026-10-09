@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
 import CampoLocalizacao from '@/components/negocio/CampoLocalizacao';
+import GerenciarCatalogo, { ModerarAvaliacoes } from '@/components/negocio/GerenciarCatalogo';
 import { useMeuPerfil } from '@/hooks/useMinhaArea';
 import {
   useMeuNegocioCompleto, useSalvarMeuNegocio, useFilhosMeuNegocio,
@@ -199,6 +200,14 @@ export default function MeuNegocio() {
                 )}
               </CardContent>
             </Card>
+            {id ? (
+              <>
+                <GerenciarCatalogo negocioId={id} whatsapp={form.whatsapp} />
+                <ModerarAvaliacoes negocioId={id} />
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Salve seu negócio uma vez para poder cadastrar produtos e serviços.</p>
+            )}
           </div>
 
           <div className="space-y-6">

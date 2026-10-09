@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import slugify from '@/lib/slugify';
 import SeletorPessoa from '@/components/painel/SeletorPessoa';
 import CampoLocalizacao from '@/components/negocio/CampoLocalizacao';
+import GerenciarCatalogo, { ModerarAvaliacoes } from '@/components/negocio/GerenciarCatalogo';
 import {
   usePainelNegocio, useSalvarNegocio, useFilhosNegocio,
 } from '@/hooks/usePainelConteudo';
@@ -188,6 +189,8 @@ export default function PainelNegocioEditor() {
               )}
             </CardContent>
           </Card>
+          {!novo && id && <GerenciarCatalogo negocioId={id} whatsapp={form.whatsapp} />}
+          {!novo && id && <ModerarAvaliacoes negocioId={id} />}
         </div>
 
         <div className="space-y-6">
