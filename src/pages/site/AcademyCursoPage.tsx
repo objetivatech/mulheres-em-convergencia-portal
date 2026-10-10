@@ -63,25 +63,25 @@ export default function AcademyCursoPage() {
         <meta name="description" content={curso.resumo ?? `Curso ${curso.titulo} na Academy Mulheres em Convergência.`} />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto px-4 py-12 max-w-3xl space-y-4">
+      <section className="bg-grad-hero text-primary-foreground">
+        <div className="container mx-auto max-w-3xl space-y-4 px-4 py-14 [&_.text-muted-foreground]:text-primary-foreground/85">
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline">{curso.nivel}</Badge>
             {curso.gratuito && <Badge variant="secondary">Gratuito</Badge>}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">{curso.titulo}</h1>
+          <h1 className="text-4xl font-extrabold leading-tight">{curso.titulo}</h1>
           {curso.resumo && <p className="text-muted-foreground">{curso.resumo}</p>}
 
           {!user ? (
-            <Button asChild><Link to="/entrar">Entrar para acessar</Link></Button>
+            <Button asChild className="bg-card text-primary hover:bg-card/90"><Link to="/entrar">Entrar para acessar</Link></Button>
           ) : !situacao?.matricula ? (
-            <Button onClick={entrar} disabled={matricular.isPending}>
+            <Button onClick={entrar} disabled={matricular.isPending} className="bg-card text-primary hover:bg-card/90">
               {matricular.isPending ? 'Entrando…' : 'Começar curso'}
             </Button>
           ) : !liberado ? (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Este curso faz parte da Academy para associadas.</p>
-              <Button asChild><Link to="/planos">Ver planos</Link></Button>
+              <Button asChild className="bg-card text-primary hover:bg-card/90"><Link to="/planos">Ver planos</Link></Button>
             </div>
           ) : (
             <Badge variant="secondary">Você está matriculada</Badge>
