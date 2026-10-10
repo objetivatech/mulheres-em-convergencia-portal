@@ -94,17 +94,17 @@ export default function NegocioPage() {
 
       <article className="container mx-auto px-4 pb-10 max-w-4xl space-y-8">
         <header className="space-y-3 -mt-14 relative">
-          <div className="flex items-end gap-4">
-            {negocio.logo_url && (
-              <img src={negocio.logo_url} alt={`Logo de ${negocio.nome}`} className="h-28 w-28 rounded-2xl border-4 border-background bg-card object-contain p-1" />
-            )}
+          <div className="flex items-end justify-between gap-4">
+            {negocio.logo_url ? (
+              <img src={negocio.logo_url} alt={`Logo de ${negocio.nome}`} className="h-24 w-24 sm:h-32 sm:w-32 shrink-0 rounded-2xl border-4 border-background bg-card object-contain p-1" style={{ boxShadow: 'var(--sombra-1)' }} />
+            ) : <span />}
             {dona && (
-              <div className="flex items-center gap-3 pb-2">
+              <div className="flex flex-row-reverse items-end gap-3 text-right">
                 {dona.foto_url ? (
-                  <img src={dona.foto_url} alt={dona.nome} className="h-16 w-16 rounded-full border-4 border-background object-cover" />
+                  <img src={dona.foto_url} alt={dona.nome} className="h-24 w-24 sm:h-32 sm:w-32 shrink-0 rounded-full border-4 border-background object-cover" style={{ boxShadow: 'var(--sombra-1)' }} />
                 ) : null}
-                <div>
-                  <p className="text-sm font-medium">{dona.nome}</p>
+                <div className="pb-2 min-w-0">
+                  <p className="text-sm sm:text-base font-semibold leading-tight">{dona.nome}</p>
                   <p className="text-xs text-muted-foreground">Empreendedora</p>
                 </div>
               </div>
