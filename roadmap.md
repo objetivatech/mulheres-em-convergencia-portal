@@ -111,4 +111,4 @@ Atualizado: 17/09/2026
 - [x] Fase 4 — diretório e página do negócio
 - [x] Fase 5 — planos e encontros
 - [x] Fase 6 — Academy e blog
-- [ ] Fase 7 — Minha área e painel da equipe
+- [x] Fase 7 — Minha área e painel da equipe
