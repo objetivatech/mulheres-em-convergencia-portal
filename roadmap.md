@@ -103,3 +103,12 @@ Atualizado: 17/09/2026
 - [x] Recuperação de senha no banco novo corrigida: funções públicas protegidas por token único, bloqueio de envio duplicado e documentação — 08/09/2026
 - [ ] Telas de planos, eventos, Academy, Conecta+ e Embaixadoras no banco novo
 - [ ] Ajustes manuais no Supabase novo: templates do Auth, URLs de redirecionamento, SMTP próprio e limite de envio (`docs/_reboot/19-emails-e-comunicados.md`)
+
+## Redesign Claude Design
+- [x] Fase 1 — cores, fonte e cantos globais
+- [x] Fase 2 — topo e rodapé
+- [x] Fase 3 — nova capa
+- [ ] Fase 4 — diretório e página do negócio
+- [ ] Fase 5 — planos e encontros
+- [ ] Fase 6 — Academy e blog
+- [ ] Fase 7 — Minha área e painel da equipe

@@ -294,3 +294,9 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Menu da equipe reorganizado em grupos retráteis.
 - Embaixadoras: tutoriais (associada e equipe), tour ampliado e doc `docs/_reboot/31`.
 - Segurança: view de vagas com permissões de quem consulta, consulta de acesso exige login, tokens de senha bloqueados explicitamente.
+
+## 2026-10-10 — Redesign (fases 1 a 3)
+- Fundações globais: fundo #FAF9F5, divisórias #ECE8E2, areia #FAF3EA, esmeralda/âmbar, cantos 18px, Montserrat 400–800 em títulos e textos, utilitários `bg-grad-marca`, `bg-grad-hero`, `texto-grad-marca`, `sombra-marca`.
+- Topo com botão "Fazer parte" em gradiente; rodapé escuro (carvão).
+- Nova capa: hero dividido com foto, faixa de números reais (negócios, áreas, encontros, cidades), depoimento editável, 4 pilares, diretório 3×3 mantido, "Por que se associar", prévia de planos vinda do cadastro, blog, parceiros e chamada final escura.
+- Avaliações: assinaturas pelo convite vão para a lista "Avaliadores" do Sender; nome obrigatório; convite reaparece até a pessoa assinar. Card de embaixadora com "Use o meu link".
