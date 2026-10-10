@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import CardNegocio from '@/components/site/CardNegocio';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
@@ -50,11 +51,7 @@ export default function DiretorioPage() {
         <meta property="og:url" content="https://mulheresemconvergencia.com.br/diretorio" />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto px-4 py-14 space-y-5 max-w-2xl">
-          <TextoSite as="h1" chave="diretorio.titulo" padrao="Diretório de negócios" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
-          <TextoSite as="p" chave="diretorio.subtitulo" padrao="Descubra empreendedoras da rede e fale direto com elas." className="text-muted-foreground" />
-          <div className="relative">
+      <CabecalhoPagina prefixo="diretorio"><div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={busca}
@@ -84,9 +81,7 @@ export default function DiretorioPage() {
                 </Badge>
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          )}</CabecalhoPagina>
 
       {(negocios ?? []).some((n) => n.latitude && n.longitude) && (
         <section className="container mx-auto px-4 pt-10">

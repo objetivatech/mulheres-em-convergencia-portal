@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Minus, UserPlus, CreditCard, Sparkles } from 'lucide-react';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import CobrancaDialog from '@/components/site/CobrancaDialog';
@@ -70,12 +71,7 @@ export default function PlanosPage() {
         <meta name="description" content="Compare os planos, veja o que cada um libera e escolha mensal, semestral ou anual." />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto max-w-2xl space-y-4 px-4 py-14 text-center">
-          <TextoSite as="h1" chave="planos.titulo" padrao="Planos" className="text-3xl font-semibold tracking-tight lg:text-4xl" />
-          <TextoSite as="p" chave="planos.subtitulo" padrao="Faça parte da rede: seu negócio no diretório, presença nos encontros e acesso à comunidade." className="text-muted-foreground" />
-        </div>
-      </section>
+      <CabecalhoPagina prefixo="planos" />
 
       {/* Como funciona */}
       <section className="container mx-auto px-4 py-12">

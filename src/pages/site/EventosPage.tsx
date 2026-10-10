@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Video, ChevronLeft, ChevronRight, Ticket } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Badge } from '@/components/ui/badge';
@@ -75,12 +76,7 @@ export default function EventosPage() {
         <meta name="description" content="Participe dos encontros, rodas de negócio e formações da rede Mulheres em Convergência." />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto px-4 py-14 max-w-2xl space-y-4">
-          <TextoSite as="h1" chave="eventos.titulo" padrao="Encontros e eventos" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
-          <TextoSite as="p" chave="eventos.subtitulo" padrao="Rodas de negócio, formações e celebrações da nossa rede." className="text-muted-foreground" />
-        </div>
-      </section>
+      <CabecalhoPagina prefixo="eventos" />
 
       {!!proximos?.length && <SliderDestaques eventos={proximos.slice(0, 3)} />}
 
