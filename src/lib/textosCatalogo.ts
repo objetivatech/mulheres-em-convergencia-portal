@@ -96,7 +96,7 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   { chave: 'academy.imagem', grupo: 'Academy', rotulo: 'Imagem da abertura (opcional)', padrao: '', tipo: 'imagem' },
   { chave: 'blog.selo', grupo: 'Blog Convergindo', rotulo: 'Selo acima do título (opcional)', padrao: '' },
   { chave: 'blog.imagem', grupo: 'Blog Convergindo', rotulo: 'Imagem da abertura (opcional)', padrao: '', tipo: 'imagem' },
-  { chave: 'embaixadoras.selo', grupo: 'Embaixadoras', rotulo: 'Selo acima do título (opcional)', padrao: '' },
+  { chave: 'embaixadoras.selo', grupo: 'Embaixadoras', rotulo: 'Selo acima do título (opcional)', padrao: 'Quem faz a rede crescer' },
   { chave: 'embaixadoras.imagem', grupo: 'Embaixadoras', rotulo: 'Imagem da abertura (opcional)', padrao: '', tipo: 'imagem' },
   { chave: 'academy.titulo', grupo: 'Academy', rotulo: 'Título da página', padrao: 'Academy' },
   { chave: 'academy.subtitulo', grupo: 'Academy', rotulo: 'Texto de apoio', padrao: 'Conteúdo prático para fazer seu negócio crescer, no seu ritmo.' },
