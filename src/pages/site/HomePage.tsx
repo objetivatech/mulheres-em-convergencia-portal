@@ -9,6 +9,9 @@ import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
 import TextoSite from '@/components/site/TextoSite';
+import ImagemSite from '@/components/site/ImagemSite';
+import { useTexto } from '@/hooks/useTextosSite';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBlocosSite, useTodosNegocios, usePosts } from '@/hooks/useSite';
@@ -21,18 +24,6 @@ const CORES_PILAR = [
   { fundo: 'bg-secondary/15', texto: 'text-secondary' },
   { fundo: 'bg-tertiary/25', texto: 'text-foreground' },
   { fundo: 'bg-warning/10', texto: 'text-warning' },
-];
-const PILARES_PADRAO = [
-  { titulo: 'Rede e encontros', texto: 'Rodas de negócio e formações presenciais e online.', link: '/eventos' },
-  { titulo: 'Academy', texto: 'Cursos de marketing digital e gestão no seu ritmo.', link: '/academy' },
-  { titulo: 'Diretório', texto: 'Presença online para quem procura o seu negócio.', link: '/diretorio' },
-  { titulo: 'Embaixadoras', texto: 'Indique, ganhe reconhecimento e faça a rede crescer.', link: '/embaixadoras' },
-];
-const MOTIVOS = [
-  'Página no diretório com contato direto e localização no mapa',
-  'Cursos de marketing e gestão na Academy',
-  'Encontros e rodas de negócio pela sua cidade',
-  'Indicações via Conecta+ entre associadas',
 ];
 const PERIODO: Record<string, string> = { mensal: 'mês', trimestral: 'trimestre', semestral: 'semestre', anual: 'ano', unico: 'único' };
 const POR_PAGINA = 9; // 3 linhas x 3 colunas
@@ -65,7 +56,7 @@ export default function HomePage() {
   const hero = blocos?.home_hero?.conteudo ?? {};
   const pilares: { titulo: string; texto: string; link: string }[] =
     blocos?.home_pilares?.conteudo?.itens ?? [];
-  const listaPilares = pilares.length ? pilares : PILARES_PADRAO;
+  const listaPilares = [0, 1, 2, 3].map((i) => pilares[i] ?? { titulo: undefined as any, texto: undefined as any, link: '' });
   const { data: planos = [] } = usePlanos();
   const { data: eventos = [] } = useEventos();
   const planosHome = useMemo(() => {
@@ -74,11 +65,20 @@ export default function HomePage() {
   }, [planos]);
   const totalNegocios = negocios?.length ?? 0;
   const totalCidades = useMemo(() => new Set((negocios ?? []).map((n) => `${n.cidade ?? ''}-${n.uf ?? ''}`.toLowerCase()).filter((c) => c !== '-')).size, [negocios]);
+  const { isAdmin } = useAuth();
+  const seloTpl = useTexto('home.hero.selo');
+  const seloHero = seloTpl.replace('{n}', String(totalNegocios));
+  const linkBotao = useTexto('home.hero.botao_link', hero.cta_link);
+  const linkBotao2 = useTexto('home.hero.botao_secundario_link');
+  const fotoDepo = useTexto('home.depoimento.foto');
+  const rot1 = useTexto('home.numeros.1'), rot2 = useTexto('home.numeros.2'), rot3 = useTexto('home.numeros.3'), rot4 = useTexto('home.numeros.4');
+  const motivos = [useTexto('home.porque.item1'), useTexto('home.porque.item2'), useTexto('home.porque.item3'), useTexto('home.porque.item4')];
+  const linksPilares = [useTexto('home.pilar1.link'), useTexto('home.pilar2.link'), useTexto('home.pilar3.link'), useTexto('home.pilar4.link')];
   const numeros = [
-    { valor: totalNegocios || '—', rotulo: 'negócios no diretório', cor: 'text-primary' },
-    { valor: tipos.length || '—', rotulo: 'áreas de atuação', cor: 'text-secondary' },
-    { valor: eventos.length || '—', rotulo: 'encontros realizados', cor: 'text-secondary' },
-    { valor: totalCidades || '—', rotulo: 'cidades', cor: 'text-warning' },
+    { valor: totalNegocios || '—', rotulo: rot1, cor: 'text-primary' },
+    { valor: tipos.length || '—', rotulo: rot2, cor: 'text-secondary' },
+    { valor: eventos.length || '—', rotulo: rot3, cor: 'text-secondary' },
+    { valor: totalCidades || '—', rotulo: rot4, cor: 'text-warning' },
   ];
 
   return (
@@ -102,25 +102,21 @@ export default function HomePage() {
           <div className="relative px-6 py-16 sm:px-10 lg:py-24 lg:pl-[max(2rem,calc((100vw-1400px)/2+2rem))] lg:pr-12">
             <span aria-hidden className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary-foreground/10" />
             <span className="relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold">
-              {totalNegocios >= 20 ? `+${totalNegocios} negócios liderados por mulheres` : 'Negócios liderados por mulheres'}
+              {seloHero}
             </span>
-            <h1 className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]">
-              {hero.titulo ?? 'Sua rede de apoio para transformar o negócio numa empresa que sustenta sua vida'}
-            </h1>
-            <p className="relative mt-6 max-w-xl text-lg text-primary-foreground/90">
-              {hero.subtitulo ?? 'Formação prática, networking ativo e visibilidade no diretório — feito para quem concilia negócio, casa e o resto da vida.'}
-            </p>
+            <TextoSite as="h1" chave="home.hero.titulo" padrao={hero.titulo} className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
+            <TextoSite as="p" multilinha chave="home.hero.subtitulo" padrao={hero.subtitulo} className="relative mt-6 max-w-xl text-lg text-primary-foreground/90" />
             <div className="relative mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-card text-primary font-semibold hover:bg-card/90">
-                <Link to={hero.cta_link ?? '/planos'}>{hero.cta_texto ?? 'Quero fazer parte'}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to={linkBotao}><TextoSite chave="home.hero.botao" padrao={hero.cta_texto} /><ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-primary-foreground/60 bg-transparent text-primary-foreground font-semibold hover:bg-primary-foreground/10 hover:text-primary-foreground">
-                <Link to="/diretorio"><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>
+                <Link to={linkBotao2}><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>
               </Button>
             </div>
           </div>
           <div className="relative min-h-[320px] lg:min-h-0">
-            <img src={fotoHero} alt="Empreendedora da rede em seu ateliê" width={896} height={1152} className="absolute inset-0 h-full w-full object-cover" />
+            <ImagemSite chave="home.hero.imagem" padrao={fotoHero} alt="Empreendedora da rede" width={896} height={1152} eager className="absolute inset-0 h-full w-full object-cover" />
           </div>
         </div>
       </section>
@@ -129,7 +125,7 @@ export default function HomePage() {
       <section className="container mx-auto px-4">
         <div className="relative z-10 -mt-12 grid grid-cols-2 overflow-hidden rounded-[var(--radius)] border border-border bg-card lg:grid-cols-4" style={{ boxShadow: 'var(--sombra-3)' }}>
           {numeros.map((n, i) => (
-            <div key={n.rotulo} className={`px-4 py-6 text-center ${i % 2 ? 'border-l' : ''} ${i > 1 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''} border-border`}>
+            <div key={i} className={`px-4 py-6 text-center ${i % 2 ? 'border-l' : ''} ${i > 1 ? 'border-t lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''} border-border`}>
               <p className={`text-3xl font-extrabold ${n.cor}`}>{n.valor}</p>
               <p className="text-sm text-muted-foreground">{n.rotulo}</p>
             </div>
@@ -140,27 +136,30 @@ export default function HomePage() {
       {/* Depoimento */}
       <section className="container mx-auto px-4 py-14">
         <figure className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
-          <span aria-hidden className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-accent text-5xl font-extrabold text-primary">“</span>
-          <TextoSite as="blockquote" multilinha chave="home.depoimento.texto" padrao="Entrei buscando clientes e encontrei uma rede que me ensinou a precificar, organizar as finanças e finalmente sair do zero a zero todo mês." className="flex-1 text-xl italic leading-relaxed" />
-          <TextoSite as="figcaption" chave="home.depoimento.autora" padrao="— Associada da rede" className="text-sm text-muted-foreground md:max-w-[14rem]" />
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-accent">
+            {fotoDepo ? <ImagemSite chave="home.depoimento.foto" alt="Autora do depoimento" className="h-full w-full object-cover" />
+              : <><span aria-hidden className="flex h-full w-full items-center justify-center text-5xl font-extrabold text-primary">“</span><ImagemSite chave="home.depoimento.foto" alt="" className="hidden" /></>}
+          </div>
+          <TextoSite as="blockquote" multilinha chave="home.depoimento.texto" className="flex-1 text-xl italic leading-relaxed" />
+          <TextoSite as="figcaption" chave="home.depoimento.autora" className="text-sm text-muted-foreground md:max-w-[14rem]" />
         </figure>
       </section>
 
       {/* Pilares */}
       <section className="container mx-auto px-4 pb-16">
         <div className="mb-10 text-center">
-          <TextoSite as="h2" chave="home.pilares.titulo" padrao="Tudo que você precisa, num só lugar" />
-          <TextoSite as="p" chave="home.pilares.subtitulo" padrao="Ferramentas pensadas para quem tem pouco tempo e muita vontade de crescer." className="mt-2 text-muted-foreground" />
+          <TextoSite as="h2" chave="home.pilares.titulo" />
+          <TextoSite as="p" chave="home.pilares.subtitulo" className="mt-2 text-muted-foreground" />
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {listaPilares.map((p, i) => {
             const Icone = ICONES[i % ICONES.length];
             const cor = CORES_PILAR[i % CORES_PILAR.length];
             return (
-              <Link key={p.titulo} to={p.link} className={`group rounded-[var(--radius)] p-6 transition-all hover:-translate-y-1 ${cor.fundo}`}>
+              <Link key={i} to={linksPilares[i] || p.link} className={`group rounded-[var(--radius)] p-6 transition-all hover:-translate-y-1 ${cor.fundo}`}>
                 <Icone className={`mb-3 h-6 w-6 ${cor.texto}`} />
-                <h3 className={`text-lg font-bold ${cor.texto}`}>{p.titulo}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{p.texto}</p>
+                <TextoSite as="h3" chave={`home.pilar${i + 1}.titulo`} padrao={p.titulo} className={`text-lg font-bold ${cor.texto}`} />
+                <TextoSite as="p" chave={`home.pilar${i + 1}.texto`} padrao={p.texto} className="mt-1 text-sm text-muted-foreground" />
               </Link>
             );
           })}
@@ -226,16 +225,18 @@ export default function HomePage() {
       {/* Por que se associar */}
       <section className="bg-surface-quente py-16 lg:py-20">
         <div className="container mx-auto grid items-center gap-10 px-4 lg:grid-cols-2 lg:gap-14">
-          <img src={fotoEncontro} alt="Encontro presencial de associadas da rede" width={1280} height={832} loading="lazy" className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover" style={{ boxShadow: 'var(--sombra-2)' }} />
+          <div className="relative overflow-hidden rounded-[var(--radius)]" style={{ boxShadow: 'var(--sombra-2)' }}>
+            <ImagemSite chave="home.porque.imagem" padrao={fotoEncontro} alt="Encontro de associadas da rede" width={1280} height={832} className="aspect-[3/2] w-full object-cover" />
+          </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Por que se associar</p>
-            <TextoSite as="h2" chave="home.porque.titulo" padrao="Ser encontrada é só o começo" className="mt-2" />
+            <TextoSite as="p" chave="home.porque.selo" className="text-xs font-semibold uppercase tracking-widest text-secondary" />
+            <TextoSite as="h2" chave="home.porque.titulo" className="mt-2" />
             <ul className="mt-6 space-y-3">
-              {MOTIVOS.map((m) => (
-                <li key={m} className="flex gap-3"><Check className="mt-1 h-5 w-5 shrink-0 text-success" /><span>{m}</span></li>
+              {[1, 2, 3, 4].map((i) => (
+                <li key={i} className={`flex gap-3 ${motivos[i - 1] || isAdmin ? '' : 'hidden'}`}><Check className="mt-1 h-5 w-5 shrink-0 text-success" /><TextoSite chave={`home.porque.item${i}`} /></li>
               ))}
             </ul>
-            <Button asChild size="lg" className="mt-8 font-semibold"><Link to="/planos">Ver os planos</Link></Button>
+            <Button asChild size="lg" className="mt-8 font-semibold"><Link to="/planos"><TextoSite chave="home.porque.botao" /></Link></Button>
           </div>
         </div>
       </section>
@@ -244,8 +245,8 @@ export default function HomePage() {
       {planosHome.length > 0 && (
         <section className="container mx-auto px-4 py-16 lg:py-20">
           <div className="mb-10 text-center">
-            <TextoSite as="h2" chave="home.planos.titulo" padrao="Escolha o plano certo para você" />
-            <TextoSite as="p" chave="home.planos.subtitulo" padrao="Cancele quando quiser. Sem burocracia." className="mt-2 text-muted-foreground" />
+            <TextoSite as="h2" chave="home.planos.titulo" />
+            <TextoSite as="p" chave="home.planos.subtitulo" className="mt-2 text-muted-foreground" />
           </div>
           <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
             {planosHome.map((p) => (
@@ -263,7 +264,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-sm"><Link to="/planos" className="font-semibold text-primary hover:underline">Ver todos os planos e comparar →</Link></p>
+          <p className="mt-6 text-center text-sm"><Link to="/planos" className="font-semibold text-primary hover:underline"><TextoSite chave="home.planos.link" /></Link></p>
         </section>
       )}
 
@@ -310,9 +311,9 @@ export default function HomePage() {
       {/* Chamada final */}
       <section className="bg-foreground py-20 text-background">
         <div className="container mx-auto space-y-4 px-4 text-center">
-          <TextoSite as="h2" chave="home.cta.titulo" padrao="Sua vez de fazer parte da convergência" />
-          <TextoSite as="p" chave="home.cta.subtitulo" padrao="Escolha um plano e comece hoje." className="text-background/70" />
-          <Button asChild size="lg" className="bg-grad-marca font-semibold sombra-marca hover:opacity-90"><Link to="/planos"><TextoSite chave="home.cta.botao" padrao="Conhecer os planos" /></Link></Button>
+          <TextoSite as="h2" chave="home.cta.titulo" />
+          <TextoSite as="p" chave="home.cta.subtitulo" className="text-background/70" />
+          <Button asChild size="lg" className="bg-grad-marca font-semibold sombra-marca hover:opacity-90"><Link to="/planos"><TextoSite chave="home.cta.botao" /></Link></Button>
         </div>
       </section>
     </SiteLayout>

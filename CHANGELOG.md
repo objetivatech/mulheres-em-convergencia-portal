@@ -300,3 +300,4 @@ Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 - Topo com botão "Fazer parte" em gradiente; rodapé escuro (carvão).
 - Nova capa: hero dividido com foto, faixa de números reais (negócios, áreas, encontros, cidades), depoimento editável, 4 pilares, diretório 3×3 mantido, "Por que se associar", prévia de planos vinda do cadastro, blog, parceiros e chamada final escura.
 - Avaliações: assinaturas pelo convite vão para a lista "Avaliadores" do Sender; nome obrigatório; convite reaparece até a pessoa assinar. Card de embaixadora com "Use o meu link".
+- Editor de páginas (antigo "Textos do site"): passa a editar fotos e links além de textos. Capa inteira, aberturas de Diretório, Encontros, Planos, Academy, Blog e Embaixadoras e os passos do programa de embaixadoras ficam editáveis. Novo componente `CabecalhoPagina` (faixa em degradê com selo, título, texto e foto opcional) aplicado nessas páginas.

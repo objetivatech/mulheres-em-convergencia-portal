@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Clock, GraduationCap } from 'lucide-react';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,14 +21,7 @@ export default function AcademyPage() {
         />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto px-4 py-14 max-w-2xl space-y-4 text-center">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Academy</h1>
-          <p className="text-muted-foreground">
-            Conteúdo prático para fazer seu negócio crescer, no seu ritmo.
-          </p>
-        </div>
-      </section>
+      <CabecalhoPagina prefixo="academy" />
 
       <section className="container mx-auto px-4 py-14">
         {isLoading ? (

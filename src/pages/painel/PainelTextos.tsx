@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CATALOGO_TEXTOS } from '@/lib/textosCatalogo';
 import { useSalvarTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { toast } from '@/hooks/use-toast';
+import CampoImagem from '@/components/imagens/CampoImagem';
 
 export default function PainelTextos() {
   const { data, isLoading } = useTextosSite();
@@ -34,8 +35,8 @@ export default function PainelTextos() {
 
   return (
     <PainelLayout
-      titulo="Textos do site"
-      descricao="Edite aqui qualquer texto fixo das páginas públicas. Também dá para editar direto na página, pelo lápis."
+      titulo="Editor de páginas"
+      descricao="Todos os textos, fotos e links das páginas públicas, separados por página. Também dá para editar direto na página, pelo lápis ou pelo botão Trocar imagem."
     >
       <div className="relative max-w-md mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -56,10 +57,12 @@ export default function PainelTextos() {
                   return (
                     <div key={t.chave} className="space-y-2">
                       <label className="text-sm font-medium">{t.rotulo}</label>
-                      {t.padrao.length > 60 ? (
+                      {t.tipo === 'imagem' ? (
+                        <CampoImagem value={valor} onChange={(url) => setRascunhos((r) => ({ ...r, [t.chave]: url }))} pasta="site" alturaPrevia="h-40" />
+                      ) : t.padrao.length > 60 ? (
                         <Textarea rows={3} value={valor} onChange={(e) => setRascunhos((r) => ({ ...r, [t.chave]: e.target.value }))} />
                       ) : (
-                        <Input value={valor} onChange={(e) => setRascunhos((r) => ({ ...r, [t.chave]: e.target.value }))} />
+                        <Input value={valor} placeholder={t.tipo === 'link' ? 'Ex.: /planos ou https://…' : undefined} onChange={(e) => setRascunhos((r) => ({ ...r, [t.chave]: e.target.value }))} />
                       )}
                       <div className="flex gap-2">
                         <Button

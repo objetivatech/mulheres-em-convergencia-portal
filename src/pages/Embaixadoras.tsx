@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ArrowRight, Check, Copy, Link2, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
+import TextoSite from '@/components/site/TextoSite';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import { stripHtml } from '@/lib/stripHtml';
 import { Button } from '@/components/ui/button';
@@ -90,22 +92,14 @@ export default function Embaixadoras() {
         <script type="application/ld+json">{JSON.stringify(ld)}</script>
       </Helmet>
 
-      <section className="relative overflow-hidden py-16 md:py-24" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / .14), hsl(var(--accent) / .3))' }}>
-        <div className="container mx-auto px-4 max-w-3xl text-center space-y-5">
-          <span className="inline-flex items-center gap-2 rounded-full bg-card/80 px-4 py-1.5 text-sm font-medium text-primary"><Sparkles className="h-4 w-4" />Quem faz a rede crescer</span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight">Nossas Embaixadoras</h1>
-          <p className="text-lg text-muted-foreground">
-            Cada nova associada que chega à rede tem por trás uma mulher que acreditou e compartilhou. Elas abrem portas,
-            fazem pontes e espalham o Mulheres em Convergência por todo o Brasil.
-          </p>
-          {lista.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-8 pt-2">
-              <div><p className="text-3xl font-bold text-primary">{lista.length}</p><p className="text-xs text-muted-foreground">embaixadoras</p></div>
-              {totalIndicacoes > 0 && <div><p className="text-3xl font-bold text-primary">{totalIndicacoes}</p><p className="text-xs text-muted-foreground">novas associadas trazidas</p></div>}
-            </div>
-          )}
-        </div>
-      </section>
+      <CabecalhoPagina prefixo="embaixadoras">
+        {lista.length > 0 && (
+          <div className="flex flex-wrap gap-8 text-primary-foreground">
+            <div><p className="text-3xl font-extrabold">{lista.length}</p><p className="text-xs opacity-80">embaixadoras</p></div>
+            {totalIndicacoes > 0 && <div><p className="text-3xl font-extrabold">{totalIndicacoes}</p><p className="text-xs opacity-80">novas associadas trazidas</p></div>}
+          </div>
+        )}
+      </CabecalhoPagina>
 
       <section className="container mx-auto px-4 py-12 md:py-16">
         {isLoading ? (
@@ -121,23 +115,21 @@ export default function Embaixadoras() {
 
       <section className="bg-secondary/40 py-16">
         <div className="container mx-auto px-4 max-w-5xl space-y-10">
-          <h2 className="text-center text-2xl md:text-3xl font-bold">Como funciona o programa</h2>
+          <TextoSite as="h2" chave="embaixadoras.programa.titulo" className="block text-center text-2xl md:text-3xl font-bold" />
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { Icone: Users, t: 'Ela é convidada', d: 'A equipe convida associadas que vivem a rede e querem levá-la mais longe.' },
-              { Icone: Megaphone, t: 'Ela compartilha', d: 'Recebe campanhas prontas e um link próprio para indicar novas empreendedoras.' },
-              { Icone: Heart, t: 'A rede cresce', d: 'Cada indicação que vira associada é reconhecida e valorizada pela comunidade.' },
-            ].map(({ Icone, t, d }) => (
-              <div key={t} className="rounded-[var(--radius)] border border-border bg-card p-6 space-y-2">
+              { Icone: Users, n: 1 }, { Icone: Megaphone, n: 2 }, { Icone: Heart, n: 3 },
+            ].map(({ Icone, n }) => (
+              <div key={n} className="rounded-[var(--radius)] border border-border bg-card p-6 space-y-2">
                 <Icone className="h-7 w-7 text-primary" />
-                <h3 className="font-semibold">{t}</h3>
-                <p className="text-sm text-muted-foreground">{d}</p>
+                <TextoSite as="h3" chave={`embaixadoras.passo${n}.titulo`} className="font-semibold" />
+                <TextoSite as="p" chave={`embaixadoras.passo${n}.texto`} className="text-sm text-muted-foreground" />
               </div>
             ))}
           </div>
           <div className="text-center space-y-3">
-            <p className="text-muted-foreground">Quer fazer parte dessa rede de mulheres que fazem acontecer?</p>
-            <Button asChild size="lg"><Link to="/planos">Conheça os planos <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <TextoSite as="p" chave="embaixadoras.cta.texto" className="text-muted-foreground" />
+            <Button asChild size="lg"><Link to="/planos"><TextoSite chave="embaixadoras.cta.botao" /> <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
         </div>
       </section>

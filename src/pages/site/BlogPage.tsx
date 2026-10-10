@@ -5,6 +5,7 @@ import { Search, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { stripHtml } from '@/lib/stripHtml';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
@@ -66,11 +67,7 @@ export default function BlogPage() {
         <meta name="description" content="Histórias, aprendizados e conteúdos práticos para mulheres empreendedoras no blog Convergindo." />
       </Helmet>
 
-      <section className="border-b border-border bg-surface-quente">
-        <div className="container mx-auto px-4 py-14 max-w-2xl space-y-5">
-          <TextoSite as="h1" chave="blog.titulo" padrao="Convergindo" className="text-3xl lg:text-4xl font-semibold tracking-tight" />
-          <TextoSite as="p" chave="blog.subtitulo" padrao="Conteúdo feito por e para mulheres empreendedoras." className="text-muted-foreground" />
-          <div className="relative">
+      <CabecalhoPagina prefixo="blog"><div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={busca}
@@ -96,9 +93,7 @@ export default function BlogPage() {
                 </Badge>
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          )}</CabecalhoPagina>
 
       {!busca && !categoria && posts && <CarrosselDestaques posts={posts.slice(0, 5)} />}
 
