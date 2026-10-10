@@ -3290,6 +3290,23 @@ export type Database = {
         }[]
       }
       e_admin: { Args: never; Returns: boolean }
+      embaixadoras_publicas: {
+        Args: never
+        Returns: {
+          apresentacao: string
+          cidade: string
+          desde: string
+          foto_url: string
+          id: string
+          indicacoes: number
+          instagram: string
+          linkedin: string
+          nivel: string
+          nome: string
+          site: string
+          uf: string
+        }[]
+      }
       garantir_pessoa: {
         Args: { _cpf?: string; _email?: string; _nome?: string }
         Returns: string
