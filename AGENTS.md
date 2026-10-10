@@ -11,3 +11,4 @@
 - Avaliação de negócio é pública (visitante insere com `pessoa_id` nulo; associada logada mantém uma por negócio) e entra no ar na hora; ocultar é exclusivo de admin — evita a dona censurar notas.
 - Inscrição pública na newsletter passa só pela função `newsletter-inscrever` (nome+e-mail, token do Sender no servidor) — o navegador nunca fala direto com o Sender.
 - Presença em encontro é a existência de linha em `evento_presencas` (código do QR = `evento_inscricoes.id`) — nunca flag gravada na inscrição.
+- Todo texto, foto e link fixo das páginas públicas vem de `textos_site` via catálogo `src/lib/textosCatalogo.ts` (tipos texto/rico/imagem/link) e é editado no "Editor de páginas" ou inline (`TextoSite`/`ImagemSite`) — nada de conteúdo fixo no código além do padrão do catálogo.
