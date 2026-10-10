@@ -1,3 +1,4 @@
+import TextoSite from '@/components/site/TextoSite';
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { stripHtml } from '@/lib/stripHtml';
@@ -23,7 +24,7 @@ export default function CardNegocio({ negocio: n }: { negocio: Negocio }) {
   return (
     <Link
       to={`/diretorio/${n.slug}`}
-      className="group rounded-[var(--radius)] border border-border bg-card overflow-hidden transition-transform hover:-translate-y-1 flex flex-col"
+      className="group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-card transition-all hover:-translate-y-1 hover:sombra-marca"
       style={{ boxShadow: 'var(--sombra-1)' }}
     >
       <div className="relative aspect-[16/9] bg-muted overflow-hidden">
@@ -45,8 +46,8 @@ export default function CardNegocio({ negocio: n }: { negocio: Negocio }) {
         )}
       </div>
       <div className="p-5 space-y-2 flex-1">
-        {n.categoria && <p className="text-xs uppercase tracking-wide text-primary">{n.categoria}</p>}
-        <h3 className="font-semibold leading-snug">{n.nome}</h3>
+        {n.categoria && <p className="text-xs font-semibold uppercase tracking-widest text-primary">{n.categoria}</p>}
+        <h3 className="text-lg font-bold leading-snug">{n.nome}</h3>
         {nota && <Estrelas media={nota.media} total={nota.total} compacto className="text-xs" />}
         {(n.cidade || n.uf) && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -66,7 +67,7 @@ export default function CardNegocio({ negocio: n }: { negocio: Negocio }) {
           )}
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">{dona.nome}</p>
-            <p className="text-xs text-muted-foreground">Empreendedora</p>
+            <TextoSite as="p" chave="negocio.rotulo_dona" className="text-xs text-muted-foreground" />
           </div>
         </div>
       )}

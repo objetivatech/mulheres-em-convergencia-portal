@@ -2,6 +2,7 @@ import DOMPurify from 'dompurify';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
 import { Globe, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import TextoSite from '@/components/site/TextoSite';
 import SiteLayout from '@/components/site/SiteLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -88,30 +89,31 @@ export default function NegocioPage() {
         <script type="application/ld+json">{JSON.stringify(trilha)}</script>
       </Helmet>
 
-      <div className="relative h-56 lg:h-80 bg-muted overflow-hidden">
+      <div className="relative h-56 lg:h-80 overflow-hidden bg-grad-hero">
         {negocio.capa_url && <img src={negocio.capa_url} alt={`Capa de ${negocio.nome}`} className="h-full w-full object-cover" />}
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/60 to-transparent" />
       </div>
 
-      <article className="container mx-auto px-4 pb-10 max-w-4xl space-y-8">
-        <header className="space-y-3 -mt-14 relative">
+      <article className="container mx-auto max-w-6xl space-y-8 px-4 pb-16">
+        <header className="relative -mt-14 space-y-3 rounded-[var(--radius)] border border-border bg-card p-5 sm:p-7" style={{ boxShadow: 'var(--sombra-2)' }}>
           <div className="flex items-end justify-between gap-4">
             {negocio.logo_url ? (
-              <img src={negocio.logo_url} alt={`Logo de ${negocio.nome}`} className="h-24 w-24 sm:h-32 sm:w-32 shrink-0 rounded-2xl border-4 border-background bg-card object-contain p-1" style={{ boxShadow: 'var(--sombra-1)' }} />
+              <img src={negocio.logo_url} alt={`Logo de ${negocio.nome}`} className="-mt-16 h-24 w-24 shrink-0 rounded-2xl border-4 border-card bg-card object-contain p-1 sm:-mt-20 sm:h-32 sm:w-32" style={{ boxShadow: 'var(--sombra-1)' }} />
             ) : <span />}
             {dona && (
               <div className="flex flex-row-reverse items-end gap-3 text-right">
                 {dona.foto_url ? (
-                  <img src={dona.foto_url} alt={dona.nome} className="h-24 w-24 sm:h-32 sm:w-32 shrink-0 rounded-full border-4 border-background object-cover" style={{ boxShadow: 'var(--sombra-1)' }} />
+                  <img src={dona.foto_url} alt={dona.nome} className="-mt-16 h-24 w-24 shrink-0 rounded-full border-4 border-card object-cover sm:-mt-20 sm:h-32 sm:w-32" style={{ boxShadow: 'var(--sombra-1)' }} />
                 ) : null}
                 <div className="pb-2 min-w-0">
                   <p className="text-sm sm:text-base font-semibold leading-tight">{dona.nome}</p>
-                  <p className="text-xs text-muted-foreground">Empreendedora</p>
+                  <TextoSite as="p" chave="negocio.rotulo_dona" className="text-xs text-muted-foreground" />
                 </div>
               </div>
             )}
           </div>
-          {negocio.categoria && <Badge variant="outline">{negocio.categoria}</Badge>}
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">{negocio.nome}</h1>
+          {negocio.categoria && <p className="text-xs font-semibold uppercase tracking-widest text-primary">{negocio.categoria}</p>}
+          <h1 className="text-3xl font-extrabold lg:text-4xl">{negocio.nome}</h1>
           {total > 0 && <a href="#avaliacoes"><Estrelas media={media} total={total} /></a>}
           {(negocio.cidade || negocio.uf) && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -121,48 +123,14 @@ export default function NegocioPage() {
           )}
         </header>
 
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="min-w-0 space-y-10">
         {negocio.descricao && <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(negocio.descricao) }} />}
 
         <CatalogoPublico negocioId={negocio.id} whatsapp={negocio.whatsapp} negocio={negocio.nome} />
-
-        {contatos.length > 0 && (
-          <section className="rounded-[var(--radius)] border border-border p-5 space-y-3">
-            <h2 className="font-medium">Contato</h2>
-            <div className="flex flex-wrap gap-2">
-              {contatos.map((c) => (
-                <Button key={c.href} asChild variant="outline" size="sm">
-                  <a href={c.href} target="_blank" rel="noopener noreferrer">
-                    <c.icone className="w-4 h-4 mr-2" />{c.texto}
-                  </a>
-                </Button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {negocio.comodidades?.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="font-medium">Comodidades</h2>
-            <div className="flex flex-wrap gap-2">
-              {negocio.comodidades.map((c) => <Badge key={c.id} variant="secondary">{c.nome}</Badge>)}
-            </div>
-          </section>
-        )}
-
-        {negocio.areas?.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="font-medium">Onde atende</h2>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              {negocio.areas.map((a) => (
-                <li key={a.id}>{[a.bairro, a.cidade, a.uf].filter(Boolean).join(', ')}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         {negocio.midias?.length > 0 && (
           <section className="space-y-3">
-            <h2 className="font-medium">Galeria</h2>
+            <TextoSite as="h2" chave="negocio.titulo_galeria" className="text-xl font-bold" />
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {negocio.midias
                 .slice()
@@ -180,7 +148,47 @@ export default function NegocioPage() {
           </section>
         )}
 
-        <AvaliacoesPublicas negocioId={negocio.id} donaPessoaId={(negocio as any).pessoa_id} />
+            <AvaliacoesPublicas negocioId={negocio.id} donaPessoaId={(negocio as any).pessoa_id} />
+          </div>
+          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+
+        {contatos.length > 0 && (
+          <section className="space-y-3 rounded-[var(--radius)] border border-border bg-card p-5">
+            <TextoSite as="h2" chave="negocio.titulo_contato" className="text-base font-bold" />
+            <div className="flex flex-col gap-2">
+              {contatos.map((c) => (
+                <Button key={c.href} asChild variant="outline" size="sm" className="w-full justify-start">
+                  <a href={c.href} target="_blank" rel="noopener noreferrer">
+                    <c.icone className="w-4 h-4 mr-2" />{c.texto}
+                  </a>
+                </Button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {negocio.comodidades?.length > 0 && (
+          <section className="space-y-3 rounded-[var(--radius)] border border-border bg-card p-5">
+            <TextoSite as="h2" chave="negocio.titulo_comodidades" className="text-base font-bold" />
+            <div className="flex flex-wrap gap-2">
+              {negocio.comodidades.map((c) => <Badge key={c.id} variant="secondary">{c.nome}</Badge>)}
+            </div>
+          </section>
+        )}
+
+        {negocio.areas?.length > 0 && (
+          <section className="space-y-3 rounded-[var(--radius)] border border-border bg-card p-5">
+            <TextoSite as="h2" chave="negocio.titulo_areas" className="text-base font-bold" />
+            <ul className="text-sm text-muted-foreground space-y-1">
+              {negocio.areas.map((a) => (
+                <li key={a.id}>{[a.bairro, a.cidade, a.uf].filter(Boolean).join(', ')}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+          </aside>
+        </div>
       </article>
     </SiteLayout>
   );

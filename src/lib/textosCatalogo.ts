@@ -120,6 +120,12 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   { chave: 'embaixadoras.cta.texto', grupo: 'Embaixadoras', rotulo: 'Chamada final — texto', padrao: 'Quer fazer parte dessa rede de mulheres que fazem acontecer?' },
   { chave: 'embaixadoras.cta.botao', grupo: 'Embaixadoras', rotulo: 'Chamada final — botão', padrao: 'Conheça os planos' },
 
+  { chave: 'negocio.rotulo_dona', grupo: 'Página do negócio', rotulo: 'Rótulo abaixo do nome da dona', padrao: 'Empreendedora' },
+  { chave: 'negocio.titulo_contato', grupo: 'Página do negócio', rotulo: 'Título — contato', padrao: 'Fale com ela' },
+  { chave: 'negocio.titulo_comodidades', grupo: 'Página do negócio', rotulo: 'Título — comodidades', padrao: 'Comodidades' },
+  { chave: 'negocio.titulo_areas', grupo: 'Página do negócio', rotulo: 'Título — onde atende', padrao: 'Onde atende' },
+  { chave: 'negocio.titulo_galeria', grupo: 'Página do negócio', rotulo: 'Título — galeria', padrao: 'Galeria' },
+
   // Rodapé e topo
   { chave: 'rodape.sobre', grupo: 'Rodapé', rotulo: 'Texto do rodapé', padrao: 'Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio.' },
   { chave: 'rodape.assinatura', grupo: 'Rodapé', rotulo: 'Assinatura final', padrao: 'Mulheres em Convergência. Todos os direitos reservados.' },
