@@ -17,7 +17,7 @@ export function CabecalhoPagina({ prefixo, children }: { prefixo: string; childr
           <TextoSite as="p" chave={`${prefixo}.selo`} className="inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold empty:hidden" />
           <TextoSite as="h1" chave={`${prefixo}.titulo`} className="text-4xl font-extrabold leading-tight lg:text-5xl" />
           <TextoSite as="p" multilinha chave={`${prefixo}.subtitulo`} className="text-lg text-primary-foreground/90" />
-          {children}
+          {children && <div className="pt-2 text-foreground">{children}</div>}
         </div>
         {comImagem && (
           <div className="relative hidden aspect-[4/3] overflow-hidden rounded-[var(--radius)] lg:block" style={{ boxShadow: 'var(--sombra-3)' }}>
