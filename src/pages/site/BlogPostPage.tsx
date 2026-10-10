@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
+import TextoSite from '@/components/site/TextoSite';
 import SiteLayout from '@/components/site/SiteLayout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -57,7 +58,7 @@ export default function BlogPostPage() {
 
       <section className="bg-grad-hero text-primary-foreground">
         <header className="container mx-auto max-w-3xl space-y-3 px-4 py-14">
-          <p className="text-xs font-semibold uppercase tracking-widest opacity-80">Convergindo</p>
+          <TextoSite as="p" chave="blog.titulo" className="text-xs font-semibold uppercase tracking-widest opacity-80" />
           <h1 className="text-4xl font-extrabold leading-tight lg:text-5xl">{post.titulo}</h1>
           <p className="text-sm text-primary-foreground/85">
             {post.publicado_em ? new Date(post.publicado_em).toLocaleDateString('pt-BR') : ''}
