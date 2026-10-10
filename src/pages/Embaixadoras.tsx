@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ArrowRight, Check, Copy, Link2, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
+import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import { stripHtml } from '@/lib/stripHtml';
 import { Button } from '@/components/ui/button';
@@ -90,22 +91,14 @@ export default function Embaixadoras() {
         <script type="application/ld+json">{JSON.stringify(ld)}</script>
       </Helmet>
 
-      <section className="relative overflow-hidden py-16 md:py-24" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / .14), hsl(var(--accent) / .3))' }}>
-        <div className="container mx-auto px-4 max-w-3xl text-center space-y-5">
-          <span className="inline-flex items-center gap-2 rounded-full bg-card/80 px-4 py-1.5 text-sm font-medium text-primary"><Sparkles className="h-4 w-4" />Quem faz a rede crescer</span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight">Nossas Embaixadoras</h1>
-          <p className="text-lg text-muted-foreground">
-            Cada nova associada que chega à rede tem por trás uma mulher que acreditou e compartilhou. Elas abrem portas,
-            fazem pontes e espalham o Mulheres em Convergência por todo o Brasil.
-          </p>
-          {lista.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-8 pt-2">
-              <div><p className="text-3xl font-bold text-primary">{lista.length}</p><p className="text-xs text-muted-foreground">embaixadoras</p></div>
-              {totalIndicacoes > 0 && <div><p className="text-3xl font-bold text-primary">{totalIndicacoes}</p><p className="text-xs text-muted-foreground">novas associadas trazidas</p></div>}
-            </div>
-          )}
-        </div>
-      </section>
+      <CabecalhoPagina prefixo="embaixadoras">
+        {lista.length > 0 && (
+          <div className="flex flex-wrap gap-8 text-primary-foreground">
+            <div><p className="text-3xl font-extrabold">{lista.length}</p><p className="text-xs opacity-80">embaixadoras</p></div>
+            {totalIndicacoes > 0 && <div><p className="text-3xl font-extrabold">{totalIndicacoes}</p><p className="text-xs opacity-80">novas associadas trazidas</p></div>}
+          </div>
+        )}
+      </CabecalhoPagina>
 
       <section className="container mx-auto px-4 py-12 md:py-16">
         {isLoading ? (
