@@ -94,14 +94,14 @@ function ConviteNewsletter({ aberto, onFechar }: { aberto: boolean; onFechar: (n
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
   const { toast } = useToast();
-  const pular = () => { localStorage.setItem(CHAVE_CONVITE, '1'); onFechar(); };
+  const pular = () => onFechar();
   const assinar = async () => {
     if (nome.trim().length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       toast({ title: 'Confira seu nome e e-mail', variant: 'destructive' }); return;
     }
     setEnviando(true);
     const { data, error } = await supabase.functions.invoke('newsletter-inscrever', {
-      body: { nome: nome.trim(), email: email.trim(), origem: `avaliacao:${window.location.pathname}` },
+      body: { nome: nome.trim(), email: email.trim(), origem: `avaliacao:${window.location.pathname}`, lista: 'Avaliadores' },
     });
     setEnviando(false);
     if (error || (data as any)?.error) {
@@ -109,7 +109,7 @@ function ConviteNewsletter({ aberto, onFechar }: { aberto: boolean; onFechar: (n
     } else {
       toast({ title: 'Que bom ter você por perto! 💜', description: 'Agora é só deixar sua avaliação.' });
     }
-    localStorage.setItem(CHAVE_CONVITE, '1');
+    if (!error && !(data as any)?.error) localStorage.setItem(CHAVE_CONVITE, '1');
     onFechar(nome.trim());
   };
   return (
@@ -167,7 +167,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
 
   const mandar = async () => {
     if (nota < 1) { toast({ title: 'Escolha de 1 a 5 estrelas', variant: 'destructive' }); return; }
-    if (nome.length < 2) { toast({ title: 'Informe seu nome', variant: 'destructive' }); return; }
+    if (nome.length < 2) { toast({ title: 'Seu nome é obrigatório', description: 'Escreva pelo menos 2 letras.', variant: 'destructive' }); return; }
     try {
       await enviar.mutateAsync({ id: user ? minha?.id : undefined, negocio_id: negocioId, pessoa_id: user ? pessoaId ?? null : null, avaliador_nome: nome, nota, comentario: comentario.trim() || undefined });
       setEditando(false); setEscrevendo(false);
@@ -227,11 +227,16 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
                 </button>
               ))}
             </div>
-            {!user && <Input placeholder="Seu nome (vai aparecer na avaliação)" maxLength={80} value={nomeVisitante} onChange={(e) => setNomeVisitante(e.target.value)} />}
+            {!user && (
+              <div className="space-y-1">
+                <label htmlFor="nome-avaliador" className="text-sm font-medium">Seu nome <span className="text-destructive">*</span> <span className="text-xs font-normal text-muted-foreground">(obrigatório)</span></label>
+                <Input id="nome-avaliador" required aria-required="true" placeholder="Vai aparecer na avaliação" maxLength={80} value={nomeVisitante} onChange={(e) => setNomeVisitante(e.target.value)} />
+              </div>
+            )}
             <Textarea maxLength={1000} rows={3} placeholder="Conte como foi sua experiência (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} />
             {user && <p className="text-xs text-muted-foreground">Vai aparecer com o nome: {nome}</p>}
             <div className="flex gap-2">
-              <Button onClick={mandar} disabled={enviar.isPending}>{minha ? 'Salvar' : 'Enviar avaliação'}</Button>
+              <Button onClick={mandar} disabled={enviar.isPending || nota < 1 || nome.length < 2}>{minha ? 'Salvar' : 'Enviar avaliação'}</Button>
               <Button variant="ghost" onClick={() => { setEscrevendo(false); setEditando(false); }}>Cancelar</Button>
             </div>
           </>

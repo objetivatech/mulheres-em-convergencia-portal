@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Check, Copy, Link2, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
 import { stripHtml } from '@/lib/stripHtml';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,9 @@ function CardEmbaixadora({ e }: { e: PublicAmbassador }) {
     e.public_linkedin_url && { href: e.public_linkedin_url, Icone: Linkedin, rotulo: 'LinkedIn' },
     e.public_website_url && { href: e.public_website_url, Icone: Globe, rotulo: 'Site' },
   ].filter(Boolean) as { href: string; Icone: any; rotulo: string }[];
+  const [copiado, setCopiado] = useState(false);
+  const link = e.codigo ? `${SITE}/planos?indicacao=${encodeURIComponent(e.codigo)}` : null;
+  const copiar = async () => { if (!link) return; await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); };
   return (
     <article className="flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-card transition-transform hover:-translate-y-1" style={{ boxShadow: 'var(--sombra-1)' }}>
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
@@ -40,15 +44,27 @@ function CardEmbaixadora({ e }: { e: PublicAmbassador }) {
           </p>
         )}
         {e.public_bio && <p className="line-clamp-4 text-sm text-muted-foreground">{stripHtml(e.public_bio, 300)}</p>}
-        {redes.length > 0 && (
-          <div className="mt-auto flex gap-2 pt-2">
-            {redes.map(({ href, Icone, rotulo }) => (
-              <Button key={href} asChild variant="outline" size="icon" className="h-9 w-9 rounded-full">
-                <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${rotulo} de ${e.public_name}`}><Icone className="h-4 w-4" /></a>
-              </Button>
-            ))}
-          </div>
-        )}
+        <div className="mt-auto space-y-3 pt-3">
+          {link && (
+            <div className="rounded-[var(--radius)] border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Use o meu link</p>
+              <div className="flex gap-2">
+                <Button asChild size="sm" className="flex-1"><a href={link}><Link2 className="mr-2 h-4 w-4" />Use o meu link</a></Button>
+                <Button size="sm" variant="outline" onClick={copiar} aria-label="Copiar link">{copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</Button>
+              </div>
+              <p className="truncate text-[11px] text-muted-foreground">{link.replace(/^https?:\/\//, '')}</p>
+            </div>
+          )}
+          {redes.length > 0 && (
+            <div className="flex gap-2">
+              {redes.map(({ href, Icone, rotulo }) => (
+                <Button key={href} asChild variant="outline" size="icon" className="h-9 w-9 rounded-full">
+                  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${rotulo} de ${e.public_name}`}><Icone className="h-4 w-4" /></a>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );
