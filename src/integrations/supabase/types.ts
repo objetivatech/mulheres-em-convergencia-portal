@@ -3295,6 +3295,7 @@ export type Database = {
         Returns: {
           apresentacao: string
           cidade: string
+          codigo: string
           desde: string
           foto_url: string
           id: string
