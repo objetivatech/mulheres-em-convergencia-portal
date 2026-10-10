@@ -14,6 +14,7 @@ export interface PublicAmbassador {
   nivel: string | null;
   indicacoes: number;
   desde: string;
+  codigo: string | null;
 }
 
 const linkRede = (v: string | null, base: string) => {
@@ -44,6 +45,7 @@ export function usePublicAmbassadors() {
           nivel: e.nivel,
           indicacoes: Number(e.indicacoes ?? 0),
           desde: e.desde,
+          codigo: e.codigo ?? null,
         }))
         .sort((a, b) => b.indicacoes - a.indicacoes || a.public_name.localeCompare(b.public_name));
     },

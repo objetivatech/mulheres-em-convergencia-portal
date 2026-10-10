@@ -18,8 +18,22 @@ Deno.serve(async (req) => {
     if (nome.length < 2) return json({ error: 'Informe seu nome' }, 400);
 
     const token = Deno.env.get('SENDER_API_TOKEN')?.trim();
-    const grupo = Deno.env.get('SENDER_GRUPO_NEWSLETTER')?.trim();
+    const listaPedida = String(body.lista ?? '').trim();
+    const nomeLista = listaPedida === 'Avaliadores' ? 'Avaliadores' : '';
+    let grupo = Deno.env.get('SENDER_GRUPO_NEWSLETTER')?.trim();
     let enviadoSender = false;
+    if (token && nomeLista) {
+      const h = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' };
+      try {
+        const lg = await fetch('https://api.sender.net/v2/groups?limit=100', { headers: h }).then((r) => r.json());
+        const achado = (lg.data ?? []).find((g: any) => String(g.title).trim().toLowerCase() === nomeLista.toLowerCase());
+        if (achado) grupo = achado.id;
+        else {
+          const cg = await fetch('https://api.sender.net/v2/groups', { method: 'POST', headers: h, body: JSON.stringify({ title: nomeLista }) }).then((r) => r.json());
+          if (cg?.data?.id) grupo = cg.data.id;
+        }
+      } catch (e) { console.error('[newsletter-inscrever] lista', e); }
+    }
     if (token) {
       const res = await fetch('https://api.sender.net/v2/subscribers', {
         method: 'POST',
@@ -34,7 +48,7 @@ Deno.serve(async (req) => {
     const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     await sb.from('contato_eventos').insert({
       email, tipo: 'newsletter', titulo: 'Assinou a newsletter', detalhe: origem,
-      dados: { nome, origem, sender: enviadoSender },
+      dados: { nome, origem, lista: nomeLista || null, sender: enviadoSender },
     });
 
     return json({ ok: true });
