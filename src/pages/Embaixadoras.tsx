@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ArrowRight, Check, Copy, Link2, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
+import TextoSite from '@/components/site/TextoSite';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import SiteLayout from '@/components/site/SiteLayout';
 import { stripHtml } from '@/lib/stripHtml';
@@ -114,23 +115,21 @@ export default function Embaixadoras() {
 
       <section className="bg-secondary/40 py-16">
         <div className="container mx-auto px-4 max-w-5xl space-y-10">
-          <h2 className="text-center text-2xl md:text-3xl font-bold">Como funciona o programa</h2>
+          <TextoSite as="h2" chave="embaixadoras.programa.titulo" className="block text-center text-2xl md:text-3xl font-bold" />
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { Icone: Users, t: 'Ela é convidada', d: 'A equipe convida associadas que vivem a rede e querem levá-la mais longe.' },
-              { Icone: Megaphone, t: 'Ela compartilha', d: 'Recebe campanhas prontas e um link próprio para indicar novas empreendedoras.' },
-              { Icone: Heart, t: 'A rede cresce', d: 'Cada indicação que vira associada é reconhecida e valorizada pela comunidade.' },
-            ].map(({ Icone, t, d }) => (
-              <div key={t} className="rounded-[var(--radius)] border border-border bg-card p-6 space-y-2">
+              { Icone: Users, n: 1 }, { Icone: Megaphone, n: 2 }, { Icone: Heart, n: 3 },
+            ].map(({ Icone, n }) => (
+              <div key={n} className="rounded-[var(--radius)] border border-border bg-card p-6 space-y-2">
                 <Icone className="h-7 w-7 text-primary" />
-                <h3 className="font-semibold">{t}</h3>
-                <p className="text-sm text-muted-foreground">{d}</p>
+                <TextoSite as="h3" chave={`embaixadoras.passo${n}.titulo`} className="font-semibold" />
+                <TextoSite as="p" chave={`embaixadoras.passo${n}.texto`} className="text-sm text-muted-foreground" />
               </div>
             ))}
           </div>
           <div className="text-center space-y-3">
-            <p className="text-muted-foreground">Quer fazer parte dessa rede de mulheres que fazem acontecer?</p>
-            <Button asChild size="lg"><Link to="/planos">Conheça os planos <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <TextoSite as="p" chave="embaixadoras.cta.texto" className="text-muted-foreground" />
+            <Button asChild size="lg"><Link to="/planos"><TextoSite chave="embaixadoras.cta.botao" /> <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
         </div>
       </section>

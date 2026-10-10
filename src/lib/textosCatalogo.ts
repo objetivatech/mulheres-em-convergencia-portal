@@ -110,6 +110,16 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   { chave: 'embaixadoras.titulo', grupo: 'Embaixadoras', rotulo: 'Título da página', padrao: 'Nossas Embaixadoras' },
   { chave: 'embaixadoras.subtitulo', grupo: 'Embaixadoras', rotulo: 'Texto de apoio', padrao: 'Cada nova associada que chega à rede tem por trás uma mulher que acreditou e compartilhou. Elas abrem portas, fazem pontes e espalham o Mulheres em Convergência por todo o Brasil.' },
 
+  { chave: 'embaixadoras.programa.titulo', grupo: 'Embaixadoras', rotulo: 'Como funciona — título', padrao: 'Como funciona o programa' },
+  { chave: 'embaixadoras.passo1.titulo', grupo: 'Embaixadoras', rotulo: 'Passo 1 — título', padrao: 'Ela é convidada' },
+  { chave: 'embaixadoras.passo1.texto', grupo: 'Embaixadoras', rotulo: 'Passo 1 — texto', padrao: 'A equipe convida associadas que vivem a rede e querem levá-la mais longe.' },
+  { chave: 'embaixadoras.passo2.titulo', grupo: 'Embaixadoras', rotulo: 'Passo 2 — título', padrao: 'Ela compartilha' },
+  { chave: 'embaixadoras.passo2.texto', grupo: 'Embaixadoras', rotulo: 'Passo 2 — texto', padrao: 'Recebe campanhas prontas e um link próprio para indicar novas empreendedoras.' },
+  { chave: 'embaixadoras.passo3.titulo', grupo: 'Embaixadoras', rotulo: 'Passo 3 — título', padrao: 'A rede cresce' },
+  { chave: 'embaixadoras.passo3.texto', grupo: 'Embaixadoras', rotulo: 'Passo 3 — texto', padrao: 'Cada indicação que vira associada é reconhecida e valorizada pela comunidade.' },
+  { chave: 'embaixadoras.cta.texto', grupo: 'Embaixadoras', rotulo: 'Chamada final — texto', padrao: 'Quer fazer parte dessa rede de mulheres que fazem acontecer?' },
+  { chave: 'embaixadoras.cta.botao', grupo: 'Embaixadoras', rotulo: 'Chamada final — botão', padrao: 'Conheça os planos' },
+
   // Rodapé e topo
   { chave: 'rodape.sobre', grupo: 'Rodapé', rotulo: 'Texto do rodapé', padrao: 'Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio.' },
   { chave: 'rodape.assinatura', grupo: 'Rodapé', rotulo: 'Assinatura final', padrao: 'Mulheres em Convergência. Todos os direitos reservados.' },
