@@ -46,3 +46,6 @@ verify_jwt = false
 verify_jwt = false
 
 
+
+[functions.newsletter-inscrever]
+verify_jwt = false

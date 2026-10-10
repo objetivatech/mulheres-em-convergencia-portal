@@ -1,13 +1,14 @@
 /** Vitrine pública: produtos em abas por categoria + avaliações com formulário. */
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { ShoppingBag, Star, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMinhaPessoa, useMeuPerfil } from '@/hooks/useMinhaArea';
@@ -85,6 +86,56 @@ export function CatalogoPublico({ negocioId, whatsapp, negocio }: { negocioId: s
   );
 }
 
+const CHAVE_CONVITE = 'mec_convite_newsletter_visto';
+
+/** Convite opcional para a newsletter, mostrado antes de escrever a avaliação. Nunca bloqueia. */
+function ConviteNewsletter({ aberto, onFechar }: { aberto: boolean; onFechar: (nome?: string) => void }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const { toast } = useToast();
+  const pular = () => { localStorage.setItem(CHAVE_CONVITE, '1'); onFechar(); };
+  const assinar = async () => {
+    if (nome.trim().length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({ title: 'Confira seu nome e e-mail', variant: 'destructive' }); return;
+    }
+    setEnviando(true);
+    const { data, error } = await supabase.functions.invoke('newsletter-inscrever', {
+      body: { nome: nome.trim(), email: email.trim(), origem: `avaliacao:${window.location.pathname}` },
+    });
+    setEnviando(false);
+    if (error || (data as any)?.error) {
+      toast({ title: 'Não deu para assinar agora', description: 'Sem problema — você pode avaliar normalmente.' });
+    } else {
+      toast({ title: 'Que bom ter você por perto! 💜', description: 'Agora é só deixar sua avaliação.' });
+    }
+    localStorage.setItem(CHAVE_CONVITE, '1');
+    onFechar(nome.trim());
+  };
+  return (
+    <Dialog open={aberto} onOpenChange={(o) => !o && pular()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl">Antes de avaliar, um convite 💌</DialogTitle>
+          <DialogDescription className="text-base">
+            Gostou de conhecer este negócio? Assine nossa newsletter gratuita e receba dicas de empreendedorismo,
+            novidades da rede e histórias inspiradoras de mulheres que fazem acontecer.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Seu nome" value={nome} maxLength={100} onChange={(e) => setNome(e.target.value)} />
+          <Input type="email" placeholder="Seu melhor e-mail" value={email} maxLength={200} onChange={(e) => setEmail(e.target.value)} />
+          <Button className="w-full" size="lg" onClick={assinar} disabled={enviando}>{enviando ? 'Enviando…' : 'Quero assinar e avaliar'}</Button>
+          <button type="button" onClick={pular} className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline">
+            Agora não, quero só avaliar
+          </button>
+          <p className="text-center text-[11px] text-muted-foreground">Sem spam. Você pode sair da lista quando quiser.</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: string; donaPessoaId?: string | null }) {
   const { data: avs = [] } = useAvaliacoes(negocioId);
   const { user } = useAuth();
@@ -95,21 +146,32 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
   const { toast } = useToast();
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState('');
+  const [nomeVisitante, setNomeVisitante] = useState('');
   const [editando, setEditando] = useState(false);
+  const [escrevendo, setEscrevendo] = useState(false);
+  const [convite, setConvite] = useState(false);
+  const [enviadaAgora, setEnviadaAgora] = useState(false);
   const souDona = !!pessoaId && pessoaId === donaPessoaId;
 
   useEffect(() => {
     if (minha) { setNota(minha.nota); setComentario(minha.comentario ?? ''); }
   }, [minha]);
 
-  const nome = (perfil as any)?.nome_social || (perfil as any)?.nome || user?.email?.split('@')[0] || 'Associada';
+  const nomeConta = (perfil as any)?.nome_social || (perfil as any)?.nome || user?.email?.split('@')[0] || '';
+  const nome = user ? nomeConta : nomeVisitante.trim();
+
+  const comecar = () => {
+    if (!user && !localStorage.getItem(CHAVE_CONVITE)) setConvite(true);
+    else setEscrevendo(true);
+  };
 
   const mandar = async () => {
     if (nota < 1) { toast({ title: 'Escolha de 1 a 5 estrelas', variant: 'destructive' }); return; }
-    if (!pessoaId) return;
+    if (nome.length < 2) { toast({ title: 'Informe seu nome', variant: 'destructive' }); return; }
     try {
-      await enviar.mutateAsync({ id: minha?.id, negocio_id: negocioId, pessoa_id: pessoaId, avaliador_nome: nome, nota, comentario: comentario.trim() || undefined });
-      setEditando(false);
+      await enviar.mutateAsync({ id: user ? minha?.id : undefined, negocio_id: negocioId, pessoa_id: user ? pessoaId ?? null : null, avaliador_nome: nome, nota, comentario: comentario.trim() || undefined });
+      setEditando(false); setEscrevendo(false);
+      if (!user) { setEnviadaAgora(true); setNota(0); setComentario(''); }
       toast({ title: minha ? 'Avaliação atualizada' : 'Obrigada pela sua avaliação! 💜' });
     } catch (e: any) {
       toast({ title: 'Não foi possível enviar', description: e.message, variant: 'destructive' });
@@ -117,7 +179,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
   };
 
   const media = avs.length ? avs.reduce((t, a) => t + a.nota, 0) / avs.length : 0;
-  const mostrarForm = !minha || editando;
+  const mostrarForm = escrevendo || editando;
 
   return (
     <section id="avaliacoes" className="space-y-4">
@@ -129,7 +191,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
           </span>
         )}
       </div>
-      {avs.length === 0 && <p className="text-sm text-muted-foreground">Ainda não há avaliações.</p>}
+      {avs.length === 0 && <p className="text-sm text-muted-foreground">Ainda não há avaliações. Seja a primeira pessoa a avaliar!</p>}
       <ul className="space-y-3">
         {avs.map((a) => (
           <li key={a.id} className="rounded-[var(--radius)] border border-border p-4 space-y-1">
@@ -143,17 +205,17 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
         ))}
       </ul>
       <div className="rounded-[var(--radius)] border border-border bg-card p-4 space-y-3">
-        {!user ? (
-          <div className="space-y-2">
-            <p className="text-sm">Avaliações são feitas por associadas da rede. Entre na sua conta para avaliar.</p>
-            <Button asChild size="sm"><Link to={`/entrar?voltar=${encodeURIComponent(window.location.pathname)}`}>Entrar para avaliar</Link></Button>
+        {souDona ? (
+          <p className="text-sm text-muted-foreground">Este é o seu negócio — as avaliações vêm de clientes e de outras associadas.</p>
+        ) : user && minha && !editando ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm">Você deu {minha.nota} {minha.nota === 1 ? 'estrela' : 'estrelas'} a este negócio.</p>
+            <Button size="sm" variant="outline" onClick={() => setEditando(true)}>Mudar minha avaliação</Button>
           </div>
-        ) : souDona ? (
-          <p className="text-sm text-muted-foreground">Este é o seu negócio — as avaliações vêm de outras associadas.</p>
         ) : !mostrarForm ? (
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm">Você deu {minha!.nota} {minha!.nota === 1 ? 'estrela' : 'estrelas'} a este negócio.</p>
-            <Button size="sm" variant="outline" onClick={() => setEditando(true)}>Mudar minha avaliação</Button>
+            <p className="text-sm">{enviadaAgora ? 'Obrigada! Sua avaliação já está no ar.' : 'Conhece este negócio? Conte como foi sua experiência.'}</p>
+            {!enviadaAgora && <Button size="sm" onClick={comecar}><Star className="mr-2 h-4 w-4" />Deixar uma avaliação</Button>}
           </div>
         ) : (
           <>
@@ -165,12 +227,17 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
                 </button>
               ))}
             </div>
+            {!user && <Input placeholder="Seu nome (vai aparecer na avaliação)" maxLength={80} value={nomeVisitante} onChange={(e) => setNomeVisitante(e.target.value)} />}
             <Textarea maxLength={1000} rows={3} placeholder="Conte como foi sua experiência (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Vai aparecer com o nome: {nome}</p>
-            <Button onClick={mandar} disabled={enviar.isPending || !pessoaId}>{minha ? 'Salvar' : 'Enviar avaliação'}</Button>
+            {user && <p className="text-xs text-muted-foreground">Vai aparecer com o nome: {nome}</p>}
+            <div className="flex gap-2">
+              <Button onClick={mandar} disabled={enviar.isPending}>{minha ? 'Salvar' : 'Enviar avaliação'}</Button>
+              <Button variant="ghost" onClick={() => { setEscrevendo(false); setEditando(false); }}>Cancelar</Button>
+            </div>
           </>
         )}
       </div>
+      <ConviteNewsletter aberto={convite} onFechar={(n) => { setConvite(false); if (n) setNomeVisitante(n); setEscrevendo(true); }} />
     </section>
   );
 }

@@ -118,7 +118,7 @@ export function useMinhaAvaliacao(negocioId?: string, pessoaId?: string) {
 export function useEnviarAvaliacao() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { id?: string; negocio_id: string; pessoa_id: string; avaliador_nome: string; nota: number; comentario?: string }) => {
+    mutationFn: async (v: { id?: string; negocio_id: string; pessoa_id: string | null; avaliador_nome: string; nota: number; comentario?: string }) => {
       const valores = { nota: v.nota, comentario: v.comentario ?? null, avaliador_nome: v.avaliador_nome };
       const r = v.id
         ? await db.from('negocio_avaliacoes').update(valores).eq('id', v.id)

@@ -3,9 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface PublicAmbassador {
   id: string;
-  referral_code: string;
-  tier: string;
-  display_order: number;
   public_name: string;
   public_photo_url: string | null;
   public_bio: string | null;
@@ -14,49 +11,41 @@ export interface PublicAmbassador {
   public_instagram_url: string | null;
   public_linkedin_url: string | null;
   public_website_url: string | null;
+  nivel: string | null;
+  indicacoes: number;
+  desde: string;
 }
 
+const linkRede = (v: string | null, base: string) => {
+  if (!v?.trim()) return null;
+  const t = v.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  return base + t.replace(/^@/, '');
+};
+
+/** Embaixadoras publicadas e ativas (consulta pública do schema novo). */
 export function usePublicAmbassadors() {
   return useQuery({
     queryKey: ['public-ambassadors'],
     queryFn: async (): Promise<PublicAmbassador[]> => {
-      const { data, error } = await supabase
-        .from('ambassadors')
-        .select(`
-          id,
-          referral_code,
-          tier,
-          display_order,
-          public_name,
-          public_photo_url,
-          public_bio,
-          public_city,
-          public_state,
-          public_instagram_url,
-          public_linkedin_url,
-          public_website_url
-        `)
-        .eq('active', true)
-        .eq('show_on_public_page', true)
-        .not('public_name', 'is', null)
-        .order('display_order', { ascending: true });
-
+      const { data, error } = await (supabase as any).rpc('embaixadoras_publicas');
       if (error) throw error;
-
-      return (data || []).map((ambassador: any) => ({
-        id: ambassador.id,
-        referral_code: ambassador.referral_code,
-        tier: ambassador.tier,
-        display_order: ambassador.display_order,
-        public_name: ambassador.public_name || 'Embaixadora',
-        public_photo_url: ambassador.public_photo_url,
-        public_bio: ambassador.public_bio,
-        public_city: ambassador.public_city,
-        public_state: ambassador.public_state,
-        public_instagram_url: ambassador.public_instagram_url,
-        public_linkedin_url: ambassador.public_linkedin_url,
-        public_website_url: ambassador.public_website_url,
-      }));
+      return ((data ?? []) as any[])
+        .map((e) => ({
+          id: e.id,
+          public_name: e.nome || 'Embaixadora',
+          public_photo_url: e.foto_url,
+          public_bio: e.apresentacao,
+          public_city: e.cidade,
+          public_state: e.uf,
+          public_instagram_url: linkRede(e.instagram, 'https://instagram.com/'),
+          public_linkedin_url: linkRede(e.linkedin, 'https://linkedin.com/in/'),
+          public_website_url: e.site ? (/^https?:/i.test(e.site) ? e.site : `https://${e.site}`) : null,
+          nivel: e.nivel,
+          indicacoes: Number(e.indicacoes ?? 0),
+          desde: e.desde,
+        }))
+        .sort((a, b) => b.indicacoes - a.indicacoes || a.public_name.localeCompare(b.public_name));
     },
     staleTime: 5 * 60 * 1000,
   });
