@@ -10,7 +10,7 @@ import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
 import TextoSite from '@/components/site/TextoSite';
 import ImagemSite from '@/components/site/ImagemSite';
-import { useTexto } from '@/hooks/useTextosSite';
+import { useTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,6 +66,7 @@ export default function HomePage() {
   const totalNegocios = negocios?.length ?? 0;
   const totalCidades = useMemo(() => new Set((negocios ?? []).map((n) => `${n.cidade ?? ''}-${n.uf ?? ''}`.toLowerCase()).filter((c) => c !== '-')).size, [negocios]);
   const { isAdmin } = useAuth();
+  const { isLoading: carregandoTextos } = useTextosSite();
   const seloTpl = useTexto('home.hero.selo');
   const seloHero = seloTpl.replace('{n}', String(totalNegocios));
   const linkBotao = useTexto('home.hero.botao_link');
@@ -101,7 +102,7 @@ export default function HomePage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative px-6 py-16 sm:px-10 lg:py-24 lg:pl-[max(2rem,calc((100vw-1400px)/2+2rem))] lg:pr-12">
             <span aria-hidden className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary-foreground/10" />
-            <span className="relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold">
+            <span className={`relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold ${carregandoTextos ? 'invisible' : ''}`}>
               {seloHero}
             </span>
             <TextoSite as="h1" chave="home.hero.titulo" className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
