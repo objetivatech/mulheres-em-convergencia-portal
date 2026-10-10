@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
 import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
+import LogoComponent from '@/components/layout/LogoComponent';
 
 type Item = { para: string; rotulo: string; icone: any; fim?: boolean };
 const GRUPOS: { titulo: string; itens: Item[] }[] = [
@@ -45,8 +46,8 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
 
 const classeLink = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-    isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors',
+    isActive ? 'bg-grad-marca text-primary-foreground font-semibold sombra-marca' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
   );
 
 function Grupo({ titulo, itens }: { titulo: string; itens: Item[] }) {
@@ -122,13 +123,15 @@ export default function PainelLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
+      <div className="h-1.5 bg-grad-hero" aria-hidden />
       <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-        <aside className="lg:w-60 shrink-0">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Ver o site
+        <aside className="lg:w-64 shrink-0 lg:sticky lg:top-6 lg:self-start">
+          <Link to="/" className="flex items-center justify-between gap-2">
+            <LogoComponent variant="horizontal" size="sm" />
+            <span className="text-xs text-muted-foreground hover:text-foreground">Ver o site →</span>
           </Link>
-          <nav className="mt-4 space-y-1" data-tour="painel-menu">
+          <nav className="mt-4 space-y-1 rounded-[var(--radius)] border border-border bg-card p-2" data-tour="painel-menu">
             <NavLink to="/painel-conteudo" end className={classeLink}>
               <Home className="w-4 h-4" /> Visão geral
             </NavLink>
@@ -140,9 +143,9 @@ export default function PainelLayout({
         </aside>
 
         <main className="flex-1 min-w-0">
-          <header className="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
+              <h1 className="text-3xl font-extrabold">{titulo}</h1>
               {descricao && <p className="text-muted-foreground mt-1">{descricao}</p>}
             </div>
             {acoes}
