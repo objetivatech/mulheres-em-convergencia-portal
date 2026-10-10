@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
 import SiteLayout from '@/components/site/SiteLayout';
+import { stripHtml } from '@/lib/stripHtml';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,7 +39,7 @@ function CardEmbaixadora({ e }: { e: PublicAmbassador }) {
             Já trouxe {e.indicacoes} {e.indicacoes === 1 ? 'nova associada' : 'novas associadas'}
           </p>
         )}
-        {e.public_bio && <p className="line-clamp-4 text-sm text-muted-foreground">{e.public_bio}</p>}
+        {e.public_bio && <p className="line-clamp-4 text-sm text-muted-foreground">{stripHtml(e.public_bio, 300)}</p>}
         {redes.length > 0 && (
           <div className="mt-auto flex gap-2 pt-2">
             {redes.map(({ href, Icone, rotulo }) => (
@@ -98,7 +99,7 @@ export default function Embaixadoras() {
         ) : lista.length === 0 ? (
           <p className="py-12 text-center text-muted-foreground">Em breve você vai conhecer nossas embaixadoras!</p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{lista.map((e) => <CardEmbaixadora key={e.id} e={e} />)}</div>
+          <div className="flex flex-wrap justify-center gap-6 [&>*]:w-full sm:[&>*]:w-[calc(50%-12px)] lg:[&>*]:w-[calc(33.333%-16px)]">{lista.map((e) => <CardEmbaixadora key={e.id} e={e} />)}</div>
         )}
       </section>
 
