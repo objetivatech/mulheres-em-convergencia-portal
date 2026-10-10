@@ -198,11 +198,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
         onFechar={(n) => { setConvite(false); if (n) setNomeVisitante(n); setEscrevendo(true); }}
         lista="Avaliadores"
         origem={`avaliacao:${window.location.pathname}`}
-        titulo="Antes de avaliar, um convite 💌"
-        texto="Gostou de conhecer este negócio? Assine nossa newsletter gratuita e receba dicas de empreendedorismo, novidades da rede e histórias inspiradoras de mulheres que fazem acontecer."
-        botao="Quero assinar e avaliar"
-        pular="Agora não, quero só avaliar"
-        sucesso="Agora é só deixar sua avaliação."
+        prefixo="convite.avaliacao"
       />
     </section>
   );

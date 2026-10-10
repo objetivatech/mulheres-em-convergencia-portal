@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTexto } from '@/hooks/useTextosSite';
 
 export const CHAVE_CONVITE = 'mec_convite_newsletter_visto';
 export const jaAssinou = () => typeof window !== 'undefined' && !!localStorage.getItem(CHAVE_CONVITE);
@@ -18,14 +19,16 @@ type Props = {
   onFechar: (nome?: string) => void;
   lista: 'Avaliadores' | 'Leitoras do Blog';
   origem: string;
-  titulo: string;
-  texto: string;
-  botao: string;
-  pular: string;
-  sucesso: string;
+  /** Prefixo das chaves no Editor de páginas (ex.: convite.avaliacao). */
+  prefixo: string;
 };
 
-export default function ConviteNewsletter({ aberto, onFechar, lista, origem, titulo, texto, botao, pular, sucesso }: Props) {
+export default function ConviteNewsletter({ aberto, onFechar, lista, origem, prefixo }: Props) {
+  const titulo = useTexto(`${prefixo}.titulo`);
+  const texto = useTexto(`${prefixo}.texto`);
+  const botao = useTexto(`${prefixo}.botao`);
+  const pular = useTexto(`${prefixo}.pular`);
+  const sucesso = useTexto(`${prefixo}.sucesso`);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
