@@ -73,7 +73,7 @@ export default function Embaixadoras() {
         <script type="application/ld+json">{JSON.stringify(ld)}</script>
       </Helmet>
 
-      <section className="relative overflow-hidden py-16 md:py-24" style={{ background: 'var(--gradiente-mec, linear-gradient(135deg, hsl(var(--primary) / .12), hsl(var(--accent) / .25)))' }}>
+      <section className="relative overflow-hidden py-16 md:py-24" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / .14), hsl(var(--accent) / .3))' }}>
         <div className="container mx-auto px-4 max-w-3xl text-center space-y-5">
           <span className="inline-flex items-center gap-2 rounded-full bg-card/80 px-4 py-1.5 text-sm font-medium text-primary"><Sparkles className="h-4 w-4" />Quem faz a rede crescer</span>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight">Nossas Embaixadoras</h1>
