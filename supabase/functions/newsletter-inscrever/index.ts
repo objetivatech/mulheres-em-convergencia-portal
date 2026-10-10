@@ -1,5 +1,6 @@
 // Inscrição pública na newsletter (Sender.net). Aberta ao visitante: só aceita nome + e-mail.
-// O token do Sender fica no servidor. Lista opcional: SENDER_GRUPO_NEWSLETTER.
+// O token do Sender fica no servidor. Só é chamada quando a pessoa preenche e confirma o convite.
+// Listas aceitas: Avaliadores, Leitoras do Blog (criadas no Sender se não existirem).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { corsHeaders } from '../_shared/cors.ts';
 
@@ -19,7 +20,9 @@ Deno.serve(async (req) => {
 
     const token = Deno.env.get('SENDER_API_TOKEN')?.trim();
     const listaPedida = String(body.lista ?? '').trim();
-    const nomeLista = listaPedida === 'Avaliadores' ? 'Avaliadores' : '';
+    // Só listas conhecidas (o navegador não cria listas arbitrárias).
+    const LISTAS = ['Avaliadores', 'Leitoras do Blog'];
+    const nomeLista = LISTAS.includes(listaPedida) ? listaPedida : '';
     let grupo = Deno.env.get('SENDER_GRUPO_NEWSLETTER')?.trim();
     let enviadoSender = false;
     if (token && nomeLista) {
