@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMeuPerfil, useMeuNegocio } from '@/hooks/useMinhaArea';
 import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
+import LogoComponent from '@/components/layout/LogoComponent';
 
 const ITENS = [
   { para: '/minha-area', rotulo: 'Visão geral', icone: Home, fim: true },
@@ -46,19 +47,21 @@ export default function AreaLayout({
   if (!user) return <Navigate to="/entrar" replace />;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
+      <div className="h-1.5 bg-grad-hero" aria-hidden />
       <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-        <aside className="lg:w-60 shrink-0">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Ver o site
+        <aside className="lg:w-64 shrink-0 lg:sticky lg:top-6 lg:self-start">
+          <Link to="/" className="flex items-center justify-between gap-2">
+            <LogoComponent variant="horizontal" size="sm" />
+            <span className="text-xs text-muted-foreground hover:text-foreground">Ver o site →</span>
           </Link>
 
-          <div className="mt-4 rounded-lg border border-border bg-card p-3">
-            <p className="text-sm font-medium truncate">{perfil?.nome_social || perfil?.nome || 'Minha conta'}</p>
-            <p className="text-xs text-muted-foreground truncate">{perfil?.email_principal || user.email}</p>
+          <div className="mt-5 rounded-[var(--radius)] bg-grad-hero p-4 text-primary-foreground sombra-marca">
+            <p className="text-base font-bold truncate">{perfil?.nome_social || perfil?.nome || 'Minha conta'}</p>
+            <p className="text-xs opacity-85 truncate">{perfil?.email_principal || user.email}</p>
           </div>
 
-          <nav className="mt-4 space-y-1">
+          <nav className="mt-4 space-y-1 rounded-[var(--radius)] border border-border bg-card p-2">
             {ITENS.map((item) => (
               <NavLink
                 key={item.para}
@@ -66,9 +69,9 @@ export default function AreaLayout({
                 end={item.fim}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors',
                     isActive
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-grad-marca text-primary-foreground font-semibold sombra-marca'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )
                 }
@@ -83,9 +86,9 @@ export default function AreaLayout({
                 to="/minha-area/negocio"
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+                    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors',
                     isActive
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-grad-marca text-primary-foreground font-semibold sombra-marca'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )
                 }
@@ -108,9 +111,9 @@ export default function AreaLayout({
         </aside>
 
         <main className="flex-1 min-w-0">
-          <header className="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
+              <h1 className="text-3xl font-extrabold">{titulo}</h1>
               {descricao && <p className="text-muted-foreground mt-1">{descricao}</p>}
             </div>
             {acoes}
