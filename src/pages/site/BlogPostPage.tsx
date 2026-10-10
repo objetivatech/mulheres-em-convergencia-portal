@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
+import TextoSite from '@/components/site/TextoSite';
 import SiteLayout from '@/components/site/SiteLayout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,15 +56,18 @@ export default function BlogPostPage() {
         </script>
       </Helmet>
 
-      <article className="container mx-auto px-4 py-12 max-w-3xl space-y-6">
-        <header className="space-y-3">
-          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">{post.titulo}</h1>
-          <p className="text-sm text-muted-foreground">
+      <section className="bg-grad-hero text-primary-foreground">
+        <header className="container mx-auto max-w-3xl space-y-3 px-4 py-14">
+          <TextoSite as="p" chave="blog.titulo" className="text-xs font-semibold uppercase tracking-widest opacity-80" />
+          <h1 className="text-4xl font-extrabold leading-tight lg:text-5xl">{post.titulo}</h1>
+          <p className="text-sm text-primary-foreground/85">
             {post.publicado_em ? new Date(post.publicado_em).toLocaleDateString('pt-BR') : ''}
             {post.autor?.nome ? ` · ${post.autor.nome}` : ''}
           </p>
         </header>
+      </section>
 
+      <article className="container mx-auto max-w-3xl space-y-6 px-4 py-12">
         {post.capa_url && (
           <img src={post.capa_url} alt={post.titulo} loading="lazy" className="w-full rounded-[var(--radius)] object-cover" />
         )}

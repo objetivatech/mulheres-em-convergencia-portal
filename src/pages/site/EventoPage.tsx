@@ -70,18 +70,22 @@ export default function EventoPage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      {evento.capa_url && (
-        <img src={evento.capa_url} alt={evento.titulo} className="w-full max-h-[380px] object-cover" />
-      )}
+      <section className="relative overflow-hidden bg-grad-hero text-primary-foreground">
+        <div className={`container mx-auto grid items-center gap-8 px-4 py-12 lg:py-16 ${evento.capa_url ? 'lg:grid-cols-[1.2fr_1fr]' : ''}`}>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {evento.gratuito && <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">Gratuito</Badge>}
+              {evento.online && <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">Online</Badge>}
+            </div>
+            <h1 className="text-4xl font-extrabold leading-tight lg:text-5xl">{evento.titulo}</h1>
+            {evento.resumo && <p className="text-lg text-primary-foreground/90">{evento.resumo}</p>}
+          </div>
+          {evento.capa_url && <img src={evento.capa_url} alt={evento.titulo} className="aspect-[16/10] w-full rounded-[var(--radius)] object-cover" style={{ boxShadow: 'var(--sombra-3)' }} />}
+        </div>
+      </section>
 
       <div className="container mx-auto px-4 py-12 grid lg:grid-cols-[1fr_320px] gap-10 items-start">
         <article className="space-y-6 min-w-0">
-          <div className="flex flex-wrap gap-2">
-            {evento.gratuito && <Badge variant="secondary">Gratuito</Badge>}
-            {evento.online && <Badge variant="outline">Online</Badge>}
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">{evento.titulo}</h1>
-          {evento.resumo && <p className="text-lg text-muted-foreground">{evento.resumo}</p>}
           {evento.descricao && (
             <div
               className="prose prose-neutral max-w-none dark:prose-invert"
