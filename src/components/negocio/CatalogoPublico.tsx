@@ -179,7 +179,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
   };
 
   const media = avs.length ? avs.reduce((t, a) => t + a.nota, 0) / avs.length : 0;
-  const mostrarForm = user ? (!minha || editando) && escrevendo || editando : escrevendo;
+  const mostrarForm = escrevendo || editando;
 
   return (
     <section id="avaliacoes" className="space-y-4">
