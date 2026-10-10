@@ -44,8 +44,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/90 backdrop-blur">
+        <div className="container mx-auto px-4 h-[72px] flex items-center justify-between gap-4">
           <Link to="/" aria-label="Mulheres em Convergência — início" className="shrink-0">
             <LogoComponent variant="horizontal" size="md" />
           </Link>
@@ -76,7 +76,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             ) : (
               <>
                 <Button asChild variant="ghost" size="sm"><Link to="/entrar"><TextoSite chave="topo.botao_entrar" padrao="Entrar" /></Link></Button>
-                <Button asChild size="sm"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
+                <Button asChild size="sm" className="bg-grad-marca sombra-marca font-semibold hover:opacity-90"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
               </>
             )}
           </div>
@@ -126,7 +126,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               ) : (
                 <div className="flex gap-2 pt-3">
                   <Button asChild variant="outline" size="sm" className="flex-1"><Link to="/entrar"><TextoSite chave="topo.botao_entrar" padrao="Entrar" /></Link></Button>
-                  <Button asChild size="sm" className="flex-1"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
+                  <Button asChild size="sm" className="flex-1 bg-grad-marca"><Link to="/planos"><TextoSite chave="topo.botao_associar" padrao="Fazer parte" /></Link></Button>
                 </div>
               )}
             </nav>
@@ -136,45 +136,45 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-border bg-surface-quente">
+      <footer className="bg-foreground text-background">
         <div className="container mx-auto px-4 py-12 grid gap-8 md:grid-cols-3">
           <div className="space-y-2">
-            <p className="font-semibold">Mulheres em Convergência</p>
+            <p className="text-lg font-bold texto-grad-marca">Mulheres em Convergência</p>
             <TextoSite
               as="p"
               multilinha
               chave="rodape.sobre"
               padrao="Rede de mulheres empreendedoras: conexão, formação e visibilidade para o seu negócio."
-              className="text-sm text-muted-foreground max-w-xs"
+              className="text-sm text-background/70 max-w-xs"
             />
           </div>
           <div>
-            <p className="text-sm font-medium mb-3">Navegar</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-secondary mb-3">Navegar</p>
             <ul className="space-y-2">
               {menuPrincipal ? menuPrincipal.map((i) => (
-                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-background/70 hover:text-background" /></li>
               )) : NAV.map((i) => (
                 <li key={i.to}>
-                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
+                  <Link to={i.to} className="text-sm text-background/70 hover:text-background"><RotuloMenu chave={i.chave} padrao={i.rotulo} /></Link>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="text-sm font-medium mb-3">Institucional</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-secondary mb-3">Institucional</p>
             <ul className="space-y-2">
               {menuInst ? menuInst.map((i) => (
-                <li key={i.id}><LinkMenu item={i} className="text-sm text-muted-foreground hover:text-primary" /></li>
+                <li key={i.id}><LinkMenu item={i} className="text-sm text-background/70 hover:text-background" /></li>
               )) : INSTITUCIONAIS.map((i) => (
                 <li key={i.to}>
-                  <Link to={i.to} className="text-sm text-muted-foreground hover:text-primary">{i.rotulo}</Link>
+                  <Link to={i.to} className="text-sm text-background/70 hover:text-background">{i.rotulo}</Link>
                 </li>
               ))}
             </ul>
           </div>
         </div>
-        <div className="border-t border-border">
-          <p className="container mx-auto px-4 py-4 text-xs text-muted-foreground">
+        <div className="border-t border-background/10">
+          <p className="container mx-auto px-4 py-4 text-xs text-background/60">
             © {new Date().getFullYear()} Mulheres em Convergência. Todos os direitos reservados.
           </p>
         </div>
