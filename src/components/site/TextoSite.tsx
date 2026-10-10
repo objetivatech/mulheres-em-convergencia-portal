@@ -5,7 +5,7 @@
 import { ElementType, useState } from 'react';
 import { Pencil, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useSalvarTexto, useTexto } from '@/hooks/useTextosSite';
+import { useSalvarTexto, useTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +25,8 @@ interface Props {
 export function TextoSite({ chave, padrao, as: Tag = 'span', className, multilinha = false }: Props) {
   const { isAdmin } = useAuth();
   const valor = useTexto(chave, padrao);
+  // Enquanto os textos salvos não chegam, reserva o espaço sem mostrar o padrão (evita a troca de frase).
+  const { isLoading } = useTextosSite();
   const [aberto, setAberto] = useState(false);
   const [rascunho, setRascunho] = useState('');
   const salvar = useSalvarTexto();
@@ -36,7 +38,7 @@ export function TextoSite({ chave, padrao, as: Tag = 'span', className, multilin
 
   return (
     <>
-      <Tag className={cn(isAdmin ? 'group relative inline-flex items-center gap-1' : undefined, className)}>
+      <Tag aria-busy={isLoading || undefined} className={cn(isAdmin ? 'group relative inline-flex items-center gap-1' : undefined, className, isLoading && 'invisible')}>
         {valor}
         {isAdmin && (
           <button

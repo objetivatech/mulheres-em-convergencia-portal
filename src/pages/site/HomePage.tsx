@@ -68,7 +68,7 @@ export default function HomePage() {
   const { isAdmin } = useAuth();
   const seloTpl = useTexto('home.hero.selo');
   const seloHero = seloTpl.replace('{n}', String(totalNegocios));
-  const linkBotao = useTexto('home.hero.botao_link', hero.cta_link);
+  const linkBotao = useTexto('home.hero.botao_link');
   const linkBotao2 = useTexto('home.hero.botao_secundario_link');
   const fotoDepo = useTexto('home.depoimento.foto');
   const rot1 = useTexto('home.numeros.1'), rot2 = useTexto('home.numeros.2'), rot3 = useTexto('home.numeros.3'), rot4 = useTexto('home.numeros.4');
@@ -104,11 +104,11 @@ export default function HomePage() {
             <span className="relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold">
               {seloHero}
             </span>
-            <TextoSite as="h1" chave="home.hero.titulo" padrao={hero.titulo} className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
-            <TextoSite as="p" multilinha chave="home.hero.subtitulo" padrao={hero.subtitulo} className="relative mt-6 max-w-xl text-lg text-primary-foreground/90" />
+            <TextoSite as="h1" chave="home.hero.titulo" className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
+            <TextoSite as="p" multilinha chave="home.hero.subtitulo" className="relative mt-6 max-w-xl text-lg text-primary-foreground/90" />
             <div className="relative mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-card text-primary font-semibold hover:bg-card/90">
-                <Link to={linkBotao}><TextoSite chave="home.hero.botao" padrao={hero.cta_texto} /><ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to={linkBotao}><TextoSite chave="home.hero.botao" /><ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-primary-foreground/60 bg-transparent text-primary-foreground font-semibold hover:bg-primary-foreground/10 hover:text-primary-foreground">
                 <Link to={linkBotao2}><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>
