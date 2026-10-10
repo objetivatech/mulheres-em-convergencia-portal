@@ -157,9 +157,9 @@ export default function NegocioPage() {
             <TextoSite as="h2" chave="negocio.titulo_contato" className="text-base font-bold" />
             <div className="flex flex-col gap-2">
               {contatos.map((c) => (
-                <Button key={c.href} asChild variant="outline" size="sm" className="w-full justify-start">
+                <Button key={c.href} asChild variant="outline" size="sm" className="w-full justify-start overflow-hidden">
                   <a href={c.href} target="_blank" rel="noopener noreferrer">
-                    <c.icone className="w-4 h-4 mr-2" />{c.texto}
+                    <c.icone className="w-4 h-4 mr-2 shrink-0" /><span className="truncate">{c.texto}</span>
                   </a>
                 </Button>
               ))}

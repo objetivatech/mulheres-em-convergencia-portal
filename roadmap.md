@@ -108,7 +108,7 @@ Atualizado: 17/09/2026
 - [x] Fase 1 — cores, fonte e cantos globais
 - [x] Fase 2 — topo e rodapé
 - [x] Fase 3 — nova capa
-- [~] Fase 4 — diretório (abertura feita); página do negócio pendente
-- [~] Fase 5 — aberturas feitas; cartões e detalhes pendentes
-- [~] Fase 6 — aberturas feitas; cartões e post pendentes
+- [x] Fase 4 — diretório e página do negócio
+- [x] Fase 5 — planos e encontros
+- [x] Fase 6 — Academy e blog
 - [ ] Fase 7 — Minha área e painel da equipe
