@@ -102,7 +102,7 @@ export default function HomePage() {
           <div className="relative px-6 py-16 sm:px-10 lg:py-24 lg:pl-[max(2rem,calc((100vw-1400px)/2+2rem))] lg:pr-12">
             <span aria-hidden className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary-foreground/10" />
             <span className="relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold">
-              {totalNegocios > 0 ? `+${totalNegocios} negócios liderados por mulheres` : 'Negócios liderados por mulheres'}
+              {totalNegocios >= 20 ? `+${totalNegocios} negócios liderados por mulheres` : 'Negócios liderados por mulheres'}
             </span>
             <h1 className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]">
               {hero.titulo ?? 'Sua rede de apoio para transformar o negócio numa empresa que sustenta sua vida'}
