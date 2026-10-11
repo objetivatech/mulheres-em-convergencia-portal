@@ -7,6 +7,7 @@ import fotoEncontro from '@/assets/home-encontro.jpg';
 import { usePlanos, useEventos, dinheiro } from '@/hooks/usePlanosEventos';
 import CardNegocio from '@/components/site/CardNegocio';
 import SiteLayout from '@/components/site/SiteLayout';
+import FaixaODS from '@/components/site/FaixaODS';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
 import TextoSite from '@/components/site/TextoSite';
 import ImagemSite from '@/components/site/ImagemSite';
