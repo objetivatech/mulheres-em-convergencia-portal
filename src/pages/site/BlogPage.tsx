@@ -21,40 +21,6 @@ function tempoLeitura(html?: string | null) {
 const dataBR = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
-function CarrosselDestaques({ posts }: { posts: any[] }) {
-  const [ref, api] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 6000, stopOnInteraction: true })]);
-  if (!posts.length) return null;
-  return (
-    <section className="container mx-auto px-4 pt-10">
-      <div className="relative overflow-hidden rounded-[var(--radius)]" ref={ref}>
-        <div className="flex">
-          {posts.map((p) => (
-            <Link key={p.id} to={`/convergindo/${p.slug}`} className="relative min-w-0 flex-[0_0_100%] aspect-[16/9] md:aspect-[21/9] bg-muted">
-              {p.capa_url && <img src={p.capa_url} alt={p.titulo} className="absolute inset-0 h-full w-full object-cover" />}
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/30 to-transparent" />
-              <div className="absolute bottom-0 p-6 md:p-10 max-w-3xl space-y-2 text-background">
-                <p className="text-xs uppercase tracking-wider opacity-90">Mais recentes</p>
-                <h2 className="text-2xl md:text-4xl font-semibold leading-tight">{p.titulo}</h2>
-                {p.resumo && <p className="hidden md:block text-sm opacity-90 line-clamp-2">{p.resumo}</p>}
-                <p className="flex items-center gap-3 text-xs opacity-90">
-                  <span>{dataBR(p.publicado_em)}</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {tempoLeitura(p.conteudo)} min de leitura</span>
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-        {posts.length > 1 && (
-          <>
-            <button aria-label="Anterior" onClick={() => api?.scrollPrev()} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"><ChevronLeft className="w-5 h-5" /></button>
-            <button aria-label="Próximo" onClick={() => api?.scrollNext()} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"><ChevronRight className="w-5 h-5" /></button>
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export default function BlogPage() {
   const [busca, setBusca] = useState('');
   const [categoria, setCategoria] = useState('');

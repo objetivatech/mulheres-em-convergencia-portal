@@ -29,43 +29,6 @@ function Modalidade({ e }: { e: EventoLista }) {
   );
 }
 
-function SliderDestaques({ eventos }: { eventos: EventoLista[] }) {
-  const [ref, api] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 6000, stopOnInteraction: true })]);
-  if (!eventos.length) return null;
-  return (
-    <section className="container mx-auto px-4 pt-10">
-      <div className="relative overflow-hidden rounded-[var(--radius)]" ref={ref}>
-        <div className="flex">
-          {eventos.map((e) => (
-            <Link key={e.id} to={`/eventos/${e.slug}`} className="relative min-w-0 flex-[0_0_100%] aspect-[16/9] md:aspect-[21/9] bg-muted">
-              {e.capa_url && <img src={e.capa_url} alt={e.titulo} className="absolute inset-0 h-full w-full object-cover" />}
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/30 to-transparent" />
-              <div className="absolute bottom-0 p-6 md:p-10 max-w-3xl space-y-3 text-background">
-                <p className="text-xs uppercase tracking-wider opacity-90">Próximos encontros</p>
-                <h2 className="text-2xl md:text-4xl font-semibold leading-tight">{e.titulo}</h2>
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="flex items-center gap-1.5"><CalendarDays className="w-4 h-4" /> {dataLonga(e.inicio_em)}</span>
-                  <Modalidade e={e} />
-                  <Preco e={e} />
-                </div>
-                <span className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium">
-                  <Ticket className="w-4 h-4" /> Quero me inscrever
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-        {eventos.length > 1 && (
-          <>
-            <button aria-label="Anterior" onClick={() => api?.scrollPrev()} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"><ChevronLeft className="w-5 h-5" /></button>
-            <button aria-label="Próximo" onClick={() => api?.scrollNext()} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2"><ChevronRight className="w-5 h-5" /></button>
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export default function EventosPage() {
   const { data: proximos, isLoading } = useEventos({ futuros: true });
   const { data: passados } = useEventos({ futuros: false });
