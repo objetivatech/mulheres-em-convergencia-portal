@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Search, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 import { stripHtml } from '@/lib/stripHtml';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import { SliderPosts } from '@/components/site/SliderHero';

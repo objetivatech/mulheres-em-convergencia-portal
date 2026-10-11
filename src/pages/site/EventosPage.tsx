@@ -1,8 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Video, ChevronLeft, ChevronRight, Ticket } from 'lucide-react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
 import { SliderEventos } from '@/components/site/SliderHero';
 import SiteLayout from '@/components/site/SiteLayout';
