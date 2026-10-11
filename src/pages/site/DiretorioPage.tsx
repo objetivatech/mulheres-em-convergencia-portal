@@ -4,6 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import CardNegocio from '@/components/site/CardNegocio';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
+import { SliderNegocios } from '@/components/site/SliderHero';
+import FaixaODS from '@/components/site/FaixaODS';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
@@ -51,7 +53,7 @@ export default function DiretorioPage() {
         <meta property="og:url" content="https://mulheresemconvergencia.com.br/diretorio" />
       </Helmet>
 
-      <CabecalhoPagina prefixo="diretorio"><div className="relative">
+      <CabecalhoPagina prefixo="diretorio" lateral={<SliderNegocios />}><div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={busca}
@@ -82,6 +84,8 @@ export default function DiretorioPage() {
               ))}
             </div>
           )}</CabecalhoPagina>
+
+      <FaixaODS />
 
       {(negocios ?? []).some((n) => n.latitude && n.longitude) && (
         <section className="container mx-auto px-4 pt-10">

@@ -6,6 +6,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { stripHtml } from '@/lib/stripHtml';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
+import { SliderPosts } from '@/components/site/SliderHero';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Input } from '@/components/ui/input';
@@ -67,7 +68,7 @@ export default function BlogPage() {
         <meta name="description" content="Histórias, aprendizados e conteúdos práticos para mulheres empreendedoras no blog Convergindo." />
       </Helmet>
 
-      <CabecalhoPagina prefixo="blog"><div className="relative">
+      <CabecalhoPagina prefixo="blog" lateral={<SliderPosts />}><div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={busca}
@@ -94,8 +95,6 @@ export default function BlogPage() {
               ))}
             </div>
           )}</CabecalhoPagina>
-
-      {!busca && !categoria && posts && <CarrosselDestaques posts={posts.slice(0, 5)} />}
 
       <section className="container mx-auto px-4 py-12">
         {isLoading ? (

@@ -4,6 +4,7 @@ import { CalendarDays, MapPin, Video, ChevronLeft, ChevronRight, Ticket } from '
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
+import { SliderEventos } from '@/components/site/SliderHero';
 import SiteLayout from '@/components/site/SiteLayout';
 import TextoSite from '@/components/site/TextoSite';
 import { Badge } from '@/components/ui/badge';
@@ -76,9 +77,7 @@ export default function EventosPage() {
         <meta name="description" content="Participe dos encontros, rodas de negócio e formações da rede Mulheres em Convergência." />
       </Helmet>
 
-      <CabecalhoPagina prefixo="eventos" />
-
-      {!!proximos?.length && <SliderDestaques eventos={proximos.slice(0, 3)} />}
+      <CabecalhoPagina prefixo="eventos" lateral={<SliderEventos />} />
 
       <section className="container mx-auto px-4 py-12 space-y-10">
         {isLoading ? (
