@@ -60,7 +60,7 @@ const CAMPOS_NEGOCIO =
   'id, pessoa_id, slug, nome, descricao, categoria, cidade, uf, bairro, telefone, whatsapp, email, site, instagram, logo_url, capa_url, destaque, latitude, longitude';
 
 const CAMPOS_POST =
-  'id, slug, titulo, resumo, conteudo, capa_url, publicado_em, destaque, seo_titulo, seo_descricao, autor:autores(nome, foto_url, bio)';
+  'id, slug, titulo, resumo, conteudo, capa_url, publicado_em, destaque, seo_titulo, seo_descricao, autor:autores(nome, foto_url, bio, pessoa_id)';
 
 export function useBlocosSite() {
   return useQuery({
