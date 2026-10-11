@@ -224,6 +224,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <FaixaODS />
+
       {/* Por que se associar */}
       <section className="bg-surface-quente py-16 lg:py-20">
         <div className="container mx-auto grid items-center gap-10 px-4 lg:grid-cols-2 lg:gap-14">
