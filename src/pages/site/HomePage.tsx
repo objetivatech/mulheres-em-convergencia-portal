@@ -10,7 +10,7 @@ import SiteLayout from '@/components/site/SiteLayout';
 import VitrineParceiros from '@/components/site/VitrineParceiros';
 import TextoSite from '@/components/site/TextoSite';
 import ImagemSite from '@/components/site/ImagemSite';
-import { useTexto } from '@/hooks/useTextosSite';
+import { useTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,9 +66,10 @@ export default function HomePage() {
   const totalNegocios = negocios?.length ?? 0;
   const totalCidades = useMemo(() => new Set((negocios ?? []).map((n) => `${n.cidade ?? ''}-${n.uf ?? ''}`.toLowerCase()).filter((c) => c !== '-')).size, [negocios]);
   const { isAdmin } = useAuth();
+  const { isLoading: carregandoTextos } = useTextosSite();
   const seloTpl = useTexto('home.hero.selo');
   const seloHero = seloTpl.replace('{n}', String(totalNegocios));
-  const linkBotao = useTexto('home.hero.botao_link', hero.cta_link);
+  const linkBotao = useTexto('home.hero.botao_link');
   const linkBotao2 = useTexto('home.hero.botao_secundario_link');
   const fotoDepo = useTexto('home.depoimento.foto');
   const rot1 = useTexto('home.numeros.1'), rot2 = useTexto('home.numeros.2'), rot3 = useTexto('home.numeros.3'), rot4 = useTexto('home.numeros.4');
@@ -101,14 +102,14 @@ export default function HomePage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative px-6 py-16 sm:px-10 lg:py-24 lg:pl-[max(2rem,calc((100vw-1400px)/2+2rem))] lg:pr-12">
             <span aria-hidden className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary-foreground/10" />
-            <span className="relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold">
+            <span className={`relative inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold ${carregandoTextos ? 'invisible' : ''}`}>
               {seloHero}
             </span>
-            <TextoSite as="h1" chave="home.hero.titulo" padrao={hero.titulo} className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
-            <TextoSite as="p" multilinha chave="home.hero.subtitulo" padrao={hero.subtitulo} className="relative mt-6 max-w-xl text-lg text-primary-foreground/90" />
+            <TextoSite as="h1" chave="home.hero.titulo" className="relative mt-6 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-[3.4rem]" />
+            <TextoSite as="p" multilinha chave="home.hero.subtitulo" className="relative mt-6 max-w-xl text-lg text-primary-foreground/90" />
             <div className="relative mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-card text-primary font-semibold hover:bg-card/90">
-                <Link to={linkBotao}><TextoSite chave="home.hero.botao" padrao={hero.cta_texto} /><ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to={linkBotao}><TextoSite chave="home.hero.botao" /><ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-primary-foreground/60 bg-transparent text-primary-foreground font-semibold hover:bg-primary-foreground/10 hover:text-primary-foreground">
                 <Link to={linkBotao2}><TextoSite chave="home.hero.botao_secundario" padrao="Ver o diretório" /></Link>

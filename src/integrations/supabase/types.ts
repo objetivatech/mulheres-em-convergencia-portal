@@ -2730,6 +2730,7 @@ export type Database = {
           email: string | null
           id: string
           nome: string
+          oculto_em: string | null
           pessoa_id: string | null
           post_id: string
         }
@@ -2740,6 +2741,7 @@ export type Database = {
           email?: string | null
           id?: string
           nome: string
+          oculto_em?: string | null
           pessoa_id?: string | null
           post_id: string
         }
@@ -2750,6 +2752,7 @@ export type Database = {
           email?: string | null
           id?: string
           nome?: string
+          oculto_em?: string | null
           pessoa_id?: string | null
           post_id?: string
         }
@@ -3226,6 +3229,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      autor_de_pessoa: { Args: { _pessoa_id: string }; Returns: string }
       buscar_pessoas: {
         Args: { _limite?: number; _termo: string }
         Returns: {

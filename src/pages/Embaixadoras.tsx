@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ArrowRight, Check, Copy, Link2, Globe, Heart, Instagram, Linkedin, MapPin, Megaphone, Sparkles, Users } from 'lucide-react';
 import TextoSite from '@/components/site/TextoSite';
 import CabecalhoPagina from '@/components/site/CabecalhoPagina';
+import { SliderEventos } from '@/components/site/SliderHero';
 import SiteLayout from '@/components/site/SiteLayout';
 import { stripHtml } from '@/lib/stripHtml';
 import { Button } from '@/components/ui/button';
@@ -92,7 +93,7 @@ export default function Embaixadoras() {
         <script type="application/ld+json">{JSON.stringify(ld)}</script>
       </Helmet>
 
-      <CabecalhoPagina prefixo="embaixadoras">
+      <CabecalhoPagina prefixo="embaixadoras" lateral={<SliderEventos />}>
         {lista.length > 0 && (
           <div className="flex flex-wrap gap-8 text-primary-foreground">
             <div><p className="text-3xl font-extrabold">{lista.length}</p><p className="text-xs opacity-80">embaixadoras</p></div>

@@ -2,6 +2,13 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 2026-10-11 — Blog, sliders e ODS
+- Comentários públicos nos posts (nome obrigatório, no ar na hora, equipe oculta); convite da newsletter opcional → lista "Leitoras do Blog".
+- Sender: só inscreve quem preenche e confirma o convite (avaliações → "Avaliadores", blog → "Leitoras do Blog").
+- Autora do post a partir do cadastro de associadas, quadro da autora com negócio, "Continue lendo", banner automático no meio do post.
+- Sliders nas aberturas de blog, diretório, embaixadoras e encontros; faixa dos 5 ODS no diretório (5/3/2 colunas).
+- Capa: textos não trocam mais ao carregar.
+
 ## 2026-10-10
 - Portaria dos encontros: leitura do QR Code do ingresso pela câmera, busca por nome, marcar/desfazer presença e contador de comparecimento.
 - Mapa do negócio: chave "Mostrar meu negócio no mapa", botão "Remover do mapa" e limpeza automática do marcador quando bairro e cidade ficam vazios.

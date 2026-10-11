@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useMinhaPessoa, useMeuPerfil } from '@/hooks/useMinhaArea';
+import ConviteNewsletter, { jaAssinou } from '@/components/site/ConviteNewsletter';
 import { TAGS_DESTAQUE, reais, useProdutos, useAvaliacoes, useEnviarAvaliacao, useMinhaAvaliacao, type Produto } from '@/hooks/useCatalogo';
 
 function CardProduto({ p, whatsapp, negocio }: { p: Produto; whatsapp?: string | null; negocio: string }) {
@@ -86,56 +87,6 @@ export function CatalogoPublico({ negocioId, whatsapp, negocio }: { negocioId: s
   );
 }
 
-const CHAVE_CONVITE = 'mec_convite_newsletter_visto';
-
-/** Convite opcional para a newsletter, mostrado antes de escrever a avaliação. Nunca bloqueia. */
-function ConviteNewsletter({ aberto, onFechar }: { aberto: boolean; onFechar: (nome?: string) => void }) {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [enviando, setEnviando] = useState(false);
-  const { toast } = useToast();
-  const pular = () => onFechar();
-  const assinar = async () => {
-    if (nome.trim().length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      toast({ title: 'Confira seu nome e e-mail', variant: 'destructive' }); return;
-    }
-    setEnviando(true);
-    const { data, error } = await supabase.functions.invoke('newsletter-inscrever', {
-      body: { nome: nome.trim(), email: email.trim(), origem: `avaliacao:${window.location.pathname}`, lista: 'Avaliadores' },
-    });
-    setEnviando(false);
-    if (error || (data as any)?.error) {
-      toast({ title: 'Não deu para assinar agora', description: 'Sem problema — você pode avaliar normalmente.' });
-    } else {
-      toast({ title: 'Que bom ter você por perto! 💜', description: 'Agora é só deixar sua avaliação.' });
-    }
-    if (!error && !(data as any)?.error) localStorage.setItem(CHAVE_CONVITE, '1');
-    onFechar(nome.trim());
-  };
-  return (
-    <Dialog open={aberto} onOpenChange={(o) => !o && pular()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Antes de avaliar, um convite 💌</DialogTitle>
-          <DialogDescription className="text-base">
-            Gostou de conhecer este negócio? Assine nossa newsletter gratuita e receba dicas de empreendedorismo,
-            novidades da rede e histórias inspiradoras de mulheres que fazem acontecer.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <Input placeholder="Seu nome" value={nome} maxLength={100} onChange={(e) => setNome(e.target.value)} />
-          <Input type="email" placeholder="Seu melhor e-mail" value={email} maxLength={200} onChange={(e) => setEmail(e.target.value)} />
-          <Button className="w-full" size="lg" onClick={assinar} disabled={enviando}>{enviando ? 'Enviando…' : 'Quero assinar e avaliar'}</Button>
-          <button type="button" onClick={pular} className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline">
-            Agora não, quero só avaliar
-          </button>
-          <p className="text-center text-[11px] text-muted-foreground">Sem spam. Você pode sair da lista quando quiser.</p>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: string; donaPessoaId?: string | null }) {
   const { data: avs = [] } = useAvaliacoes(negocioId);
   const { user } = useAuth();
@@ -161,7 +112,7 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
   const nome = user ? nomeConta : nomeVisitante.trim();
 
   const comecar = () => {
-    if (!user && !localStorage.getItem(CHAVE_CONVITE)) setConvite(true);
+    if (!user && !jaAssinou()) setConvite(true);
     else setEscrevendo(true);
   };
 
@@ -242,7 +193,13 @@ export function AvaliacoesPublicas({ negocioId, donaPessoaId }: { negocioId: str
           </>
         )}
       </div>
-      <ConviteNewsletter aberto={convite} onFechar={(n) => { setConvite(false); if (n) setNomeVisitante(n); setEscrevendo(true); }} />
+      <ConviteNewsletter
+        aberto={convite}
+        onFechar={(n) => { setConvite(false); if (n) setNomeVisitante(n); setEscrevendo(true); }}
+        lista="Avaliadores"
+        origem={`avaliacao:${window.location.pathname}`}
+        prefixo="convite.avaliacao"
+      />
     </section>
   );
 }

@@ -15,6 +15,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import SeletorPessoa from '@/components/painel/SeletorPessoa';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import slugify from '@/lib/slugify';
 import {
   usePainelPost, useSalvarPost, usePainelAutores, usePainelCategorias,
@@ -35,6 +38,15 @@ export default function PainelPostEditor() {
   const { data: autores } = usePainelAutores();
   const { data: categorias } = usePainelCategorias();
   const salvar = useSalvarPost();
+  const qc = useQueryClient();
+  const usarAssociada = async (pessoaId: string | null) => {
+    if (!pessoaId) return;
+    const { data: autorId, error } = await supabase.rpc('autor_de_pessoa' as any, { _pessoa_id: pessoaId });
+    if (error) { toast({ title: 'Não foi possível usar esta associada', description: error.message, variant: 'destructive' }); return; }
+    await qc.invalidateQueries({ queryKey: ['painel', 'autores'] });
+    campo('autor_id', autorId as string);
+    toast({ title: 'Autora definida', description: 'Nome, foto e apresentação vêm do perfil dela.' });
+  };
 
   const [form, setForm] = useState<Record<string, any>>(VAZIO);
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
@@ -195,6 +207,8 @@ export default function PainelPostEditor() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="mt-3 mb-1 text-xs text-muted-foreground">Ou busque uma associada cadastrada:</p>
+                <SeletorPessoa value={null} onChange={(id) => usarAssociada(id)} placeholder="Nome, e-mail ou CPF da associada" />
               </div>
               <div className="space-y-2">
                 <Label>Categorias</Label>

@@ -135,6 +135,56 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   // Parceiros e linha do tempo
   { chave: 'parceiros.titulo', grupo: 'Parceiros', rotulo: 'Título da vitrine', padrao: 'Parceiros' },
   { chave: 'parceiros.subtitulo', grupo: 'Parceiros', rotulo: 'Texto de apoio', padrao: 'Quem caminha com a gente.' },
+  // Blog — página do post
+  { chave: 'blog.post.autora_titulo', grupo: 'Blog Convergindo', rotulo: 'Post — título do quadro da autora', padrao: 'Quem escreveu' },
+  { chave: 'blog.post.negocio_botao', grupo: 'Blog Convergindo', rotulo: 'Post — botão para o negócio da autora', padrao: 'Conhecer o negócio dela' },
+  { chave: 'blog.post.relacionados', grupo: 'Blog Convergindo', rotulo: 'Post — título dos relacionados', padrao: 'Continue lendo' },
+  { chave: 'blog.post.comentarios', grupo: 'Blog Convergindo', rotulo: 'Post — título dos comentários', padrao: 'Comentários' },
+  { chave: 'blog.post.comentarios_vazio', grupo: 'Blog Convergindo', rotulo: 'Post — sem comentários ainda', padrao: 'Ainda não há comentários. Que tal começar a conversa?' },
+  { chave: 'blog.post.comentar_convite', grupo: 'Blog Convergindo', rotulo: 'Post — convite para comentar', padrao: 'Gostou do texto? Conte o que você achou.' },
+  { chave: 'blog.post.comentar_botao', grupo: 'Blog Convergindo', rotulo: 'Post — botão de comentar', padrao: 'Deixar um comentário' },
+  { chave: 'blog.post.voltar', grupo: 'Blog Convergindo', rotulo: 'Post — botão voltar ao blog', padrao: 'Ver mais textos' },
+  { chave: 'blog.banner.negocio_selo', grupo: 'Blog Convergindo', rotulo: 'Banner no post — selo do negócio', padrao: 'Negócio da rede' },
+  { chave: 'blog.banner.negocio_botao', grupo: 'Blog Convergindo', rotulo: 'Banner no post — botão do negócio', padrao: 'Conhecer o negócio' },
+  { chave: 'blog.banner.evento_selo', grupo: 'Blog Convergindo', rotulo: 'Banner no post — selo do encontro', padrao: 'Próximo encontro' },
+  { chave: 'blog.banner.evento_botao', grupo: 'Blog Convergindo', rotulo: 'Banner no post — botão do encontro', padrao: 'Garantir minha vaga' },
+
+  // Sliders das aberturas
+  { chave: 'slider.evento_selo', grupo: 'Sliders das aberturas', rotulo: 'Encontros — selo', padrao: 'Próximo encontro' },
+  { chave: 'slider.evento_botao', grupo: 'Sliders das aberturas', rotulo: 'Encontros — botão', padrao: 'Ver encontro' },
+  { chave: 'slider.negocio_botao', grupo: 'Sliders das aberturas', rotulo: 'Negócios — botão', padrao: 'Conhecer' },
+  { chave: 'slider.post_selo', grupo: 'Sliders das aberturas', rotulo: 'Blog — selo', padrao: 'Novo no blog' },
+  { chave: 'slider.post_botao', grupo: 'Sliders das aberturas', rotulo: 'Blog — botão', padrao: 'Ler agora' },
+
+  // Convites da newsletter (avaliação de negócio e comentário no blog)
+  { chave: 'convite.avaliacao.titulo', grupo: 'Convites da newsletter', rotulo: 'Avaliação — título', padrao: 'Antes de avaliar, um convite 💌' },
+  { chave: 'convite.avaliacao.texto', grupo: 'Convites da newsletter', rotulo: 'Avaliação — texto', padrao: 'Gostou de conhecer este negócio? Assine nossa newsletter gratuita e receba dicas de empreendedorismo, novidades da rede e histórias inspiradoras de mulheres que fazem acontecer.' },
+  { chave: 'convite.avaliacao.botao', grupo: 'Convites da newsletter', rotulo: 'Avaliação — botão assinar', padrao: 'Quero assinar e avaliar' },
+  { chave: 'convite.avaliacao.pular', grupo: 'Convites da newsletter', rotulo: 'Avaliação — link pular', padrao: 'Agora não, quero só avaliar' },
+  { chave: 'convite.avaliacao.sucesso', grupo: 'Convites da newsletter', rotulo: 'Avaliação — mensagem após assinar', padrao: 'Agora é só deixar sua avaliação.' },
+  { chave: 'convite.blog.titulo', grupo: 'Convites da newsletter', rotulo: 'Blog — título', padrao: 'Antes de comentar, um convite 💌' },
+  { chave: 'convite.blog.texto', grupo: 'Convites da newsletter', rotulo: 'Blog — texto', padrao: 'Curtiu a leitura? Receba os novos textos do Convergindo, dicas práticas e histórias de mulheres que empreendem direto no seu e-mail. É gratuito.' },
+  { chave: 'convite.blog.botao', grupo: 'Convites da newsletter', rotulo: 'Blog — botão assinar', padrao: 'Quero receber e comentar' },
+  { chave: 'convite.blog.pular', grupo: 'Convites da newsletter', rotulo: 'Blog — link pular', padrao: 'Agora não, quero só comentar' },
+  { chave: 'convite.blog.sucesso', grupo: 'Convites da newsletter', rotulo: 'Blog — mensagem após assinar', padrao: 'Agora é só deixar seu comentário.' },
+
+  // Diretório — faixa dos ODS
+  { chave: 'diretorio.ods.titulo', grupo: 'Diretório', rotulo: 'ODS — título da faixa', padrao: 'Nosso compromisso com os Objetivos de Desenvolvimento Sustentável da ONU' },
+  { chave: 'diretorio.ods4.titulo', grupo: 'Diretório', rotulo: 'ODS 4 — título', padrao: 'Formação Prática' },
+  { chave: 'diretorio.ods4.texto', grupo: 'Diretório', rotulo: 'ODS 4 — texto', padrao: 'Cursos, mentorias e aprendizado contínuo para transformar conhecimento em resultado no negócio.' },
+  { chave: 'diretorio.ods4.imagem', grupo: 'Diretório', rotulo: 'ODS 4 — logo', padrao: '', tipo: 'imagem' },
+  { chave: 'diretorio.ods5.titulo', grupo: 'Diretório', rotulo: 'ODS 5 — título', padrao: 'Protagonismo Feminino' },
+  { chave: 'diretorio.ods5.texto', grupo: 'Diretório', rotulo: 'ODS 5 — texto', padrao: 'Liderança, visibilidade e autonomia econômica para mulheres que empreendem.' },
+  { chave: 'diretorio.ods5.imagem', grupo: 'Diretório', rotulo: 'ODS 5 — logo', padrao: '', tipo: 'imagem' },
+  { chave: 'diretorio.ods8.titulo', grupo: 'Diretório', rotulo: 'ODS 8 — título', padrao: 'Geração de Renda' },
+  { chave: 'diretorio.ods8.texto', grupo: 'Diretório', rotulo: 'ODS 8 — texto', padrao: 'Estrutura profissional para sair da informalidade e construir empresas que duram.' },
+  { chave: 'diretorio.ods8.imagem', grupo: 'Diretório', rotulo: 'ODS 8 — logo', padrao: '', tipo: 'imagem' },
+  { chave: 'diretorio.ods10.titulo', grupo: 'Diretório', rotulo: 'ODS 10 — título', padrao: 'Rede Inclusiva' },
+  { chave: 'diretorio.ods10.texto', grupo: 'Diretório', rotulo: 'ODS 10 — texto', padrao: 'Acesso a mercados, conexões e apoio mútuo para mulheres de qualquer território.' },
+  { chave: 'diretorio.ods10.imagem', grupo: 'Diretório', rotulo: 'ODS 10 — logo', padrao: '', tipo: 'imagem' },
+  { chave: 'diretorio.ods11.titulo', grupo: 'Diretório', rotulo: 'ODS 11 — título', padrao: 'Desenvolvimento Local' },
+  { chave: 'diretorio.ods11.texto', grupo: 'Diretório', rotulo: 'ODS 11 — texto', padrao: 'Consumo de proximidade que faz a riqueza girar e gera impacto na própria comunidade.' },
+  { chave: 'diretorio.ods11.imagem', grupo: 'Diretório', rotulo: 'ODS 11 — logo', padrao: '', tipo: 'imagem' },
 ];
 
 export const PADROES_TEXTOS: Record<string, string> = Object.fromEntries(
