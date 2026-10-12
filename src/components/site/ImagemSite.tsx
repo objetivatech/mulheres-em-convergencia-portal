@@ -24,15 +24,19 @@ interface Props {
 
 export function ImagemSite({ chave, padrao, alt, className, width, height, eager }: Props) {
   const { isAdmin } = useAuth();
-  const valor = useTexto(chave, padrao);
+  const carregado = useImagemTexto(chave, padrao);
+  const valor = carregado ?? '';
   const [aberto, setAberto] = useState(false);
   const [rascunho, setRascunho] = useState('');
   const salvar = useSalvarTexto();
+  // Ainda carregando: reserva o espaço sem mostrar a foto antiga.
+  if (carregado === null) return <div aria-hidden className={cn('animate-pulse bg-muted', className)} />;
   if (!valor && !isAdmin) return null;
   return (
     <>
       {valor ? (
-        <img src={valor} alt={alt} width={width} height={height} loading={eager ? 'eager' : 'lazy'} className={className} />
+        <img src={valor} alt={alt} width={width} height={height} loading={eager ? 'eager' : 'lazy'} decoding="async"
+          className={cn('object-cover', className)} />
       ) : (
         <div className={cn('flex items-center justify-center bg-muted text-sm text-muted-foreground', className)}>Sem imagem</div>
       )}
@@ -46,7 +50,7 @@ export function ImagemSite({ chave, padrao, alt, className, width, height, eager
         <Dialog open={aberto} onOpenChange={setAberto}>
           <DialogContent>
             <DialogHeader><DialogTitle>Trocar imagem</DialogTitle></DialogHeader>
-            <CampoImagem value={rascunho} onChange={setRascunho} pasta="site" alturaPrevia="h-48" />
+            <CampoImagem chave={chave} value={rascunho} onChange={setRascunho} pasta="site" alturaPrevia="h-48" />
             <DialogFooter>
               <Button variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
               <Button disabled={salvar.isPending} onClick={() => salvar.mutate({ chave, valor: rascunho }, {

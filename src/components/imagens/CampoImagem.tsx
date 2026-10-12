@@ -4,7 +4,8 @@
  */
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, Images, Link2, X, Loader2 } from 'lucide-react';
+import { Upload, Images, Link2, X, Loader2, Ruler } from 'lucide-react';
+import { dicaImagem, textoDica } from '@/lib/dicasImagem';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,15 +23,20 @@ type Props = {
   /** Mantém a imagem inteira (logos) em vez de recortar. */
   conter?: boolean;
   className?: string;
+  /** Chave do Editor de páginas, usada para achar o tamanho ideal. */
+  chave?: string;
+  /** Texto de tamanho ideal personalizado (sobrepõe o automático). */
+  dica?: string;
 };
 
 export default function CampoImagem({
-  value, onChange, label, pasta = 'uploads', alturaPrevia = 'h-32', conter, className,
+  value, onChange, label, pasta = 'uploads', alturaPrevia = 'h-32', conter, className, chave, dica,
 }: Props) {
   const entrada = useRef<HTMLInputElement>(null);
   const { uploadFile, uploading, progress } = useR2Storage();
   const [mostrarLink, setMostrarLink] = useState(false);
   const qc = useQueryClient();
+  const orientacao = dica ?? textoDica(dicaImagem({ chave, pasta, conter }));
 
   const enviar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const arquivo = e.target.files?.[0];
@@ -46,6 +52,7 @@ export default function CampoImagem({
   return (
     <div className={cn('space-y-2', className)}>
       {label && <Label>{label}</Label>}
+      {orientacao && <p className="flex items-start gap-1.5 text-xs text-muted-foreground"><Ruler className="mt-0.5 h-3.5 w-3.5 shrink-0" />{orientacao}</p>}
       {value ? (
         <div className="relative w-fit max-w-full">
           <img
