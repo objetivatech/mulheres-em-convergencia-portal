@@ -14,3 +14,6 @@
 - Todo texto, foto e link fixo das páginas públicas vem de `textos_site` via catálogo `src/lib/textosCatalogo.ts` (tipos texto/rico/imagem/link) e é editado no "Editor de páginas" ou inline (`TextoSite`/`ImagemSite`) — nada de conteúdo fixo no código além do padrão do catálogo.
 - Inscrição em lista do Sender só acontece pelo `ConviteNewsletter` quando a pessoa preenche e confirma; avaliar/comentar nunca inscreve — evita contatos sem consentimento.
 - Comentário de blog é público, entra no ar na hora e só a equipe oculta (`oculto_em`) — mesma regra das avaliações.
+- Depoimentos da capa vivem na tabela `depoimentos` (origem rede ou Google, cadastro manual pela equipe) — sem chave de API do Google, a importação é por cópia.
+- Tamanho ideal de imagem é resolvido em `src/lib/dicasImagem.ts` (por chave do catálogo ou pasta) e exibido pelo `CampoImagem` — um só lugar para ajustar.
+- Listagens do painel usam `src/components/painel/BarraLista.tsx` para busca, ordem e filtro — mesmo padrão em todas.

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import BarraLista from '@/components/painel/BarraLista';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
@@ -18,6 +19,13 @@ export default function PainelNegocios() {
   const [busca, setBusca] = useState('');
   const [excluir, setExcluir] = useState<any | null>(null);
   const { data, isLoading } = usePainelNegocios(busca);
+  const [ordem, setOrdem] = useState('recentes');
+  const [filtro, setFiltro] = useState('todos');
+  const lista = useMemo(() => {
+    const l = (data ?? []).filter((x: any) => filtro === 'todos' || (filtro === 'publicados' ? x.publicado : filtro === 'ocultos' ? !x.publicado : x.destaque));
+    const c: Record<string, (a: any, b: any) => number> = { recentes: (a, b) => String(b.criado_em).localeCompare(String(a.criado_em)), az: (a, b) => a.nome.localeCompare(b.nome), cidade: (a, b) => String(a.cidade ?? '').localeCompare(String(b.cidade ?? '')) };
+    return [...l].sort(c[ordem]);
+  }, [data, ordem, filtro]);
   const excluirNegocio = useExcluirNegocio();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -43,27 +51,19 @@ export default function PainelNegocios() {
         </Button>
       }
     >
-      <div className="relative mb-4 max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Procurar pelo nome"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
-      </div>
+      <BarraLista busca={busca} onBusca={setBusca} ordem={ordem} onOrdem={setOrdem} ordens={[{ v: 'recentes', r: 'Cadastrados recentemente' }, { v: 'az', r: 'Nome (A-Z)' }, { v: 'cidade', r: 'Cidade (A-Z)' }]} filtro={filtro} onFiltro={setFiltro} filtros={[{ v: 'todos', r: 'Todos' }, { v: 'publicados', r: 'Publicados' }, { v: 'ocultos', r: 'Ocultos' }, { v: 'destaque', r: 'Em destaque' }]} />
 
       {isLoading ? (
         <div className="space-y-2">
           {[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
         </div>
-      ) : !data?.length ? (
+      ) : !lista.length ? (
         <Card className="p-10 text-center text-muted-foreground">
           Nenhum negócio cadastrado ainda.
         </Card>
       ) : (
         <div className="space-y-2">
-          {data.map((n) => (
+          {lista.map((n: any) => (
             <Card key={n.id} className="p-4 flex flex-wrap items-center gap-3">
               <div className="flex-1 min-w-[200px]">
                 <p className="font-medium">{n.nome}</p>

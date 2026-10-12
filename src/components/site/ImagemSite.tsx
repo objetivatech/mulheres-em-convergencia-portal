@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useSalvarTexto, useTexto } from '@/hooks/useTextosSite';
+import { useSalvarTexto, useImagemTexto } from '@/hooks/useTextosSite';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import CampoImagem from '@/components/imagens/CampoImagem';

@@ -2,6 +2,16 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+
+## 12/10/2026 — Depoimentos, imagens e Editor de páginas unificado
+- Depoimentos gerenciáveis (`/painel-conteudo/depoimentos`) com slider na capa; origem rede ou Google.
+- Tamanho ideal exibido em todos os campos de envio de imagem; fotos do site sem distorção.
+- Textos e fotos guardados no navegador: capa não pisca mais com a foto antiga.
+- Editor de páginas com abas "Seções das páginas" e "Páginas de texto"; seletor de página e botão "Ver página". Menus "Páginas" e "Página inicial" (antigo) removidos.
+- Página de Contato 100% editável (grupo Contato). Rascunhos vazios herdados removidos.
+- Corrigido: links de botões não salvavam no Editor de páginas.
+- Busca, ordem e filtros em Encontros, Blog, Negócios, Páginas e Depoimentos.
+
 ## 2026-10-11 — Blog, sliders e ODS
 - Comentários públicos nos posts (nome obrigatório, no ar na hora, equipe oculta); convite da newsletter opcional → lista "Leitoras do Blog".
 - Sender: só inscreve quem preenche e confirma o convite (avaliações → "Avaliadores", blog → "Leitoras do Blog").
