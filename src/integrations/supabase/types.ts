@@ -822,6 +822,51 @@ export type Database = {
           },
         ]
       }
+      depoimentos: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          foto_url: string | null
+          id: string
+          link_origem: string | null
+          nome: string
+          nota: number | null
+          ordem: number
+          origem: string
+          texto: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          link_origem?: string | null
+          nome: string
+          nota?: number | null
+          ordem?: number
+          origem?: string
+          texto: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          foto_url?: string | null
+          id?: string
+          link_origem?: string | null
+          nome?: string
+          nota?: number | null
+          ordem?: number
+          origem?: string
+          texto?: string
+        }
+        Relationships: []
+      }
       embaixadora_campanhas: {
         Row: {
           ativo: boolean
