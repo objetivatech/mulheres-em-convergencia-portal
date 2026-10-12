@@ -8,6 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { usePainelPaginas } from '@/hooks/usePainelConteudo';
 
 export default function PainelPaginas() {
+  return <PainelLayout titulo="Páginas"><ListaPaginas /></PainelLayout>;
+}
+
+export function ListaPaginas() {
   const { data, isLoading } = usePainelPaginas();
   const navigate = useNavigate();
 

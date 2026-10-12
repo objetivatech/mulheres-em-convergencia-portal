@@ -54,6 +54,7 @@ import PainelImagens from './pages/painel/PainelImagens';
 import PainelTutoriais from './pages/painel/PainelTutoriais';
 import MeusTutoriais from './pages/area/MeusTutoriais';
 import PainelTextos from './pages/painel/PainelTextos';
+import PainelDepoimentos from './pages/painel/PainelDepoimentos';
 import PainelMenus from './pages/painel/PainelMenus';
 import PainelConecta from './pages/painel/PainelConecta';
 import PainelEmbaixadoras from './pages/painel/PainelEmbaixadoras';
@@ -157,7 +158,8 @@ function AppContent() {
         <Route path="/painel-conteudo/blog" element={<PainelBlog />} />
         <Route path="/painel-conteudo/blog/:id" element={<PainelPostEditor />} />
         <Route path="/painel-conteudo/categorias" element={<PainelCategorias />} />
-        <Route path="/painel-conteudo/paginas" element={<PainelPaginas />} />
+        <Route path="/painel-conteudo/paginas" element={<Navigate to="/painel-conteudo/textos?aba=paginas" replace />} />
+        <Route path="/painel-conteudo/depoimentos" element={<PainelDepoimentos />} />
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
         <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
         <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
