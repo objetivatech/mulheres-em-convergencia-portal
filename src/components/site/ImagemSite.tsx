@@ -46,7 +46,7 @@ export function ImagemSite({ chave, padrao, alt, className, width, height, eager
         <Dialog open={aberto} onOpenChange={setAberto}>
           <DialogContent>
             <DialogHeader><DialogTitle>Trocar imagem</DialogTitle></DialogHeader>
-            <CampoImagem value={rascunho} onChange={setRascunho} pasta="site" alturaPrevia="h-48" />
+            <CampoImagem chave={chave} value={rascunho} onChange={setRascunho} pasta="site" alturaPrevia="h-48" />
             <DialogFooter>
               <Button variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
               <Button disabled={salvar.isPending} onClick={() => salvar.mutate({ chave, valor: rascunho }, {

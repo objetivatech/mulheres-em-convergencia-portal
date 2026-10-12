@@ -58,7 +58,7 @@ export default function PainelTextos() {
                     <div key={t.chave} className="space-y-2">
                       <label className="text-sm font-medium">{t.rotulo}</label>
                       {t.tipo === 'imagem' ? (
-                        <CampoImagem value={valor} onChange={(url) => setRascunhos((r) => ({ ...r, [t.chave]: url }))} pasta="site" alturaPrevia="h-40" />
+                        <CampoImagem chave={t.chave} value={valor} onChange={(url) => setRascunhos((r) => ({ ...r, [t.chave]: url }))} pasta="site" alturaPrevia="h-40" />
                       ) : t.padrao.length > 60 ? (
                         <Textarea rows={3} value={valor} onChange={(e) => setRascunhos((r) => ({ ...r, [t.chave]: e.target.value }))} />
                       ) : (
