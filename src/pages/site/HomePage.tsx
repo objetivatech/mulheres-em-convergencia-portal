@@ -1,3 +1,4 @@
+import SliderDepoimentos from '@/components/site/SliderDepoimentos';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -72,7 +73,6 @@ export default function HomePage() {
   const seloHero = seloTpl.replace('{n}', String(totalNegocios));
   const linkBotao = useTexto('home.hero.botao_link');
   const linkBotao2 = useTexto('home.hero.botao_secundario_link');
-  const fotoDepo = useTexto('home.depoimento.foto');
   const rot1 = useTexto('home.numeros.1'), rot2 = useTexto('home.numeros.2'), rot3 = useTexto('home.numeros.3'), rot4 = useTexto('home.numeros.4');
   const motivos = [useTexto('home.porque.item1'), useTexto('home.porque.item2'), useTexto('home.porque.item3'), useTexto('home.porque.item4')];
   const linksPilares = [useTexto('home.pilar1.link'), useTexto('home.pilar2.link'), useTexto('home.pilar3.link'), useTexto('home.pilar4.link')];
