@@ -12,23 +12,37 @@ import { CATALOGO_TEXTOS } from '@/lib/textosCatalogo';
 import { useSalvarTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { toast } from '@/hooks/use-toast';
 import CampoImagem from '@/components/imagens/CampoImagem';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ListaPaginas } from './PainelPaginas';
+import { useSearchParams, Link } from 'react-router-dom';
+import { ExternalLink } from 'lucide-react';
+
+/** Onde cada grupo do catálogo aparece no site, para o botão "Ver página". */
+const LINK_GRUPO: Record<string, string> = {
+  'Página inicial': '/', 'Diretório': '/diretorio', 'Blog Convergindo': '/convergindo', 'Encontros': '/eventos',
+  'Planos': '/planos', 'Academy': '/academy', 'Embaixadoras': '/embaixadoras', 'Contato': '/contato',
+};
 
 export default function PainelTextos() {
   const { data, isLoading } = useTextosSite();
   const salvar = useSalvarTexto();
   const [busca, setBusca] = useState('');
   const [rascunhos, setRascunhos] = useState<Record<string, string>>({});
+  const [params, setParams] = useSearchParams();
+  const aba = params.get('aba') === 'paginas' ? 'paginas' : 'secoes';
+  const [pagina, setPagina] = useState('todas');
+  const nomesGrupos = useMemo(() => Array.from(new Set(CATALOGO_TEXTOS.map((t) => t.grupo))), []);
 
   const grupos = useMemo(() => {
     const termo = busca.trim().toLowerCase();
     const lista = CATALOGO_TEXTOS.filter(
-      (t) => !termo || t.rotulo.toLowerCase().includes(termo) || t.grupo.toLowerCase().includes(termo) || t.padrao.toLowerCase().includes(termo)
+      (t) => (pagina === 'todas' || t.grupo === pagina) && (!termo || t.rotulo.toLowerCase().includes(termo) || t.grupo.toLowerCase().includes(termo) || t.padrao.toLowerCase().includes(termo))
     );
     return lista.reduce<Record<string, typeof CATALOGO_TEXTOS>>((acc, t) => {
       (acc[t.grupo] ||= []).push(t);
       return acc;
     }, {});
-  }, [busca]);
+  }, [busca, pagina]);
 
   const valorDe = (chave: string, padrao: string) =>
     rascunhos[chave] ?? data?.mapa[chave] ?? padrao;
@@ -36,11 +50,24 @@ export default function PainelTextos() {
   return (
     <PainelLayout
       titulo="Editor de páginas"
-      descricao="Todos os textos, fotos e links das páginas públicas, separados por página. Também dá para editar direto na página, pelo lápis ou pelo botão Trocar imagem."
+      descricao="Tudo o que aparece nas páginas do site num só lugar. Em Seções das páginas ficam textos, fotos e botões de cada página; em Páginas de texto, as páginas de leitura como Nossa história e Termos de uso."
     >
-      <div className="relative max-w-md mb-6">
+      <Tabs value={aba} onValueChange={(v) => setParams(v === 'paginas' ? { aba: 'paginas' } : {})}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="secoes">Seções das páginas</TabsTrigger>
+          <TabsTrigger value="paginas">Páginas de texto</TabsTrigger>
+        </TabsList>
+        <TabsContent value="paginas"><ListaPaginas /></TabsContent>
+        <TabsContent value="secoes">
+      <div className="mb-6 flex flex-wrap gap-2">
+        <select className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={pagina} onChange={(e) => setPagina(e.target.value)} aria-label="Escolher página">
+          <option value="todas">Todas as páginas</option>
+          {nomesGrupos.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
+      <div className="relative max-w-md flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Buscar texto" value={busca} onChange={(e) => setBusca(e.target.value)} />
+      </div>
       </div>
 
       {isLoading ? (
@@ -49,7 +76,8 @@ export default function PainelTextos() {
         <div className="space-y-6">
           {Object.entries(grupos).map(([grupo, itens]) => (
             <Card key={grupo}>
-              <CardHeader><CardTitle className="text-base">{grupo}</CardTitle></CardHeader>
+              <CardHeader className="flex-row items-center justify-between space-y-0"><CardTitle className="text-base">{grupo}</CardTitle>
+                {LINK_GRUPO[grupo] && <Link to={LINK_GRUPO[grupo]} target="_blank" className="inline-flex items-center gap-1 text-sm text-primary underline underline-offset-4"><ExternalLink className="h-3.5 w-3.5" /> Ver página</Link>}</CardHeader>
               <CardContent className="space-y-5">
                 {itens.map((t) => {
                   const valor = valorDe(t.chave, t.padrao);
@@ -109,6 +137,8 @@ export default function PainelTextos() {
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
     </PainelLayout>
   );
 }
