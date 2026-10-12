@@ -14,6 +14,16 @@ export type TextoSiteRow = {
   valor: string | null;
 };
 
+const CACHE = 'mec_textos_site_v1';
+type Dados = { linhas: TextoSiteRow[]; mapa: Record<string, string> };
+
+function lerCache(): Dados | undefined {
+  try {
+    const bruto = localStorage.getItem(CACHE);
+    return bruto ? (JSON.parse(bruto) as Dados) : undefined;
+  } catch { return undefined; }
+}
+
 export function useTextosSite() {
   return useQuery({
     queryKey: ['textos-site'],
@@ -26,8 +36,13 @@ export function useTextosSite() {
       (data ?? []).forEach((t: TextoSiteRow) => {
         if (t.valor != null && t.valor !== '') mapa[t.chave] = t.valor;
       });
-      return { linhas: (data ?? []) as TextoSiteRow[], mapa };
+      const res = { linhas: (data ?? []) as TextoSiteRow[], mapa };
+      try { localStorage.setItem(CACHE, JSON.stringify(res)); } catch { /* cheio */ }
+      return res;
     },
+    // Última versão salva no navegador aparece na hora; o banco confirma em seguida.
+    initialData: lerCache,
+    initialDataUpdatedAt: 0,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -36,6 +51,16 @@ export function useTextosSite() {
 export function useTexto(chave: string, padrao?: string) {
   const { data } = useTextosSite();
   return data?.mapa[chave] ?? padrao ?? PADROES_TEXTOS[chave] ?? '';
+}
+
+/**
+ * Para imagens: enquanto não se sabe o valor salvo (primeira visita, sem cache),
+ * devolve `null` para não mostrar a foto padrão e trocar logo depois.
+ */
+export function useImagemTexto(chave: string, padrao?: string): string | null {
+  const { data } = useTextosSite();
+  if (!data) return null;
+  return data.mapa[chave] ?? padrao ?? PADROES_TEXTOS[chave] ?? '';
 }
 
 export function useSalvarTexto() {
