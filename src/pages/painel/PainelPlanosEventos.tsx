@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import BarraLista from '@/components/painel/BarraLista';
 import ParticipantesEventos from '@/components/painel/ParticipantesEventos';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
@@ -42,6 +43,40 @@ export default function PainelPlanosEventos() {
   const salvarPlano = useSalvarPlano();
   const excluirPlano = useExcluirPlano();
   const excluirEvento = useExcluirEvento();
+  const [buscaEv, setBuscaEv] = useState('');
+  const [ordemEv, setOrdemEv] = useState('proximos');
+  const [filtroEv, setFiltroEv] = useState('todos');
+  const listaEventos = useMemo(() => {
+    const t = buscaEv.trim().toLowerCase();
+    const agora = Date.now();
+    const l = (eventos.data ?? []).filter((e: any) => {
+      if (t && !e.titulo.toLowerCase().includes(t)) return false;
+      const futuro = new Date(e.inicio_em).getTime() >= agora;
+      switch (filtroEv) {
+        case 'publicados': return e.publicado;
+        case 'rascunhos': return !e.publicado;
+        case 'futuros': return futuro;
+        case 'passados': return !futuro;
+        case 'online': return e.online;
+        case 'presencial': return !e.online;
+        case 'gratuitos': return e.gratuito;
+        case 'pagos': return !e.gratuito;
+        default: return true;
+      }
+    });
+    const cmp: Record<string, (a: any, b: any) => number> = {
+      proximos: (a, b) => {
+        const fa = new Date(a.inicio_em).getTime() >= agora, fb = new Date(b.inicio_em).getTime() >= agora;
+        if (fa !== fb) return fa ? -1 : 1;
+        return fa ? a.inicio_em.localeCompare(b.inicio_em) : b.inicio_em.localeCompare(a.inicio_em);
+      },
+      data_desc: (a, b) => b.inicio_em.localeCompare(a.inicio_em),
+      data_asc: (a, b) => a.inicio_em.localeCompare(b.inicio_em),
+      criados: (a, b) => String(b.criado_em).localeCompare(String(a.criado_em)),
+      az: (a, b) => a.titulo.localeCompare(b.titulo),
+    };
+    return [...l].sort(cmp[ordemEv]);
+  }, [eventos.data, buscaEv, ordemEv, filtroEv]);
 
   const alternar = async (tabela: 'planos' | 'eventos', id: string, campo: string, valor: boolean) => {
     const { error } = await supabase.from(tabela).update({ [campo]: valor }).eq('id', id);
@@ -175,12 +210,17 @@ export default function PainelPlanosEventos() {
             <Plus className="mr-2 h-4 w-4" /> Novo encontro
           </Button>
 
+          <BarraLista busca={buscaEv} onBusca={setBuscaEv} placeholder="Buscar encontro"
+            ordem={ordemEv} onOrdem={setOrdemEv}
+            ordens={[{ v: 'proximos', r: 'Próximos primeiro' }, { v: 'data_desc', r: 'Data (mais novo)' }, { v: 'data_asc', r: 'Data (mais antigo)' }, { v: 'criados', r: 'Cadastrados recentemente' }, { v: 'az', r: 'Título (A-Z)' }]}
+            filtro={filtroEv} onFiltro={setFiltroEv}
+            filtros={[{ v: 'todos', r: 'Todos' }, { v: 'futuros', r: 'Ainda vão acontecer' }, { v: 'passados', r: 'Já aconteceram' }, { v: 'publicados', r: 'Publicados' }, { v: 'rascunhos', r: 'Não publicados' }, { v: 'presencial', r: 'Presenciais' }, { v: 'online', r: 'Online' }, { v: 'gratuitos', r: 'Gratuitos' }, { v: 'pagos', r: 'Pagos' }]} />
           {eventos.isLoading ? (
             <Skeleton className="h-40 w-full" />
-          ) : !eventos.data?.length ? (
-            <p className="text-muted-foreground">Nenhum encontro cadastrado ainda.</p>
+          ) : !listaEventos.length ? (
+            <p className="text-muted-foreground">Nenhum encontro encontrado.</p>
           ) : (
-            eventos.data.map((e) => (
+            listaEventos.map((e: any) => (
               <div key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
                 <div className="min-w-0">
                   <p className="font-medium">{e.titulo}</p>
