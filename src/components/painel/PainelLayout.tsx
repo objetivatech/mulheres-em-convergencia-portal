@@ -17,7 +17,7 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
     { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
     { para: '/painel-conteudo/menus', rotulo: 'Menus do site', icone: MenuIcon },
     { para: '/painel-conteudo/textos', rotulo: 'Editor de páginas', icone: Type },
-    { para: '/painel-conteudo/paginas', rotulo: 'Páginas', icone: FileText },
+    { para: '/painel-conteudo/depoimentos', rotulo: 'Depoimentos', icone: Heart },
     { para: '/painel-conteudo/institucional', rotulo: 'Parceiros e linha do tempo', icone: ImageIcon },
     { para: '/painel-conteudo/imagens', rotulo: 'Imagens', icone: ImageIcon },
   ] },

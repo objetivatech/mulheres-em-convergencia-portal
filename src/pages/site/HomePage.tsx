@@ -1,3 +1,4 @@
+import SliderDepoimentos from '@/components/site/SliderDepoimentos';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -72,7 +73,6 @@ export default function HomePage() {
   const seloHero = seloTpl.replace('{n}', String(totalNegocios));
   const linkBotao = useTexto('home.hero.botao_link');
   const linkBotao2 = useTexto('home.hero.botao_secundario_link');
-  const fotoDepo = useTexto('home.depoimento.foto');
   const rot1 = useTexto('home.numeros.1'), rot2 = useTexto('home.numeros.2'), rot3 = useTexto('home.numeros.3'), rot4 = useTexto('home.numeros.4');
   const motivos = [useTexto('home.porque.item1'), useTexto('home.porque.item2'), useTexto('home.porque.item3'), useTexto('home.porque.item4')];
   const linksPilares = [useTexto('home.pilar1.link'), useTexto('home.pilar2.link'), useTexto('home.pilar3.link'), useTexto('home.pilar4.link')];
@@ -135,17 +135,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Depoimento */}
-      <section className="container mx-auto px-4 py-14">
-        <figure className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-accent">
-            {fotoDepo ? <ImagemSite chave="home.depoimento.foto" alt="Autora do depoimento" className="h-full w-full object-cover" />
-              : <><span aria-hidden className="flex h-full w-full items-center justify-center text-5xl font-extrabold text-primary">“</span><ImagemSite chave="home.depoimento.foto" alt="" className="hidden" /></>}
-          </div>
-          <TextoSite as="blockquote" multilinha chave="home.depoimento.texto" className="flex-1 text-xl italic leading-relaxed" />
-          <TextoSite as="figcaption" chave="home.depoimento.autora" className="text-sm text-muted-foreground md:max-w-[14rem]" />
-        </figure>
-      </section>
+      {/* Depoimentos (gerenciados em Painel → Depoimentos) */}
+      <SliderDepoimentos />
 
       {/* Pilares */}
       <section className="container mx-auto px-4 pb-16">
