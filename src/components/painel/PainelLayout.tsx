@@ -14,7 +14,6 @@ import LogoComponent from '@/components/layout/LogoComponent';
 type Item = { para: string; rotulo: string; icone: any; fim?: boolean };
 const GRUPOS: { titulo: string; itens: Item[] }[] = [
   { titulo: 'Site', itens: [
-    { para: '/painel-conteudo/home', rotulo: 'Página inicial', icone: LayoutTemplate },
     { para: '/painel-conteudo/menus', rotulo: 'Menus do site', icone: MenuIcon },
     { para: '/painel-conteudo/textos', rotulo: 'Editor de páginas', icone: Type },
     { para: '/painel-conteudo/depoimentos', rotulo: 'Depoimentos', icone: Heart },
