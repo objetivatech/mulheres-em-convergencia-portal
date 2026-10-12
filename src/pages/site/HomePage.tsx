@@ -54,9 +54,7 @@ export default function HomePage() {
   const totalPaginas = Math.ceil(filtrados.length / POR_PAGINA);
   const { data: posts, isLoading: carregandoPosts } = usePosts({ limite: 3 });
 
-  const pilares: { titulo: string; texto: string; link: string }[] =
-    blocos?.home_pilares?.conteudo?.itens ?? [];
-  const listaPilares = [0, 1, 2, 3].map((i) => pilares[i] ?? { titulo: undefined as any, texto: undefined as any, link: '' });
+  const listaPilares = [0, 1, 2, 3];
   const { data: planos = [] } = usePlanos();
   const { data: eventos = [] } = useEventos();
   const planosHome = useMemo(() => {
