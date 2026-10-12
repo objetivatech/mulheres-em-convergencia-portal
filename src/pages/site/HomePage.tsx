@@ -135,17 +135,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Depoimento */}
-      <section className="container mx-auto px-4 py-14">
-        <figure className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-accent">
-            {fotoDepo ? <ImagemSite chave="home.depoimento.foto" alt="Autora do depoimento" className="h-full w-full object-cover" />
-              : <><span aria-hidden className="flex h-full w-full items-center justify-center text-5xl font-extrabold text-primary">“</span><ImagemSite chave="home.depoimento.foto" alt="" className="hidden" /></>}
-          </div>
-          <TextoSite as="blockquote" multilinha chave="home.depoimento.texto" className="flex-1 text-xl italic leading-relaxed" />
-          <TextoSite as="figcaption" chave="home.depoimento.autora" className="text-sm text-muted-foreground md:max-w-[14rem]" />
-        </figure>
-      </section>
+      {/* Depoimentos (gerenciados em Painel → Depoimentos) */}
+      <SliderDepoimentos />
 
       {/* Pilares */}
       <section className="container mx-auto px-4 pb-16">
