@@ -16,7 +16,7 @@ import { useTexto, useTextosSite } from '@/hooks/useTextosSite';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useBlocosSite, useTodosNegocios, usePosts } from '@/hooks/useSite';
+import { useTodosNegocios, usePosts } from '@/hooks/useSite';
 import { PRODUCTION_DOMAIN } from '@/lib/constants';
 import { embaralhar } from '@/lib/embaralhar';
 
@@ -31,7 +31,6 @@ const PERIODO: Record<string, string> = { mensal: 'mês', trimestral: 'trimestre
 const POR_PAGINA = 9; // 3 linhas x 3 colunas
 
 export default function HomePage() {
-  const { data: blocos } = useBlocosSite();
   const { data: negocios, isLoading: carregandoNegocios } = useTodosNegocios();
   // Novo sorteio a cada visita/atualização, incluindo TODOS os publicados.
   const sorteados = useMemo(() => embaralhar(negocios ?? []), [negocios]);
@@ -55,10 +54,7 @@ export default function HomePage() {
   const totalPaginas = Math.ceil(filtrados.length / POR_PAGINA);
   const { data: posts, isLoading: carregandoPosts } = usePosts({ limite: 3 });
 
-  const hero = blocos?.home_hero?.conteudo ?? {};
-  const pilares: { titulo: string; texto: string; link: string }[] =
-    blocos?.home_pilares?.conteudo?.itens ?? [];
-  const listaPilares = [0, 1, 2, 3].map((i) => pilares[i] ?? { titulo: undefined as any, texto: undefined as any, link: '' });
+  const listaPilares = [0, 1, 2, 3];
   const { data: planos = [] } = usePlanos();
   const { data: eventos = [] } = useEventos();
   const planosHome = useMemo(() => {
@@ -145,14 +141,14 @@ export default function HomePage() {
           <TextoSite as="p" chave="home.pilares.subtitulo" className="mt-2 text-muted-foreground" />
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {listaPilares.map((p, i) => {
+          {listaPilares.map((i) => {
             const Icone = ICONES[i % ICONES.length];
             const cor = CORES_PILAR[i % CORES_PILAR.length];
             return (
-              <Link key={i} to={linksPilares[i] || p.link} className={`group rounded-[var(--radius)] p-6 transition-all hover:-translate-y-1 ${cor.fundo}`}>
+              <Link key={i} to={linksPilares[i] || '/'} className={`group rounded-[var(--radius)] p-6 transition-all hover:-translate-y-1 ${cor.fundo}`}>
                 <Icone className={`mb-3 h-6 w-6 ${cor.texto}`} />
-                <TextoSite as="h3" chave={`home.pilar${i + 1}.titulo`} padrao={p.titulo} className={`text-lg font-bold ${cor.texto}`} />
-                <TextoSite as="p" chave={`home.pilar${i + 1}.texto`} padrao={p.texto} className="mt-1 text-sm text-muted-foreground" />
+                <TextoSite as="h3" chave={`home.pilar${i + 1}.titulo`} className={`text-lg font-bold ${cor.texto}`} />
+                <TextoSite as="p" chave={`home.pilar${i + 1}.texto`} className="mt-1 text-sm text-muted-foreground" />
               </Link>
             );
           })}

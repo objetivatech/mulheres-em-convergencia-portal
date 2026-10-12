@@ -165,6 +165,22 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   { chave: 'convite.blog.pular', grupo: 'Convites da newsletter', rotulo: 'Blog — link pular', padrao: 'Agora não, quero só comentar' },
   { chave: 'convite.blog.sucesso', grupo: 'Convites da newsletter', rotulo: 'Blog — mensagem após assinar', padrao: 'Agora é só deixar seu comentário.' },
 
+  // Contato
+  { chave: 'contato.titulo', grupo: 'Contato', rotulo: 'Título da página', padrao: 'Entre em contato' },
+  { chave: 'contato.subtitulo', grupo: 'Contato', rotulo: 'Texto de abertura', padrao: 'Estamos aqui para ouvir você. Envie sua mensagem, dúvida ou sugestão. Valorizamos cada contato e responderemos o mais breve possível.' },
+  { chave: 'contato.form.titulo', grupo: 'Contato', rotulo: 'Formulário — título', padrao: 'Envie sua mensagem' },
+  { chave: 'contato.form.texto', grupo: 'Contato', rotulo: 'Formulário — texto', padrao: 'Preencha o formulário abaixo e entraremos em contato em breve.' },
+  { chave: 'contato.form.botao', grupo: 'Contato', rotulo: 'Formulário — botão', padrao: 'Enviar mensagem' },
+  { chave: 'contato.email', grupo: 'Contato', rotulo: 'E-mail de atendimento', padrao: 'juntas@mulheresemconvergencia.com.br' },
+  { chave: 'contato.telefone', grupo: 'Contato', rotulo: 'Telefone / WhatsApp', padrao: '(51) 99236-6002' },
+  { chave: 'contato.local', grupo: 'Contato', rotulo: 'Localização', padrao: 'Alvorada, RS — Brasil' },
+  { chave: 'contato.horario1.dias', grupo: 'Contato', rotulo: 'Horário 1 — dias', padrao: 'Segunda a sexta' },
+  { chave: 'contato.horario1.horas', grupo: 'Contato', rotulo: 'Horário 1 — horas', padrao: '9h às 18h' },
+  { chave: 'contato.horario2.dias', grupo: 'Contato', rotulo: 'Horário 2 — dias', padrao: 'Sábado e domingo' },
+  { chave: 'contato.horario2.horas', grupo: 'Contato', rotulo: 'Horário 2 — horas', padrao: 'Fechado' },
+  { chave: 'contato.mapa.titulo', grupo: 'Contato', rotulo: 'Mapa — título', padrao: 'Nossa localização' },
+  { chave: 'contato.mapa.endereco', grupo: 'Contato', rotulo: 'Mapa — endereço a mostrar (deixe vazio para esconder o mapa)', padrao: 'Alvorada, RS' },
+
   // Diretório — faixa dos ODS
   { chave: 'diretorio.ods.titulo', grupo: 'Diretório', rotulo: 'ODS — título da faixa', padrao: 'Nosso compromisso com os Objetivos de Desenvolvimento Sustentável da ONU' },
   { chave: 'diretorio.ods4.titulo', grupo: 'Diretório', rotulo: 'ODS 4 — título', padrao: 'Formação Prática' },

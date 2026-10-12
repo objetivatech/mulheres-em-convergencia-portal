@@ -161,7 +161,7 @@ function AppContent() {
         <Route path="/painel-conteudo/paginas" element={<Navigate to="/painel-conteudo/textos?aba=paginas" replace />} />
         <Route path="/painel-conteudo/depoimentos" element={<PainelDepoimentos />} />
         <Route path="/painel-conteudo/paginas/:id" element={<PainelPaginaEditor />} />
-        <Route path="/painel-conteudo/home" element={<PainelBlocos />} />
+        <Route path="/painel-conteudo/home" element={<Navigate to="/painel-conteudo/textos" replace />} />
         <Route path="/painel-conteudo/planos-eventos" element={<PainelPlanosEventos />} />
         <Route path="/painel-conteudo/planos/:id" element={<PainelPlanoEditor />} />
         <Route path="/painel-conteudo/eventos/:id/portaria" element={<PainelPortaria />} />
