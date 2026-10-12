@@ -25,7 +25,7 @@ export default function PainelHome() {
       titulo: 'Páginas',
       total: paginas?.length ?? 0,
       detalhe: `${(paginas ?? []).filter((p) => p.situacao === 'publicado').length} publicadas`,
-      link: '/painel-conteudo/paginas',
+      link: '/painel-conteudo/textos?aba=paginas',
     },
   ];
 
