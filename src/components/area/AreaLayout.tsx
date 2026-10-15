@@ -7,14 +7,24 @@ import Tour from '@/components/tour/Tour';
 import { cn } from '@/lib/utils';
 import LogoComponent from '@/components/layout/LogoComponent';
 
-const ITENS = [
+type ItemArea = {
+  para: string;
+  rotulo: string;
+  icone: typeof Home;
+  fim?: boolean;
+  /** Item só aparece para quem tem negócio no diretório. */
+  precisaNegocio?: boolean;
+};
+
+const ITENS: ItemArea[] = [
   { para: '/minha-area', rotulo: 'Visão geral', icone: Home, fim: true },
-  { para: '/minha-area/planos', rotulo: 'Meus planos', icone: CreditCard },
-  { para: '/minha-area/encontros', rotulo: 'Meus encontros', icone: CalendarDays },
-  { para: '/minha-area/academy', rotulo: 'Academy', icone: GraduationCap },
-  { para: '/minha-area/conecta', rotulo: 'Conecta+', icone: Users },
-  { para: '/minha-area/embaixadora', rotulo: 'Embaixadoras', icone: Sparkles },
   { para: '/minha-area/dados', rotulo: 'Meus dados', icone: UserCog },
+  { para: '/minha-area/negocio', rotulo: 'Meu negócio', icone: Store, precisaNegocio: true },
+  { para: '/minha-area/encontros', rotulo: 'Meus encontros', icone: CalendarDays },
+  { para: '/minha-area/conecta', rotulo: 'Conecta+', icone: Users },
+  { para: '/minha-area/academy', rotulo: 'Academy', icone: GraduationCap },
+  { para: '/minha-area/embaixadora', rotulo: 'Embaixadoras', icone: Sparkles },
+  { para: '/minha-area/planos', rotulo: 'Meus planos', icone: CreditCard },
   { para: '/minha-area/tutoriais', rotulo: 'Tutoriais', icone: BookOpen },
 ];
 
@@ -62,7 +72,7 @@ export default function AreaLayout({
           </div>
 
           <nav className="mt-4 space-y-1 rounded-[var(--radius)] border border-border bg-card p-2">
-            {ITENS.map((item) => (
+            {ITENS.filter((item) => !item.precisaNegocio || negocio || perfil?.acesso_diretorio).map((item) => (
               <NavLink
                 key={item.para}
                 to={item.para}
@@ -81,22 +91,6 @@ export default function AreaLayout({
               </NavLink>
             ))}
 
-            {(negocio || perfil?.acesso_diretorio) && (
-              <NavLink
-                to="/minha-area/negocio"
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition-colors',
-                    isActive
-                      ? 'bg-grad-marca text-primary-foreground font-semibold sombra-marca'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )
-                }
-              >
-                <Store className="w-4 h-4" />
-                Meu negócio
-              </NavLink>
-            )}
 
             {isAdmin && (
               <Link

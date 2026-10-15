@@ -39,15 +39,15 @@ export function useItensDaUsuaria(): ItemMenu[] {
 
   const itens: ItemMenu[] = [
     { para: '/minha-area', rotulo: 'Minha área', icone: LayoutDashboard, liberado: true },
-    { para: '/minha-area/planos', rotulo: 'Meus planos', icone: CreditCard, liberado: true },
+    { para: '/minha-area/dados', rotulo: 'Meus dados', icone: UserCog, liberado: true },
+  ];
+
+  if (negocio || perfil?.acesso_diretorio) {
+    itens.push({ para: '/minha-area/negocio', rotulo: 'Meu negócio', icone: Store, liberado: true });
+  }
+
+  itens.push(
     { para: '/minha-area/encontros', rotulo: 'Meus encontros', icone: CalendarDays, liberado: true },
-    {
-      para: '/minha-area/academy',
-      rotulo: 'Academy',
-      icone: GraduationCap,
-      liberado: !!perfil?.acesso_academy,
-      alternativa: { para: '/academy', rotulo: 'Conhecer a Academy' },
-    },
     {
       para: '/minha-area/conecta',
       rotulo: 'Conecta+',
@@ -55,22 +55,20 @@ export function useItensDaUsuaria(): ItemMenu[] {
       liberado: !!perfil?.acesso_conecta,
       alternativa: { para: '/planos', rotulo: 'Conhecer o Conecta+' },
     },
-  ];
+    {
+      para: '/minha-area/academy',
+      rotulo: 'Academy',
+      icone: GraduationCap,
+      liberado: !!perfil?.acesso_academy,
+      alternativa: { para: '/academy', rotulo: 'Conhecer a Academy' },
+    }
+  );
 
   if (isAmbassador || perfil?.acesso_embaixadora) {
     itens.push({ para: '/minha-area/embaixadora', rotulo: 'Embaixadoras', icone: Sparkles, liberado: true });
   }
 
-  if (negocio || perfil?.acesso_diretorio) {
-    itens.push({
-      para: '/minha-area/negocio',
-      rotulo: 'Meu negócio',
-      icone: Store,
-      liberado: true,
-    });
-  }
-
-  itens.push({ para: '/minha-area/dados', rotulo: 'Meus dados', icone: UserCog, liberado: true });
+  itens.push({ para: '/minha-area/planos', rotulo: 'Meus planos', icone: CreditCard, liberado: true });
 
   if (isAdmin) {
     itens.push({ para: '/painel-conteudo', rotulo: 'Painel da equipe', icone: Settings, liberado: true });
