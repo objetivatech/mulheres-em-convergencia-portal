@@ -1719,6 +1719,36 @@ export type Database = {
           },
         ]
       }
+      mensagens_contato: {
+        Row: {
+          assunto: string
+          criado_em: string
+          email: string
+          id: string
+          mensagem: string
+          nome: string
+          situacao: string
+        }
+        Insert: {
+          assunto: string
+          criado_em?: string
+          email: string
+          id?: string
+          mensagem: string
+          nome: string
+          situacao?: string
+        }
+        Update: {
+          assunto?: string
+          criado_em?: string
+          email?: string
+          id?: string
+          mensagem?: string
+          nome?: string
+          situacao?: string
+        }
+        Relationships: []
+      }
       menu_itens: {
         Row: {
           ativo: boolean
