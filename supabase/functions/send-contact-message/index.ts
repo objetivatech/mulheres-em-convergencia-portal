@@ -102,10 +102,10 @@ serve(async (req) => {
 
     // Rate limiting - check for recent submissions from same email
     const { count: recentCount } = await supabase
-      .from('contact_messages')
+      .from('mensagens_contato')
       .select('id', { count: 'exact', head: true })
       .eq('email', email.trim().toLowerCase())
-      .gte('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()); // 10 minutes
+      .gte('criado_em', new Date(Date.now() - 10 * 60 * 1000).toISOString()); // 10 minutes
 
     if ((recentCount ?? 0) >= 3) {
       console.log('Rate limit exceeded for email:', email);
@@ -120,13 +120,12 @@ serve(async (req) => {
 
     // Insert message into database
     const { data: messageData, error: insertError } = await supabase
-      .from('contact_messages')
+      .from('mensagens_contato')
       .insert([{
-        name: name.trim(),
+        nome: name.trim().slice(0, 120),
         email: email.trim().toLowerCase(),
-        subject: subject.trim(),
-        message: message.trim(),
-        status: 'new'
+        assunto: subject.trim().slice(0, 200),
+        mensagem: message.trim().slice(0, 5000),
       }])
       .select()
       .single();
@@ -155,34 +154,33 @@ serve(async (req) => {
     // Aviso para as administradoras pelo canal oficial de e-mail
     let emailSent = false;
     try {
-      // Get list of admins
-      const { data: admins, error: adminsError } = await supabase
-        .from('user_roles')
-        .select('profiles!inner(email, full_name)')
-        .eq('role', 'admin');
-
-      if (adminsError) {
-        console.error('[SEND-CONTACT-MESSAGE] Error fetching admins:', adminsError);
-      }
-
-      console.log(`[SEND-CONTACT-MESSAGE] Found ${admins?.length || 0} admins`);
+      const { data: papeis } = await supabase.from('papeis').select('pessoa_id').eq('papel', 'admin');
+      const ids = (papeis ?? []).map((p: any) => p.pessoa_id);
+      const { data: contatos } = ids.length
+        ? await supabase.from('pessoa_contatos').select('valor, pessoas!pessoa_contatos_pessoa_id_fkey(nome)').eq('tipo', 'email').in('pessoa_id', ids)
+        : { data: [] as any[] };
+      const vistos = new Set<string>();
+      const admins = (contatos ?? []).filter((c: any) => !vistos.has(String(c.valor).toLowerCase()) && vistos.add(String(c.valor).toLowerCase()))
+        .map((c: any) => ({ profiles: { email: String(c.valor), full_name: c.pessoas?.nome ?? '' } }));
+      console.log(`[SEND-CONTACT-MESSAGE] Found ${admins.length} admins`);
 
       if (admins && admins.length > 0) {
+        const esc = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #C75A92;">Nova Mensagem de Contato</h2>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 5px 0;"><strong>De:</strong> ${name}</p>
-              <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-              <p style="margin: 5px 0;"><strong>Assunto:</strong> ${subject}</p>
+              <p style="margin: 5px 0;"><strong>De:</strong> ${esc(name)}</p>
+              <p style="margin: 5px 0;"><strong>Email:</strong> ${esc(email)}</p>
+              <p style="margin: 5px 0;"><strong>Assunto:</strong> ${esc(subject)}</p>
               <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
             </div>
             <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
               <h3 style="color: #333; margin-top: 0;">Mensagem:</h3>
-              <p style="white-space: pre-wrap; color: #555;">${message}</p>
+              <p style="white-space: pre-wrap; color: #555;">${esc(message)}</p>
             </div>
             <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-radius: 8px;">
-              <p style="margin: 0; color: #92400e;">💡 <strong>Ação necessária:</strong> Responda para ${email}</p>
+              <p style="margin: 0; color: #92400e;">💡 <strong>Ação necessária:</strong> Responda para ${esc(email)}</p>
             </div>
           </div>
         `;
@@ -215,8 +213,8 @@ serve(async (req) => {
     
     // Update message status
     await supabase
-      .from('contact_messages')
-      .update({ status: emailSent ? 'processed' : 'new' })
+      .from('mensagens_contato')
+      .update({ situacao: emailSent ? 'avisada' : 'nova' })
       .eq('id', messageData.id);
 
     // Always return success for message saving
