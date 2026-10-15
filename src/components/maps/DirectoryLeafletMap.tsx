@@ -24,6 +24,7 @@ interface DirectoryLeafletMapProps {
   height?: string;
   showSearch?: boolean;
   onBusinessClick?: (businessId: string) => void;
+  localUsuaria?: [number, number] | null;
 }
 
 // Removido MapController (uso substituído por key no MapContainer)
@@ -34,7 +35,8 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   zoom = 10,
   height = '400px',
   showSearch = false,
-  onBusinessClick
+  onBusinessClick,
+  localUsuaria = null
 }) => {
   // Validar altura: se vier percentual, usar fallback
   const safeHeight = height.includes('%') ? '60vh' : height;
@@ -43,7 +45,10 @@ export const DirectoryLeafletMap: React.FC<DirectoryLeafletMapProps> = ({
   const [mapZoom, setMapZoom] = useState(zoom);
   const [searchTerm, setSearchTerm] = useState('');
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-const [mapError, setMapError] = useState<string | null>(null);
+  useEffect(() => {
+    if (localUsuaria) { setUserLocation(localUsuaria); setMapCenter(localUsuaria); setMapZoom(12); }
+  }, [localUsuaria?.[0], localUsuaria?.[1]]);
+  const [mapError, setMapError] = useState<string | null>(null);
   // Carregamento dinâmico do react-leaflet
   const [RL, setRL] = useState<any>(null);
   useEffect(() => {
