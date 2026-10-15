@@ -21,6 +21,7 @@ import { ExternalLink } from 'lucide-react';
 const LINK_GRUPO: Record<string, string> = {
   'Página inicial': '/', 'Diretório': '/diretorio', 'Blog Convergindo': '/convergindo', 'Encontros': '/eventos',
   'Planos': '/planos', 'Academy': '/academy', 'Embaixadoras': '/embaixadoras', 'Contato': '/contato',
+  'Página da Elisângela': '/quem-e-elisangela-aranda', 'Nossa história (Sobre)': '/sobre', 'Manifesto': '/manifesto',
 };
 
 export default function PainelTextos() {

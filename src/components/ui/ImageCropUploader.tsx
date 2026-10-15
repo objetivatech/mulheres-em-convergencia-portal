@@ -42,25 +42,24 @@ function getCroppedCanvas(
   targetWidth: number,
   targetHeight: number,
 ): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d')!;
-
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
+  const srcW = crop.width * scaleX;
+  const srcH = crop.height * scaleY;
 
-  ctx.drawImage(
-    image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
-    0,
-    0,
-    targetWidth,
-    targetHeight,
-  );
+  // Exporta em até 2x o tamanho indicado (telas de alta densidade), sem ampliar além do original.
+  const fator = Math.max(1, Math.min(2, srcW / targetWidth));
+  const outW = Math.round(targetWidth * fator);
+  const outH = Math.round(targetHeight * fator);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  ctx.drawImage(image, crop.x * scaleX, crop.y * scaleY, srcW, srcH, 0, 0, outW, outH);
 
   return canvas;
 }
