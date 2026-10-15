@@ -3,6 +3,8 @@
  * Cada chave vira uma linha em `textos_site` na primeira vez que for salva.
  * O valor padrão é o que aparece enquanto ninguém editou.
  */
+import { TEXTOS_EDITORIAIS } from './textosPaginasEditoriais';
+
 export type TextoCatalogo = {
   chave: string;
   grupo: string;
@@ -199,6 +201,8 @@ export const CATALOGO_TEXTOS: TextoCatalogo[] = [
   { chave: 'diretorio.ods11.texto', grupo: 'Diretório', rotulo: 'ODS 11 — texto', padrao: 'Consumo de proximidade que faz a riqueza girar e gera impacto na própria comunidade.' },
   { chave: 'diretorio.ods11.imagem', grupo: 'Diretório', rotulo: 'ODS 11 — logo', padrao: '', tipo: 'imagem' },
 ];
+
+CATALOGO_TEXTOS.push(...TEXTOS_EDITORIAIS);
 
 export const PADROES_TEXTOS: Record<string, string> = Object.fromEntries(
   CATALOGO_TEXTOS.map((t) => [t.chave, t.padrao])
