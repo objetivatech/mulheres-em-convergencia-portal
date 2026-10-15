@@ -16,7 +16,9 @@ export function CabecalhoPagina({ prefixo, children, lateral }: { prefixo: strin
       <span aria-hidden className="pointer-events-none absolute -top-24 left-1/3 h-64 w-64 rounded-full bg-primary-foreground/10" />
       <div className={`container relative mx-auto grid items-center gap-8 px-4 py-14 lg:py-20 ${duasColunas ? 'lg:grid-cols-[1.3fr_1fr]' : ''}`}>
         <div className="max-w-2xl space-y-4">
-          <TextoSite as="p" chave={`${prefixo}.selo`} className="inline-flex rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold empty:hidden" />
+          <div className="block">
+            <TextoSite as="p" chave={`${prefixo}.selo`} className="inline-flex w-fit rounded-full bg-primary-foreground/20 px-4 py-1.5 text-sm font-semibold empty:hidden" />
+          </div>
           <TextoSite as="h1" chave={`${prefixo}.titulo`} className="text-4xl font-extrabold leading-tight lg:text-5xl" />
           <TextoSite as="p" multilinha chave={`${prefixo}.subtitulo`} className="text-lg text-primary-foreground/90" />
           {children && <div className="space-y-5 pt-2 text-foreground">{children}</div>}
