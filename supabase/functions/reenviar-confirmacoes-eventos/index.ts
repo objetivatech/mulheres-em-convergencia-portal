@@ -25,19 +25,24 @@ Deno.serve(async (req) => {
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
       auth: { persistSession: false },
     });
-    const comoUsuaria = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false },
-    });
 
-    const { data: auth } = await comoUsuaria.auth.getUser();
-    if (!auth?.user) return json({ error: 'Sessão expirada.' }, 401);
-
-    const { data: minhaPessoa } = await admin.from('pessoas').select('id')
-      .eq('auth_user_id', auth.user.id).maybeSingle();
-    const { data: papelAdmin } = await admin.from('papeis').select('id')
-      .eq('pessoa_id', minhaPessoa?.id ?? '').eq('papel', 'admin').maybeSingle();
-    if (!papelAdmin) return json({ error: 'Só a equipe pode reenviar confirmações.' }, 403);
+    // Dois caminhos de autorização: chamada servidor-a-servidor com a chave
+    // de serviço, ou sessão de uma administradora logada no portal.
+    const token = authHeader.slice(7).trim();
+    const chamadaServidor = token === (Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '').trim();
+    if (!chamadaServidor) {
+      const comoUsuaria = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        global: { headers: { Authorization: authHeader } },
+        auth: { persistSession: false },
+      });
+      const { data: auth } = await comoUsuaria.auth.getUser();
+      if (!auth?.user) return json({ error: 'Sessão expirada.' }, 401);
+      const { data: minhaPessoa } = await admin.from('pessoas').select('id')
+        .eq('auth_user_id', auth.user.id).maybeSingle();
+      const { data: papelAdmin } = await admin.from('papeis').select('id')
+        .eq('pessoa_id', minhaPessoa?.id ?? '').eq('papel', 'admin').maybeSingle();
+      if (!papelAdmin) return json({ error: 'Só a equipe pode reenviar confirmações.' }, 403);
+    }
 
     const parsed = Corpo.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return json({ error: 'Pedido inválido.' }, 400);
