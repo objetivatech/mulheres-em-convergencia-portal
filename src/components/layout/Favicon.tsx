@@ -1,13 +1,12 @@
 
 import { Helmet } from 'react-helmet-async';
-import logoCircular from '@/assets/logo-circular.png';
 
 const Favicon = () => {
-  // Usa o logo circular como favicon (png 32x32). O Vite servirá o asset corretamente.
+  // Mantém os mesmos arquivos locais declarados no HTML para navegadores e buscadores.
   return (
     <Helmet>
-      <link rel="icon" type="image/png" href={logoCircular} />
-      <link rel="apple-touch-icon" href={logoCircular} />
+      <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png" />
+      <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
     </Helmet>
   );
 };

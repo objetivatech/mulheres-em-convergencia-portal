@@ -105,6 +105,7 @@ Atualizado: 17/09/2026
 - [ ] Ajustes manuais no Supabase novo: templates do Auth, URLs de redirecionamento, SMTP próprio e limite de envio (`docs/_reboot/19-emails-e-comunicados.md`)
 
 ## Redesign Claude Design
+- [x] Ícone MeC local para navegadores e buscadores (17/10/2026).
 - [x] Fase 1 — cores, fonte e cantos globais
 - [x] Fase 2 — topo e rodapé
 - [x] Fase 3 — nova capa
