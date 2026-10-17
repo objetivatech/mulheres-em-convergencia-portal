@@ -18,3 +18,4 @@
 - Depoimentos da capa vivem na tabela `depoimentos` (origem rede ou Google, cadastro manual pela equipe) — sem chave de API do Google, a importação é por cópia.
 - Tamanho ideal de imagem é resolvido em `src/lib/dicasImagem.ts` (por chave do catálogo ou pasta) e exibido pelo `CampoImagem` — um só lugar para ajustar.
 - Listagens do painel usam `src/components/painel/BarraLista.tsx` para busca, ordem e filtro — mesmo padrão em todas.
+- Browser icons use stable public paths shared by index.html and Favicon.tsx; remove obsolete favicon.ico to prevent crawlers from selecting stale branding.

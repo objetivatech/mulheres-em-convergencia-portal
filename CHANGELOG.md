@@ -2,6 +2,11 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 17/10/2026 — Ícone MeC para navegadores e Google
+- Símbolo fornecido aplicado em favicon local de 96×96 e ícones Apple/PWA, preservando proporção.
+- Removido o favicon antigo do Lovable; HTML e Helmet usam o mesmo arquivo local.
+- A atualização nos resultados do Google depende da publicação e de nova visita do rastreador.
+
 
 ## 12/10/2026 — Depoimentos, imagens e Editor de páginas unificado
 - Depoimentos gerenciáveis (`/painel-conteudo/depoimentos`) com slider na capa; origem rede ou Google.
