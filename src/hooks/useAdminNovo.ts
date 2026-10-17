@@ -5,6 +5,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { notificarApp } from '@/lib/notificar';
 
 const db = supabase as any;
 
@@ -76,6 +77,8 @@ export function useConcederCortesia() {
         _pessoa_id: pessoaId, _tipo: tipo, _dias: dias, _motivo: motivo,
       });
       if (error) throw error;
+      // Avisa a associada sobre o acesso liberado
+      notificarApp({ acao: 'cortesia_concedida', pessoa_id: pessoaId, tipo, dias, motivo });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin'] }),
   });

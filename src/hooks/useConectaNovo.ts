@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMinhaPessoa } from '@/hooks/useMinhaArea';
+import { notificarApp } from '@/lib/notificar';
 
 const db = supabase as any;
 
@@ -94,13 +95,14 @@ export function useCriarIndicacao() {
   const { data: pessoaId } = useMinhaPessoa();
   return useMutation({
     mutationFn: async ({ paraPessoaId, descricao }: { paraPessoaId: string | null; descricao: string }) => {
-      const { error } = await db.from('conecta_indicacoes').insert({
+      const { data, error } = await db.from('conecta_indicacoes').insert({
         de_pessoa_id: pessoaId,
         para_pessoa_id: paraPessoaId,
         descricao,
         situacao: 'aberta',
-      });
+      }).select('id').single();
       if (error) throw error;
+      if (data?.id && paraPessoaId) notificarApp({ acao: 'indicacao_conecta', id: data.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conecta', 'indicacoes'] }),
   });

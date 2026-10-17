@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMinhaPessoa } from '@/hooks/useMinhaArea';
+import { notificarApp } from '@/lib/notificar';
 
 const db = supabase as any;
 
@@ -56,13 +57,14 @@ export function useConvidarConexao() {
   const { data: pessoaId } = useMinhaPessoa();
   return useMutation({
     mutationFn: async ({ paraPessoaId, mensagem }: { paraPessoaId: string; mensagem?: string }) => {
-      const { error } = await db.from('conecta_conexoes').insert({
+      const { data, error } = await db.from('conecta_conexoes').insert({
         de_pessoa_id: pessoaId,
         para_pessoa_id: paraPessoaId,
         mensagem: mensagem?.trim() || null,
         situacao: 'pendente',
-      });
+      }).select('id').single();
       if (error) throw error;
+      if (data?.id) notificarApp({ acao: 'conexao_solicitada', id: data.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conecta', 'conexoes'] }),
   });
@@ -77,6 +79,7 @@ export function useResponderConexao() {
         .update({ situacao, respondido_em: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
+      if (situacao === 'aceita') notificarApp({ acao: 'conexao_aceita', id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conecta', 'conexoes'] }),
   });
@@ -144,12 +147,13 @@ export function useEnviarMensagem() {
   const { data: pessoaId } = useMinhaPessoa();
   return useMutation({
     mutationFn: async ({ paraPessoaId, conteudo }: { paraPessoaId: string; conteudo: string }) => {
-      const { error } = await db.from('conecta_mensagens').insert({
+      const { data, error } = await db.from('conecta_mensagens').insert({
         de_pessoa_id: pessoaId,
         para_pessoa_id: paraPessoaId,
         conteudo: conteudo.trim(),
-      });
+      }).select('id').single();
       if (error) throw error;
+      if (data?.id) notificarApp({ acao: 'mensagem_conecta', id: data.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conecta', 'mensagens'] }),
   });

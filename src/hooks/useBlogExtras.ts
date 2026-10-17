@@ -1,6 +1,7 @@
 /** Extras da página do post: autora (negócio dela), relacionados e comentários públicos. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { notificarApp } from '@/lib/notificar';
 
 export type Comentario = { id: string; nome: string; conteudo: string; criado_em: string; pessoa_id: string | null };
 
@@ -61,8 +62,10 @@ export function useEnviarComentario() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (c: { post_id: string; nome: string; conteudo: string; pessoa_id: string | null }) => {
-      const { error } = await supabase.from('post_comentarios').insert(c);
+      const { data, error } = await supabase.from('post_comentarios').insert(c).select('id').single();
       if (error) throw error;
+      // Avisa a equipe sobre o novo comentário
+      if (data?.id) notificarApp({ acao: 'comentario_blog', id: data.id });
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ['blog', 'comentarios', v.post_id] }),
   });

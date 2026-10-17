@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMinhaPessoa } from '@/hooks/useMinhaArea';
+import { notificarApp } from '@/lib/notificar';
 
 const db = supabase as any;
 
@@ -71,10 +72,15 @@ export function useMatricular() {
   const { data: pessoaId } = useMinhaPessoa();
   return useMutation({
     mutationFn: async (cursoId: string) => {
-      const { error } = await db
+      const { data, error } = await db
         .from('matriculas')
-        .upsert({ pessoa_id: pessoaId, curso_id: cursoId }, { onConflict: 'pessoa_id,curso_id' });
+        .upsert({ pessoa_id: pessoaId, curso_id: cursoId }, { onConflict: 'pessoa_id,curso_id' })
+        .select('id, criado_em').single();
       if (error) throw error;
+      // Só notifica na primeira matrícula (upsert repetido não reenvia e-mail)
+      if (data?.id && Date.now() - new Date(data.criado_em).getTime() < 60_000) {
+        notificarApp({ acao: 'matricula_academy', id: data.id });
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['academy'] });
