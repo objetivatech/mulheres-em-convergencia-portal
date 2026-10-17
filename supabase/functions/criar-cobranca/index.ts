@@ -4,6 +4,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { z } from 'https://esm.sh/zod@3.25.76';
 import { corsHeaders } from '../_shared/cors.ts';
+import { enviarEmail } from '../_shared/enviar-email.ts';
+import { modeloInscricaoEvento } from '../_shared/notificacoes.ts';
 
 const ASAAS_BASE = 'https://api.asaas.com/v3';
 
@@ -65,7 +67,11 @@ Deno.serve(async (req) => {
     let descricao = '';
     let valorCentavos = 0;
     let referencia = '';
-    let evento: { id: string; titulo: string; gratuito: boolean } | null = null;
+    let evento: {
+      id: string; titulo: string; gratuito: boolean;
+      inicio_em?: string | null; online?: boolean; local_nome?: string | null;
+      cidade?: string | null; uf?: string | null; link_online?: string | null;
+    } | null = null;
     let loteId: string | null = null;
     let planoId: string | null = null;
 
