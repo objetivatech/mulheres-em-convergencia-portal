@@ -324,6 +324,26 @@ export default function PainelAutomacoes() {
           </section>
 
           <section className="rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h2 className="font-semibold">Confirmações de evento por e-mail</h2>
+                <p className="text-sm text-muted-foreground">
+                  {confirmacoesPendentes === 0
+                    ? 'Todas as inscritas confirmadas já receberam o e-mail de confirmação.'
+                    : `${confirmacoesPendentes} inscrita(s) confirmada(s) ainda não receberam o e-mail de confirmação.`}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={reenviarConfirmacoes}
+                disabled={reenviando || confirmacoesPendentes === 0}
+              >
+                {reenviando ? 'Enviando…' : 'Reenviar confirmações pendentes'}
+              </Button>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-6">
             <h2 className="font-semibold mb-3">Comunicados</h2>
             {!data?.campanhas.length ? (
               <p className="text-sm text-muted-foreground">Nenhum comunicado criado.</p>
