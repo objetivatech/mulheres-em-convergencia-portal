@@ -8,6 +8,13 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { identificarPorClienteAsaas, liberarPorPagamento } from "../_shared/acessos-asaas.ts";
+import { enviarEmail } from "../_shared/enviar-email.ts";
+import {
+  emailDePessoa,
+  modeloBoasVindasPlano,
+  modeloIndicacaoEmbaixadora,
+  modeloInscricaoEvento,
+} from "../_shared/notificacoes.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
