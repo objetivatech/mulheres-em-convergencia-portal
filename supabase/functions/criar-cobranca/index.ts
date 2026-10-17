@@ -113,11 +113,11 @@ Deno.serve(async (req) => {
     } else {
       const { data: ev } = await admin
         .from('eventos')
-        .select('id, titulo, slug, gratuito, publicado')
+        .select('id, titulo, slug, gratuito, publicado, inicio_em, online, local_nome, cidade, uf, link_online')
         .eq('slug', slug)
         .maybeSingle();
       if (!ev || !ev.publicado) return json({ error: 'Evento não encontrado.' }, 404);
-      evento = { id: ev.id, titulo: ev.titulo, gratuito: ev.gratuito };
+      evento = ev;
 
       const { data: vagas } = await admin
         .from('v_evento_vagas')
