@@ -1,0 +1,1 @@
+ALTER TABLE public.evento_inscricoes ADD COLUMN IF NOT EXISTS confirmacao_enviada_em timestamp with time zone;
