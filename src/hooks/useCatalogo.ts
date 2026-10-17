@@ -120,10 +120,17 @@ export function useEnviarAvaliacao() {
   return useMutation({
     mutationFn: async (v: { id?: string; negocio_id: string; pessoa_id: string | null; avaliador_nome: string; nota: number; comentario?: string }) => {
       const valores = { nota: v.nota, comentario: v.comentario ?? null, avaliador_nome: v.avaliador_nome };
-      const r = v.id
-        ? await db.from('negocio_avaliacoes').update(valores).eq('id', v.id)
-        : await db.from('negocio_avaliacoes').insert({ ...valores, negocio_id: v.negocio_id, pessoa_id: v.pessoa_id, status: 'aprovado' });
-      if (r.error) throw r.error;
+      if (v.id) {
+        const { error } = await db.from('negocio_avaliacoes').update(valores).eq('id', v.id);
+        if (error) throw error;
+        return;
+      }
+      const { data, error } = await db.from('negocio_avaliacoes')
+        .insert({ ...valores, negocio_id: v.negocio_id, pessoa_id: v.pessoa_id, status: 'aprovado' })
+        .select('id').single();
+      if (error) throw error;
+      // Avisa a dona do negócio sobre a nova avaliação (não notifica edições)
+      if (data?.id) notificarApp({ acao: 'avaliacao_negocio', id: data.id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['catalogo'] }),
   });
