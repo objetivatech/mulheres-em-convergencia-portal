@@ -1217,6 +1217,7 @@ export type Database = {
       }
       evento_inscricoes: {
         Row: {
+          confirmacao_enviada_em: string | null
           criado_em: string
           cupom_id: string | null
           email: string
@@ -1231,6 +1232,7 @@ export type Database = {
           valor_centavos: number
         }
         Insert: {
+          confirmacao_enviada_em?: string | null
           criado_em?: string
           cupom_id?: string | null
           email: string
@@ -1245,6 +1247,7 @@ export type Database = {
           valor_centavos?: number
         }
         Update: {
+          confirmacao_enviada_em?: string | null
           criado_em?: string
           cupom_id?: string | null
           email?: string

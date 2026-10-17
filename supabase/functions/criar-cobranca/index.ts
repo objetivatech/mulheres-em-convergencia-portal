@@ -4,6 +4,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { z } from 'https://esm.sh/zod@3.25.76';
 import { corsHeaders } from '../_shared/cors.ts';
+import { enviarEmail } from '../_shared/enviar-email.ts';
+import { modeloInscricaoEvento } from '../_shared/notificacoes.ts';
 
 const ASAAS_BASE = 'https://api.asaas.com/v3';
 
@@ -65,7 +67,11 @@ Deno.serve(async (req) => {
     let descricao = '';
     let valorCentavos = 0;
     let referencia = '';
-    let evento: { id: string; titulo: string; gratuito: boolean } | null = null;
+    let evento: {
+      id: string; titulo: string; gratuito: boolean;
+      inicio_em?: string | null; online?: boolean; local_nome?: string | null;
+      cidade?: string | null; uf?: string | null; link_online?: string | null;
+    } | null = null;
     let loteId: string | null = null;
     let planoId: string | null = null;
 
@@ -107,11 +113,11 @@ Deno.serve(async (req) => {
     } else {
       const { data: ev } = await admin
         .from('eventos')
-        .select('id, titulo, slug, gratuito, publicado')
+        .select('id, titulo, slug, gratuito, publicado, inicio_em, online, local_nome, cidade, uf, link_online')
         .eq('slug', slug)
         .maybeSingle();
       if (!ev || !ev.publicado) return json({ error: 'Evento não encontrado.' }, 404);
-      evento = { id: ev.id, titulo: ev.titulo, gratuito: ev.gratuito };
+      evento = ev;
 
       const { data: vagas } = await admin
         .from('v_evento_vagas')
@@ -189,7 +195,7 @@ Deno.serve(async (req) => {
           error: 'Você já participou de um encontro gratuito. Assine um plano para continuar participando.',
         }, 200);
       }
-      const { error: erroInscricao } = await admin.from('evento_inscricoes').upsert(
+      const { data: inscricao, error: erroInscricao } = await admin.from('evento_inscricoes').upsert(
         {
           evento_id: evento.id,
           lote_id: loteId,
@@ -202,8 +208,28 @@ Deno.serve(async (req) => {
           situacao: 'confirmada',
         },
         { onConflict: 'evento_id,pessoa_id' },
-      );
+      ).select('id').maybeSingle();
       if (erroInscricao) throw erroInscricao;
+
+      // Confirmação por e-mail (falha aqui nunca desfaz a inscrição)
+      try {
+        await enviarEmail(
+          { email: user.email!, nome },
+          `Inscrição confirmada: ${evento.titulo}`,
+          modeloInscricaoEvento({
+            nome, titulo: evento.titulo, inicioEm: evento.inicio_em, online: evento.online,
+            localNome: evento.local_nome, cidade: evento.cidade, uf: evento.uf,
+            linkOnline: evento.link_online, inscricaoId: inscricao?.id ?? null,
+          }),
+        );
+        if (inscricao?.id) {
+          await admin.from('evento_inscricoes')
+            .update({ confirmacao_enviada_em: new Date().toISOString() })
+            .eq('id', inscricao.id);
+        }
+      } catch (e) {
+        console.error('[CRIAR-COBRANCA] e-mail de inscrição falhou', e);
+      }
       return json({ gratuito: true, inscrita: true });
     }
 

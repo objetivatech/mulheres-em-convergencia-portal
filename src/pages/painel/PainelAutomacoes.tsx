@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -183,6 +184,40 @@ export default function PainelAutomacoes() {
 
   const comErro = (data?.webhooks ?? []).filter((w) => w.erro || !w.processado_em);
 
+  // Inscrições confirmadas que ainda não receberam o e-mail de confirmação
+  const { data: confirmacoesPendentes = 0, refetch: recarregarConfirmacoes } = useQuery({
+    queryKey: ['admin', 'confirmacoes-evento-pendentes'],
+    queryFn: async () => {
+      const { count, error } = await (supabase as any)
+        .from('evento_inscricoes')
+        .select('id', { count: 'exact', head: true })
+        .eq('situacao', 'confirmada')
+        .is('confirmacao_enviada_em', null);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  const [reenviando, setReenviando] = useState(false);
+  const reenviarConfirmacoes = async () => {
+    setReenviando(true);
+    try {
+      const { data: r, error } = await supabase.functions.invoke('reenviar-confirmacoes-eventos', {
+        body: { limite: 100 },
+      });
+      if (error) throw new Error(await mensagemErroEdge(error));
+      if ((r as any)?.error) throw new Error((r as any).error);
+      toast({
+        title: 'Confirmações enviadas',
+        description: `${(r as any)?.enviados ?? 0} e-mails de confirmação enviados às participantes.`,
+      });
+      recarregarConfirmacoes();
+    } catch (e: any) {
+      toast({ title: 'Não foi possível reenviar', description: e?.message, variant: 'destructive' });
+    } finally {
+      setReenviando(false);
+    }
+  };
+
   return (
     <PainelLayout
       titulo="Automações"
@@ -286,6 +321,26 @@ export default function PainelAutomacoes() {
                 ))}
               </ul>
             )}
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h2 className="font-semibold">Confirmações de evento por e-mail</h2>
+                <p className="text-sm text-muted-foreground">
+                  {confirmacoesPendentes === 0
+                    ? 'Todas as inscritas confirmadas já receberam o e-mail de confirmação.'
+                    : `${confirmacoesPendentes} inscrita(s) confirmada(s) ainda não receberam o e-mail de confirmação.`}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={reenviarConfirmacoes}
+                disabled={reenviando || confirmacoesPendentes === 0}
+              >
+                {reenviando ? 'Enviando…' : 'Reenviar confirmações pendentes'}
+              </Button>
+            </div>
           </section>
 
           <section className="rounded-xl border border-border bg-card p-6">
