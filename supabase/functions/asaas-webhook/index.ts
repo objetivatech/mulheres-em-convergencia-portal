@@ -177,10 +177,101 @@ async function aplicarEfeitos(ctx: {
     );
   }
 
+  // E-mails transacionais do pagamento confirmado (evento pago, plano, embaixadora)
+  if (ctx.pagamentoId && ctx.pessoaId && ctx.concessaoId) {
+    tarefas.push(enviarEmailsPagamento(ctx.pagamentoId, ctx.pessoaId));
+  }
+
   const resultados = await Promise.allSettled(tarefas);
   resultados
     .filter((r) => r.status === "rejected")
     .forEach((r) => console.error("efeito falhou", (r as PromiseRejectedResult).reason));
+}
+
+async function enviarEmailsPagamento(pagamentoId: string, pessoaId: string) {
+  const { data: pag } = await supabase
+    .from("pagamentos")
+    .select("referencia_externa, valor_centavos")
+    .eq("id", pagamentoId)
+    .maybeSingle();
+  const ref = String(pag?.referencia_externa ?? "");
+  const dest = await emailDePessoa(supabase, pessoaId);
+  if (!dest) return;
+
+  // Inscrição em evento pago confirmada
+  if (ref.startsWith("evento:")) {
+    const slug = ref.slice(7);
+    const { data: ev } = await supabase
+      .from("eventos")
+      .select("id, titulo, inicio_em, online, local_nome, cidade, uf, link_online")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (ev) {
+      const { data: insc } = await supabase
+        .from("evento_inscricoes")
+        .select("id, confirmacao_enviada_em")
+        .eq("evento_id", ev.id)
+        .eq("pessoa_id", pessoaId)
+        .maybeSingle();
+      if (insc && !insc.confirmacao_enviada_em) {
+        await enviarEmail(
+          dest,
+          `Inscrição confirmada: ${ev.titulo}`,
+          modeloInscricaoEvento({
+            nome: dest.nome, titulo: ev.titulo, inicioEm: ev.inicio_em, online: ev.online,
+            localNome: ev.local_nome, cidade: ev.cidade, uf: ev.uf,
+            linkOnline: ev.link_online, inscricaoId: insc.id, pago: true,
+          }),
+        );
+        await supabase.from("evento_inscricoes")
+          .update({ confirmacao_enviada_em: new Date().toISOString() })
+          .eq("id", insc.id);
+      }
+    }
+  }
+
+  // Boas-vindas de plano
+  if (ref.startsWith("plano:")) {
+    const slug = ref.slice(6);
+    const { data: plano } = await supabase
+      .from("planos")
+      .select("nome")
+      .eq("slug", slug)
+      .maybeSingle();
+    await enviarEmail(
+      dest,
+      `Bem-vinda ao plano ${plano?.nome ?? ""}! 💜`,
+      modeloBoasVindasPlano({ nome: dest.nome, plano: plano?.nome ?? "contratado" }),
+    );
+  }
+
+  // Aviso à embaixadora quando o pagamento veio de indicação dela
+  const { data: indicacao } = await supabase
+    .from("embaixadora_indicacoes")
+    .select("id, embaixadora_id, nome")
+    .eq("pagamento_id", pagamentoId)
+    .maybeSingle();
+  if (indicacao) {
+    const { data: emb } = await supabase
+      .from("embaixadoras")
+      .select("pessoa_id")
+      .eq("id", indicacao.embaixadora_id)
+      .maybeSingle();
+    if (emb?.pessoa_id) {
+      const destEmb = await emailDePessoa(supabase, emb.pessoa_id);
+      if (destEmb) {
+        await enviarEmail(
+          destEmb,
+          "Sua indicação virou conquista! 🎉",
+          modeloIndicacaoEmbaixadora({
+            nome: destEmb.nome,
+            nomeIndicada: indicacao.nome,
+            valorReais: pag?.valor_centavos ? (pag.valor_centavos / 100).toFixed(2).replace(".", ",") : null,
+          }),
+        );
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
