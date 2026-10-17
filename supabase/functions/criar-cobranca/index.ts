@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
           error: 'Você já participou de um encontro gratuito. Assine um plano para continuar participando.',
         }, 200);
       }
-      const { error: erroInscricao } = await admin.from('evento_inscricoes').upsert(
+      const { data: inscricao, error: erroInscricao } = await admin.from('evento_inscricoes').upsert(
         {
           evento_id: evento.id,
           lote_id: loteId,
@@ -208,8 +208,28 @@ Deno.serve(async (req) => {
           situacao: 'confirmada',
         },
         { onConflict: 'evento_id,pessoa_id' },
-      );
+      ).select('id').maybeSingle();
       if (erroInscricao) throw erroInscricao;
+
+      // Confirmação por e-mail (falha aqui nunca desfaz a inscrição)
+      try {
+        await enviarEmail(
+          { email: user.email!, nome },
+          `Inscrição confirmada: ${evento.titulo}`,
+          modeloInscricaoEvento({
+            nome, titulo: evento.titulo, inicioEm: evento.inicio_em, online: evento.online,
+            localNome: evento.local_nome, cidade: evento.cidade, uf: evento.uf,
+            linkOnline: evento.link_online, inscricaoId: inscricao?.id ?? null,
+          }),
+        );
+        if (inscricao?.id) {
+          await admin.from('evento_inscricoes')
+            .update({ confirmacao_enviada_em: new Date().toISOString() })
+            .eq('id', inscricao.id);
+        }
+      } catch (e) {
+        console.error('[CRIAR-COBRANCA] e-mail de inscrição falhou', e);
+      }
       return json({ gratuito: true, inscrita: true });
     }
 
