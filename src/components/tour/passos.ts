@@ -150,5 +150,9 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       titulo: 'Sempre reversível',
       texto: 'Quase tudo pode ser despublicado em vez de apagado. Na dúvida, desligue e veja o site.',
     },
+    {
+      titulo: 'Vagas e divulgação dos encontros',
+      texto: 'Ao editar um encontro, informe ingressos reais vendidos fora do portal e ligue "Destacar" para a tarja. Os contadores são automáticos. Quem aguarda vaga fica na aba "Lista de espera".',
+    },
   ],
 };

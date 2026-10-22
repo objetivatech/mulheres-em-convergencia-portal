@@ -28,6 +28,8 @@ const json = (body: unknown, status = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  let cancelarReserva: (() => Promise<void>) | null = null;
+  let cobrancaCriada = false;
 
   try {
     const apiKey = Deno.env.get('ASAAS_API_KEY');
@@ -49,7 +51,7 @@ Deno.serve(async (req) => {
 
     const { data: auth } = await comoUsuaria.auth.getUser();
     const user = auth?.user;
-    if (!user) return json({ error: 'Sessão expirada. Entre novamente.' }, 401);
+    if (!user?.email) return json({ error: 'Sessão expirada. Entre novamente.' }, 401);
 
     const parsed = Corpo.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Dados incompletos ou inválidos.' }, 400);
@@ -117,19 +119,35 @@ Deno.serve(async (req) => {
         .eq('slug', slug)
         .maybeSingle();
       if (!ev || !ev.publicado) return json({ error: 'Evento não encontrado.' }, 404);
+      if (new Date(ev.inicio_em).getTime() <= Date.now()) return json({ error: 'As inscrições deste encontro estão encerradas.' }, 409);
       evento = ev;
 
-      const { data: vagas } = await admin
+      // Não sobrescreve uma vaga confirmada nem cria duas cobranças para a mesma pessoa.
+      const { data: existente } = await admin.from('evento_inscricoes').select('id,situacao,pagamento_id').eq('evento_id', ev.id).eq('pessoa_id', pessoaId).maybeSingle();
+      if (existente?.situacao === 'confirmada') return json({ gratuito: true, inscrita: true });
+      if (existente?.situacao === 'pendente') {
+        if (existente.pagamento_id) {
+          const { data: pg } = await admin.from('pagamentos').select('cobranca_externa_id,valor_centavos,dados_brutos').eq('id', existente.pagamento_id).maybeSingle();
+          const link = pg?.dados_brutos?.invoiceUrl ?? pg?.dados_brutos?.bankSlipUrl;
+          if (link) return json({ cobranca_id: pg.cobranca_externa_id, valor_centavos: pg.valor_centavos, link });
+        }
+        return json({ error: 'Sua reserva está sendo processada. Aguarde um instante e tente novamente.' }, 409);
+      }
+
+      const { data: vagas, error: erroVagas } = await admin
         .from('v_evento_vagas')
-        .select('disponiveis')
+        .select('livres_para_reserva')
         .eq('evento_id', ev.id)
         .maybeSingle();
-      if (vagas && vagas.disponiveis !== null && Number(vagas.disponiveis) <= 0) {
+      if (erroVagas) throw erroVagas;
+      if (vagas && vagas.livres_para_reserva !== null && Number(vagas.livres_para_reserva) <= 0) {
         return json({ error: 'As vagas deste evento já foram preenchidas.' }, 409);
       }
 
-      const { data: lote } = await admin.rpc('lote_vigente', { _evento_id: ev.id });
+      const { data: lote, error: erroLote } = await admin.rpc('lote_vigente', { _evento_id: ev.id });
+      if (erroLote) throw erroLote;
       loteId = (lote as string | null) ?? null;
+      if (!ev.gratuito && !loteId) return json({ error: 'Não há lote de ingressos disponível no momento.' }, 409);
       if (loteId) {
         const { data: dadosLote } = await admin
           .from('evento_lotes')
@@ -138,6 +156,7 @@ Deno.serve(async (req) => {
           .maybeSingle();
         valorCentavos = dadosLote?.valor_centavos ?? 0;
       }
+      if (ev.gratuito) valorCentavos = 0;
       descricao = `Ingresso do evento ${ev.titulo}`;
       referencia = `evento:${ev.slug}`;
     }
@@ -164,19 +183,19 @@ Deno.serve(async (req) => {
         c && c.ativo &&
         (!c.evento_id || c.evento_id === evento.id) &&
         (!c.valido_ate || new Date(c.valido_ate) > new Date());
-      if (!valido) return json({ error: 'Cupom inválido ou expirado.' }, 400);
-      if (c!.limite_uso !== null) {
+      if (!valido || !c) return json({ error: 'Cupom inválido ou expirado.' }, 400);
+      if (c.limite_uso !== null) {
         const { count } = await admin
           .from('evento_inscricoes')
           .select('id', { count: 'exact', head: true })
-          .eq('cupom_id', c!.id)
+          .eq('cupom_id', c.id)
           .neq('situacao', 'cancelada');
-        if ((count ?? 0) >= c!.limite_uso!) return json({ error: 'Cupom esgotado.' }, 400);
+        if ((count ?? 0) >= c.limite_uso) return json({ error: 'Cupom esgotado.' }, 400);
       }
-      cupomId = c!.id;
-      valorCentavos = c!.desconto_tipo === 'percentual'
-        ? Math.max(0, Math.round(valorCentavos * (1 - c!.desconto_valor / 100)))
-        : Math.max(0, valorCentavos - c!.desconto_valor);
+      cupomId = c.id;
+      valorCentavos = c.desconto_tipo === 'percentual'
+        ? Math.max(0, Math.round(valorCentavos * (1 - c.desconto_valor / 100)))
+        : Math.max(0, valorCentavos - c.desconto_valor);
     }
 
     // Evento gratuito: inscrição imediata, sem cobrança
@@ -202,7 +221,7 @@ Deno.serve(async (req) => {
           pessoa_id: pessoaId,
           cupom_id: cupomId,
           nome,
-          email: user.email!,
+          email: user.email,
           telefone: telefone ?? null,
           valor_centavos: 0,
           situacao: 'confirmada',
@@ -214,7 +233,7 @@ Deno.serve(async (req) => {
       // Confirmação por e-mail (falha aqui nunca desfaz a inscrição)
       try {
         await enviarEmail(
-          { email: user.email!, nome },
+          { email: user.email, nome },
           `Inscrição confirmada: ${evento.titulo}`,
           modeloInscricaoEvento({
             nome, titulo: evento.titulo, inicioEm: evento.inicio_em, online: evento.online,
@@ -242,6 +261,17 @@ Deno.serve(async (req) => {
     }
 
     // Cliente no Asaas (reaproveita por CPF)
+    let reservaId: string | null = null;
+    if (tipo === 'evento' && evento) {
+      const { data: reserva, error } = await admin.from('evento_inscricoes').upsert({
+        evento_id: evento.id, lote_id: loteId, pessoa_id: pessoaId, cupom_id: cupomId,
+        nome, email: user.email, telefone: telefone ?? null, valor_centavos: valorCentavos,
+        situacao: 'pendente', pagamento_id: null,
+      }, { onConflict: 'evento_id,pessoa_id' }).select('id').single();
+      if (error) return json({ error: 'Não foi possível reservar sua vaga. Confira a disponibilidade do encontro.' }, 409);
+      reservaId = reserva.id;
+      cancelarReserva = async () => { await admin.from('evento_inscricoes').update({ situacao: 'cancelada' }).eq('id', reserva.id).eq('situacao', 'pendente').is('pagamento_id', null); };
+    }
     const cabecalhos = { 'Content-Type': 'application/json', access_token: apiKey };
     const busca = await fetch(`${ASAAS_BASE}/customers?cpfCnpj=${cpf}`, { headers: cabecalhos });
     const encontrados = await busca.json();
@@ -260,6 +290,7 @@ Deno.serve(async (req) => {
       });
       const dados = await criado.json();
       if (!criado.ok) {
+        if (cancelarReserva) await cancelarReserva();
         console.error('asaas customer', dados);
         return json({ error: dados?.errors?.[0]?.description ?? 'Erro ao criar cadastro de cobrança.' }, 400);
       }
@@ -281,12 +312,14 @@ Deno.serve(async (req) => {
     });
     const cobranca = await respostaCobranca.json();
     if (!respostaCobranca.ok) {
+      if (cancelarReserva) await cancelarReserva();
       console.error('asaas payment', cobranca);
       return json({ error: cobranca?.errors?.[0]?.description ?? 'Erro ao gerar a cobrança.' }, 400);
     }
+    cobrancaCriada = true;
 
     // Fato financeiro registrado no portal (o acesso vem pelo webhook)
-    const { data: pagamento } = await admin
+    const { data: pagamento, error: erroPagamento } = await admin
       .from('pagamentos')
       .upsert(
         {
@@ -306,23 +339,11 @@ Deno.serve(async (req) => {
       )
       .select('id')
       .maybeSingle();
+    if (erroPagamento || !pagamento) throw erroPagamento ?? new Error('Pagamento não registrado');
 
-    if (tipo === 'evento' && evento) {
-      await admin.from('evento_inscricoes').upsert(
-        {
-          evento_id: evento.id,
-          lote_id: loteId,
-          pessoa_id: pessoaId,
-          cupom_id: cupomId,
-          nome,
-          email: user.email!,
-          telefone: telefone ?? null,
-          valor_centavos: valorCentavos,
-          situacao: 'pendente',
-          pagamento_id: pagamento?.id ?? null,
-        },
-        { onConflict: 'evento_id,pessoa_id' },
-      );
+    if (reservaId) {
+      const { error } = await admin.from('evento_inscricoes').update({ pagamento_id: pagamento.id }).eq('id', reservaId);
+      if (error) throw error;
     }
 
     return json({
@@ -331,6 +352,7 @@ Deno.serve(async (req) => {
       link: cobranca.invoiceUrl ?? cobranca.bankSlipUrl ?? null,
     });
   } catch (e) {
+    if (cancelarReserva && !cobrancaCriada) await cancelarReserva();
     console.error('[CRIAR-COBRANCA]', e);
     return json({ error: 'Não foi possível iniciar o pagamento. Tente novamente.' }, 500);
   }
