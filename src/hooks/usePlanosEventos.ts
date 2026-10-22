@@ -4,6 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { priorizarEventos } from '@/lib/eventosConversao';
 
 export type Plano = {
   id: string;
@@ -39,7 +40,11 @@ export type Evento = {
   vagas: number | null;
   gratuito: boolean;
   destaque: boolean;
-  lotes?: { valor_centavos: number; ativo: boolean }[];
+  ingressos_vendidos_inicial: number;
+  ocupadas?: number;
+  disponiveis?: number | null;
+  livres_para_reserva?: number | null;
+  lotes?: Lote[];
 };
 
 export type Lote = {
@@ -60,7 +65,7 @@ export const dataLonga = (iso: string) =>
   new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 const CAMPOS_EVENTO =
-  'id, slug, titulo, resumo, descricao, capa_url, online, link_online, local_nome, endereco, cidade, uf, inicio_em, fim_em, vagas, gratuito, destaque';
+  'id, slug, titulo, resumo, descricao, capa_url, online, link_online, local_nome, endereco, cidade, uf, inicio_em, fim_em, vagas, gratuito, destaque, ingressos_vendidos_inicial';
 
 /** Menor valor entre os lotes ativos (para mostrar "a partir de"). */
 export function menorValorEvento(lotes?: { valor_centavos: number; ativo: boolean }[] | null) {
@@ -127,17 +132,25 @@ export function useEventos(opcoes: { futuros?: boolean } = {}) {
   const { futuros = true } = opcoes;
   return useQuery({
     queryKey: ['eventos', futuros],
+    refetchInterval: 30000,
     queryFn: async () => {
       let q = supabase
         .from('eventos')
-        .select(CAMPOS_EVENTO)
+        .select(`${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id,nome,valor_centavos,vagas,inicio_em,fim_em,ordem,ativo)`)
         .eq('publicado', true)
         .order('inicio_em', { ascending: futuros });
       if (futuros) q = q.gte('inicio_em', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
       else q = q.lt('inicio_em', new Date().toISOString());
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as Evento[];
+      const { data: ocupacao, error: erroVagas } = await supabase.from('v_evento_vagas').select('evento_id,ocupadas,disponiveis,livres_para_reserva');
+      if (erroVagas) throw erroVagas;
+      const mapa = new Map((ocupacao ?? []).map((v: any) => [v.evento_id, v]));
+      const eventos = (data ?? []).map((e: any) => {
+        const v: any = mapa.get(e.id);
+        return { ...e, ocupadas: Number(v?.ocupadas ?? e.ingressos_vendidos_inicial), disponiveis: v?.disponiveis == null ? null : Number(v.disponiveis), livres_para_reserva: v?.livres_para_reserva == null ? null : Number(v.livres_para_reserva), lotes: (e.lotes ?? []).sort((a: Lote, b: Lote) => a.ordem - b.ordem) };
+      }) as Evento[];
+      return futuros ? priorizarEventos(eventos) : eventos;
     },
   });
 }
@@ -146,23 +159,26 @@ export function useEvento(slug?: string) {
   return useQuery({
     queryKey: ['evento', slug],
     enabled: !!slug,
+    refetchInterval: 30000,
     queryFn: async () => {
+      if (!slug) return null;
       const { data, error } = await supabase
         .from('eventos')
         .select(
-          `${CAMPOS_EVENTO}, lotes:evento_lotes(id, nome, valor_centavos, vagas, inicio_em, fim_em, ordem, ativo), palestrantes:evento_palestrantes(id, nome, minibio, foto_url, ordem)`
+          `${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id, nome, valor_centavos, vagas, inicio_em, fim_em, ordem, ativo), palestrantes:evento_palestrantes!evento_palestrantes_evento_id_fkey(id, nome, minibio, foto_url, ordem)`
         )
-        .eq('slug', slug!)
+        .eq('slug', slug)
         .eq('publicado', true)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
 
-      const { data: vagas } = await supabase
+      const { data: vagas, error: erroVagas } = await supabase
         .from('v_evento_vagas')
-        .select('ocupadas, disponiveis')
+        .select('ocupadas, disponiveis, livres_para_reserva')
         .eq('evento_id', (data as any).id)
         .maybeSingle();
+      if (erroVagas) throw erroVagas;
 
       return {
         ...(data as any),
@@ -170,6 +186,7 @@ export function useEvento(slug?: string) {
         palestrantes: ((data as any).palestrantes ?? []).sort((a: any, b: any) => a.ordem - b.ordem),
         ocupadas: Number(vagas?.ocupadas ?? 0),
         disponiveis: vagas?.disponiveis === null || vagas?.disponiveis === undefined ? null : Number(vagas.disponiveis),
+        livres_para_reserva: vagas?.livres_para_reserva == null ? null : Number(vagas.livres_para_reserva),
       } as Evento & {
         lotes: Lote[];
         palestrantes: { id: string; nome: string; minibio: string | null; foto_url: string | null }[];

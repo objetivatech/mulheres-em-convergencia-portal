@@ -50,6 +50,7 @@ export type EventoAdmin = {
   gratuito: boolean;
   publicado: boolean;
   destaque: boolean;
+  ingressos_vendidos_inicial: number;
 };
 
 export const AREAS: { valor: string; rotulo: string }[] = [
@@ -197,6 +198,7 @@ export function useSalvarEvento() {
       qc.invalidateQueries({ queryKey: ['painel', 'eventos'] });
       qc.invalidateQueries({ queryKey: ['painel', 'evento', id] });
       qc.invalidateQueries({ queryKey: ['eventos'] });
+      qc.invalidateQueries({ queryKey: ['evento'] });
       toast({ title: 'Encontro salvo' });
     },
     onError: (e: any) =>
@@ -243,7 +245,11 @@ export function useSalvarFilha(tabela: Filha) {
       if (error) throw error;
       return (data as any).id as string;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['painel', 'evento'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['painel', 'evento'] });
+      qc.invalidateQueries({ queryKey: ['eventos'] });
+      qc.invalidateQueries({ queryKey: ['evento'] });
+    },
     onError: (e: any) =>
       toast({ title: 'Não foi possível salvar', description: e.message, variant: 'destructive' }),
   });
@@ -257,7 +263,11 @@ export function useExcluirFilha(tabela: Filha) {
       const { error } = await supabase.from(tabela).delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['painel', 'evento'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['painel', 'evento'] });
+      qc.invalidateQueries({ queryKey: ['eventos'] });
+      qc.invalidateQueries({ queryKey: ['evento'] });
+    },
     onError: (e: any) =>
       toast({ title: 'Não foi possível excluir', description: e.message, variant: 'destructive' }),
   });
@@ -276,6 +286,18 @@ export function useInscricoesEvento(eventoId?: string) {
         .order('criado_em', { ascending: false });
       if (error) throw error;
       return (data ?? []) as any[];
+    },
+  });
+}
+
+export function useListaEsperaEvento(eventoId?: string) {
+  return useQuery({
+    queryKey: ['painel', 'evento', eventoId, 'espera'], enabled: !!eventoId,
+    queryFn: async () => {
+      if (!eventoId) return [];
+      const { data, error } = await supabase.from('evento_lista_espera').select('id,nome,email,criado_em').eq('evento_id', eventoId).order('criado_em');
+      if (error) throw error;
+      return data ?? [];
     },
   });
 }

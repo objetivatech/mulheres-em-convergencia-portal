@@ -9,8 +9,9 @@ import { useTodosNegocios, usePosts } from '@/hooks/useSite';
 import { useTexto } from '@/hooks/useTextosSite';
 import { embaralhar } from '@/lib/embaralhar';
 import { stripHtml } from '@/lib/stripHtml';
+import { ContadorEvento } from '@/components/site/EventoConversao';
 
-export type Slide = { id: string; href: string; imagem?: string | null; logo?: string | null; selo?: string; titulo: string; detalhe?: string; botao?: string };
+export type Slide = { id: string; href: string; imagem?: string | null; logo?: string | null; selo?: string; titulo: string; detalhe?: string; botao?: string; inicioEm?: string };
 
 export function SliderHero({ slides }: { slides: Slide[] }) {
   const [ref, api] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5500, stopOnInteraction: true })]);
@@ -37,6 +38,7 @@ export function SliderHero({ slides }: { slides: Slide[] }) {
                 </div>
                 <p className="line-clamp-2 text-xl font-extrabold leading-tight">{s.titulo}</p>
                 {s.detalhe && <p className="line-clamp-1 text-sm opacity-90">{s.detalhe}</p>}
+                {s.inicioEm && <div className="rounded-lg bg-background/95 p-2 text-foreground"><ContadorEvento inicio={s.inicioEm} compacto convite={false} /></div>}
                 {s.botao && <span className="inline-flex rounded-full bg-background px-4 py-1.5 text-xs font-semibold text-primary">{s.botao} →</span>}
               </div>
             </Link>
@@ -66,8 +68,9 @@ export function SliderEventos() {
   const { data = [] } = useEventos();
   const selo = useTexto('slider.evento_selo');
   const botao = useTexto('slider.evento_botao');
+  const destaque = useTexto('eventos.destaque');
   return <SliderHero slides={data.slice(0, 3).map((e) => ({
-    id: e.id, href: `/eventos/${e.slug}`, imagem: e.capa_url, selo, titulo: e.titulo, botao,
+    id: e.id, href: `/eventos/${e.slug}`, imagem: e.capa_url, selo: e.destaque ? destaque : selo, titulo: e.titulo, botao, inicioEm: e.inicio_em,
     detalhe: `${dataEvento(e)} · ${e.online ? 'Online' : [e.cidade, e.uf].filter(Boolean).join('/') || 'Presencial'}`,
   }))} />;
 }

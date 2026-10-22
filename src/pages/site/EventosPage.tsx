@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventos, dataLonga, dinheiro, menorValorEvento } from '@/hooks/usePlanosEventos';
+import { ContadorEvento, DestaqueEvento, OcupacaoEvento } from '@/components/site/EventoConversao';
+import { loteVigente } from '@/hooks/usePlanosEventos';
 
 type EventoLista = NonNullable<ReturnType<typeof useEventos>['data']>[number];
 
@@ -50,7 +52,8 @@ export default function EventosPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {proximos.map((e) => (
-              <article key={e.id} className="flex flex-col rounded-[var(--radius)] border border-border bg-card overflow-hidden" style={{ boxShadow: 'var(--sombra-1)' }}>
+              <article key={e.id} className={`flex flex-col rounded-[var(--radius)] border bg-card overflow-hidden ${e.destaque ? 'border-primary ring-1 ring-primary/20' : 'border-border'}`} style={{ boxShadow: 'var(--sombra-1)' }}>
+                {e.destaque && <div className="bg-grad-marca px-4 py-2"><DestaqueEvento /></div>}
                 <Link to={`/eventos/${e.slug}`} className="block aspect-[16/9] bg-muted">
                   {e.capa_url && <img src={e.capa_url} alt={e.titulo} loading="lazy" className="h-full w-full object-cover" />}
                 </Link>
@@ -62,8 +65,11 @@ export default function EventosPage() {
                   <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                     <CalendarDays className="w-4 h-4" /> {dataLonga(e.inicio_em)}
                   </p>
+                  <ContadorEvento inicio={e.inicio_em} compacto convite={e.disponiveis !== 0} />
+                  <OcupacaoEvento ocupadas={e.ocupadas ?? 0} vagas={e.vagas} />
+                  {loteVigente(e.lotes)?.fim_em && <ContadorEvento inicio={loteVigente(e.lotes)?.fim_em ?? ''} compacto lote convite={false} />}
                   <Button asChild className="mt-auto w-full">
-                    <Link to={`/eventos/${e.slug}`}><Ticket className="w-4 h-4 mr-2" /> Ver e me inscrever</Link>
+                    <Link to={`/eventos/${e.slug}`}><Ticket className="w-4 h-4 mr-2" /> <TextoSite chave={e.disponiveis === 0 ? 'eventos.espera.botao' : 'eventos.inscrever'} /></Link>
                   </Button>
                 </div>
               </article>

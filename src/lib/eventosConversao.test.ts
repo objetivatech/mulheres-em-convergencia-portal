@@ -1,4 +1,6 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, it as test } from 'node:test';
+import assert from 'node:assert/strict';
+const expect = (actual: unknown) => ({ toEqual: (expected: unknown) => assert.deepEqual(actual, expected), toBe: (expected: unknown) => assert.equal(actual, expected), toBeNull: () => assert.equal(actual, null) });
 import { contagemEvento, faseConvite, ocupacaoEvento, priorizarEventos } from './eventosConversao';
 
 describe('Regras dos encontros', () => {

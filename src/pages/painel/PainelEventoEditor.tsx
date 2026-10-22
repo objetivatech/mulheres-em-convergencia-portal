@@ -15,7 +15,7 @@ import slugify from '@/lib/slugify';
 import { EditorRico } from '@/components/editor/EditorRico';
 import { ImageCropUploader, IMAGE_PRESETS } from '@/components/ui/ImageCropUploader';
 import {
-  useEventoAdmin, useSalvarEvento, useSalvarFilha, useExcluirFilha, useInscricoesEvento,
+  useEventoAdmin, useSalvarEvento, useSalvarFilha, useExcluirFilha, useInscricoesEvento, useListaEsperaEvento,
 } from '@/hooks/usePainelPlanosEventos';
 import { dinheiro } from '@/hooks/usePlanosEventos';
 
@@ -23,6 +23,7 @@ const VAZIO = {
   titulo: '', slug: '', resumo: '', descricao: '', capa_url: '',
   online: false, link_online: '', local_nome: '', endereco: '', cidade: '', uf: '',
   inicio_em: '', fim_em: '', vagas: '', gratuito: false, publicado: false, destaque: false,
+  ingressos_vendidos_inicial: 0,
 };
 
 const paraCentavos = (texto: string) => {
@@ -52,6 +53,7 @@ export default function PainelEventoEditor() {
   const salvarCupom = useSalvarFilha('evento_cupons');
   const excluirCupom = useExcluirFilha('evento_cupons');
   const { data: inscricoes } = useInscricoesEvento(novo ? undefined : id);
+  const { data: espera, isError: erroEspera } = useListaEsperaEvento(novo ? undefined : id);
   const [form, setForm] = useState<Record<string, any>>(VAZIO);
 
   useEffect(() => {
@@ -80,6 +82,11 @@ export default function PainelEventoEditor() {
       toast({ title: 'Informe a data e a hora de início', variant: 'destructive' });
       return;
     }
+    const base = Number(form.ingressos_vendidos_inicial);
+    if (!Number.isInteger(base) || base < 0 || (form.vagas !== '' && (!Number.isInteger(Number(form.vagas)) || Number(form.vagas) < 1 || base > Number(form.vagas)))) {
+      toast({ title: 'Confira as quantidades de vagas e ingressos externos', description: 'Use números inteiros. A base externa não pode ultrapassar a capacidade.', variant: 'destructive' });
+      return;
+    }
     const valores = {
       titulo: form.titulo.trim(),
       slug: (form.slug || slugify(form.titulo, { lower: true, strict: true })).trim(),
@@ -95,6 +102,7 @@ export default function PainelEventoEditor() {
       inicio_em: new Date(form.inicio_em).toISOString(),
       fim_em: form.fim_em ? new Date(form.fim_em).toISOString() : null,
       vagas: form.vagas === '' ? null : Number(form.vagas),
+      ingressos_vendidos_inicial: base,
       gratuito: !!form.gratuito,
       publicado: !!form.publicado,
       destaque: !!form.destaque,
@@ -127,6 +135,7 @@ export default function PainelEventoEditor() {
           <TabsTrigger value="cupons" disabled={novo}>Cupons</TabsTrigger>
           <TabsTrigger value="palestrantes" disabled={novo}>Quem fala</TabsTrigger>
           <TabsTrigger value="inscricoes" disabled={novo}>Inscrições</TabsTrigger>
+          <TabsTrigger value="espera" disabled={novo}>Lista de espera</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dados">
@@ -158,6 +167,10 @@ export default function PainelEventoEditor() {
                       <Label>Vagas (deixe vazio para ilimitado)</Label>
                       <Input type="number" min={1} value={form.vagas}
                         onChange={(e) => campo('vagas', e.target.value)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="ingressos-externos">Ingressos vendidos fora do portal</Label>
+                      <Input id="ingressos-externos" type="number" min={0} step={1} value={form.ingressos_vendidos_inicial} onChange={e => campo('ingressos_vendidos_inicial', e.target.value)} />
                     </div>
                   </div>
 
@@ -396,6 +409,9 @@ export default function PainelEventoEditor() {
               </div>
             ))
           )}
+        </TabsContent>
+        <TabsContent value="espera" className="space-y-3">
+          {erroEspera ? <p role="alert" className="text-destructive">Não foi possível carregar a lista de espera.</p> : !espera?.length ? <p className="text-muted-foreground">Ninguém na lista de espera ainda.</p> : espera.map((p: any) => <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4"><div><p className="font-medium">{p.nome}</p><a className="text-sm text-primary underline" href={`mailto:${p.email}`}>{p.email}</a></div><p className="text-xs text-muted-foreground">{new Date(p.criado_em).toLocaleString('pt-BR')}</p></div>)}
         </TabsContent>
       </Tabs>
     </PainelLayout>
