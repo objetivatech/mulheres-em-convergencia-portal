@@ -1320,6 +1320,48 @@ export type Database = {
           },
         ]
       }
+      evento_lista_espera: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          email: string
+          evento_id: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          email: string
+          evento_id: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          email?: string
+          evento_id?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_lista_espera_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_lista_espera_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+        ]
+      }
       evento_lotes: {
         Row: {
           ativo: boolean
@@ -1478,6 +1520,7 @@ export type Database = {
           fim_em: string | null
           gratuito: boolean
           id: string
+          ingressos_vendidos_inicial: number
           inicio_em: string
           link_online: string | null
           local_nome: string | null
@@ -1500,6 +1543,7 @@ export type Database = {
           fim_em?: string | null
           gratuito?: boolean
           id?: string
+          ingressos_vendidos_inicial?: number
           inicio_em: string
           link_online?: string | null
           local_nome?: string | null
@@ -1522,6 +1566,7 @@ export type Database = {
           fim_em?: string | null
           gratuito?: boolean
           id?: string
+          ingressos_vendidos_inicial?: number
           inicio_em?: string
           link_online?: string | null
           local_nome?: string | null
@@ -3205,7 +3250,9 @@ export type Database = {
         Row: {
           disponiveis: number | null
           evento_id: string | null
+          livres_para_reserva: number | null
           ocupadas: number | null
+          reservadas: number | null
           vagas: number | null
         }
         Relationships: []
@@ -3389,6 +3436,10 @@ export type Database = {
           site: string
           uf: string
         }[]
+      }
+      entrar_espera_evento: {
+        Args: { _email: string; _evento_id: string; _nome: string }
+        Returns: boolean
       }
       garantir_pessoa: {
         Args: { _cpf?: string; _email?: string; _nome?: string }
