@@ -105,7 +105,7 @@ Atualizado: 17/09/2026
 - [ ] Ajustes manuais no Supabase novo: templates do Auth, URLs de redirecionamento, SMTP próprio e limite de envio (`docs/_reboot/19-emails-e-comunicados.md`)
 
 ## Redesign Claude Design
-- [ ] Eventos: base de ingressos externos, destaque, contadores, ocupação e lista de espera (22/10/2026).
+- [x] Eventos: base de ingressos externos, destaque, contadores, ocupação e lista de espera (22/10/2026); testes de regras e páginas públicas, painel/pagamento real não verificáveis sem sessão autorizada.
 - [x] Ícone MeC local para navegadores e buscadores (17/10/2026).
 - [x] Fase 1 — cores, fonte e cantos globais
 - [x] Fase 2 — topo e rodapé

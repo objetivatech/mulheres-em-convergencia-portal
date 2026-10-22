@@ -48,7 +48,7 @@ export function OcupacaoEvento({ ocupadas, vagas }: { ocupadas: number; vagas: n
   return <div className="space-y-2 text-xs text-muted-foreground">
     <p>{vendidos.replace('{n}', String(ocupadas)).replace('{total}', vagas === null ? '' : ` / ${vagas}`)}</p>
     {dados.percentual !== null && <>
-      <Progress value={dados.percentual} className="h-2" aria-label={`${dados.percentual}%`} />
+      <Progress value={dados.percentual} className="h-2 bg-muted" aria-label={`${dados.percentual}%`} />
       <p className="font-medium">{dados.disponiveis === 0 ? esgotado : restante.replace('{n}', String(dados.disponiveis))}</p>
     </>}
   </div>;

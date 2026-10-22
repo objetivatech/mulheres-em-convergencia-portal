@@ -35,4 +35,4 @@
 5. A equipe pode avisar sobre disponibilidade. A lista não garante vaga e não assina newsletter.
 
 ## Verificação e limites
-Contadores e páginas públicas são verificáveis sem sessão. Este Supabase externo não oferece sessão autenticada gerenciada para testes do painel/pagamento real; não gerar cobranças nem enviar e-mails de teste sem conta autorizada. Proteção contra senhas vazadas e extensão no schema público são avisos anteriores a esta entrega.
+Sete testes de regras passaram; aceitação SQL da base 20/50, soma de confirmações, bloqueio ao esgotar e espera sem duplicação executada com sucesso, desfazendo dados temporários. Páginas reais de eventos e Halloween verificadas com cronômetros, destaque e sem erros de execução ou excesso de largura no celular. Este Supabase externo não oferece sessão autenticada gerenciada para testes do painel/pagamento real; nenhuma cobrança ou e-mail de teste foi gerado. Proteção contra senhas vazadas e extensão no schema público são avisos anteriores a esta entrega.
