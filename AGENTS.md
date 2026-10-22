@@ -19,3 +19,5 @@
 - Tamanho ideal de imagem é resolvido em `src/lib/dicasImagem.ts` (por chave do catálogo ou pasta) e exibido pelo `CampoImagem` — um só lugar para ajustar.
 - Listagens do painel usam `src/components/painel/BarraLista.tsx` para busca, ordem e filtro — mesmo padrão em todas.
 - Browser icons use stable public paths shared by index.html and Favicon.tsx; remove obsolete favicon.ico to prevent crawlers from selecting stale branding.
+- Event occupancy is external initial seats plus confirmed registrations via the aggregate-only private function; pending payments reserve capacity through locked database writes, and payment triggers synchronize ticket status to prevent overselling and personal-data disclosure.
+- Event conversion UI shares countdown and occupancy components; all public prompts live in the editable text catalog, and the waitlist is private to admins and never subscribes visitors to newsletters.

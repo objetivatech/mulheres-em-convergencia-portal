@@ -244,6 +244,9 @@ export const TUTORIAIS_EQUIPE: Tutorial[] = [
     passos: [
       'Em "Planos, encontros e acessos", clique em "Novo encontro".',
       'Preencha nome, data, local ou link, capa e lotes de ingresso.',
+      'Em "Ingressos vendidos fora do portal", informe somente vendas reais externas. Elas ocupam vagas; novas confirmações do portal são somadas automaticamente.',
+      'Ligue "Destacar" para mostrar a tarja e priorizar o encontro. A contagem regressiva e as vagas aparecem automaticamente.',
+      'Defina "Vende até" no lote para mostrar seu prazo. Na aba "Lista de espera", fale com quem aguarda uma vaga; o cadastro não garante ingresso e não assina newsletter.',
       'Marque "Publicado" para aparecer no site.',
       'Na aba "Participantes e conversão", veja quem participou e ainda não assina; exporte a lista se quiser.',
     ],

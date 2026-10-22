@@ -8,11 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEvento, loteVigente, dinheiro, dataLonga } from '@/hooks/usePlanosEventos';
+import { ContadorEvento, DestaqueEvento, OcupacaoEvento, useRelogioEvento } from '@/components/site/EventoConversao';
+import ListaEsperaEvento from '@/components/site/ListaEsperaEvento';
+import TextoSite from '@/components/site/TextoSite';
 
 export default function EventoPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: evento, isLoading, refetch } = useEvento(slug);
   const [abrirCobranca, setAbrirCobranca] = useState(false);
+  const [abrirEspera, setAbrirEspera] = useState(false);
+  const agora = useRelogioEvento();
 
   if (isLoading) {
     return (
@@ -40,7 +45,9 @@ export default function EventoPage() {
   const lote = loteVigente(evento.lotes);
   const valor = evento.gratuito ? 0 : lote?.valor_centavos ?? 0;
   const esgotado = evento.disponiveis !== null && evento.disponiveis <= 0;
-  const encerrado = new Date(evento.inicio_em).getTime() < Date.now();
+  const encerrado = new Date(evento.inicio_em).getTime() <= agora;
+  const reservadas = !esgotado && evento.livres_para_reserva === 0;
+  const semLote = !evento.gratuito && !lote;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -74,6 +81,7 @@ export default function EventoPage() {
         <div className={`container mx-auto grid items-center gap-8 px-4 py-12 lg:py-16 ${evento.capa_url ? 'lg:grid-cols-[1.2fr_1fr]' : ''}`}>
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
+              {evento.destaque && <DestaqueEvento />}
               {evento.gratuito && <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">Gratuito</Badge>}
               {evento.online && <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">Online</Badge>}
             </div>
@@ -112,6 +120,7 @@ export default function EventoPage() {
         </article>
 
         <aside className="rounded-xl border border-border bg-card p-6 space-y-4 lg:sticky lg:top-24">
+          <ContadorEvento inicio={evento.inicio_em} convite={!esgotado && !reservadas && !semLote} />
           <p className="flex items-center gap-2 text-sm">
             <CalendarDays className="w-4 h-4 text-primary" /> {dataLonga(evento.inicio_em)}
           </p>
@@ -121,27 +130,25 @@ export default function EventoPage() {
               ? 'Encontro online'
               : [evento.local_nome, evento.endereco, evento.cidade].filter(Boolean).join(' · ') || 'Local a confirmar'}
           </p>
-          {evento.vagas !== null && (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="w-4 h-4" /> {evento.ocupadas} inscritas de {evento.vagas} vagas
-            </p>
-          )}
+          <OcupacaoEvento ocupadas={evento.ocupadas} vagas={evento.vagas} />
 
           <div className="pt-2 border-t border-border space-y-2">
-            <p className="text-2xl font-semibold">{valor > 0 ? dinheiro(valor) : 'Gratuito'}</p>
+            <p className="text-2xl font-semibold">{semLote ? <TextoSite chave="eventos.sem_lote" /> : valor > 0 ? dinheiro(valor) : 'Gratuito'}</p>
             {lote && <p className="text-xs text-muted-foreground">{lote.nome}</p>}
+            {lote?.fim_em && !encerrado && <ContadorEvento inicio={lote.fim_em} compacto lote convite={false} />}
           </div>
 
           <Button
             className="w-full"
-            disabled={esgotado || encerrado}
-            onClick={() => setAbrirCobranca(true)}
+            disabled={encerrado || (!esgotado && (reservadas || semLote))}
+            onClick={() => esgotado ? setAbrirEspera(true) : setAbrirCobranca(true)}
           >
-            {encerrado ? 'Encontro encerrado' : esgotado ? 'Vagas esgotadas' : 'Garantir minha vaga'}
+            <TextoSite chave={encerrado ? 'eventos.convite.encerrado' : esgotado ? 'eventos.espera.botao' : semLote ? 'eventos.sem_lote' : 'eventos.inscrever'} />
           </Button>
-          <p className="text-xs text-muted-foreground">
+          {reservadas && <p className="text-xs text-muted-foreground"><TextoSite chave="eventos.reservadas" /></p>}
+          {!esgotado && !encerrado && !semLote && <p className="text-xs text-muted-foreground">
             Sua vaga é confirmada assim que o pagamento é aprovado.
-          </p>
+          </p>}
         </aside>
       </div>
 
@@ -157,6 +164,7 @@ export default function EventoPage() {
           aoConcluir={() => refetch()}
         />
       )}
+      {abrirEspera && <ListaEsperaEvento eventoId={evento.id} aberto aoFechar={() => setAbrirEspera(false)} />}
     </SiteLayout>
   );
 }
