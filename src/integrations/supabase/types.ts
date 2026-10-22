@@ -3501,6 +3501,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reservar_ingresso_evento: {
+        Args: {
+          _cupom_id: string
+          _email: string
+          _evento_id: string
+          _lote_id: string
+          _nome: string
+          _pessoa_id: string
+          _telefone: string
+          _valor_centavos: number
+        }
+        Returns: string
+      }
       revogar_concessao: {
         Args: { _id: string; _motivo: string }
         Returns: boolean
