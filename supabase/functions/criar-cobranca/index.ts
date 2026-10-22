@@ -263,14 +263,13 @@ Deno.serve(async (req) => {
     // Cliente no Asaas (reaproveita por CPF)
     let reservaId: string | null = null;
     if (tipo === 'evento' && evento) {
-      const { data: reserva, error } = await admin.from('evento_inscricoes').upsert({
-        evento_id: evento.id, lote_id: loteId, pessoa_id: pessoaId, cupom_id: cupomId,
-        nome, email: user.email, telefone: telefone ?? null, valor_centavos: valorCentavos,
-        situacao: 'pendente', pagamento_id: null,
-      }, { onConflict: 'evento_id,pessoa_id' }).select('id').single();
+      const { data: reserva, error } = await admin.rpc('reservar_ingresso_evento', {
+        _evento_id: evento.id, _pessoa_id: pessoaId, _lote_id: loteId, _cupom_id: cupomId,
+        _nome: nome, _email: user.email, _telefone: telefone ?? null, _valor_centavos: valorCentavos,
+      });
       if (error) return json({ error: 'Não foi possível reservar sua vaga. Confira a disponibilidade do encontro.' }, 409);
-      reservaId = reserva.id;
-      cancelarReserva = async () => { await admin.from('evento_inscricoes').update({ situacao: 'cancelada' }).eq('id', reserva.id).eq('situacao', 'pendente').is('pagamento_id', null); };
+      reservaId = reserva;
+      cancelarReserva = async () => { await admin.from('evento_inscricoes').update({ situacao: 'cancelada' }).eq('id', reserva).eq('situacao', 'pendente').is('pagamento_id', null); };
     }
     const cabecalhos = { 'Content-Type': 'application/json', access_token: apiKey };
     const busca = await fetch(`${ASAAS_BASE}/customers?cpfCnpj=${cpf}`, { headers: cabecalhos });

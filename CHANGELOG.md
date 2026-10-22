@@ -2,6 +2,12 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 22/10/2026 — Vagas e conversão dos encontros
+- Base real de ingressos externos no cadastro; soma automática com confirmações, total público correto e reservas protegidas contra concorrência.
+- Tarja e prioridade de destaques, contagem regressiva nos cards/página/slider, ocupação e prazo do lote, com mensagens editáveis.
+- Lista de espera em eventos esgotados, privada à equipe, sem inscrição na newsletter e sem promessa de ingresso.
+- Pagamentos confirmados, cancelados e estornados sincronizam a situação do ingresso; reserva é feita antes da cobrança.
+
 ## 17/10/2026 — Ícone MeC para navegadores e Google
 - Símbolo fornecido aplicado em favicon local de 96×96 e ícones Apple/PWA, preservando proporção.
 - Removido o favicon antigo do Lovable; HTML e Helmet usam o mesmo arquivo local.
