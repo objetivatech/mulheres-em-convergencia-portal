@@ -107,7 +107,7 @@ export function useMinhasInscricoesArea() {
       const { data, error } = await db
         .from('evento_inscricoes')
         .select(
-          'id, situacao, valor_centavos, criado_em, evento:eventos(slug, titulo, inicio_em, online, link_online, local_nome, cidade, uf)'
+          'id, situacao, valor_centavos, criado_em, tipo:evento_tipos_ingresso!evento_inscricoes_tipo_ingresso_id_fkey(nome, descricao), evento:eventos(slug, titulo, inicio_em, online, link_online, local_nome, cidade, uf)'
         )
         .eq('pessoa_id', pessoaId)
         .order('criado_em', { ascending: false });

@@ -33,6 +33,12 @@ export default function MeuIngresso() {
             <p className="text-sm text-muted-foreground">
               {inscricao.evento?.inicio_em ? dataLonga(inscricao.evento.inicio_em) : ''}
             </p>
+            {(inscricao as any).tipo && (
+              <p className="mt-2 text-sm font-medium text-primary">
+                Ingresso {(inscricao as any).tipo.nome}
+                {(inscricao as any).tipo.descricao && <span className="block text-xs font-normal text-muted-foreground">{(inscricao as any).tipo.descricao}</span>}
+              </p>
+            )}
           </div>
           <div className="flex justify-center bg-white p-4 rounded-lg">
             <QRCodeSVG value={inscricao.id} size={200} />
