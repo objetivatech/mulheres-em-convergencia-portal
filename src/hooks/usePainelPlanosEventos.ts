@@ -281,7 +281,7 @@ export function useInscricoesEvento(eventoId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('evento_inscricoes')
-        .select('id, nome, email, telefone, situacao, valor_centavos, criado_em')
+        .select('id, nome, email, telefone, situacao, valor_centavos, criado_em, tipo:evento_tipos_ingresso!evento_inscricoes_tipo_ingresso_id_fkey(nome)')
         .eq('evento_id', eventoId!)
         .order('criado_em', { ascending: false });
       if (error) throw error;
