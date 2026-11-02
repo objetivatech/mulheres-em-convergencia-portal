@@ -45,7 +45,28 @@ export type Evento = {
   disponiveis?: number | null;
   livres_para_reserva?: number | null;
   lotes?: Lote[];
+  tipos_ingresso?: TipoIngresso[];
 };
+
+export type TipoIngresso = {
+  id: string;
+  nome: string;
+  descricao: string | null;
+  valor_centavos: number;
+  vagas: number | null;
+  inicio_em: string | null;
+  fim_em: string | null;
+  ordem: number;
+  ativo: boolean;
+};
+
+/** Tipos de ingresso à venda agora (ativos e dentro do período). */
+export function tiposVigentes(tipos: TipoIngresso[] = []) {
+  const agora = Date.now();
+  return tipos
+    .filter((t) => t.ativo && (!t.inicio_em || new Date(t.inicio_em).getTime() <= agora) && (!t.fim_em || new Date(t.fim_em).getTime() > agora))
+    .sort((a, b) => a.ordem - b.ordem);
+}
 
 export type Lote = {
   id: string;
@@ -68,8 +89,8 @@ const CAMPOS_EVENTO =
   'id, slug, titulo, resumo, descricao, capa_url, online, link_online, local_nome, endereco, cidade, uf, inicio_em, fim_em, vagas, gratuito, destaque, ingressos_vendidos_inicial';
 
 /** Menor valor entre os lotes ativos (para mostrar "a partir de"). */
-export function menorValorEvento(lotes?: { valor_centavos: number; ativo: boolean }[] | null) {
-  const v = (lotes ?? []).filter((l) => l.ativo && l.valor_centavos > 0).map((l) => l.valor_centavos);
+export function menorValorEvento(lotes?: { valor_centavos: number; ativo: boolean }[] | null, tipos?: { valor_centavos: number; ativo: boolean }[] | null) {
+  const v = [...(lotes ?? []), ...(tipos ?? [])].filter((l) => l.ativo && l.valor_centavos > 0).map((l) => l.valor_centavos);
   return v.length ? Math.min(...v) : null;
 }
 
@@ -136,7 +157,7 @@ export function useEventos(opcoes: { futuros?: boolean } = {}) {
     queryFn: async () => {
       let q = supabase
         .from('eventos')
-        .select(`${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id,nome,valor_centavos,vagas,inicio_em,fim_em,ordem,ativo)`)
+        .select(`${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id,nome,valor_centavos,vagas,inicio_em,fim_em,ordem,ativo), tipos_ingresso:evento_tipos_ingresso!evento_tipos_ingresso_evento_id_fkey(id,nome,descricao,valor_centavos,vagas,inicio_em,fim_em,ordem,ativo)`)
         .eq('publicado', true)
         .order('inicio_em', { ascending: futuros });
       if (futuros) q = q.gte('inicio_em', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
@@ -165,7 +186,7 @@ export function useEvento(slug?: string) {
       const { data, error } = await supabase
         .from('eventos')
         .select(
-          `${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id, nome, valor_centavos, vagas, inicio_em, fim_em, ordem, ativo), palestrantes:evento_palestrantes!evento_palestrantes_evento_id_fkey(id, nome, minibio, foto_url, ordem)`
+          `${CAMPOS_EVENTO}, lotes:evento_lotes!evento_lotes_evento_id_fkey(id, nome, valor_centavos, vagas, inicio_em, fim_em, ordem, ativo), palestrantes:evento_palestrantes!evento_palestrantes_evento_id_fkey(id, nome, minibio, foto_url, ordem), tipos_ingresso:evento_tipos_ingresso!evento_tipos_ingresso_evento_id_fkey(id, nome, descricao, valor_centavos, vagas, inicio_em, fim_em, ordem, ativo)`
         )
         .eq('slug', slug)
         .eq('publicado', true)
@@ -189,6 +210,7 @@ export function useEvento(slug?: string) {
         livres_para_reserva: vagas?.livres_para_reserva == null ? null : Number(vagas.livres_para_reserva),
       } as Evento & {
         lotes: Lote[];
+        tipos_ingresso: TipoIngresso[];
         palestrantes: { id: string; nome: string; minibio: string | null; foto_url: string | null }[];
         ocupadas: number;
         disponiveis: number | null;

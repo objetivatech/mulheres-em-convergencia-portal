@@ -48,6 +48,8 @@ export default function PainelEventoEditor() {
   const salvar = useSalvarEvento();
   const salvarLote = useSalvarFilha('evento_lotes');
   const excluirLote = useExcluirFilha('evento_lotes');
+  const salvarTipo = useSalvarFilha('evento_tipos_ingresso');
+  const excluirTipo = useExcluirFilha('evento_tipos_ingresso');
   const salvarPalestrante = useSalvarFilha('evento_palestrantes');
   const excluirPalestrante = useExcluirFilha('evento_palestrantes');
   const salvarCupom = useSalvarFilha('evento_cupons');
@@ -111,6 +113,7 @@ export default function PainelEventoEditor() {
     if (novo) navigate(`/painel-conteudo/eventos/${novoId}`, { replace: true });
   };
 
+  const tiposIngresso = (evento?.tipos_ingresso ?? []).slice().sort((a: any, b: any) => a.ordem - b.ordem);
   const lotes = (evento?.lotes ?? []).slice().sort((a: any, b: any) => a.ordem - b.ordem);
   const palestrantes = (evento?.palestrantes ?? []).slice().sort((a: any, b: any) => a.ordem - b.ordem);
   const cupons = evento?.cupons ?? [];
@@ -266,6 +269,10 @@ export default function PainelEventoEditor() {
 
         {/* Ingressos ------------------------------------------------------ */}
         <TabsContent value="lotes" className="space-y-3">
+          <div className="space-y-1">
+            <h3 className="font-semibold">Lotes</h3>
+            <p className="text-sm text-muted-foreground">Viradas de preço por data (1º lote, 2º lote...). Usados quando o encontro não tem tipos de ingresso.</p>
+          </div>
           {lotes.map((lote: any) => (
             <Card key={lote.id}>
               <CardContent className="grid gap-3 pt-6 sm:grid-cols-6">
@@ -305,6 +312,56 @@ export default function PainelEventoEditor() {
           <Button variant="outline"
             onClick={() => salvarLote.mutate({ valores: { evento_id: id, nome: 'Novo lote', valor_centavos: 0, ordem: lotes.length, ativo: true } })}>
             <Plus className="mr-2 h-4 w-4" /> Adicionar lote
+          </Button>
+
+          <div className="space-y-1 border-t border-border pt-6">
+            <h3 className="font-semibold">Tipos de ingresso</h3>
+            <p className="text-sm text-muted-foreground">Opções vendidas ao mesmo tempo, como Geral, Solidário ou Meia. Quando houver tipos à venda, a participante escolhe um e o preço do tipo é usado no lugar do lote. Cupons e desconto de associada continuam valendo.</p>
+          </div>
+          {tiposIngresso.map((t: any) => (
+            <Card key={t.id}>
+              <CardContent className="grid gap-3 pt-6 sm:grid-cols-6">
+                <div className="sm:col-span-2">
+                  <Label>Nome</Label>
+                  <Input defaultValue={t.nome}
+                    onBlur={(e) => salvarTipo.mutate({ id: t.id, valores: { nome: e.target.value || 'Ingresso' } })} />
+                </div>
+                <div>
+                  <Label>Valor (R$)</Label>
+                  <Input defaultValue={paraReais(t.valor_centavos)}
+                    onBlur={(e) => salvarTipo.mutate({ id: t.id, valores: { valor_centavos: paraCentavos(e.target.value) } })} />
+                </div>
+                <div>
+                  <Label>Vagas deste tipo</Label>
+                  <Input type="number" placeholder="Sem limite" defaultValue={t.vagas ?? ''}
+                    onBlur={(e) => salvarTipo.mutate({ id: t.id, valores: { vagas: e.target.value === '' ? null : Number(e.target.value) } })} />
+                </div>
+                <div>
+                  <Label>Vende até</Label>
+                  <Input type="datetime-local" defaultValue={paraLocal(t.fim_em)}
+                    onBlur={(e) => salvarTipo.mutate({ id: t.id, valores: { fim_em: e.target.value ? new Date(e.target.value).toISOString() : null } })} />
+                </div>
+                <div className="flex items-end justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={t.ativo}
+                      onCheckedChange={(v) => salvarTipo.mutate({ id: t.id, valores: { ativo: v } })} />
+                    <span className="text-xs text-muted-foreground">À venda</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => { if (confirm(`Remover o tipo ${t.nome}?`)) excluirTipo.mutate(t.id); }}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+                <div className="sm:col-span-6">
+                  <Label>Requisito ou descrição (aparece para a participante, no ingresso e na portaria)</Label>
+                  <Input defaultValue={t.descricao ?? ''} placeholder="Ex.: levar 1 kg de alimento não perecível"
+                    onBlur={(e) => salvarTipo.mutate({ id: t.id, valores: { descricao: e.target.value.trim() || null } })} />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          <Button variant="outline"
+            onClick={() => salvarTipo.mutate({ valores: { evento_id: id, nome: 'Novo tipo', valor_centavos: 0, ordem: tiposIngresso.length, ativo: true } })}>
+            <Plus className="mr-2 h-4 w-4" /> Adicionar tipo de ingresso
           </Button>
         </TabsContent>
 
@@ -400,7 +457,7 @@ export default function PainelEventoEditor() {
               <div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
                 <div>
                   <p className="font-medium">{i.nome}</p>
-                  <p className="text-sm text-muted-foreground">{i.email}{i.telefone ? ` · ${i.telefone}` : ''}</p>
+                  <p className="text-sm text-muted-foreground">{i.email}{i.telefone ? ` · ${i.telefone}` : ''}{i.tipo?.nome ? ` · ${i.tipo.nome}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <span className="text-muted-foreground">{dinheiro(i.valor_centavos)}</span>

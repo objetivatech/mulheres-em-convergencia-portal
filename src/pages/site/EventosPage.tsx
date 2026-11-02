@@ -16,7 +16,7 @@ type EventoLista = NonNullable<ReturnType<typeof useEventos>['data']>[number];
 
 function Preco({ e }: { e: EventoLista }) {
   if (e.gratuito) return <Badge variant="secondary">Gratuito</Badge>;
-  const v = menorValorEvento(e.lotes);
+  const v = menorValorEvento(e.lotes, e.tipos_ingresso);
   return v ? <Badge>{dinheiro(v)}</Badge> : <Badge variant="outline">Pago</Badge>;
 }
 

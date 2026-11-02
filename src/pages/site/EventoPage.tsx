@@ -7,7 +7,7 @@ import CobrancaDialog from '@/components/site/CobrancaDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEvento, loteVigente, dinheiro, dataLonga } from '@/hooks/usePlanosEventos';
+import { useEvento, loteVigente, tiposVigentes, dinheiro, dataLonga } from '@/hooks/usePlanosEventos';
 import { ContadorEvento, DestaqueEvento, OcupacaoEvento, useRelogioEvento } from '@/components/site/EventoConversao';
 import ListaEsperaEvento from '@/components/site/ListaEsperaEvento';
 import TextoSite from '@/components/site/TextoSite';
@@ -17,6 +17,7 @@ export default function EventoPage() {
   const { data: evento, isLoading, refetch } = useEvento(slug);
   const [abrirCobranca, setAbrirCobranca] = useState(false);
   const [abrirEspera, setAbrirEspera] = useState(false);
+  const [tipoId, setTipoId] = useState<string | null>(null);
   const agora = useRelogioEvento();
 
   if (isLoading) {
@@ -43,11 +44,13 @@ export default function EventoPage() {
   }
 
   const lote = loteVigente(evento.lotes);
-  const valor = evento.gratuito ? 0 : lote?.valor_centavos ?? 0;
+  const tipos = evento.gratuito ? [] : tiposVigentes(evento.tipos_ingresso);
+  const tipo = tipos.find((t) => t.id === tipoId) ?? tipos[0] ?? null;
+  const valor = evento.gratuito ? 0 : tipo ? tipo.valor_centavos : lote?.valor_centavos ?? 0;
   const esgotado = evento.disponiveis !== null && evento.disponiveis <= 0;
   const encerrado = new Date(evento.inicio_em).getTime() <= agora;
   const reservadas = !esgotado && evento.livres_para_reserva === 0;
-  const semLote = !evento.gratuito && !lote;
+  const semLote = !evento.gratuito && !lote && !tipo;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -133,9 +136,30 @@ export default function EventoPage() {
           <OcupacaoEvento ocupadas={evento.ocupadas} vagas={evento.vagas} />
 
           <div className="pt-2 border-t border-border space-y-2">
+            {tipos.length > 1 && (
+              <div className="space-y-2" role="radiogroup" aria-label="Tipo de ingresso">
+                <p className="text-sm font-medium">Escolha seu ingresso</p>
+                {tipos.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={tipo?.id === t.id}
+                    onClick={() => setTipoId(t.id)}
+                    className={`w-full rounded-lg border p-3 text-left transition-colors ${tipo?.id === t.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  >
+                    <span className="flex items-center justify-between gap-2 text-sm font-medium">
+                      <span>{t.nome}</span>
+                      <span>{t.valor_centavos > 0 ? dinheiro(t.valor_centavos) : 'Gratuito'}</span>
+                    </span>
+                    {t.descricao && <span className="mt-1 block text-xs text-muted-foreground">{t.descricao}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="text-2xl font-semibold">{semLote ? <TextoSite chave="eventos.sem_lote" /> : valor > 0 ? dinheiro(valor) : 'Gratuito'}</p>
-            {lote && <p className="text-xs text-muted-foreground">{lote.nome}</p>}
-            {lote?.fim_em && !encerrado && <ContadorEvento inicio={lote.fim_em} compacto lote convite={false} />}
+            {tipo ? <p className="text-xs text-muted-foreground">{tipo.nome}{tipos.length === 1 && tipo.descricao ? ` — ${tipo.descricao}` : ''}</p> : lote && <p className="text-xs text-muted-foreground">{lote.nome}</p>}
+            {!tipo && lote?.fim_em && !encerrado && <ContadorEvento inicio={lote.fim_em} compacto lote convite={false} />}
           </div>
 
           <Button
@@ -158,7 +182,8 @@ export default function EventoPage() {
           aoFechar={() => setAbrirCobranca(false)}
           tipo="evento"
           slug={evento.slug}
-          titulo={evento.titulo}
+          titulo={tipo ? `${evento.titulo} — ${tipo.nome}` : evento.titulo}
+          tipoIngressoId={tipo?.id ?? null}
           valorTexto={valor > 0 ? dinheiro(valor) : 'Gratuito'}
           permiteCupom={valor > 0}
           aoConcluir={() => refetch()}

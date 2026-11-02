@@ -1229,6 +1229,7 @@ export type Database = {
           pessoa_id: string | null
           situacao: string
           telefone: string | null
+          tipo_ingresso_id: string | null
           valor_centavos: number
         }
         Insert: {
@@ -1244,6 +1245,7 @@ export type Database = {
           pessoa_id?: string | null
           situacao?: string
           telefone?: string | null
+          tipo_ingresso_id?: string | null
           valor_centavos?: number
         }
         Update: {
@@ -1259,6 +1261,7 @@ export type Database = {
           pessoa_id?: string | null
           situacao?: string
           telefone?: string | null
+          tipo_ingresso_id?: string | null
           valor_centavos?: number
         }
         Relationships: [
@@ -1317,6 +1320,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_meu_perfil"
             referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "evento_inscricoes_tipo_ingresso_id_fkey"
+            columns: ["tipo_ingresso_id"]
+            isOneToOne: false
+            referencedRelation: "evento_tipos_ingresso"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1505,6 +1515,66 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_meu_perfil"
             referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      evento_tipos_ingresso: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          criado_em: string
+          descricao: string | null
+          evento_id: string
+          fim_em: string | null
+          id: string
+          inicio_em: string | null
+          nome: string
+          ordem: number
+          vagas: number | null
+          valor_centavos: number
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          evento_id: string
+          fim_em?: string | null
+          id?: string
+          inicio_em?: string | null
+          nome: string
+          ordem?: number
+          vagas?: number | null
+          valor_centavos?: number
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          criado_em?: string
+          descricao?: string | null
+          evento_id?: string
+          fim_em?: string | null
+          id?: string
+          inicio_em?: string | null
+          nome?: string
+          ordem?: number
+          vagas?: number | null
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_tipos_ingresso_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_tipos_ingresso_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
           },
         ]
       }
@@ -3510,6 +3580,20 @@ export type Database = {
           _nome: string
           _pessoa_id: string
           _telefone: string
+          _valor_centavos: number
+        }
+        Returns: string
+      }
+      reservar_ingresso_evento_tipo: {
+        Args: {
+          _cupom_id: string
+          _email: string
+          _evento_id: string
+          _lote_id: string
+          _nome: string
+          _pessoa_id: string
+          _telefone: string
+          _tipo_id: string
           _valor_centavos: number
         }
         Returns: string

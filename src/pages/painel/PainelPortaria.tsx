@@ -18,6 +18,7 @@ import { dataLonga } from '@/hooks/usePlanosEventos';
 const db = supabase as any;
 type Inscricao = {
   id: string; nome: string; email: string; telefone: string | null; situacao: string;
+  tipo?: { nome: string; descricao: string | null } | null;
   presenca: { id: string; registrado_em: string } | null;
 };
 type Aviso = { tipo: 'ok' | 'repetido' | 'erro'; titulo: string; detalhe?: string };
@@ -52,7 +53,7 @@ export default function PainelPortaria() {
     enabled: !!eventoId,
     queryFn: async () => {
       const { data, error } = await db.from('evento_inscricoes')
-        .select('id, nome, email, telefone, situacao, presenca:evento_presencas(id, registrado_em)')
+        .select('id, nome, email, telefone, situacao, tipo:evento_tipos_ingresso!evento_inscricoes_tipo_ingresso_id_fkey(nome, descricao), presenca:evento_presencas(id, registrado_em)')
         .eq('evento_id', eventoId).neq('situacao', 'cancelada').order('nome');
       if (error) throw error;
       return (data ?? []).map((i: any) => ({ ...i, presenca: Array.isArray(i.presenca) ? i.presenca[0] ?? null : i.presenca })) as Inscricao[];
@@ -87,7 +88,7 @@ export default function PainelPortaria() {
     }
     try {
       await marcar.mutateAsync(i.id);
-      setAviso({ tipo: 'ok', titulo: `Bem-vinda, ${i.nome}!`, detalhe: 'Presença confirmada.' });
+      setAviso({ tipo: 'ok', titulo: `Bem-vinda, ${i.nome}!`, detalhe: i.tipo ? `Ingresso ${i.tipo.nome}${i.tipo.descricao ? ` — ${i.tipo.descricao}` : ''}. Presença confirmada.` : 'Presença confirmada.' });
     } catch (e: any) {
       setAviso({ tipo: 'erro', titulo: 'Não foi possível registrar', detalhe: e.message });
     }
@@ -179,6 +180,7 @@ export default function PainelPortaria() {
                   <div className="min-w-0">
                     <p className="font-medium">{i.nome}</p>
                     <p className="text-xs text-muted-foreground">{i.email}{i.telefone ? ` · ${i.telefone}` : ''}</p>
+                    {i.tipo && <p className="text-xs font-medium text-primary">{i.tipo.nome}{i.tipo.descricao ? ` · ${i.tipo.descricao}` : ''}</p>}
                   </div>
                   <div className="flex items-center gap-2">
                     {i.situacao !== 'confirmada' ? (
