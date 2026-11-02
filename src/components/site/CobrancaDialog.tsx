@@ -23,11 +23,12 @@ type Props = {
   permiteCupom?: boolean;
   /** Código de convite, quando a oferta é privada. */
   codigo?: string;
+  tipoIngressoId?: string | null;
   aoConcluir?: () => void;
 };
 
 export default function CobrancaDialog({
-  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, aoConcluir,
+  aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, tipoIngressoId, aoConcluir,
 }: Props) {
   const { user } = useAuth();
   const { data: perfil } = useMeuPerfil();
@@ -78,7 +79,7 @@ export default function CobrancaDialog({
     setEnviando(true);
     try {
       const { data, error } = await supabase.functions.invoke('criar-cobranca', {
-        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined, codigo: codigo || undefined },
+        body: { tipo, slug, nome, cpf, telefone, cupom: cupom || undefined, codigo: codigo || undefined, tipo_ingresso_id: tipoIngressoId || undefined },
       });
       if (error) throw error;
       if ((data as any)?.codigo === 'limite_gratuito') {
