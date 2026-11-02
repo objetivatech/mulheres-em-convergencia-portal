@@ -170,7 +170,7 @@ export function useEventoAdmin(id?: string) {
       const { data, error } = await supabase
         .from('eventos')
         .select(
-          `*, lotes:evento_lotes(*), palestrantes:evento_palestrantes(*), cupons:evento_cupons(*)`
+          `*, lotes:evento_lotes(*), tipos_ingresso:evento_tipos_ingresso(*), palestrantes:evento_palestrantes(*), cupons:evento_cupons(*)`
         )
         .eq('id', id!)
         .single();
@@ -229,7 +229,7 @@ export function useExcluirEvento() {
 }
 
 /** Lotes, palestrantes e cupons: mesma mecânica de gravar e apagar. */
-type Filha = 'evento_lotes' | 'evento_palestrantes' | 'evento_cupons';
+type Filha = 'evento_lotes' | 'evento_tipos_ingresso' | 'evento_palestrantes' | 'evento_cupons';
 
 export function useSalvarFilha(tabela: Filha) {
   const qc = useQueryClient();
