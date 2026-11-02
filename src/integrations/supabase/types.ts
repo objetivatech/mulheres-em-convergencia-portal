@@ -1223,6 +1223,9 @@ export type Database = {
           email: string
           evento_id: string
           id: string
+          lembrete_0d_em: string | null
+          lembrete_1d_em: string | null
+          lembrete_2d_em: string | null
           lote_id: string | null
           nome: string
           pagamento_id: string | null
@@ -1239,6 +1242,9 @@ export type Database = {
           email: string
           evento_id: string
           id?: string
+          lembrete_0d_em?: string | null
+          lembrete_1d_em?: string | null
+          lembrete_2d_em?: string | null
           lote_id?: string | null
           nome: string
           pagamento_id?: string | null
@@ -1255,6 +1261,9 @@ export type Database = {
           email?: string
           evento_id?: string
           id?: string
+          lembrete_0d_em?: string | null
+          lembrete_1d_em?: string | null
+          lembrete_2d_em?: string | null
           lote_id?: string | null
           nome?: string
           pagamento_id?: string | null
@@ -3521,6 +3530,13 @@ export type Database = {
       }
       lote_vigente: { Args: { _evento_id: string }; Returns: string }
       meu_desconto_evento: { Args: never; Returns: number }
+      ocupacao_tipos_evento: {
+        Args: { _evento_id: string }
+        Returns: {
+          tipo_id: string
+          usadas: number
+        }[]
+      }
       participantes_eventos: {
         Args: never
         Returns: {
