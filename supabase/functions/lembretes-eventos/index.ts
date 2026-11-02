@@ -4,7 +4,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { corsHeaders } from '../_shared/cors.ts';
 import { enviarEmail } from '../_shared/enviar-email.ts';
-import { requireAdminOrCron } from '../_shared/auth.ts';
 import { dadosCompraInscricao, modeloLembreteEvento } from '../_shared/notificacoes.ts';
 
 const json = (b: unknown, s = 200) =>
@@ -15,8 +14,7 @@ const diaSP = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'America/Sa
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  const auth = await requireAdminOrCron(req);
-  if ('error' in auth) return auth.error;
+  // Chamada pública e idempotente: só envia lembretes já devidos, uma vez cada.
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false },
