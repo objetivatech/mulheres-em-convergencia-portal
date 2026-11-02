@@ -17,6 +17,7 @@ const Corpo = z.object({
   telefone: z.string().optional(),
   cupom: z.string().trim().max(40).optional(),
   codigo: z.string().trim().max(60).optional(),
+  tipo_ingresso_id: z.string().uuid().optional().nullable(),
   metodo: z.enum(['PIX', 'BOLETO', 'CREDIT_CARD', 'UNDEFINED']).default('UNDEFINED'),
 });
 
@@ -55,7 +56,7 @@ Deno.serve(async (req) => {
 
     const parsed = Corpo.safeParse(await req.json());
     if (!parsed.success) return json({ error: 'Dados incompletos ou inválidos.' }, 400);
-    const { tipo, slug, nome, cpf, telefone, cupom, codigo, metodo } = parsed.data;
+    const { tipo, slug, nome, cpf, telefone, cupom, codigo, metodo, tipo_ingresso_id } = parsed.data;
 
     // Pessoa (CPF é o identificador central)
     const { data: pessoaId, error: erroPessoa } = await comoUsuaria.rpc('garantir_pessoa', {
@@ -75,6 +76,7 @@ Deno.serve(async (req) => {
       cidade?: string | null; uf?: string | null; link_online?: string | null;
     } | null = null;
     let loteId: string | null = null;
+    let tipoIngressoId: string | null = null;
     let planoId: string | null = null;
 
     if (tipo === 'plano') {
@@ -147,8 +149,22 @@ Deno.serve(async (req) => {
       const { data: lote, error: erroLote } = await admin.rpc('lote_vigente', { _evento_id: ev.id });
       if (erroLote) throw erroLote;
       loteId = (lote as string | null) ?? null;
-      if (!ev.gratuito && !loteId) return json({ error: 'Não há lote de ingressos disponível no momento.' }, 409);
-      if (loteId) {
+      // Tipos de ingresso (Geral, Solidário...) convivem com lotes: se o evento tiver tipos ativos, a escolha é obrigatória e o preço vem do tipo.
+      const { data: tiposAtivos } = await admin.from('evento_tipos_ingresso')
+        .select('id, nome, valor_centavos, inicio_em, fim_em').eq('evento_id', ev.id).eq('ativo', true);
+      const agora = Date.now();
+      const tiposVigentes = (tiposAtivos ?? []).filter((t: any) =>
+        (!t.inicio_em || new Date(t.inicio_em).getTime() <= agora) && (!t.fim_em || new Date(t.fim_em).getTime() > agora));
+      let tipoEscolhido: any = null;
+      if (tiposVigentes.length > 0 && !ev.gratuito) {
+        tipoEscolhido = tiposVigentes.find((t: any) => t.id === tipo_ingresso_id);
+        if (!tipoEscolhido) return json({ error: 'Escolha um tipo de ingresso disponível.' }, 400);
+        tipoIngressoId = tipoEscolhido.id;
+      }
+      if (!ev.gratuito && !loteId && !tipoEscolhido) return json({ error: 'Não há lote de ingressos disponível no momento.' }, 409);
+      if (tipoEscolhido) {
+        valorCentavos = tipoEscolhido.valor_centavos ?? 0;
+      } else if (loteId) {
         const { data: dadosLote } = await admin
           .from('evento_lotes')
           .select('valor_centavos')
@@ -157,7 +173,7 @@ Deno.serve(async (req) => {
         valorCentavos = dadosLote?.valor_centavos ?? 0;
       }
       if (ev.gratuito) valorCentavos = 0;
-      descricao = `Ingresso do evento ${ev.titulo}`;
+      descricao = `Ingresso do evento ${ev.titulo}${tipoEscolhido ? ` — ${tipoEscolhido.nome}` : ''}`;
       referencia = `evento:${ev.slug}`;
     }
 
@@ -218,6 +234,7 @@ Deno.serve(async (req) => {
         {
           evento_id: evento.id,
           lote_id: loteId,
+          tipo_ingresso_id: tipoIngressoId,
           pessoa_id: pessoaId,
           cupom_id: cupomId,
           nome,
@@ -263,9 +280,9 @@ Deno.serve(async (req) => {
     // Cliente no Asaas (reaproveita por CPF)
     let reservaId: string | null = null;
     if (tipo === 'evento' && evento) {
-      const { data: reserva, error } = await admin.rpc('reservar_ingresso_evento', {
+      const { data: reserva, error } = await admin.rpc('reservar_ingresso_evento_tipo', {
         _evento_id: evento.id, _pessoa_id: pessoaId, _lote_id: loteId, _cupom_id: cupomId,
-        _nome: nome, _email: user.email, _telefone: telefone ?? null, _valor_centavos: valorCentavos,
+        _nome: nome, _email: user.email, _telefone: telefone ?? null, _valor_centavos: valorCentavos, _tipo_id: tipoIngressoId,
       });
       if (error) return json({ error: 'Não foi possível reservar sua vaga. Confira a disponibilidade do encontro.' }, 409);
       reservaId = reserva;
