@@ -5,7 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { z } from 'https://esm.sh/zod@3.25.76';
 import { corsHeaders } from '../_shared/cors.ts';
 import { enviarEmail } from '../_shared/enviar-email.ts';
-import { modeloInscricaoEvento } from '../_shared/notificacoes.ts';
+import { modeloInscricaoEvento, dadosCompraInscricao } from '../_shared/notificacoes.ts';
 
 const Corpo = z.object({
   limite: z.number().int().min(1).max(300).default(100),
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         await enviarEmail(
           { email: insc.email, nome: insc.nome },
           `Inscrição confirmada: ${ev.titulo ?? 'evento'}`,
-          modeloInscricaoEvento({
+          modeloInscricaoEvento((await dadosCompraInscricao(admin, insc.id)) ?? {
             nome: insc.nome, titulo: ev.titulo ?? 'Evento', inicioEm: ev.inicio_em,
             online: ev.online, localNome: ev.local_nome, cidade: ev.cidade, uf: ev.uf,
             linkOnline: ev.link_online, inscricaoId: insc.id,

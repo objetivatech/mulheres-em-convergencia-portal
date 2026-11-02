@@ -5,7 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { z } from 'https://esm.sh/zod@3.25.76';
 import { corsHeaders } from '../_shared/cors.ts';
 import { enviarEmail } from '../_shared/enviar-email.ts';
-import { modeloInscricaoEvento } from '../_shared/notificacoes.ts';
+import { modeloInscricaoEvento, dadosCompraInscricao } from '../_shared/notificacoes.ts';
 
 const ASAAS_BASE = 'https://api.asaas.com/v3';
 
@@ -252,11 +252,13 @@ Deno.serve(async (req) => {
         await enviarEmail(
           { email: user.email, nome },
           `Inscrição confirmada: ${evento.titulo}`,
-          modeloInscricaoEvento({
-            nome, titulo: evento.titulo, inicioEm: evento.inicio_em, online: evento.online,
-            localNome: evento.local_nome, cidade: evento.cidade, uf: evento.uf,
-            linkOnline: evento.link_online, inscricaoId: inscricao?.id ?? null,
-          }),
+          modeloInscricaoEvento(
+            (inscricao?.id ? await dadosCompraInscricao(admin, inscricao.id) : null) ?? {
+              nome, titulo: evento.titulo, inicioEm: evento.inicio_em, online: evento.online,
+              localNome: evento.local_nome, cidade: evento.cidade, uf: evento.uf,
+              linkOnline: evento.link_online, inscricaoId: inscricao?.id ?? null,
+            },
+          ),
         );
         if (inscricao?.id) {
           await admin.from('evento_inscricoes')
