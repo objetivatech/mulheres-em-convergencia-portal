@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { CalendarDays, MapPin, Video, Users } from 'lucide-react';
@@ -19,6 +21,15 @@ export default function EventoPage() {
   const [abrirEspera, setAbrirEspera] = useState(false);
   const [tipoId, setTipoId] = useState<string | null>(null);
   const agora = useRelogioEvento();
+  const { data: usoTipos, refetch: refetchUso } = useQuery({
+    queryKey: ['ocupacao-tipos', evento?.id],
+    enabled: !!evento?.id,
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as any)('ocupacao_tipos_evento', { _evento_id: evento!.id });
+      if (error) throw error;
+      return Object.fromEntries(((data ?? []) as { tipo_id: string; usadas: number }[]).map((r) => [r.tipo_id, Number(r.usadas)]));
+    },
+  });
 
   if (isLoading) {
     return (
@@ -45,12 +56,15 @@ export default function EventoPage() {
 
   const lote = loteVigente(evento.lotes);
   const tipos = evento.gratuito ? [] : tiposVigentes(evento.tipos_ingresso);
-  const tipo = tipos.find((t) => t.id === tipoId) ?? tipos[0] ?? null;
+  const tipoEsgotado = (t: { id: string; vagas: number | null }) => t.vagas !== null && (usoTipos?.[t.id] ?? 0) >= t.vagas;
+  const tipoEscolhido = tipos.find((t) => t.id === tipoId) ?? null;
+  const tipo = (tipoEscolhido && !tipoEsgotado(tipoEscolhido) ? tipoEscolhido : null) ?? tipos.find((t) => !tipoEsgotado(t)) ?? null;
+  const todosTiposEsgotados = tipos.length > 0 && tipos.every(tipoEsgotado);
   const valor = evento.gratuito ? 0 : tipo ? tipo.valor_centavos : lote?.valor_centavos ?? 0;
-  const esgotado = evento.disponiveis !== null && evento.disponiveis <= 0;
+  const esgotado = (evento.disponiveis !== null && evento.disponiveis <= 0) || todosTiposEsgotados;
   const encerrado = new Date(evento.inicio_em).getTime() <= agora;
   const reservadas = !esgotado && evento.livres_para_reserva === 0;
-  const semLote = !evento.gratuito && !lote && !tipo;
+  const semLote = !evento.gratuito && !lote && !tipo && !todosTiposEsgotados;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -136,28 +150,33 @@ export default function EventoPage() {
           <OcupacaoEvento ocupadas={evento.ocupadas} vagas={evento.vagas} />
 
           <div className="pt-2 border-t border-border space-y-2">
-            {tipos.length > 1 && (
+            {(tipos.length > 1 || todosTiposEsgotados) && (
               <div className="space-y-2" role="radiogroup" aria-label="Tipo de ingresso">
                 <p className="text-sm font-medium">Escolha seu ingresso</p>
-                {tipos.map((t) => (
+                {tipos.map((t) => {
+                  const fora = tipoEsgotado(t);
+                  return (
                   <button
                     key={t.id}
                     type="button"
                     role="radio"
                     aria-checked={tipo?.id === t.id}
+                    aria-disabled={fora}
+                    disabled={fora}
                     onClick={() => setTipoId(t.id)}
-                    className={`w-full rounded-lg border p-3 text-left transition-colors ${tipo?.id === t.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                    className={`w-full rounded-lg border p-3 text-left transition-colors ${fora ? 'cursor-not-allowed border-border opacity-60' : tipo?.id === t.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   >
                     <span className="flex items-center justify-between gap-2 text-sm font-medium">
-                      <span>{t.nome}</span>
-                      <span>{t.valor_centavos > 0 ? dinheiro(t.valor_centavos) : 'Gratuito'}</span>
+                      <span className={fora ? 'line-through' : ''}>{t.nome}</span>
+                      {fora ? <Badge variant="secondary">Esgotado</Badge> : <span>{t.valor_centavos > 0 ? dinheiro(t.valor_centavos) : 'Gratuito'}</span>}
                     </span>
                     {t.descricao && <span className="mt-1 block text-xs text-muted-foreground">{t.descricao}</span>}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
-            <p className="text-2xl font-semibold">{semLote ? <TextoSite chave="eventos.sem_lote" /> : valor > 0 ? dinheiro(valor) : 'Gratuito'}</p>
+            <p className="text-2xl font-semibold">{todosTiposEsgotados ? 'Esgotado' : semLote ? <TextoSite chave="eventos.sem_lote" /> : valor > 0 ? dinheiro(valor) : 'Gratuito'}</p>
             {tipo ? <p className="text-xs text-muted-foreground">{tipo.nome}{tipos.length === 1 && tipo.descricao ? ` — ${tipo.descricao}` : ''}</p> : lote && <p className="text-xs text-muted-foreground">{lote.nome}</p>}
             {!tipo && lote?.fim_em && !encerrado && <ContadorEvento inicio={lote.fim_em} compacto lote convite={false} />}
           </div>
@@ -186,7 +205,7 @@ export default function EventoPage() {
           tipoIngressoId={tipo?.id ?? null}
           valorTexto={valor > 0 ? dinheiro(valor) : 'Gratuito'}
           permiteCupom={valor > 0}
-          aoConcluir={() => refetch()}
+          aoConcluir={() => { refetch(); refetchUso(); }}
         />
       )}
       {abrirEspera && <ListaEsperaEvento eventoId={evento.id} aberto aoFechar={() => setAbrirEspera(false)} />}

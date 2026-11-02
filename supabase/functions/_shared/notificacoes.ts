@@ -54,33 +54,109 @@ function dataHoraBR(iso?: string | null) {
 /* Modelos                                                             */
 /* ------------------------------------------------------------------ */
 
-/** Confirmação de inscrição em evento (gratuito ou pago). */
-export function modeloInscricaoEvento(ev: {
+const reais = (c?: number | null) =>
+  ((c ?? 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+type DadosCompra = {
   nome?: string | null;
   titulo: string;
   inicioEm?: string | null;
+  fimEm?: string | null;
   online?: boolean;
   localNome?: string | null;
+  endereco?: string | null;
   cidade?: string | null;
   uf?: string | null;
   linkOnline?: string | null;
   inscricaoId?: string | null;
   pago?: boolean;
-}) {
+  tipoNome?: string | null;
+  tipoRequisito?: string | null;
+  loteNome?: string | null;
+  cupom?: string | null;
+  valorCentavos?: number | null;
+  email?: string | null;
+  inscritaEm?: string | null;
+};
+
+function linha(rotulo: string, valor?: string | null) {
+  if (!valor) return '';
+  return `<tr><td style="padding:6px 12px 6px 0;color:#6b6b76;white-space:nowrap;vertical-align:top">${rotulo}</td><td style="padding:6px 0;font-weight:600">${valor}</td></tr>`;
+}
+
+function resumoCompra(ev: DadosCompra) {
   const onde = ev.online
-    ? 'Encontro on-line — o link de acesso está no seu ingresso.'
-    : `Local: ${esc(ev.localNome ?? '')}${ev.cidade ? ` — ${esc(ev.cidade)}/${esc(ev.uf ?? '')}` : ''}`;
+    ? 'On-line (link no seu ingresso)'
+    : [ev.localNome, ev.endereco, ev.cidade ? `${ev.cidade}${ev.uf ? `/${ev.uf}` : ''}` : null].filter(Boolean).map(esc).join(' — ');
+  const linhas =
+    linha('Encontro', esc(ev.titulo)) +
+    linha('Data', dataHoraBR(ev.inicioEm)) +
+    linha('Término', ev.fimEm ? dataHoraBR(ev.fimEm) : null) +
+    linha('Local', onde || 'A confirmar') +
+    linha('Participante', esc(ev.nome ?? '')) +
+    linha('E-mail', ev.email ? esc(ev.email) : null) +
+    linha('Ingresso', ev.tipoNome ? esc(ev.tipoNome) : null) +
+    linha('Lote', ev.loteNome ? esc(ev.loteNome) : null) +
+    linha('Cupom', ev.cupom ? esc(ev.cupom) : null) +
+    linha('Valor', ev.valorCentavos ? reais(ev.valorCentavos) : 'Gratuito') +
+    linha('Pagamento', ev.valorCentavos ? (ev.pago ? 'Confirmado' : 'Aguardando') : null) +
+    linha('Nº da inscrição', ev.inscricaoId ? esc(ev.inscricaoId.slice(0, 8).toUpperCase()) : null);
+  return `<table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 16px;border-top:1px solid #ECE8E2;border-bottom:1px solid #ECE8E2">${linhas}</table>` +
+    (ev.tipoRequisito ? p(`⚠️ <strong>Importante para o seu ingresso:</strong> ${esc(ev.tipoRequisito)}`) : '');
+}
+
+/** Confirmação de inscrição em evento (gratuito ou pago), com o resumo completo da compra. */
+export function modeloInscricaoEvento(ev: DadosCompra) {
   return layout({
     titulo: `Inscrição confirmada: ${esc(ev.titulo)}`,
     corpo:
       ola(ev.nome) +
-      p(`Sua inscrição em <strong>${esc(ev.titulo)}</strong> está confirmada!`) +
-      (ev.inicioEm ? p(`📅 <strong>${dataHoraBR(ev.inicioEm)}</strong>`) : '') +
-      p(onde) +
+      p(`Sua inscrição em <strong>${esc(ev.titulo)}</strong> está confirmada! Confira os detalhes:`) +
+      resumoCompra(ev) +
       p('No dia, apresente o QR Code do seu ingresso na recepção. Ele fica disponível na sua área, em "Meus encontros".'),
     ctaRotulo: 'Ver meu ingresso',
     ctaUrl: ev.inscricaoId ? `${SITE}/minha-area/encontros/${ev.inscricaoId}` : `${SITE}/minha-area/encontros`,
   });
+}
+
+/** Lembrete do evento: 2 dias antes, 1 dia antes e no dia. */
+export function modeloLembreteEvento(ev: DadosCompra, quando: '2d' | '1d' | '0d') {
+  const titulos = {
+    '2d': `Faltam 2 dias: ${esc(ev.titulo)}`,
+    '1d': `É amanhã: ${esc(ev.titulo)}`,
+    '0d': `É hoje: ${esc(ev.titulo)}! 💜`,
+  };
+  const frases = {
+    '2d': 'Seu encontro está chegando! Já reserve esse horário na agenda.',
+    '1d': 'Amanhã é o grande dia. Confira os detalhes e prepare-se para se conectar com a rede.',
+    '0d': 'Hoje é o dia! Estamos esperando por você.',
+  };
+  return layout({
+    titulo: titulos[quando],
+    corpo:
+      ola(ev.nome) +
+      p(frases[quando]) +
+      resumoCompra(ev) +
+      p(ev.online ? 'O link de acesso está no seu ingresso.' : 'Leve o QR Code do seu ingresso (no celular ou impresso) para a recepção.'),
+    ctaRotulo: ev.online ? 'Acessar meu ingresso' : 'Ver meu ingresso',
+    ctaUrl: ev.inscricaoId ? `${SITE}/minha-area/encontros/${ev.inscricaoId}` : `${SITE}/minha-area/encontros`,
+  });
+}
+
+/** Busca no banco tudo o que a compra precisa mostrar no e-mail. */
+export async function dadosCompraInscricao(admin: any, inscricaoId: string): Promise<DadosCompra & { email: string } | null> {
+  const { data: i } = await admin.from('evento_inscricoes')
+    .select('id, nome, email, valor_centavos, situacao, criado_em, pagamento_id, evento:eventos(titulo, inicio_em, fim_em, online, link_online, local_nome, endereco, cidade, uf), tipo:evento_tipos_ingresso!evento_inscricoes_tipo_ingresso_id_fkey(nome, descricao), lote:evento_lotes!evento_inscricoes_lote_id_fkey(nome), cupom:evento_cupons!evento_inscricoes_cupom_id_fkey(codigo)')
+    .eq('id', inscricaoId).maybeSingle();
+  if (!i?.evento) return null;
+  const ev = i.evento;
+  return {
+    nome: i.nome, email: String(i.email), titulo: ev.titulo, inicioEm: ev.inicio_em, fimEm: ev.fim_em,
+    online: ev.online, linkOnline: ev.link_online, localNome: ev.local_nome, endereco: ev.endereco,
+    cidade: ev.cidade, uf: ev.uf, inscricaoId: i.id, pago: i.situacao === 'confirmada' && !!i.pagamento_id,
+    tipoNome: i.tipo?.nome ?? null, tipoRequisito: i.tipo?.descricao ?? null, loteNome: i.lote?.nome ?? null,
+    cupom: i.cupom?.codigo ?? null, valorCentavos: i.valor_centavos, inscritaEm: i.criado_em,
+  };
 }
 
 /** Boas-vindas após confirmação de pagamento de plano. */

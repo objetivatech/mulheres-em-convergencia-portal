@@ -49,3 +49,7 @@ verify_jwt = false
 
 [functions.newsletter-inscrever]
 verify_jwt = false
+
+# Lembretes diários de encontros (2 dias, 1 dia e no dia): chamada idempotente (só envia o que já é devido, uma vez).
+[functions.lembretes-eventos]
+verify_jwt = false

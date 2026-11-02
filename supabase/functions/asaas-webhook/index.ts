@@ -14,6 +14,7 @@ import {
   modeloBoasVindasPlano,
   modeloIndicacaoEmbaixadora,
   modeloInscricaoEvento,
+  dadosCompraInscricao,
 } from "../_shared/notificacoes.ts";
 
 const cors = {
@@ -218,9 +219,12 @@ async function enviarEmailsPagamento(pagamentoId: string, pessoaId: string) {
           dest,
           `Inscrição confirmada: ${ev.titulo}`,
           modeloInscricaoEvento({
-            nome: dest.nome, titulo: ev.titulo, inicioEm: ev.inicio_em, online: ev.online,
-            localNome: ev.local_nome, cidade: ev.cidade, uf: ev.uf,
-            linkOnline: ev.link_online, inscricaoId: insc.id, pago: true,
+            ...((await dadosCompraInscricao(supabase, insc.id)) ?? {
+              titulo: ev.titulo, inicioEm: ev.inicio_em, online: ev.online,
+              localNome: ev.local_nome, cidade: ev.cidade, uf: ev.uf,
+              linkOnline: ev.link_online, inscricaoId: insc.id,
+            }),
+            nome: dest.nome, pago: true,
           }),
         );
         await supabase.from("evento_inscricoes")
