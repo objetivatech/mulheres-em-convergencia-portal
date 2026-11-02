@@ -457,7 +457,7 @@ export default function PainelEventoEditor() {
               <div key={i.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
                 <div>
                   <p className="font-medium">{i.nome}</p>
-                  <p className="text-sm text-muted-foreground">{i.email}{i.telefone ? ` · ${i.telefone}` : ''}</p>
+                  <p className="text-sm text-muted-foreground">{i.email}{i.telefone ? ` · ${i.telefone}` : ''}{i.tipo?.nome ? ` · ${i.tipo.nome}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <span className="text-muted-foreground">{dinheiro(i.valor_centavos)}</span>
