@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { RefreshCw, Send, Users, Mail, Plus, Trash2 } from 'lucide-react';
+import { RefreshCw, Send, Users, Mail, Plus, Trash2, Copy } from 'lucide-react';
+import { MODELOS, TAG_NOME, blocoPosts, montarNewsletter, type ModeloId, type PostNews } from '@/lib/newsletterModelos';
 import PainelLayout from '@/components/painel/PainelLayout';
 import EditorRico from '@/components/editor/EditorRico';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,6 +40,41 @@ export default function NewsletterPage() {
     enabled: !!situacao.data?.conectado,
     queryFn: () => chamar<{ campanhas: Campanha[] }>({ acao: 'campanhas' }),
   });
+
+  const [modelo, setModelo] = useState<ModeloId>('boletim');
+  const [cta, setCta] = useState({ rotulo: '', url: '' });
+  const [postsSel, setPostsSel] = useState<string[]>([]);
+  const postsQ = useQuery({
+    queryKey: ['newsletter-posts'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('posts')
+        .select('slug,titulo,resumo,capa_url,publicado_em')
+        .eq('situacao', 'publicado').order('publicado_em', { ascending: false }).limit(30);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const emailEquipe = useQuery({
+    queryKey: ['newsletter-remetente'],
+    queryFn: async () => {
+      const { data } = await supabase.from('textos_site').select('chave,valor').in('chave', ['contato.email', 'contato.endereco']);
+      const m = new Map((data ?? []).map((t) => [t.chave, t.valor ?? '']));
+      return { email: m.get('contato.email') || 'juntas@mulheresemconvergencia.com.br', endereco: m.get('contato.endereco') || '' };
+    },
+  });
+  const postsEscolhidos: PostNews[] = postsSel
+    .map((s) => (postsQ.data ?? []).find((p) => p.slug === s))
+    .filter(Boolean) as PostNews[];
+  const htmlFinal = useMemo(() => montarNewsletter({
+    modelo, corpo: camp.html, previa: camp.previa, posts: postsEscolhidos,
+    cta: cta.url ? cta : null,
+    remetente: { nome: 'Mulheres em Convergência', email: emailEquipe.data?.email ?? 'juntas@mulheresemconvergencia.com.br', endereco: emailEquipe.data?.endereco },
+  }), [modelo, camp.html, camp.previa, postsEscolhidos, cta, emailEquipe.data]);
+  const copiar = async (texto: string, msg: string) => {
+    await navigator.clipboard.writeText(texto);
+    toast({ title: msg, description: 'Cole no bloco de HTML personalizado do Sender.' });
+  };
+  const copiarBlocoPosts = () => copiar(blocoPosts(postsEscolhidos), 'HTML dos posts copiado');
 
   const grupos = situacao.data?.grupos ?? [];
   const recarregar = () => {
@@ -105,8 +141,57 @@ export default function NewsletterPage() {
                 <Input value={camp.assunto} onChange={(e) => setCamp({ ...camp, assunto: e.target.value })} /></div>
               <div className="space-y-2"><Label>Texto de prévia (aparece ao lado do assunto)</Label>
                 <Input value={camp.previa} onChange={(e) => setCamp({ ...camp, previa: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Conteúdo</Label>
+              <div className="space-y-2">
+                <Label>Modelo MeC</Label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {MODELOS.map((m) => (
+                    <button key={m.id} type="button"
+                      onClick={() => {
+                        if (camp.html && camp.html !== MODELOS.find((x) => x.id === modelo)?.corpoInicial
+                          && !window.confirm('Trocar o modelo substitui o texto atual. Continuar?')) return;
+                        setModelo(m.id); setCamp((c) => ({ ...c, html: m.corpoInicial }));
+                      }}
+                      className={`text-left rounded-xl border p-3 transition ${modelo === m.id ? 'border-primary bg-primary/5' : 'hover:bg-muted'}`}>
+                      <strong className="text-sm block">{m.nome}</strong>
+                      <span className="text-xs text-muted-foreground">{m.descricao}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2"><Label>Texto da newsletter</Label>
+                <p className="text-xs text-muted-foreground">Use <code>{TAG_NOME}</code> para chamar a pessoa pelo primeiro nome.</p>
                 <EditorRico value={camp.html} onChange={(html) => setCamp((c) => ({ ...c, html }))} pasta="newsletter" /></div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1"><Label>Botão principal (opcional)</Label>
+                  <Input placeholder="Ex.: Garanta sua vaga" value={cta.rotulo} onChange={(e) => setCta({ ...cta, rotulo: e.target.value })} /></div>
+                <div className="space-y-1"><Label>Link do botão</Label>
+                  <Input placeholder="https://..." value={cta.url} onChange={(e) => setCta({ ...cta, url: e.target.value })} /></div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Posts do blog ({postsSel.length} escolhidos)</Label>
+                  <Button type="button" size="sm" variant="outline" disabled={!postsSel.length} onClick={copiarBlocoPosts}>
+                    <Copy className="w-3 h-3 mr-1" />Copiar HTML dos posts
+                  </Button>
+                </div>
+                <div className="max-h-56 overflow-auto rounded-xl border divide-y">
+                  {(postsQ.data ?? []).map((p) => (
+                    <label key={p.slug} className="flex items-center gap-3 p-2 text-sm cursor-pointer">
+                      <Checkbox checked={postsSel.includes(p.slug)}
+                        onCheckedChange={(v) => setPostsSel(v ? [...postsSel, p.slug] : postsSel.filter((s) => s !== p.slug))} />
+                      {p.capa_url && <img src={p.capa_url} alt="" className="w-12 h-8 object-cover rounded" />}
+                      <span className="flex-1">{p.titulo}</span>
+                      <span className="text-xs text-muted-foreground">{p.publicado_em ? new Date(p.publicado_em).toLocaleDateString('pt-BR') : ''}</span>
+                    </label>
+                  ))}
+                  {postsQ.data && !postsQ.data.length && <p className="p-3 text-sm text-muted-foreground">Nenhum post publicado.</p>}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Prévia do e-mail</Label>
+                <iframe title="Prévia da newsletter" srcDoc={htmlFinal} className="w-full h-[560px] rounded-xl border bg-background" />
+                <p className="text-xs text-muted-foreground">O rodapé com "Cancelar inscrição" e os dados da MeC entra sempre. O link de cancelar só funciona no envio pelo Sender (no teste ele não abre).</p>
+              </div>
               <div className="space-y-2">
                 <Label>Enviar para as listas</Label>
                 {grupos.length === 0 && <p className="text-sm text-muted-foreground">Crie uma lista na aba "Listas e contatos".</p>}
@@ -123,10 +208,13 @@ export default function NewsletterPage() {
               <div className="flex flex-wrap gap-2 items-end">
                 <Input className="max-w-xs" type="email" placeholder="seu@email.com" value={emailTeste} onChange={(e) => setEmailTeste(e.target.value)} />
                 <Button variant="secondary" disabled={!emailTeste || !camp.html || acao.isPending}
-                  onClick={() => acao.mutate({ acao: 'teste_campanha', email: emailTeste, assunto: camp.assunto, html: camp.html })}>
+                  onClick={() => acao.mutate({ acao: 'teste_campanha', email: emailTeste, assunto: camp.assunto, html: htmlFinal })}>
                   <Mail className="w-4 h-4 mr-2" />Enviar teste
                 </Button>
-                <Button disabled={acao.isPending} onClick={() => acao.mutate({ acao: 'criar_campanha', ...camp })}>
+                <Button variant="outline" disabled={!camp.html} onClick={() => copiar(htmlFinal, 'HTML completo copiado')}>
+                  <Copy className="w-4 h-4 mr-2" />Copiar HTML completo
+                </Button>
+                <Button disabled={acao.isPending} onClick={() => acao.mutate({ acao: 'criar_campanha', ...camp, html: htmlFinal })}>
                   Salvar campanha
                 </Button>
               </div>
