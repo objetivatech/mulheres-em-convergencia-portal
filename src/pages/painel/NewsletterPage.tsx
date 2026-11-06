@@ -29,7 +29,7 @@ export default function NewsletterPage() {
   const [novaLista, setNovaLista] = useState('');
   const [emailTeste, setEmailTeste] = useState('');
   const [contato, setContato] = useState({ email: '', nome: '' });
-  const [camp, setCamp] = useState({ titulo: '', assunto: '', previa: '', html: '', grupos: [] as string[] });
+  const [camp, setCamp] = useState({ titulo: '', assunto: '', previa: '', html: MODELOS[0].corpoInicial, grupos: [] as string[] });
 
   const situacao = useQuery({
     queryKey: ['sender-situacao'],
