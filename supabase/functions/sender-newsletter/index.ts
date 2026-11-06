@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
       if (!titulo || !assunto || !html || !grupos.length) {
         return json({ error: 'Preencha nome, assunto, conteúdo e ao menos uma lista' }, 400);
       }
+      if (!html.includes('{$unsubscribe_link}')) {
+        return json({ error: 'O e-mail precisa do link de cancelar inscrição ({$unsubscribe_link}).' }, 400);
+      }
       const de = canalDeEmail().remetente;
       const r = await sender('/campaigns', {
         method: 'POST',
