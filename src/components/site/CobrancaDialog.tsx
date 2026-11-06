@@ -30,7 +30,7 @@ type Props = {
 export default function CobrancaDialog({
   aberto, aoFechar, tipo, slug, titulo, valorTexto, permiteCupom, codigo, tipoIngressoId, aoConcluir,
 }: Props) {
-  const { user } = useAuth();
+  const { user, signUp, signIn, requestPasswordReset } = useAuth();
   const { data: perfil } = useMeuPerfil();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -51,7 +51,6 @@ export default function CobrancaDialog({
   const mostrarDesconto = tipo === 'evento' && descontoAssinante > 0 && valorTexto !== 'Gratuito';
 
   // Sem conta: identificação dentro do próprio modal (cadastro ou entrada), sem sair da página.
-  const { signUp, signIn, requestPasswordReset } = useAuth();
   const [modo, setModo] = useState<'cadastro' | 'entrar'>('cadastro');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
