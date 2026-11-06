@@ -133,7 +133,11 @@ Deno.serve(async (req) => {
           const link = pg?.dados_brutos?.invoiceUrl ?? pg?.dados_brutos?.bankSlipUrl;
           if (link) return json({ cobranca_id: pg.cobranca_externa_id, valor_centavos: pg.valor_centavos, link });
         }
-        return json({ error: 'Sua reserva está sendo processada. Aguarde um instante e tente novamente.' }, 409);
+        // Reserva órfã (cobrança não chegou a ser vinculada): libera e segue com nova tentativa.
+        const { data: orfa } = await admin.from('evento_inscricoes').select('criado_em').eq('id', existente.id).maybeSingle();
+        const idadeMs = orfa?.criado_em ? Date.now() - new Date(orfa.criado_em).getTime() : Infinity;
+        if (idadeMs < 60_000) return json({ error: 'Sua reserva está sendo processada. Aguarde um instante e tente novamente.' }, 409);
+        await admin.from('evento_inscricoes').update({ situacao: 'cancelada' }).eq('id', existente.id).eq('situacao', 'pendente').is('pagamento_id', null);
       }
 
       const { data: vagas, error: erroVagas } = await admin
@@ -353,7 +357,7 @@ Deno.serve(async (req) => {
           vencimento_em: vencimento,
           dados_brutos: cobranca,
         },
-        { onConflict: 'cobranca_externa_id' },
+        { onConflict: 'provedor,cobranca_externa_id' },
       )
       .select('id')
       .maybeSingle();
