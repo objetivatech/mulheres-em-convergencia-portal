@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,17 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const formStartRef = useRef<number>(Date.now());
   const [error, setError] = useState<string | null>(null);
+  const [aba, setAba] = useState(abaInicial);
+  const [avisoCpf, setAvisoCpf] = useState<string | null>(null);
+
+  const verificarCpf = async (valor: string) => {
+    const d = valor.replace(/\D/g, '');
+    if (d.length !== 11) { setAvisoCpf(null); return; }
+    try {
+      const { data } = await supabase.functions.invoke('cadastrar-conta', { body: { acao: 'verificar_cpf', cpf: d } });
+      setAvisoCpf((data as any)?.existe ? (data as any).email_mascarado || 'seu e-mail' : null);
+    } catch { setAvisoCpf(null); }
+  };
 
   const MIN_SUBMIT_TIME_MS = 1200;
   const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutos
@@ -151,8 +163,12 @@ const Auth = () => {
     recordAttempt('auth:signup');
 
     try {
-      await signUp(email, password, fullName, cpf, undefined, newsletterOptIn);
-      saveAttempts('auth:signup', []);
+      const { error: erroCadastro } = await signUp(email, password, fullName, cpf, undefined, newsletterOptIn);
+      if (erroCadastro) {
+        setError(erroCadastro.message || 'Falha ao cadastrar. Tente novamente.');
+      } else {
+        saveAttempts('auth:signup', []);
+      }
     } catch (err: any) {
       setError(err?.message || 'Falha ao cadastrar. Tente novamente.');
     } finally {
@@ -183,7 +199,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <Tabs defaultValue={abaInicial} className="w-full">
+          <Tabs value={aba} onValueChange={setAba} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Entrar</TabsTrigger>
               <TabsTrigger value="signup">Cadastrar</TabsTrigger>
@@ -299,9 +315,24 @@ const Auth = () => {
                             const value = e.target.value.replace(/\D/g, '');
                             const formatted = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
                             e.target.value = formatted;
+                            if (value.length === 11) verificarCpf(value); else setAvisoCpf(null);
                           }}
                         />
                       </div>
+                      {avisoCpf && (
+                        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm space-y-2">
+                          <p>
+                            Que bom te ver de novo! Este CPF já tem cadastro com o e-mail <strong>{avisoCpf}</strong>.
+                            Entre com ele ou recupere sua senha.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button type="button" size="sm" onClick={() => setAba('signin')}>Entrar</Button>
+                            <Button type="button" size="sm" variant="outline" asChild>
+                              <Link to="/forgot-password">Esqueci minha senha</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -360,7 +391,7 @@ const Auth = () => {
                     <Button 
                       type="submit" 
                       className="w-full" 
-                      disabled={isSubmitting || !scorePassword(signupPassword).isStrong}
+                      disabled={isSubmitting || !!avisoCpf || !scorePassword(signupPassword).isStrong}
                     >
                       {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
                     </Button>

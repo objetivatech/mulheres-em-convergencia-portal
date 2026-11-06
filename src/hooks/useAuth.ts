@@ -163,57 +163,31 @@ export const useAuthProvider = () => {
       // Check for referral code before signup
       const referralCode = getReferralCodeFromCookie();
       
-      // Create user with auto-confirm disabled
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            cpf: cpf,
-          },
-          captchaToken,
-          emailRedirectTo: undefined, // Disable automatic email
-        },
+      // Cria a conta já confirmada (sem depender do e-mail cair na caixa certa)
+      // e entra em seguida. CPF já com login é barrado no servidor.
+      const { data: resp, error: fnError } = await supabase.functions.invoke('cadastrar-conta', {
+        body: { acao: 'cadastrar', email, senha: password, nome: fullName, cpf, newsletter: !!newsletterOptIn },
       });
-
-      if (authError) {
-        toast({
-          title: "Erro no cadastro",
-          description: authError.message,
-          variant: "destructive",
-        });
+      let mensagemErro: string | null = (resp as any)?.error ?? null;
+      if (fnError && !mensagemErro) {
+        try {
+          const ctx = await (fnError as any).context?.json?.();
+          mensagemErro = ctx?.error ?? null;
+        } catch { /* ignora */ }
+        mensagemErro = mensagemErro || 'Não foi possível criar a conta. Tente novamente.';
+      }
+      if (mensagemErro) {
+        const authError = new Error(mensagemErro);
+        toast({ title: "Não foi possível cadastrar", description: mensagemErro, variant: "destructive" });
         return { error: authError };
       }
 
-      if (!authData.user) {
-        const error = new Error('Falha ao criar usuário');
-        toast({
-          title: "Erro no cadastro",
-          description: "Falha ao criar usuário. Tente novamente.",
-          variant: "destructive",
-        });
-        return { error };
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      if (loginError || !loginData.user) {
+        toast({ title: "Conta criada", description: "Agora entre com seu e-mail e senha na aba Entrar." });
+        return { error: null };
       }
-
-      // Envio do e-mail de confirmação
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            user_id: authData.user.id,
-            email: email,
-            full_name: fullName || ''
-          }
-        });
-
-        if (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-          // Don't fail signup if email fails
-        }
-      } catch (emailError) {
-        console.error('Error invoking send-confirmation-email:', emailError);
-        // Don't fail signup if email fails
-      }
+      const authData = loginData;
 
       // Register in CRM if user signed up via referral
       if (referralCode) {
@@ -232,22 +206,10 @@ export const useAuthProvider = () => {
         }
       }
 
-      // Banco novo (MeC-v6): o registro da pessoa e do contato acontece no
-      // primeiro acesso autenticado, via `garantir_pessoa`. A preferência de
-      // newsletter fica registrada no metadado da conta até existir tela própria.
-      if (newsletterOptIn) {
-        try {
-          await supabase.auth.updateUser({ data: { newsletter_optin: true } });
-        } catch (nlError) {
-          console.error('[Auth] Error updating newsletter preference:', nlError);
-        }
-      }
-
       toast({
         title: "Cadastro realizado!",
-        description: "Verifique seu email para confirmar a conta. O link expira em 24 horas.",
+        description: "Bem-vinda! Sua conta já está ativa.",
       });
-      
       return { error: null };
     } catch (error) {
       return { error };
