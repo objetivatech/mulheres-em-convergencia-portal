@@ -22,3 +22,5 @@
 - Event occupancy is external initial seats plus confirmed registrations via the aggregate-only private function; pending payments reserve capacity through locked database writes, and payment triggers synchronize ticket status to prevent overselling and personal-data disclosure.
 - Event conversion UI shares countdown and occupancy components; all public prompts live in the editable text catalog, and the waitlist is private to admins and never subscribes visitors to newsletters.
 - Event ticket types are simultaneous options in `evento_tipos_ingresso` (price overrides the lot when types are on sale); capacity per type is enforced by a database trigger, never by the browser.
+
+- Account signup goes through the `cadastrar-conta` function (account created already confirmed, then password sign-in; existing CPF login blocks a new account) — email confirmation links in spam were blocking purchases.
