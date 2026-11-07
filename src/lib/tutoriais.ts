@@ -167,8 +167,54 @@ export const TUTORIAIS_EQUIPE: Tutorial[] = [
       'Depois de falar, clique em "Concluir" e anote como foi. Isso entra no histórico da pessoa.',
       'Não deu hoje? Use "Reagendar" e escolha amanhã, 3 dias, 1 semana ou 1 mês.',
     ],
-    dicas: ['Conversas paradas há mais de 7 dias aparecem no quadro da direita.', 'O "Radar pós-encontro" lista quem foi a encontros nos últimos 60 dias e ainda não assina.'],
+    dicas: ['Conversas paradas há mais de 7 dias aparecem no quadro da direita.', 'O quadro "Radar pós-encontro" mostra um resumo; a aba "Radar pós-encontro" tem a lista completa por encontro.'],
     link: { para: '/painel-conteudo/relacionamento', rotulo: 'Abrir a agenda' },
+  },
+  {
+    id: 'crm-radar', modulo: 'CRM', titulo: 'Dar o próximo passo depois de um encontro',
+    resumo: 'Agradeça quem foi, convide para associar e diga que sentiu falta de quem não pôde ir.',
+    passos: [
+      'Abra a aba "Radar pós-encontro". Cada encontro aparece com as inscritas.',
+      'Escolha em "Quem mostrar": quem não é associada, quem ainda não recebeu contato ou quem faltou.',
+      'Marque as pessoas e clique em "Tarefa: agradecer", "Tarefa: sentimos sua falta" ou "Abrir no funil".',
+      'As tarefas aparecem na agenda de amanhã, com o botão de WhatsApp pronto.',
+    ],
+    dicas: [
+      '"Faltou" só aparece quando a presença foi registrada na portaria do encontro.',
+      'Pode clicar de novo sem medo: o CRM não cria tarefa ou oportunidade repetida.',
+    ],
+    link: { para: '/painel-conteudo/relacionamento/radar', rotulo: 'Abrir o radar' },
+  },
+  {
+    id: 'crm-repetidas', modulo: 'CRM', titulo: 'Unir fichas repetidas da mesma pessoa',
+    resumo: 'Quando alguém se cadastra duas vezes (por exemplo, com outro e-mail), junte tudo em uma ficha.',
+    passos: [
+      'Abra a aba "Fichas repetidas". Pares com mesmo e-mail ou telefone têm sinal forte.',
+      'Clique em "Conferir e unir". Compare as duas fichas lado a lado e escolha qual fica.',
+      'Escreva por que são a mesma pessoa, marque que conferiu e clique em "Unir fichas".',
+      'Se forem pessoas diferentes (ex.: mesmo nome), clique em "Não são a mesma pessoa".',
+    ],
+    dicas: [
+      'Também dá para unir pela ficha: botão "Unir com outra ficha".',
+      'O CRM não deixa unir duas contas com login no site nem pessoas com CPFs diferentes.',
+      'Tudo fica registrado no "Histórico" da aba.',
+    ],
+    link: { para: '/painel-conteudo/relacionamento/repetidas', rotulo: 'Abrir fichas repetidas' },
+  },
+  {
+    id: 'crm-importar', modulo: 'CRM', titulo: 'Importar uma planilha de contatos',
+    resumo: 'Traga listas de presença, contatos antigos ou planilhas da equipe sem criar cadastros repetidos.',
+    passos: [
+      'Abra a aba "Importar planilha", diga de onde veio a lista e escolha o arquivo (.xlsx ou .csv).',
+      'Confira o que é cada coluna (o CRM já sugere). Nome e pelo menos WhatsApp, e-mail ou CPF são necessários.',
+      'Clique em "Conferir". Veja quem é novo, quem já existe e só será completado, e o que tem problema.',
+      'Desmarque o que não quiser e clique em "Importar".',
+    ],
+    dicas: [
+      'Quem já existe nunca tem nome ou dados trocados: o CRM só acrescenta o que falta.',
+      'Só marque "autorizaram WhatsApp" se a lista tiver esse aceite registrado.',
+    ],
+    link: { para: '/painel-conteudo/relacionamento/importar', rotulo: 'Abrir o importador' },
   },
   {
     id: 'crm-pessoa', modulo: 'CRM', titulo: 'Cadastrar um contato e registrar conversas',

@@ -138,6 +138,9 @@ export default function CrmHoje() {
                     ))}
                   </ul>
                 )}
+                <Link to={rotaCrm.radar} className="mt-3 inline-block text-sm text-primary underline underline-offset-2">
+                  Abrir o radar completo (por encontro, com ações em lote)
+                </Link>
               </Cartao>
             </div>
 

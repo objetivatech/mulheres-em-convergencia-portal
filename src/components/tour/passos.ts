@@ -16,7 +16,7 @@ export const TOUR_VERSAO: Record<string, number> = {
   encontros: 1,
   'meus-dados': 1,
   'painel-equipe': 2,
-  crm: 1,
+  crm: 2,
 };
 
 export const TOUR_PASSOS: Record<string, TourPasso[]> = {
@@ -169,6 +169,11 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       alvo: '[data-tour="crm-abas"]',
       titulo: 'As áreas do CRM',
       texto: '"Hoje" é a sua agenda. "Pessoas" tem as fichas. "Funil" mostra as conversas sobre associação. "Tarefas" e "Mensagens prontas" completam.',
+    },
+    {
+      alvo: '[data-tour="crm-abas"]',
+      titulo: 'Depois dos encontros e das listas',
+      texto: '"Radar pós-encontro" mostra quem foi aos encontros e merece um próximo passo. "Fichas repetidas" une cadastros da mesma pessoa. "Importar planilha" traz listas antigas, sempre com conferência antes.',
     },
     {
       alvo: '[data-tour="crm-busca"]',
