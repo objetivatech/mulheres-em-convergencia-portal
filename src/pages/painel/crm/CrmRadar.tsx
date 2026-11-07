@@ -108,7 +108,7 @@ export default function CrmRadar() {
               <section key={g.id} className="rounded-[var(--radius)] border border-border bg-card p-4">
                 <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="flex items-center gap-2 font-bold"><CalendarDays className="h-4 w-4 text-primary" /> {g.titulo}</h2>
+                    <h2 className="flex items-center gap-2 text-base font-bold"><CalendarDays className="h-4 w-4 text-primary" /> {g.titulo}</h2>
                     <p className="text-xs text-muted-foreground">
                       {dataCurta(g.inicio)} · {g.online ? 'Online' : 'Presencial'} · {g.total} inscrita(s)
                       {g.portaria ? ` · ${g.presentes} presença(s) na portaria` : ' · presença não registrada na portaria (mostramos todas as inscritas)'}
