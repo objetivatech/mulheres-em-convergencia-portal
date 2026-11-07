@@ -10,9 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useModelos, useRegistrarInteracao } from '@/hooks/useCrmMec';
-import { consentimentoAtual, linkWhatsApp, preencherModelo } from '@/lib/crm';
+import { consentimentoAtual, linkWhatsAppModo, preencherModelo, type ModoWhatsApp } from '@/lib/crm';
 
 const db = supabase as any;
+const CHAVE_MODO = 'mec-crm-whatsapp-modo';
 
 /** Abre o WhatsApp com uma mensagem pronta e editável. Nada é enviado sem a equipe clicar em "Enviar" no WhatsApp. */
 export default function WhatsAppDialog({
@@ -58,8 +59,12 @@ export default function WhatsAppDialog({
     if (m) { setModeloId(m.id); setTexto(preencherModelo(m.texto, data.pessoa)); }
   }, [aberto, modelos, data, categoriaInicial, modeloId]);
 
+  const [modo, setModoEstado] = useState<ModoWhatsApp>(() => (localStorage.getItem(CHAVE_MODO) === 'app' ? 'app' : 'web'));
+  const setModo = (m: ModoWhatsApp) => { setModoEstado(m); localStorage.setItem(CHAVE_MODO, m); };
+  const celular = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches && window.innerWidth < 900;
+
   const recusou = useMemo(() => consentimentoAtual(data?.consent ?? [], 'whatsapp') === 'recusado', [data]);
-  const link = linkWhatsApp(telefone, texto);
+  const link = linkWhatsAppModo(telefone, texto, modo, celular);
   const modeloEscolhido = modelos?.find((m) => m.id === modeloId);
 
   const escolherModelo = (id: string) => {
@@ -70,7 +75,8 @@ export default function WhatsAppDialog({
 
   const abrir = async () => {
     if (!link || !pessoaId) return;
-    window.open(link, '_blank', 'noopener');
+    if (link.startsWith('whatsapp://')) window.location.href = link;
+    else window.open(link, celular ? '_blank' : 'whatsapp_mec');
     if (registrarHist) {
       await registrar.mutateAsync({
         pessoa_id: pessoaId, oportunidade_id: oportunidadeId, canal: 'whatsapp', tipo: 'mensagem',
@@ -131,6 +137,24 @@ export default function WhatsAppDialog({
               <Checkbox checked={registrarHist} onCheckedChange={(v) => setRegistrarHist(v === true)} />
               Registrar no histórico da pessoa
             </label>
+            {!celular && (
+              <div className="space-y-1.5">
+                <Label>Abrir no</Label>
+                <div className="grid grid-cols-2 gap-1 rounded-lg border border-border p-1" role="radiogroup" aria-label="Onde abrir o WhatsApp">
+                  {([['web', 'WhatsApp Web (navegador)'], ['app', 'Aplicativo do computador']] as const).map(([v, r]) => (
+                    <button
+                      key={v} type="button" role="radio" aria-checked={modo === v} onClick={() => setModo(v)}
+                      className={`rounded-md px-2 py-1.5 text-xs transition-colors ${modo === v ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground hover:bg-muted'}`}
+                    >{r}</button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {modo === 'web'
+                    ? 'O WhatsApp Web não deixa outro site usar a aba que você já tem aberta, então abre uma aba nova. Feche a antiga e clique em "Usar aqui".'
+                    : 'Abre o WhatsApp instalado no computador, sem criar abas. Precisa ter o aplicativo instalado.'}
+                </p>
+              </div>
+            )}
             {!link && <p className="text-xs text-destructive">Telefone incompleto: precisa ter DDD.</p>}
             <div className="flex flex-wrap gap-2">
               <Button onClick={abrir} disabled={!link || recusou} className="flex-1">

@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  MessageCircle, NotebookPen, Plus, Pencil, Eye, EyeOff, X, ShieldCheck, ArrowLeft, Store, Ticket, BadgeCheck,
+  MessageCircle, NotebookPen, Plus, Pencil, Eye, EyeOff, X, ShieldCheck, ArrowLeft, Store, Ticket, BadgeCheck, GitMerge,
 } from 'lucide-react';
+import FusaoDialog from '@/components/crm/FusaoDialog';
+import SeletorPessoa from '@/components/painel/SeletorPessoa';
 import CrmLayout, { rotaCrm } from '@/components/crm/CrmLayout';
 import WhatsAppDialog from '@/components/crm/WhatsAppDialog';
 import RegistrarContatoDialog from '@/components/crm/RegistrarContatoDialog';
@@ -69,6 +71,8 @@ export default function CrmFicha() {
   const [novoApelido, setNovoApelido] = useState('');
   const [novoVinculo, setNovoVinculo] = useState({ negocio_id: '', papel: 'socia' });
   const [filtroHist, setFiltroHist] = useState<'tudo' | 'conversas' | 'site'>('tudo');
+  const [unir, setUnir] = useState<{ aberto: boolean; outra: string | null }>({ aberto: false, outra: null });
+  const navegar = useNavigate();
 
   const falha = (titulo: string) => (e: any) => toast({ title: titulo, description: e.message, variant: 'destructive' });
 
@@ -145,6 +149,7 @@ export default function CrmFicha() {
           <Button size="sm" onClick={() => setWa(true)}><MessageCircle className="mr-1 h-4 w-4" /> WhatsApp</Button>
           <Button size="sm" variant="outline" onClick={() => setRegistrar(true)}><NotebookPen className="mr-1 h-4 w-4" /> Registrar contato</Button>
           <Button size="sm" variant="outline" onClick={() => setTarefa({ aberta: true })}><Plus className="mr-1 h-4 w-4" /> Tarefa</Button>
+          <Button size="sm" variant="ghost" onClick={() => setUnir({ aberto: true, outra: null })}><GitMerge className="mr-1 h-4 w-4" /> Unir com outra ficha</Button>
         </div>
       }
     >
@@ -443,6 +448,28 @@ export default function CrmFicha() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={unir.aberto && !unir.outra} onOpenChange={(o) => !o && setUnir({ aberto: false, outra: null })}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Unir com outra ficha</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Procure a outra ficha da mesma pessoa. Antes de unir, você verá tudo o que vai acontecer.</p>
+          <SeletorPessoa
+            value={null}
+            placeholder="Nome, e-mail, CPF ou apelido"
+            onChange={(outra) => {
+              if (outra === p.id) return toast({ title: 'Escolha uma ficha diferente desta', variant: 'destructive' });
+              setUnir({ aberto: true, outra });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+      <FusaoDialog
+        aberto={unir.aberto && !!unir.outra}
+        a={p.id}
+        b={unir.outra}
+        onFechar={() => setUnir({ aberto: false, outra: null })}
+        onUnida={(mantida) => { if (mantida !== p.id) navegar(rotaCrm.ficha(mantida), { replace: true }); }}
+      />
 
       <WhatsAppDialog pessoaId={p.id} oportunidadeId={opAberta?.id} aberto={wa} onFechar={() => setWa(false)} />
       <RegistrarContatoDialog pessoaId={p.id} oportunidadeId={opAberta?.id} aberto={registrar} onFechar={() => setRegistrar(false)} />

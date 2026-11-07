@@ -54,6 +54,9 @@ import CrmFicha from './pages/painel/crm/CrmFicha';
 import CrmFunil from './pages/painel/crm/CrmFunil';
 import CrmTarefas from './pages/painel/crm/CrmTarefas';
 import CrmMensagens from './pages/painel/crm/CrmMensagens';
+import CrmRadar from './pages/painel/crm/CrmRadar';
+import CrmRepetidas from './pages/painel/crm/CrmRepetidas';
+import CrmImportar from './pages/painel/crm/CrmImportar';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
 import PainelAcademy from './pages/painel/PainelAcademy';
 import PainelImagens from './pages/painel/PainelImagens';
@@ -182,6 +185,9 @@ function AppContent() {
         <Route path="/painel-conteudo/relacionamento/funil" element={<CrmFunil />} />
         <Route path="/painel-conteudo/relacionamento/tarefas" element={<CrmTarefas />} />
         <Route path="/painel-conteudo/relacionamento/mensagens" element={<CrmMensagens />} />
+        <Route path="/painel-conteudo/relacionamento/radar" element={<CrmRadar />} />
+        <Route path="/painel-conteudo/relacionamento/repetidas" element={<CrmRepetidas />} />
+        <Route path="/painel-conteudo/relacionamento/importar" element={<CrmImportar />} />
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
         <Route path="/painel-conteudo/acessos" element={<Navigate to="/painel-conteudo/planos-eventos" replace />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />

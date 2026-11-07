@@ -11,7 +11,7 @@ Somente administradoras. Editoras veem o aviso "O CRM é exclusivo da administra
 
 ## Cadastro
 - **Nova pessoa**: nome + WhatsApp ou e-mail. CPF é opcional. O sistema avisa se já existir alguém igual.
-- Contato extra: na ficha, bloco "Contatos". Se o número/e-mail já for de outra pessoa, o sistema recusa — confira se é a mesma pessoa (fusão chega na Fase 2).
+- Contato extra: na ficha, bloco "Contatos". Se o número/e-mail já for de outra pessoa, o sistema recusa — confira se é a mesma pessoa e use "Unir com outra ficha" ou a aba "Fichas repetidas" (ver `40-crm-fase2-operacao.md`).
 - Papéis, acessos e cortesias continuam em **Pessoas** (link "Papéis, acessos e cortesias" na ficha).
 
 ## Funil

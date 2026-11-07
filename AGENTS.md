@@ -25,4 +25,6 @@
 
 - Account signup goes through the `cadastrar-conta` function (account created already confirmed, then password sign-in; existing CPF login blocks a new account) — email confirmation links in spam were blocking purchases.
 - CRM data lives in admin-only `crm_*` tables keyed to `pessoas` (no parallel people table); provisional leads are `pessoas` rows without account/CPF and merge through `garantir_pessoa` — one person, one history.
-- CRM never sends messages: WhatsApp opens `wa.me` with editable text; consent is the latest `crm_consentimentos` row per channel and task/membership status is computed, never stored.
+- CRM never sends messages: WhatsApp opens with editable text (desktop: WhatsApp Web or app link; mobile: `wa.me`), because WhatsApp Web's opener isolation makes reusing an open tab impossible; consent is the latest `crm_consentimentos` row per channel and task/membership status is computed, never stored.
+- Merging people goes only through `crm_fundir_pessoas`, which moves every FK to `pessoas`, fills only empty fields, audits in `crm_fusoes`, and aborts if any reference remains — a new table referencing `pessoas` must be handled there.
+- CRM spreadsheet imports are classified and written by database functions (`crm_importar_*`), additive only — the browser only parses files and never decides who already exists.
