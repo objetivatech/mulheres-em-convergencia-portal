@@ -76,6 +76,13 @@ Atualizado: 17/09/2026
 - [x] Telas legadas de `/admin` desativadas (todo `/admin/...` redireciona para `/painel-conteudo`)
 - [ ] Mailrelay, e-mails automáticos e rotinas agendadas no banco novo
 
+### CRM MeC Conecta (substitui o funil antigo)
+- [x] Fase 1 — fundação, agenda de hoje, ficha 360°, funil, tarefas, mensagens prontas, permissões de contato (07/11/2026; `docs/_reboot/36`–`38`)
+- [ ] Fase 2 — importador CSV/XLSX com prévia e desduplicação, fila de possíveis duplicadas com fusão auditada, radar pós-evento completo
+- [ ] Fase 3 — resumo diário por e-mail, Google Tasks e Google Sheets (dependem de autorização)
+- [ ] Fase 4 — listas de presença manuscritas (OCR com revisão) e relatórios avançados (tempo até associação, atribuição)
+- [ ] Limpeza: remover tabelas do funil antigo (`funis`, `funil_estagios`, `negociacoes`), hoje sem uso
+
 
 ### Fase 7 — Migração e corte
 - [x] Scripts de migração idempotentes (antigo → novo)
