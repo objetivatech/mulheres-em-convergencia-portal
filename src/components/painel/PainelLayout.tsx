@@ -37,7 +37,7 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
     { para: '/painel-conteudo/automacoes', rotulo: 'Automações', icone: Zap },
   ] },
   { titulo: 'Comunicação', itens: [
-    { para: '/painel-conteudo/relacionamento', rotulo: 'Relacionamento', icone: Workflow },
+    { para: '/painel-conteudo/relacionamento', rotulo: 'CRM · Relacionamento', icone: Workflow },
     { para: '/painel-conteudo/comunicados', rotulo: 'Comunicados', icone: Megaphone },
     { para: '/painel-conteudo/newsletter', rotulo: 'Newsletter', icone: Megaphone },
   ] },
@@ -85,11 +85,14 @@ export default function PainelLayout({
   descricao,
   acoes,
   children,
+  tour = 'painel-equipe',
 }: {
   titulo: string;
   descricao?: string;
   acoes?: ReactNode;
   children: ReactNode;
+  /** Módulo do tour guiado mostrado nesta tela. */
+  tour?: string;
 }) {
   const { user, loading } = useAuth();
   const { data: permissao, isLoading } = useSouEditora();
@@ -150,7 +153,7 @@ export default function PainelLayout({
             {acoes}
           </header>
           {children}
-          <Tour modulo="painel-equipe" />
+          <Tour modulo={tour} />
         </main>
       </div>
     </div>
