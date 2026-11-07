@@ -956,6 +956,97 @@ export type Database = {
           },
         ]
       }
+      crm_duplicadas_ignoradas: {
+        Row: {
+          id: string
+          motivo: string | null
+          pessoa_a: string
+          pessoa_b: string
+          registrado_em: string
+          registrado_por: string | null
+        }
+        Insert: {
+          id?: string
+          motivo?: string | null
+          pessoa_a: string
+          pessoa_b: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Update: {
+          id?: string
+          motivo?: string | null
+          pessoa_a?: string
+          pessoa_b?: string
+          registrado_em?: string
+          registrado_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_a_fkey"
+            columns: ["pessoa_a"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_a_fkey"
+            columns: ["pessoa_a"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_a_fkey"
+            columns: ["pessoa_a"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_b_fkey"
+            columns: ["pessoa_b"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_b_fkey"
+            columns: ["pessoa_b"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_pessoa_b_fkey"
+            columns: ["pessoa_b"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_duplicadas_ignoradas_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       crm_fichas: {
         Row: {
           atualizado_em: string
@@ -1003,6 +1094,140 @@ export type Database = {
             foreignKeyName: "crm_fichas_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: true
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_fusoes: {
+        Row: {
+          dados_removidos: Json
+          id: string
+          motivo: string | null
+          movimentos: Json
+          nome_mantido: string
+          nome_removido: string
+          pessoa_mantida_id: string | null
+          pessoa_removida_id: string
+          realizado_em: string
+          realizado_por: string | null
+        }
+        Insert: {
+          dados_removidos?: Json
+          id?: string
+          motivo?: string | null
+          movimentos?: Json
+          nome_mantido: string
+          nome_removido: string
+          pessoa_mantida_id?: string | null
+          pessoa_removida_id: string
+          realizado_em?: string
+          realizado_por?: string | null
+        }
+        Update: {
+          dados_removidos?: Json
+          id?: string
+          motivo?: string | null
+          movimentos?: Json
+          nome_mantido?: string
+          nome_removido?: string
+          pessoa_mantida_id?: string | null
+          pessoa_removida_id?: string
+          realizado_em?: string
+          realizado_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_fusoes_pessoa_mantida_id_fkey"
+            columns: ["pessoa_mantida_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_fusoes_pessoa_mantida_id_fkey"
+            columns: ["pessoa_mantida_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_fusoes_pessoa_mantida_id_fkey"
+            columns: ["pessoa_mantida_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_fusoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_fusoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_fusoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_importacoes: {
+        Row: {
+          criado_em: string
+          id: string
+          nome_arquivo: string
+          origem: string | null
+          realizado_por: string | null
+          resultado: Json
+          total: number
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          nome_arquivo: string
+          origem?: string | null
+          realizado_por?: string | null
+          resultado?: Json
+          total?: number
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          nome_arquivo?: string
+          origem?: string | null
+          realizado_por?: string | null
+          resultado?: Json
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_importacoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_importacoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_importacoes_realizado_por_fkey"
+            columns: ["realizado_por"]
+            isOneToOne: false
             referencedRelation: "v_meu_perfil"
             referencedColumns: ["pessoa_id"]
           },
@@ -2281,71 +2506,6 @@ export type Database = {
         }
         Relationships: []
       }
-      funil_estagios: {
-        Row: {
-          criado_em: string
-          funil_id: string
-          ganho: boolean
-          id: string
-          nome: string
-          ordem: number
-          perdido: boolean
-        }
-        Insert: {
-          criado_em?: string
-          funil_id: string
-          ganho?: boolean
-          id?: string
-          nome: string
-          ordem?: number
-          perdido?: boolean
-        }
-        Update: {
-          criado_em?: string
-          funil_id?: string
-          ganho?: boolean
-          id?: string
-          nome?: string
-          ordem?: number
-          perdido?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "funil_estagios_funil_id_fkey"
-            columns: ["funil_id"]
-            isOneToOne: false
-            referencedRelation: "funis"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      funis: {
-        Row: {
-          ativo: boolean
-          criado_em: string
-          id: string
-          nome: string
-          ordem: number
-          slug: string
-        }
-        Insert: {
-          ativo?: boolean
-          criado_em?: string
-          id?: string
-          nome: string
-          ordem?: number
-          slug: string
-        }
-        Update: {
-          ativo?: boolean
-          criado_em?: string
-          id?: string
-          nome?: string
-          ordem?: number
-          slug?: string
-        }
-        Relationships: []
-      }
       marcos_linha_tempo: {
         Row: {
           ano: number
@@ -2512,127 +2672,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "menu_itens"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      negociacoes: {
-        Row: {
-          atualizado_em: string
-          contato_email: string | null
-          contato_nome: string | null
-          contato_telefone: string | null
-          criado_em: string
-          estagio_id: string | null
-          fechado_em: string | null
-          funil_id: string
-          id: string
-          negocio_id: string | null
-          observacoes: string | null
-          pessoa_id: string | null
-          responsavel_id: string | null
-          resultado: string | null
-          titulo: string
-          valor_centavos: number
-        }
-        Insert: {
-          atualizado_em?: string
-          contato_email?: string | null
-          contato_nome?: string | null
-          contato_telefone?: string | null
-          criado_em?: string
-          estagio_id?: string | null
-          fechado_em?: string | null
-          funil_id: string
-          id?: string
-          negocio_id?: string | null
-          observacoes?: string | null
-          pessoa_id?: string | null
-          responsavel_id?: string | null
-          resultado?: string | null
-          titulo: string
-          valor_centavos?: number
-        }
-        Update: {
-          atualizado_em?: string
-          contato_email?: string | null
-          contato_nome?: string | null
-          contato_telefone?: string | null
-          criado_em?: string
-          estagio_id?: string | null
-          fechado_em?: string | null
-          funil_id?: string
-          id?: string
-          negocio_id?: string | null
-          observacoes?: string | null
-          pessoa_id?: string | null
-          responsavel_id?: string | null
-          resultado?: string | null
-          titulo?: string
-          valor_centavos?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "negociacoes_estagio_id_fkey"
-            columns: ["estagio_id"]
-            isOneToOne: false
-            referencedRelation: "funil_estagios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociacoes_funil_id_fkey"
-            columns: ["funil_id"]
-            isOneToOne: false
-            referencedRelation: "funis"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociacoes_negocio_id_fkey"
-            columns: ["negocio_id"]
-            isOneToOne: false
-            referencedRelation: "negocios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociacoes_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "pessoas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociacoes_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "v_acesso_operacao"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "negociacoes_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "v_meu_perfil"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "negociacoes_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "pessoas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "negociacoes_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "v_acesso_operacao"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "negociacoes_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "v_meu_perfil"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -4099,6 +4138,54 @@ export type Database = {
         }
         Returns: string
       }
+      crm_duplicadas: {
+        Args: never
+        Returns: {
+          forte: boolean
+          motivos: string[]
+          nome_a: string
+          nome_b: string
+          pessoa_a: string
+          pessoa_b: string
+        }[]
+      }
+      crm_fundir_pessoas: {
+        Args: { _manter: string; _motivo?: string; _remover: string }
+        Returns: Json
+      }
+      crm_ignorar_duplicada: {
+        Args: { _a: string; _b: string; _motivo?: string }
+        Returns: undefined
+      }
+      crm_importar_iniciar: {
+        Args: { _nome_arquivo: string; _origem: string; _total: number }
+        Returns: string
+      }
+      crm_importar_lote: {
+        Args: {
+          _autorizou_whatsapp?: boolean
+          _criar_oportunidade?: boolean
+          _importacao_id: string
+          _linhas: Json
+        }
+        Returns: {
+          acao: string
+          linha: number
+          mensagem: string
+          pessoa_id: string
+        }[]
+      }
+      crm_importar_previa: {
+        Args: { _linhas: Json }
+        Returns: {
+          acao: string
+          aviso: string
+          linha: number
+          motivo: string
+          pessoa_id: string
+          pessoa_nome: string
+        }[]
+      }
       crm_normalizar: { Args: { _t: string }; Returns: string }
       crm_pessoas: {
         Args: { _limite?: number; _termo?: string }
@@ -4121,6 +4208,37 @@ export type Database = {
           telefone: string
           ultima_interacao_em: string
         }[]
+      }
+      crm_previa_fusao: {
+        Args: { _manter: string; _remover: string }
+        Returns: Json
+      }
+      crm_radar: {
+        Args: { _dias?: number }
+        Returns: {
+          assinante: boolean
+          compareceu: boolean
+          contato_depois: string
+          email: string
+          etapa: Database["public"]["Enums"]["crm_etapa"]
+          evento_id: string
+          evento_inicio: string
+          evento_online: boolean
+          evento_tem_portaria: boolean
+          evento_titulo: string
+          inscricao_id: string
+          nome: string
+          oportunidade_id: string
+          pessoa_id: string
+          tarefa_aberta: boolean
+          tarefa_feita: boolean
+          telefone: string
+          whatsapp_recusado: boolean
+        }[]
+      }
+      crm_radar_acionar: {
+        Args: { _acao: string; _evento_id: string; _pessoas: string[] }
+        Returns: Json
       }
       crm_rotulo_etapa: {
         Args: { _e: Database["public"]["Enums"]["crm_etapa"] }
