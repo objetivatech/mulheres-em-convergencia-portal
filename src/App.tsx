@@ -48,7 +48,12 @@ import MinhaEmbaixadora from './pages/area/MinhaEmbaixadora';
 import MeuNegocio from './pages/area/MeuNegocio';
 import PainelPessoas from './pages/painel/PainelPessoas';
 import PainelFinanceiro from './pages/painel/PainelFinanceiro';
-import PainelCRM from './pages/painel/PainelCRM';
+import CrmHoje from './pages/painel/crm/CrmHoje';
+import CrmPessoas from './pages/painel/crm/CrmPessoas';
+import CrmFicha from './pages/painel/crm/CrmFicha';
+import CrmFunil from './pages/painel/crm/CrmFunil';
+import CrmTarefas from './pages/painel/crm/CrmTarefas';
+import CrmMensagens from './pages/painel/crm/CrmMensagens';
 import PainelAutomacoes from './pages/painel/PainelAutomacoes';
 import PainelAcademy from './pages/painel/PainelAcademy';
 import PainelImagens from './pages/painel/PainelImagens';
@@ -171,7 +176,12 @@ function AppContent() {
         <Route path="/painel-conteudo/newsletter" element={<PainelNewsletter />} />
         <Route path="/painel-conteudo/pessoas" element={<PainelPessoas />} />
         <Route path="/painel-conteudo/financeiro" element={<PainelFinanceiro />} />
-        <Route path="/painel-conteudo/relacionamento" element={<PainelCRM />} />
+        <Route path="/painel-conteudo/relacionamento" element={<CrmHoje />} />
+        <Route path="/painel-conteudo/relacionamento/pessoas" element={<CrmPessoas />} />
+        <Route path="/painel-conteudo/relacionamento/pessoa/:id" element={<CrmFicha />} />
+        <Route path="/painel-conteudo/relacionamento/funil" element={<CrmFunil />} />
+        <Route path="/painel-conteudo/relacionamento/tarefas" element={<CrmTarefas />} />
+        <Route path="/painel-conteudo/relacionamento/mensagens" element={<CrmMensagens />} />
         <Route path="/painel-conteudo/automacoes" element={<PainelAutomacoes />} />
         <Route path="/painel-conteudo/acessos" element={<Navigate to="/painel-conteudo/planos-eventos" replace />} />
         <Route path="/painel-conteudo/academy" element={<PainelAcademy />} />

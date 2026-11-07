@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,8 +23,9 @@ const data = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString('pt-BR') : '—';
 
 export default function PainelPessoas() {
+  const [params] = useSearchParams();
   const [termo, setTermo] = useState('');
-  const [selecionada, setSelecionada] = useState<string | null>(null);
+  const [selecionada, setSelecionada] = useState<string | null>(params.get('pessoa'));
   const [papel, setPapel] = useState('assinante');
   const [tipo, setTipo] = useState('diretorio');
   const [dias, setDias] = useState('31');
@@ -65,9 +67,14 @@ export default function PainelPessoas() {
                   ))}
                 </div>
               </div>
-              <Button size="sm" variant="outline" onClick={() => setSelecionada(p.pessoa_id)}>
-                Abrir ficha
-              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to={`/painel-conteudo/relacionamento/pessoa/${p.pessoa_id}`}>Ver no CRM</Link>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelecionada(p.pessoa_id)}>
+                  Papéis e acessos
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -77,7 +84,14 @@ export default function PainelPessoas() {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{ficha?.perfil?.nome ?? 'Ficha'}</DialogTitle>
-            <DialogDescription>{ficha?.perfil?.email_principal ?? ''}</DialogDescription>
+            <DialogDescription>
+              {ficha?.perfil?.email_principal ?? ''}
+              {selecionada && (
+                <Link to={`/painel-conteudo/relacionamento/pessoa/${selecionada}`} className="ml-2 text-primary underline underline-offset-2">
+                  Abrir ficha no CRM
+                </Link>
+              )}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">

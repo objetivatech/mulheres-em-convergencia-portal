@@ -695,6 +695,598 @@ export type Database = {
           },
         ]
       }
+      crm_apelidos: {
+        Row: {
+          apelido: string
+          criado_em: string
+          id: string
+          origem: string | null
+          pessoa_id: string
+        }
+        Insert: {
+          apelido: string
+          criado_em?: string
+          id?: string
+          origem?: string | null
+          pessoa_id: string
+        }
+        Update: {
+          apelido?: string
+          criado_em?: string
+          id?: string
+          origem?: string | null
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_apelidos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_apelidos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_apelidos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_atividades: {
+        Row: {
+          atualizado_em: string
+          cancelada_em: string | null
+          concluida_em: string | null
+          criado_em: string
+          criado_por: string | null
+          evento_id: string | null
+          id: string
+          notas: string | null
+          oportunidade_id: string | null
+          pessoa_id: string | null
+          prioridade: string
+          responsavel_id: string | null
+          resultado: string | null
+          tipo: string
+          titulo: string
+          vence_em: string
+        }
+        Insert: {
+          atualizado_em?: string
+          cancelada_em?: string | null
+          concluida_em?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          evento_id?: string | null
+          id?: string
+          notas?: string | null
+          oportunidade_id?: string | null
+          pessoa_id?: string | null
+          prioridade?: string
+          responsavel_id?: string | null
+          resultado?: string | null
+          tipo?: string
+          titulo: string
+          vence_em?: string
+        }
+        Update: {
+          atualizado_em?: string
+          cancelada_em?: string | null
+          concluida_em?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          evento_id?: string | null
+          id?: string
+          notas?: string | null
+          oportunidade_id?: string | null
+          pessoa_id?: string | null
+          prioridade?: string
+          responsavel_id?: string | null
+          resultado?: string | null
+          tipo?: string
+          titulo?: string
+          vence_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_atividades_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "v_evento_vagas"
+            referencedColumns: ["evento_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "crm_oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_atividades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_consentimentos: {
+        Row: {
+          canal: string
+          id: string
+          origem: string | null
+          pessoa_id: string
+          registrado_em: string
+          registrado_por: string | null
+          situacao: string
+        }
+        Insert: {
+          canal: string
+          id?: string
+          origem?: string | null
+          pessoa_id: string
+          registrado_em?: string
+          registrado_por?: string | null
+          situacao: string
+        }
+        Update: {
+          canal?: string
+          id?: string
+          origem?: string | null
+          pessoa_id?: string
+          registrado_em?: string
+          registrado_por?: string | null
+          situacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_consentimentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_consentimentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_consentimentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_consentimentos_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_consentimentos_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_consentimentos_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_fichas: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          observacoes: string | null
+          origem: string | null
+          origem_detalhe: string | null
+          pessoa_id: string
+          primeiro_contato_em: string | null
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          observacoes?: string | null
+          origem?: string | null
+          origem_detalhe?: string | null
+          pessoa_id: string
+          primeiro_contato_em?: string | null
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          observacoes?: string | null
+          origem?: string | null
+          origem_detalhe?: string | null
+          pessoa_id?: string
+          primeiro_contato_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_fichas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_fichas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_fichas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_interacoes: {
+        Row: {
+          canal: string
+          criado_em: string
+          id: string
+          objecao: string | null
+          ocorrido_em: string
+          oportunidade_id: string | null
+          pessoa_id: string
+          registrado_por: string | null
+          resumo: string
+          tipo: string
+        }
+        Insert: {
+          canal?: string
+          criado_em?: string
+          id?: string
+          objecao?: string | null
+          ocorrido_em?: string
+          oportunidade_id?: string | null
+          pessoa_id: string
+          registrado_por?: string | null
+          resumo: string
+          tipo?: string
+        }
+        Update: {
+          canal?: string
+          criado_em?: string
+          id?: string
+          objecao?: string | null
+          ocorrido_em?: string
+          oportunidade_id?: string | null
+          pessoa_id?: string
+          registrado_por?: string | null
+          resumo?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interacoes_oportunidade_id_fkey"
+            columns: ["oportunidade_id"]
+            isOneToOne: false
+            referencedRelation: "crm_oportunidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_interacoes_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_modelos_mensagem: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          categoria: string
+          criado_em: string
+          id: string
+          ordem: number
+          texto: string
+          titulo: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          id?: string
+          ordem?: number
+          texto: string
+          titulo: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          id?: string
+          ordem?: number
+          texto?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
+      crm_negocio_vinculos: {
+        Row: {
+          criado_em: string
+          id: string
+          negocio_id: string
+          papel: string
+          pessoa_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          negocio_id: string
+          papel?: string
+          pessoa_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          negocio_id?: string
+          papel?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_negocio_vinculos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_negocio_vinculos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_negocio_vinculos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_negocio_vinculos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      crm_oportunidades: {
+        Row: {
+          atualizado_em: string
+          canal: string | null
+          criado_em: string
+          etapa: Database["public"]["Enums"]["crm_etapa"]
+          fechada_em: string | null
+          id: string
+          interesse_em: string
+          motivo: string | null
+          pessoa_id: string
+          plano_apresentado_em: string | null
+          plano_id: string | null
+          proxima_acao: string | null
+          responsavel_id: string | null
+          titulo: string | null
+          valor_centavos: number
+        }
+        Insert: {
+          atualizado_em?: string
+          canal?: string | null
+          criado_em?: string
+          etapa?: Database["public"]["Enums"]["crm_etapa"]
+          fechada_em?: string | null
+          id?: string
+          interesse_em?: string
+          motivo?: string | null
+          pessoa_id: string
+          plano_apresentado_em?: string | null
+          plano_id?: string | null
+          proxima_acao?: string | null
+          responsavel_id?: string | null
+          titulo?: string | null
+          valor_centavos?: number
+        }
+        Update: {
+          atualizado_em?: string
+          canal?: string | null
+          criado_em?: string
+          etapa?: Database["public"]["Enums"]["crm_etapa"]
+          fechada_em?: string | null
+          id?: string
+          interesse_em?: string
+          motivo?: string | null
+          pessoa_id?: string
+          plano_apresentado_em?: string | null
+          plano_id?: string | null
+          proxima_acao?: string | null
+          responsavel_id?: string | null
+          titulo?: string | null
+          valor_centavos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_oportunidades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_acesso_operacao"
+            referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "crm_oportunidades_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "v_meu_perfil"
+            referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
       curso_aulas: {
         Row: {
           criado_em: string
@@ -3485,6 +4077,69 @@ export type Database = {
           site: string
         }[]
       }
+      crm_adicionar_contato: {
+        Args: {
+          _pessoa_id: string
+          _principal?: boolean
+          _tipo: Database["public"]["Enums"]["contato_tipo"]
+          _valor: string
+        }
+        Returns: string
+      }
+      crm_criar_pessoa: {
+        Args: {
+          _apelido?: string
+          _cpf?: string
+          _email?: string
+          _nome: string
+          _observacao?: string
+          _origem?: string
+          _primeiro_contato_em?: string
+          _telefone?: string
+        }
+        Returns: string
+      }
+      crm_normalizar: { Args: { _t: string }; Returns: string }
+      crm_pessoas: {
+        Args: { _limite?: number; _termo?: string }
+        Returns: {
+          apelidos: string[]
+          assinante: boolean
+          conta_site: boolean
+          cpf_mascarado: string
+          criado_em: string
+          email: string
+          etapa: Database["public"]["Enums"]["crm_etapa"]
+          nome: string
+          nome_social: string
+          oportunidade_id: string
+          origem: string
+          papeis: Database["public"]["Enums"]["papel_tipo"][]
+          pessoa_id: string
+          primeiro_contato_em: string
+          proxima_tarefa_em: string
+          telefone: string
+          ultima_interacao_em: string
+        }[]
+      }
+      crm_rotulo_etapa: {
+        Args: { _e: Database["public"]["Enums"]["crm_etapa"] }
+        Returns: string
+      }
+      crm_semelhantes: {
+        Args: {
+          _cpf?: string
+          _email?: string
+          _nome?: string
+          _telefone?: string
+        }
+        Returns: {
+          motivo: string
+          nome: string
+          pessoa_id: string
+        }[]
+      }
+      crm_telefone_chave: { Args: { _t: string }; Returns: string }
       desconto_evento_assinante: {
         Args: { _pessoa_id: string }
         Returns: number
@@ -3666,6 +4321,14 @@ export type Database = {
         | "evento"
         | "area_embaixadora"
       contato_tipo: "email" | "telefone" | "whatsapp"
+      crm_etapa:
+        | "nova"
+        | "em_conversa"
+        | "plano_apresentado"
+        | "aguardando_decisao"
+        | "associada"
+        | "sem_interesse"
+        | "perdida"
       midia_tipo: "logo" | "capa" | "galeria"
       pagamento_situacao: "pendente" | "confirmado" | "estornado" | "cancelado"
       papel_tipo:
@@ -3813,6 +4476,15 @@ export const Constants = {
         "area_embaixadora",
       ],
       contato_tipo: ["email", "telefone", "whatsapp"],
+      crm_etapa: [
+        "nova",
+        "em_conversa",
+        "plano_apresentado",
+        "aguardando_decisao",
+        "associada",
+        "sem_interesse",
+        "perdida",
+      ],
       midia_tipo: ["logo", "capa", "galeria"],
       pagamento_situacao: ["pendente", "confirmado", "estornado", "cancelado"],
       papel_tipo: [
