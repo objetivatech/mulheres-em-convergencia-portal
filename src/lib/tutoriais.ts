@@ -159,6 +159,45 @@ export const TUTORIAIS_ASSOCIADA: Tutorial[] = [
 
 export const TUTORIAIS_EQUIPE: Tutorial[] = [
   {
+    id: 'crm-agenda', modulo: 'CRM', titulo: 'Começar o dia pela agenda do CRM',
+    resumo: 'Veja quem precisa de retorno, quem faz aniversário e quem foi a um encontro e ainda não assina.',
+    passos: [
+      'Abra Comunicação → "CRM · Relacionamento". A primeira aba é "Hoje".',
+      'No quadro "Para hoje", use "WhatsApp" para abrir a conversa com mensagem pronta (você revisa e envia).',
+      'Depois de falar, clique em "Concluir" e anote como foi. Isso entra no histórico da pessoa.',
+      'Não deu hoje? Use "Reagendar" e escolha amanhã, 3 dias, 1 semana ou 1 mês.',
+    ],
+    dicas: ['Conversas paradas há mais de 7 dias aparecem no quadro da direita.', 'O "Radar pós-encontro" lista quem foi a encontros nos últimos 60 dias e ainda não assina.'],
+    link: { para: '/painel-conteudo/relacionamento', rotulo: 'Abrir a agenda' },
+  },
+  {
+    id: 'crm-pessoa', modulo: 'CRM', titulo: 'Cadastrar um contato e registrar conversas',
+    resumo: 'Para quem chegou pelo WhatsApp, Instagram ou evento, mesmo sem CPF.',
+    passos: [
+      'Em "Pessoas", clique em "Nova pessoa". Preencha nome e pelo menos WhatsApp ou e-mail.',
+      'Se aparecer "Talvez esta pessoa já esteja cadastrada", abra a ficha existente em vez de criar outra.',
+      'Na ficha, use "Registrar contato" após cada conversa e marque o próximo passo, se houver.',
+      'Inclua apelidos (ex.: "Laura") para achar a pessoa pelo nome que ela usa.',
+    ],
+    dicas: [
+      'Quando a pessoa criar conta no site com o mesmo e-mail ou CPF, a ficha é unida sozinha.',
+      'Em "Permissão para contato", marque "Não quer" se ela pedir para não receber WhatsApp: o botão fica bloqueado.',
+    ],
+    link: { para: '/painel-conteudo/relacionamento/pessoas', rotulo: 'Abrir pessoas' },
+  },
+  {
+    id: 'crm-funil', modulo: 'CRM', titulo: 'Acompanhar o funil de associação',
+    resumo: 'Cada conversa sobre plano passa por etapas, da primeira conversa até a associação.',
+    passos: [
+      'Na ficha da pessoa, clique em "Abrir oportunidade" e escolha o plano de interesse.',
+      'Clique na etapa certa (Em conversa, Plano apresentado, Aguardando decisão…). O histórico registra a mudança.',
+      'Ao marcar "Plano apresentado", o CRM cria um retorno em 3 dias. Ao marcar "Associada", cria uma tarefa de boas-vindas.',
+      'Na aba "Funil", veja todas as conversas por etapa e avance com a setinha.',
+    ],
+    dicas: ['A data oficial da associação é a do pagamento confirmado no site; o funil só organiza a conversa.'],
+    link: { para: '/painel-conteudo/relacionamento/funil', rotulo: 'Abrir o funil' },
+  },
+  {
     id: 'portaria', modulo: 'Encontros', titulo: 'Portaria: ler ingressos e marcar presença',
     resumo: 'No dia do encontro, confirme quem chegou pelo QR Code do ingresso.',
     passos: [
