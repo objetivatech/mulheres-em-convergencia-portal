@@ -2,6 +2,13 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 07/11/2026 — CRM MeC Conecta, Fase 2
+- Radar pós-encontro por encontro, com presença da portaria, filtros e ações em lote (agradecer, sentimos sua falta, abrir no funil) sem duplicar.
+- Fichas repetidas (mesmo e-mail/telefone ou nome igual), "não são a mesma pessoa" e união auditada que move todo o histórico, só completa campos vazios e bloqueia casos perigosos.
+- Importador de planilhas `.xlsx`/`.csv` com sugestão de colunas, prévia linha a linha e gravação que só acrescenta.
+- WhatsApp abre direto no WhatsApp Web ou no aplicativo do computador (reaproveitar a aba aberta é bloqueado pelo WhatsApp).
+- Tabelas do funil antigo removidas. Testes: `src/lib/crmImportacao.test.ts` e `reboot/tests/0006_crm_fase2.sql`. Docs `39`–`41`.
+
 ## 07/11/2026 — CRM MeC Conecta, Fase 1
 - Novo CRM em `/painel-conteudo/relacionamento` (só administração), substituindo o funil antigo: agenda de hoje, pessoas, ficha 360°, funil, tarefas e mensagens prontas.
 - Contatos provisórios sem CPF, apelidos, vários telefones/e-mails, permissão de contato por canal e sócias de negócios.

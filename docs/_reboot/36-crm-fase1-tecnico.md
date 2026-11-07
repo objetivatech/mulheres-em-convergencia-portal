@@ -1,7 +1,7 @@
 # 36 — CRM MeC Conecta, Fase 1 (técnico)
 
-Entregue em 07/11/2026. Substitui o funil antigo (`funis`, `funil_estagios`, `negociacoes`, que estavam vazios
-e seguem guardados sem uso até uma limpeza futura).
+Entregue em 07/11/2026. Substitui o funil antigo (`funis`, `funil_estagios`, `negociacoes`), removido na Fase 2
+(ver `39-crm-fase2-tecnico.md`).
 
 ## Princípios
 - **Uma pessoa, um histórico**: o CRM usa `pessoas` e `pessoa_contatos` (CPF único quando preenchido). Não há
