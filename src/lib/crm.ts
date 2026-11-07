@@ -93,6 +93,23 @@ export function linkWhatsApp(telefone?: string | null, texto = ''): string | nul
   return `https://wa.me/${n}${texto ? `?text=${encodeURIComponent(texto)}` : ''}`;
 }
 
+/**
+ * Onde abrir o WhatsApp no computador. O WhatsApp Web não permite que outro site reaproveite a aba
+ * já aberta (ele isola a própria janela), então a opção "app" abre o aplicativo instalado, sem novas abas.
+ * No celular sempre usamos o link universal (wa.me), que abre o aplicativo do aparelho.
+ */
+export type ModoWhatsApp = 'web' | 'app';
+
+export function linkWhatsAppModo(
+  telefone: string | null | undefined, texto: string, modo: ModoWhatsApp, celular: boolean,
+): string | null {
+  const n = telefoneWhatsApp(telefone);
+  if (!n) return null;
+  if (celular) return linkWhatsApp(telefone, texto);
+  const q = `phone=${n}${texto ? `&text=${encodeURIComponent(texto)}` : ''}`;
+  return modo === 'app' ? `whatsapp://send?${q}` : `https://web.whatsapp.com/send?${q}`;
+}
+
 export function primeiroNome(nome?: string | null): string {
   const p = (nome ?? '').trim().split(/\s+/)[0] ?? '';
   if (!p) return '';
