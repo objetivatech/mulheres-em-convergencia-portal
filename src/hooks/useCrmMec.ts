@@ -311,6 +311,140 @@ export const useExcluirModelo = () =>
     erro(error);
   });
 
+/* --------------------------------------------------------------- Fase 2: radar, repetidas, união, importação */
+
+export type LinhaRadar = {
+  evento_id: string; evento_titulo: string; evento_inicio: string; evento_online: boolean; evento_tem_portaria: boolean;
+  inscricao_id: string; pessoa_id: string | null; nome: string; email: string | null; telefone: string | null;
+  compareceu: boolean; assinante: boolean; oportunidade_id: string | null; etapa: string | null;
+  contato_depois: string | null; tarefa_aberta: boolean; tarefa_feita: boolean; whatsapp_recusado: boolean;
+};
+
+export function useRadar(dias: number) {
+  return useQuery({
+    queryKey: ['crm', 'radar', dias],
+    queryFn: async () => {
+      const { data, error } = await db.rpc('crm_radar', { _dias: dias });
+      erro(error);
+      return (data ?? []) as LinhaRadar[];
+    },
+  });
+}
+
+export const useRadarAcionar = () =>
+  useAcao(async (v: { evento_id: string; pessoas: string[]; acao: 'oportunidade' | 'agradecer' | 'sentimos_falta' }) => {
+    const { data, error } = await db.rpc('crm_radar_acionar', { _evento_id: v.evento_id, _pessoas: v.pessoas, _acao: v.acao });
+    erro(error);
+    return data as { criadas: number; ja_existiam: number; ignoradas: number };
+  });
+
+export type ParRepetido = { pessoa_a: string; nome_a: string; pessoa_b: string; nome_b: string; motivos: string[]; forte: boolean };
+
+export function useDuplicadas() {
+  return useQuery({
+    queryKey: ['crm', 'duplicadas'],
+    queryFn: async () => {
+      const { data, error } = await db.rpc('crm_duplicadas');
+      erro(error);
+      return (data ?? []) as ParRepetido[];
+    },
+  });
+}
+
+export const useIgnorarDuplicada = () =>
+  useAcao(async (v: { a: string; b: string; motivo?: string }) => {
+    const { error } = await db.rpc('crm_ignorar_duplicada', { _a: v.a, _b: v.b, _motivo: v.motivo || null });
+    erro(error);
+  });
+
+export function useHistoricoRepetidas() {
+  return useQuery({
+    queryKey: ['crm', 'repetidas-historico'],
+    queryFn: async () => {
+      const [fusoes, ignoradas] = await Promise.all([
+        db.from('crm_fusoes').select('id, pessoa_mantida_id, nome_mantido, nome_removido, motivo, movimentos, realizado_em')
+          .order('realizado_em', { ascending: false }).limit(100),
+        db.from('crm_duplicadas_ignoradas')
+          .select('id, motivo, registrado_em, a:pessoas!crm_duplicadas_ignoradas_pessoa_a_fkey(id, nome), b:pessoas!crm_duplicadas_ignoradas_pessoa_b_fkey(id, nome)')
+          .order('registrado_em', { ascending: false }).limit(100),
+      ]);
+      erro(fusoes.error); erro(ignoradas.error);
+      return { fusoes: (fusoes.data ?? []) as any[], ignoradas: (ignoradas.data ?? []) as any[] };
+    },
+  });
+}
+
+export const useDesfazerIgnorar = () =>
+  useAcao(async (id: string) => {
+    const { error } = await db.from('crm_duplicadas_ignoradas').delete().eq('id', id);
+    erro(error);
+  });
+
+export type ResumoFusao = {
+  id: string; nome: string; nome_social: string | null; cpf: string | null; conta_site: boolean; criado_em: string;
+  contatos: string[]; inscricoes: number; pagamentos: number; conversas: number; tarefas: number; negocios: number;
+  oportunidade_aberta: boolean; papeis: string[]; associada: boolean;
+};
+
+export function usePreviaFusao(manter: string | null, remover: string | null) {
+  return useQuery({
+    queryKey: ['crm', 'previa-fusao', manter, remover],
+    enabled: !!manter && !!remover && manter !== remover,
+    queryFn: async () => {
+      const { data, error } = await db.rpc('crm_previa_fusao', { _manter: manter, _remover: remover });
+      erro(error);
+      return data as { bloqueios: string[]; avisos: string[]; manter: ResumoFusao; remover: ResumoFusao };
+    },
+  });
+}
+
+export const useFundirPessoas = () =>
+  useAcao(async (v: { manter: string; remover: string; motivo?: string }) => {
+    const { data, error } = await db.rpc('crm_fundir_pessoas', { _manter: v.manter, _remover: v.remover, _motivo: v.motivo || null });
+    erro(error);
+    return data as Record<string, any>;
+  });
+
+export function useImportacoes() {
+  return useQuery({
+    queryKey: ['crm', 'importacoes'],
+    queryFn: async () => {
+      const { data, error } = await db.from('crm_importacoes')
+        .select('id, nome_arquivo, origem, total, resultado, criado_em').order('criado_em', { ascending: false }).limit(30);
+      erro(error);
+      return (data ?? []) as any[];
+    },
+  });
+}
+
+export type PreviaLinha = { linha: number; acao: 'criar' | 'completar' | 'conflito' | 'erro'; pessoa_id: string | null; pessoa_nome: string | null; motivo: string; aviso: string | null };
+export type ResultadoLinha = { linha: number; acao: string; pessoa_id: string | null; mensagem: string | null };
+
+/** Prévia do banco (não grava nada), enviada em partes de até 2.000 linhas. */
+export async function previaImportacao(linhas: object[]): Promise<PreviaLinha[]> {
+  const out: PreviaLinha[] = [];
+  for (let i = 0; i < linhas.length; i += 2000) {
+    const { data, error } = await db.rpc('crm_importar_previa', { _linhas: linhas.slice(i, i + 2000) });
+    erro(error);
+    out.push(...((data ?? []) as PreviaLinha[]));
+  }
+  return out;
+}
+
+export async function iniciarImportacao(nomeArquivo: string, origem: string, total: number): Promise<string> {
+  const { data, error } = await db.rpc('crm_importar_iniciar', { _nome_arquivo: nomeArquivo, _origem: origem, _total: total });
+  erro(error);
+  return data as string;
+}
+
+export async function importarLote(id: string, linhas: object[], criarOportunidade: boolean, autorizouWhatsApp: boolean): Promise<ResultadoLinha[]> {
+  const { data, error } = await db.rpc('crm_importar_lote', {
+    _importacao_id: id, _linhas: linhas, _criar_oportunidade: criarOportunidade, _autorizou_whatsapp: autorizouWhatsApp,
+  });
+  erro(error);
+  return (data ?? []) as ResultadoLinha[];
+}
+
 export const useVinculoNegocio = () =>
   useAcao(async (v: { acao: 'incluir'; pessoa_id: string; negocio_id: string; papel: string } | { acao: 'remover'; id: string }) => {
     if (v.acao === 'incluir') {
