@@ -78,17 +78,11 @@ Atualizado: 17/09/2026
 
 ### CRM MeC Conecta (substitui o funil antigo)
 - [x] Fase 1 — fundação, agenda de hoje, ficha 360°, funil, tarefas, mensagens prontas, permissões de contato (07/11/2026; `docs/_reboot/36`–`38`)
-- [ ] Fase 2 — importador CSV/XLSX com prévia e desduplicação, fila de possíveis duplicadas com fusão auditada, radar pós-evento completo (em andamento 07/11/2026)
-  - [ ] Limpeza das tabelas do funil antigo
-  - [ ] WhatsApp: abrir direto no WhatsApp Web ou no aplicativo do computador (reaproveitar aba é bloqueado pelo próprio WhatsApp)
-  - [ ] Radar pós-encontro com ações em lote
-  - [ ] Possíveis repetidas + união auditada de fichas
-  - [ ] Importador CSV/XLSX com prévia
-  - [ ] Documentação tripla, tour, tutoriais, testes
+- [x] Fase 2 — radar pós-encontro, fichas repetidas com união auditada, importador CSV/XLSX, WhatsApp Web/app (07/11/2026; `docs/_reboot/39`–`41`)
 - [ ] Depois da Fase 2 — retomar ideias de melhoria para CRM e Newsletter (colunas, blocos de evento/contador, vitrine de negócio, prévia celular, variáveis, etiquetas)
 - [ ] Fase 3 — resumo diário por e-mail, Google Tasks e Google Sheets (dependem de autorização)
 - [ ] Fase 4 — listas de presença manuscritas (OCR com revisão) e relatórios avançados (tempo até associação, atribuição)
-- [ ] Limpeza: remover tabelas do funil antigo (`funis`, `funil_estagios`, `negociacoes`), hoje sem uso
+- [x] Limpeza: tabelas do funil antigo (`funis`, `funil_estagios`, `negociacoes`) removidas (07/11/2026)
 
 
 ### Fase 7 — Migração e corte
