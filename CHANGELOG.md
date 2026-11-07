@@ -2,6 +2,13 @@
 
 Registro vivo das entregas do portal. Toda entrega adiciona uma linha aqui.
 
+## 07/11/2026 — CRM MeC Conecta, Fase 1
+- Novo CRM em `/painel-conteudo/relacionamento` (só administração), substituindo o funil antigo: agenda de hoje, pessoas, ficha 360°, funil, tarefas e mensagens prontas.
+- Contatos provisórios sem CPF, apelidos, vários telefones/e-mails, permissão de contato por canal e sócias de negócios.
+- WhatsApp com mensagem pronta e editável (nunca envia sozinho); mudança de etapa e tarefa concluída entram no histórico.
+- Busca de pessoas sem acento, por apelido, telefone e negócio; bloqueio de cadastro com e-mail, telefone ou CPF repetidos.
+- Testes: `src/lib/crm.test.ts` e `reboot/tests/0005_crm_fase1.sql`. Docs `36`–`38`.
+
 ## 22/10/2026 — Vagas e conversão dos encontros
 - Base real de ingressos externos no cadastro; soma automática com confirmações, total público correto e reservas protegidas contra concorrência.
 - Tarja e prioridade de destaques, contagem regressiva nos cards/página/slider, ocupação e prazo do lote, com mensagens editáveis.
