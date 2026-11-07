@@ -16,6 +16,7 @@ export const TOUR_VERSAO: Record<string, number> = {
   encontros: 1,
   'meus-dados': 1,
   'painel-equipe': 2,
+  crm: 1,
 };
 
 export const TOUR_PASSOS: Record<string, TourPasso[]> = {
@@ -149,6 +150,10 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
     {
       titulo: 'Sempre reversível',
       texto: 'Quase tudo pode ser despublicado em vez de apagado. Na dúvida, desligue e veja o site.',
+    },
+    {
+      titulo: 'CRM · Relacionamento',
+      texto: 'Em Comunicação → "CRM · Relacionamento" fica a sua agenda do dia, as fichas das pessoas, o funil e as mensagens prontas.',
     },
     {
       titulo: 'Vagas e divulgação dos encontros',
