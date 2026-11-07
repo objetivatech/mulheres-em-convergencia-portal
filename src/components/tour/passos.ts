@@ -160,4 +160,28 @@ export const TOUR_PASSOS: Record<string, TourPasso[]> = {
       texto: 'Ao editar um encontro, informe ingressos reais vendidos fora do portal e ligue "Destacar" para a tarja. Os contadores são automáticos. Quem aguarda vaga fica na aba "Lista de espera".',
     },
   ],
+  crm: [
+    {
+      titulo: 'Bem-vinda ao CRM',
+      texto: 'Aqui você acompanha cada pessoa: quem precisa de retorno hoje, em que ponto está a conversa e tudo o que já aconteceu.',
+    },
+    {
+      alvo: '[data-tour="crm-abas"]',
+      titulo: 'As áreas do CRM',
+      texto: '"Hoje" é a sua agenda. "Pessoas" tem as fichas. "Funil" mostra as conversas sobre associação. "Tarefas" e "Mensagens prontas" completam.',
+    },
+    {
+      alvo: '[data-tour="crm-busca"]',
+      titulo: 'Busca rápida',
+      texto: 'Procure por nome, apelido, e-mail, telefone, CPF ou nome do negócio. Acentos não atrapalham.',
+    },
+    {
+      titulo: 'WhatsApp com 1 clique',
+      texto: 'O botão WhatsApp abre a conversa com uma mensagem pronta para você revisar. Nada é enviado sozinho.',
+    },
+    {
+      titulo: 'Registre depois de conversar',
+      texto: 'Na ficha, use "Registrar contato" e, se quiser, já marque o próximo passo. Ele aparece na sua agenda no dia certo.',
+    },
+  ],
 };
