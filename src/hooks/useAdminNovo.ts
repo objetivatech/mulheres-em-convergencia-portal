@@ -1,6 +1,6 @@
 /**
  * Administração — banco novo (MeC-v6).
- * Pessoas, financeiro, CRM e automações. Toda permissão é resolvida por RLS
+ * Pessoas, financeiro e automações (CRM em `useCrmMec.ts`). Toda permissão é resolvida por RLS
  * (`e_admin()`); as consultas aqui apenas montam a interface.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -125,59 +125,7 @@ export function useFinanceiro(desde: string, ate: string) {
   });
 }
 
-/* ------------------------------------------------------------------ CRM */
-
-export function useFunil() {
-  return useQuery({
-    queryKey: ['admin', 'funil'],
-    queryFn: async () => {
-      const { data: funis } = await db.from('funis').select('id, slug, nome').eq('ativo', true).order('ordem');
-      const funil = (funis ?? [])[0];
-      if (!funil) return { funil: null, estagios: [], negociacoes: [] };
-      const [estagios, negociacoes] = await Promise.all([
-        db.from('funil_estagios').select('*').eq('funil_id', funil.id).order('ordem'),
-        db
-          .from('negociacoes')
-          .select('id, titulo, valor_centavos, estagio_id, contato_nome, contato_email, criado_em, pessoa:pessoas(nome)')
-          .eq('funil_id', funil.id)
-          .order('criado_em', { ascending: false })
-          .limit(500),
-      ]);
-      return {
-        funil,
-        estagios: (estagios.data ?? []) as any[],
-        negociacoes: (negociacoes.data ?? []) as any[],
-      };
-    },
-  });
-}
-
-export function useSalvarNegociacao() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, valores }: { id?: string; valores: Record<string, any> }) => {
-      if (id) {
-        const { error } = await db.from('negociacoes').update(valores).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await db.from('negociacoes').insert(valores);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'funil'] }),
-  });
-}
-
-export function useExcluirNegociacao() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await db.from('negociacoes').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'funil'] }),
-  });
-}
+/* CRM: ver `useCrmMec.ts` (o funil antigo foi substituído pelo CRM MeC Conecta). */
 
 /* ------------------------------------------------------------ Automações */
 
