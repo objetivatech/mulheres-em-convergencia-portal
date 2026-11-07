@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { CalendarCheck, Users, Workflow, ListTodo, MessageSquareText, Search } from 'lucide-react';
+import { CalendarCheck, Users, Workflow, ListTodo, MessageSquareText, Search, Radar, CopyCheck, FileSpreadsheet } from 'lucide-react';
 import PainelLayout from '@/components/painel/PainelLayout';
 import { Input } from '@/components/ui/input';
 import { useSouEditora } from '@/hooks/usePainelConteudo';
@@ -14,6 +14,9 @@ export const rotaCrm = {
   funil: `${BASE}/funil`,
   tarefas: `${BASE}/tarefas`,
   mensagens: `${BASE}/mensagens`,
+  radar: `${BASE}/radar`,
+  repetidas: `${BASE}/repetidas`,
+  importar: `${BASE}/importar`,
 };
 
 const ABAS = [
@@ -21,6 +24,9 @@ const ABAS = [
   { para: rotaCrm.pessoas, rotulo: 'Pessoas', icone: Users },
   { para: rotaCrm.funil, rotulo: 'Funil', icone: Workflow },
   { para: rotaCrm.tarefas, rotulo: 'Tarefas', icone: ListTodo },
+  { para: rotaCrm.radar, rotulo: 'Radar pós-encontro', icone: Radar },
+  { para: rotaCrm.repetidas, rotulo: 'Fichas repetidas', icone: CopyCheck },
+  { para: rotaCrm.importar, rotulo: 'Importar planilha', icone: FileSpreadsheet },
   { para: rotaCrm.mensagens, rotulo: 'Mensagens prontas', icone: MessageSquareText },
 ];
 
